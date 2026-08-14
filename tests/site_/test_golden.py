@@ -27,6 +27,14 @@ changelog repository, in plain words because the golden build passes no `--chang
 linked form is asserted next to the shell itself. No feed, no `sitemap.xml` and no `style.css`
 moved, and no measured figure moved with them.
 
+Read again on 2026-08-14, later the same day, when the methodology page stopped claiming that
+the only links leaving the site go to EUR-Lex. One file moved, `methodology/index.html`, by one
+sentence: the closing claim now says no link leaves the site except to EUR-Lex and the
+repositories the page names, which stays literally true here, where the golden build passes
+neither repository URL and the how-built paragraph keeps its old wording, and on a deployment
+that configures both links. The footer line of the earlier entry did not move again, no other
+page moved, and no measured figure moved with it.
+
 **It is deliberately wired to the newest report**, not to a pinned one, the same rule the
 README's metrics table lives under: a new `reports/eval/*.json` breaks this suite until the
 site is regenerated, so a figure on a page can never be stale with respect to the numbers the

@@ -83,3 +83,43 @@ def test_no_absolute_path_of_this_machine_reaches_the_page() -> None:
     rendered = render_methodology(_site())
     assert str(REPO) not in rendered
     assert f"reports/eval/{latest_report(REPORTS).stem}.md" in rendered
+
+
+def test_a_configured_build_links_both_repositories_in_how_built() -> None:
+    """With both URLs set, the how-built section links each repository by name.
+
+    The two hosts are distinct so each assertion can only be satisfied by its own link, and
+    the filesystem-path rule must survive the linked form as a stated rule.
+    """
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=latest_report(REPORTS),
+        repo_url="https://example.invalid/emendrix",
+        changelogs_url="https://data.example.invalid/changelogs",
+    )
+    section = render_methodology(site).split("How this site is built")[1]
+    assert '<a href="https://example.invalid/emendrix">the emendrix repository</a>' in section
+    assert (
+        '<a href="https://data.example.invalid/changelogs">the changelog repository</a>' in section
+    )
+    assert "where it lives on the operator's machine is still never printed here" in section
+    assert "no link leaves the site except to EUR-Lex and the repositories this page names" in (
+        section
+    )
+
+
+def test_an_unset_build_keeps_the_old_sentence_and_names_no_host() -> None:
+    """With neither URL set, the section degrades to the old meaning, not a broken reference.
+
+    No `github.com` may appear anywhere in the rendered page: the URLs are deployment facts
+    injected at the CLI boundary, never hardcoded into the site sources.
+    """
+    rendered = render_methodology(_site())
+    assert "github.com" not in rendered
+    section = rendered.split("How this site is built")[1]
+    assert "in a changelog repository the operator owns" in section
+    assert "Where that repository lives is deliberately not printed here." in section
+    assert "no link leaves the site except to EUR-Lex and the repositories this page names" in (
+        section
+    )

@@ -8,7 +8,8 @@ to run it; the artifacts it renders are described in [`./output-format.md`](./ou
 uv run emendrix site build --out site/ \
     --changelogs ~/regulatory-changelog \
     --site-url https://changes.example.invalid \
-    --repo-url https://example.invalid/emendrix
+    --repo-url https://example.invalid/emendrix \
+    --changelogs-url https://data.example.invalid/changelogs
 ```
 
 A directory of files, not a page:
@@ -74,7 +75,7 @@ a DNS record and need no markup either; and if a verification file is used inste
 deployed directory survives every rebuild. No code was needed for either console, and none is
 planned.
 
-## `--site-url` and `--repo-url`
+## `--site-url`, `--repo-url` and `--changelogs-url`
 
 `--site-url` is the one fact the generator cannot infer, and everything absolute needs it: an Atom
 link, an entry ID, a canonical address, an `og:image` and a sitemap `<loc>` are all absolute by
@@ -84,10 +85,11 @@ per page: a page carrying `og:title` with no `og:url` renders a preview that is 
 worse than a page with no preview. Entry IDs are the permalink of the event, so a rebuild never
 re-notifies a subscriber.
 
-It also never prints where the changelog repository lives. That path is somebody's home directory,
-and a public site is the wrong place for it; the paths it does print are the stable ones inside
-that repository. `--repo-url` turns those into links once a public home exists, and both it and
-`--site-url` are refused unless they are `https://`.
+It also never prints where the changelog repository lives on the operator's machine. That path is
+somebody's home directory, and a public site is the wrong place for it; the paths it does print
+are the stable ones inside that repository. `--repo-url` turns those into links once a public home
+exists, `--changelogs-url` names the changelog repository's own public home in the footer and on
+the methodology page, and all three URL flags are refused unless they are `https://`.
 
 ## The honesty rule, made structural
 
