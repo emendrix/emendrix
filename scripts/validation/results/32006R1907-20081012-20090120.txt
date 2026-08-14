@@ -1,0 +1,51 @@
+# 32006R1907  20081012 -> 20090120
+# emendrix validation trace, generated 2026-08-05
+
+amending acts in window: 32008R1272
+units in v(20081012): 158   units in v(20090120): 158
+
+## signal 1 - structural Formex diff
+inserted 0 - modified 40 - deleted 0 - unchanged 118 -> 40 touched
+  inserted: -
+  deleted : -
+  modified: AN I | AN II | AN III | AN V | AN VI | AN XII | AN XV | AN XVII | AR 1 | AR 2 | AR 3 | AR 5 | AR 6 | AR 8 | AR 9 | AR 14 | AR 31 | AR 32 | AR 34 | AR 35 | AR 36 | AR 37 | AR 38 | AR 56 | AR 58 | AR 59 | AR 62 | AR 65 | AR 67 | AR 68 | AR 69 | AR 72 | AR 76 | AR 77 | AR 109 | AR 118 | AR 119 | AR 123 | AR 128 | AR 129
+
+## signal 2 - CELLAR modification annotations
+28 annotations -> 8 touched units
+  roles: {'A': 4, 'J': 1, 'R': 23}
+  units: AN XV | AN XVII | AR 14 | AR 31 | AR 56 | AR 59 | AR 76 | AR 77
+  location codes seen: {'AN': 17, 'APP': 6, 'AR': 10, 'FR': 3, 'NOTE': 6, 'PA': 10, 'PO': 7, 'SECTION': 3, 'TABL': 1, 'TIRE': 2, 'TIT': 1, 'TXT': 10}
+  annotations with no keyable top-level unit: 1  ['TIT XI']
+
+## signal 3 - naive instruction-prose parse of the amending acts
+25 units named
+
+## agreement (D7 granularity: top-level provision)
+### diff vs metadata
+  predicted 40 - reference 8 - P 0.200 - R 1.000 - F1 0.333
+  only in predicted: AN I | AN II | AN III | AN V | AN VI | AN XII | AR 1 | AR 2 | AR 3 | AR 5 | AR 6 | AR 8 | AR 9 | AR 32 | AR 34 | AR 35 | AR 36 | AR 37 | AR 38 | AR 58 | AR 62 | AR 65 | AR 67 | AR 68 | AR 69 | AR 72 | AR 109 | AR 118 | AR 119 | AR 123 | AR 128 | AR 129
+  only in reference: -
+
+### blanket substitution check: 'preparation' -> 'mixture'
+  diff-only units explained entirely by this substitution: 30/32
+  explained: AN I | AN II | AN III | AN V | AN VI | AN XII | AR 1 | AR 2 | AR 3 | AR 5 | AR 6 | AR 8 | AR 9 | AR 32 | AR 34 | AR 35 | AR 36 | AR 38 | AR 58 | AR 62 | AR 65 | AR 67 | AR 68 | AR 72 | AR 109 | AR 118 | AR 119 | AR 123 | AR 128 | AR 129
+  still unexplained: AR 37 | AR 69
+
+### diff vs metadata, articles only
+  predicted 32 - reference 6 - P 0.188 - R 1.000 - F1 0.316
+  only in predicted: AR 1 | AR 2 | AR 3 | AR 5 | AR 6 | AR 8 | AR 9 | AR 32 | AR 34 | AR 35 | AR 36 | AR 37 | AR 38 | AR 58 | AR 62 | AR 65 | AR 67 | AR 68 | AR 69 | AR 72 | AR 109 | AR 118 | AR 119 | AR 123 | AR 128 | AR 129
+  only in reference: -
+
+### prose vs metadata, same window
+  predicted 25 - reference 8 - P 0.320 - R 1.000 - F1 0.485
+  only in predicted: AN I | AN II | AN III | AN IX | AN V | AN VI | AN VIII | AN X | AN XIII | AR 3 | AR 40 | AR 57 | AR 65 | AR 68 | AR 119 | AR 133 | AR 138
+  only in reference: -
+
+# note: instruction prose carries no date, so a naive parse names every provision
+# the amending act touches, not the subset that entered into force in this window.
+# The block below is the fair measure of the prose parser.
+### prose vs metadata, whole amending acts
+  predicted 25 - reference 22 - P 0.880 - R 1.000 - F1 0.936
+  only in predicted: AN I | AR 3 | AR 133
+  only in reference: -
+

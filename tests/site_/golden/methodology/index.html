@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology — emendrix</title>
+<meta name="description" content="How emendrix measures itself: every published figure, over what, and what each one does not mean.">
+<link rel="canonical" href="https://example.invalid/site/methodology/">
+<link rel="alternate" type="application/atom+xml" title="emendrix — all watched acts" href="../feeds/all.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="emendrix">
+<meta property="og:title" content="Methodology — emendrix">
+<meta property="og:description" content="How emendrix measures itself: every published figure, over what, and what each one does not mean.">
+<meta property="og:url" content="https://example.invalid/site/methodology/">
+<meta property="og:image" content="https://example.invalid/site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="emendrix: provision-level changelogs for EU legislation">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script defer src="../search.js"></script>
+</head>
+<body>
+<header class="bar"><a class="wordmark" href="../">emendrix</a><nav><a href="../acts/">All acts</a> <a href="../methodology/">Methodology</a> <a href="../feeds/">Feeds</a></nav><div id="search" data-root="../"></div></header>
+<main>
+<h1>Methodology</h1>
+<p class="lede">Your regulatory dependencies, with a changelog. emendrix watches EU legislation, computes provision-level diffs when it is amended, and explains what changed in plain English where every sentence cites a provision you can click.</p>
+<p class="lede muted">Finding <em>which</em> provisions an amendment touched scores micro-F1 <strong>0.963</strong> over 17 transitions against labels the legislation publishes about itself — that is agreement with a reference set at article-or-annex granularity, and it is not a measure of whether any explanation is good. Every figure below is generated from a committed report; none is typed in by hand.</p>
+<h2>Measured, not asserted</h2>
+<p class="small muted">Every row carries what it means and what it does not. The rows are the same ones the repository's README publishes, rendered from the same committed report, so the two cannot disagree.</p>
+<div class="scroll">
+<table>
+<thead><tr><th>Measure</th><th>Result</th><th>n</th><th>What it means — and what it does not</th></tr></thead>
+<tbody>
+<tr><td><strong>Localisation</strong> (which provisions changed)</td><td class="result">P 0.952 / R 0.975 / <strong>F1 0.963</strong></td><td>17 transitions</td><td class="meaning">Structural diff against the corpus&#x27;s own modification metadata, at article-or-annex granularity. Not a measure of whether the explanation is any good; precision is dragged down by blanket amendments the reference set annotates only once.</td></tr>
+<tr><td>Instruction-parse agreement (cross-check)</td><td class="result">P 0.875 / R 0.940 / F1 0.906</td><td>13 transitions</td><td class="meaning">A third, independent reading of the same question, from the amending act&#x27;s own prose. Weaker by construction: it cannot read a range or an instruction that delegates to an annex, and those are counted as unread, never approximated.</td></tr>
+<tr><td>Disputed changes (signals disagree)</td><td class="result">0.163</td><td>104 changes</td><td class="meaning">Changes at least one signal named and another did not. They ship marked <code>disputed</code>; a high rate is a data-quality finding, not a hidden failure.</td></tr>
+<tr><td>Change classification</td><td class="result">accuracy 1.000</td><td>79 units</td><td class="meaning">Insert / modify / delete against the metadata&#x27;s role codes, on units both signals named. The role semantics are empirical — the authority tables publish no labels.</td></tr>
+<tr><td>Citation grounding (gate pass, no retry)</td><td class="result">1.000</td><td>55 changes</td><td class="meaning">Of the changes with an explanation to check, the share whose first answer cited only provisions it had been offered. <strong>Citation validity, not explanation quality</strong> — a wrong sentence with a good citation passes.</td></tr>
+<tr><td>Quote-fallback rate</td><td class="result">0.000</td><td>55 changes</td><td class="meaning">The share where the gate replaced the model&#x27;s prose with a verbatim quotation of the provision after one failed retry. Correct by construction and visibly marked; this is where grounding losses go, and no change is ever dropped.</td></tr>
+<tr><td>Explanation faithfulness (sampled)</td><td class="result">0.800</td><td>n = 20, LLM judge + spot review (reviewed 20/20 on 2026-08-13 by Martins Erts: 17 faithful, 3 not faithful. Same question as 2026-08-11, over the recording of 2026-08-12; all three failures were also flagged by the judge.)</td><td class="meaning">Whether the shipped sentences follow from the evidence the writer was given: the prompt&#x27;s deterministic-facts header and the two capped texts (the header joined the evidence base on 2026-08-09, so earlier rates answer a narrower question and are not comparable). The weakest number here: a sampled judgement by <code>openrouter:openai/gpt-5.6-sol</code>, which is a different and stronger model than the explainer but not an independent one. The raw fraction, no confidence interval — at this n an interval would be wider than the number is useful.</td></tr>
+</tbody>
+</table>
+</div>
+<p class="small muted">Measured on 2026-08-13 at revision <code>ea13042</code>, from <code>reports/eval/2026-08-13-ea13042.md</code>. The deterministic rows cover every transition in the committed corpus (18 of 18 scored); the model rows cover the pinned explanation subset only, because each change in it is one recorded call to a provider.</p>
+<h2>How it works</h2>
+<ul class="loop">
+<li><b>1 · Watch</b>A watchlist of acts, matched against the Publications Office notification feed by identifier. Deterministic.</li>
+<li><b>2 · Fetch</b>Both consolidated versions and the amending act, as structured Formex 4 XML, through a disk cache. Deterministic.</li>
+<li><b>3 · Delta</b>A structural diff over the provision trees: which articles and annexes were inserted, modified, deleted. No model.</li>
+<li><b>4 · Explain</b>The only model call in the loop, constrained to the two verbatim texts it is handed. It never decides what changed.</li>
+<li><b>5 · Gate</b>Every citation must resolve to a provision that was offered, or the sentence is replaced by a verbatim quotation. Deterministic.</li>
+</ul>
+<p class="small muted">Between <b>Delta</b> and <b>Explain</b> the changes are corroborated against two independent signals — the corpus's own modification metadata and a parse of the amending act's instruction prose — and anything they disagree about ships marked <em>disputed</em> rather than dropped. After <b>Gate</b> the result is committed to a git repository as Markdown and JSON. Every stage except <b>Explain</b> is deterministic Python.</p>
+<h2>How this site is built</h2>
+<p>A directory of static files, generated by <code>emendrix site build</code> from artifacts committed in the emendrix repository and in a changelog repository the operator owns: the changelog documents this tool wrote and the dated evaluation report it was scored against. Where that repository lives is deliberately not printed here.</p>
+<p>Every page is a rendering of things already committed, so the site can answer no question its inputs do not already contain, which is what makes <em>no number here lacks provenance</em> structural rather than aspirational. Two builds of one repository state produce the same bytes: nothing on the site reads a clock, reaches the network, or calls a model. One small script adds search; the only links that leave the site go to EUR-Lex.</p>
+</main>
+<footer>
+<p class="disclaimer"><strong>Not legal advice.</strong> Not legal advice: this output is machine-computed from published texts, carries no lawyer&#x27;s review, and is engineering assistance only. Read the official consolidated text on <a href="https://eur-lex.europa.eu/">EUR-Lex</a>.</p>
+<p>Generated on 2026-08-06 from artifacts committed in the emendrix repository. One small script for search; no cookies, no analytics, no third-party requests.</p>
+</footer>
+</body>
+</html>

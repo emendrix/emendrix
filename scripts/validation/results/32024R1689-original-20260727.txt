@@ -1,0 +1,46 @@
+# 32024R1689  original -> 20260727
+# emendrix validation trace, generated 2026-08-05
+
+amending acts in window: 32026R1744
+units in v(original): 126   units in v(20260727): 133
+
+## signal 1 - structural Formex diff
+inserted 7 - modified 38 - deleted 0 - unchanged 88 -> 45 touched
+  inserted: AN XIV | AR 4a | AR 60a | AR 75a | AR 75b | AR 75c | AR 75d
+  deleted : -
+  modified: AN I | AN VIII | AR 1 | AR 2 | AR 3 | AR 4 | AR 5 | AR 6 | AR 10 | AR 11 | AR 17 | AR 25 | AR 27 | AR 28 | AR 29 | AR 30 | AR 40 | AR 42 | AR 43 | AR 50 | AR 56 | AR 57 | AR 58 | AR 60 | AR 63 | AR 64 | AR 69 | AR 70 | AR 72 | AR 75 | AR 76 | AR 77 | AR 95 | AR 96 | AR 97 | AR 99 | AR 111 | AR 113
+
+## signal 2 - CELLAR modification annotations
+88 annotations -> 45 touched units
+  roles: {'DEL': 4, 'J': 39, 'R': 45}
+  units: AN I | AN VIII | AN XIV | AR 1 | AR 2 | AR 3 | AR 4 | AR 4a | AR 5 | AR 6 | AR 10 | AR 11 | AR 17 | AR 25 | AR 27 | AR 28 | AR 29 | AR 30 | AR 40 | AR 42 | AR 43 | AR 50 | AR 56 | AR 57 | AR 58 | AR 60 | AR 60a | AR 63 | AR 64 | AR 69 | AR 70 | AR 72 | AR 75 | AR 75a | AR 75b | AR 75c | AR 75d | AR 76 | AR 77 | AR 95 | AR 96 | AR 97 | AR 99 | AR 111 | AR 113
+  location codes seen: {'ALN': 13, 'AN': 5, 'AR': 83, 'PA': 71, 'PO': 7, 'PTA': 11, 'SCT': 4, 'TIT': 2, 'TXT': 1}
+  annotations with no keyable top-level unit: 0
+
+## signal 3 - naive instruction-prose parse of the amending acts
+49 units named
+
+## agreement (D7 granularity: top-level provision)
+### diff vs metadata
+  predicted 45 - reference 45 - P 1.000 - R 1.000 - F1 1.000
+  only in predicted: -
+  only in reference: -
+
+### diff vs metadata, articles only
+  predicted 42 - reference 42 - P 1.000 - R 1.000 - F1 1.000
+  only in predicted: -
+  only in reference: -
+
+### prose vs metadata, same window
+  predicted 49 - reference 45 - P 0.898 - R 0.978 - F1 0.936
+  only in predicted: AR 31 | AR 32 | AR 36 | AR 39 | AR 53
+  only in reference: AN XIV
+
+# note: instruction prose carries no date, so a naive parse names every provision
+# the amending act touches, not the subset that entered into force in this window.
+# The block below is the fair measure of the prose parser.
+### prose vs metadata, whole amending acts
+  predicted 49 - reference 45 - P 0.898 - R 0.978 - F1 0.936
+  only in predicted: AR 31 | AR 32 | AR 36 | AR 39 | AR 53
+  only in reference: AN XIV
+

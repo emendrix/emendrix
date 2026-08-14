@@ -1,0 +1,75 @@
+# consolidated versions of 32006R1907 (from notice=tree, fetched 2026-08-05)
+
+68 versions; ENG manifestations per version
+
+20071123  fmx4=yes formats=fmx4,pdf,xhtml via=celex
+20081012  fmx4=yes formats=fmx4,pdf,xhtml via=celex
+20090120  fmx4=yes formats=fmx4,pdf,xhtml via=celex
+20090220  fmx4=yes formats=fmx4,pdf,xhtml via=celex
+20090627  fmx4=yes formats=fmx4,pdf,xhtml via=celex
+20100402  fmx4=NO  formats=pdf,xhtml via=celex
+20101201  fmx4=NO  formats=pdfa1a,xhtml via=celex
+20110221  fmx4=NO  formats=pdfa1a,xhtml via=celex
+20110306  fmx4=NO  formats=pdfa1a,xhtml via=celex
+20110505  fmx4=NO  formats=pdfa1a,xhtml via=celex
+20111210  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20120601  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20120605  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20121009  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20130306  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20130421  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20130701  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20140410  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20140822  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20150101  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20150323  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20150513  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20150601  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20150925  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20151227  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20160203  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20160308  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20160401  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20160621  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20160714  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20161011  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20170102  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20170302  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20170704  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20171010  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20180131  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20180301  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20180509  fmx4=yes formats=fmx4,pdfa1a,xhtml via=celex
+20181201  fmx4=yes formats=fmx4,pdfa1a,xhtml via=consolidation
+20190107  fmx4=yes formats=fmx4,pdfa1a,xhtml via=consolidation
+20190702  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20191030  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20200101  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20200227  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20200428  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20200824  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20210101  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20210215  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20210705  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20210825  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20211001  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20220108  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20220301  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20220501  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20221014  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20221217  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20230528  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20230629  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20230806  fmx4=yes formats=fmx4,pdfa2a,xhtml via=celex,consolidation
+20231201  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20240606  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20241010  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20241218  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20250422  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20250623  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20250901  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20251023  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20260511  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+
+versions without an English Formex manifestation: 5
+  20100402, 20101201, 20110221, 20110306, 20110505

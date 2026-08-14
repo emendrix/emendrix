@@ -1,0 +1,53 @@
+# emendrix watchlist: copy to `watchlist.toml` and edit.
+#
+#   uv run emendrix watch --once --watchlist watchlist.toml
+#
+# One `[[acts]]` block per act, named by the CELEX of the act **as published in the Official
+# Journal**: `32024R1689`, not the consolidated form `02024R1689-20260727`. The watcher
+# matches both: a consolidation of a watched act surfaces in the notification feed under
+# `celex:02024R1689-20260727` and `consolidation:2024R1689/20260727`, and both read back to
+# the act code of the CELEX below.
+#
+# `name` is a label for output only. Identity is the CELEX, always. `domain` and `aliases` are
+# optional labels of the same rank, read by the published site: `domain` groups the act in the
+# index, `aliases` are the other names a reader might search it under. Neither ever resolves an
+# act, so a typo in one costs a grouping or a search hit, never a match.
+#
+# These four acts are the ones the labelled eval corpus is built from, so they are the four
+# with measured numbers behind them (`reports/`).
+#
+# `[output] repo_path` is where `emendrix run --once` commits the changelog: a git repository
+# of its own, created if it is absent, never pushed. It is yours. It must not be inside
+# another working tree, and emendrix refuses to write into one. Precedence is
+# `--output-repo` > `EMENDRIX_OUTPUT_REPO` > this file; with none of the three set, nothing is
+# written and the run only prints its report.
+
+[output]
+# repo_path = "~/regulatory-changelog"
+
+# A new installation sees only what the watcher's window covers. `emendrix backfill --dry-run`
+# lists every historical transition of these acts, and `emendrix backfill --output-repo ...`
+# writes them. See docs/pipeline.md, "Running the whole loop".
+
+[[acts]]
+celex   = "32024R1689"
+name    = "AI Act"
+domain  = "Digital"
+aliases = ["Artificial Intelligence Act"]
+
+[[acts]]
+celex   = "32017R0745"
+name    = "Medical Devices Regulation"
+domain  = "Health"
+aliases = ["MDR"]
+
+[[acts]]
+celex   = "32022R2065"
+name    = "Digital Services Act"
+domain  = "Digital"
+aliases = ["DSA"]
+
+[[acts]]
+celex   = "32006R1907"
+name    = "REACH"
+domain  = "Chemicals"

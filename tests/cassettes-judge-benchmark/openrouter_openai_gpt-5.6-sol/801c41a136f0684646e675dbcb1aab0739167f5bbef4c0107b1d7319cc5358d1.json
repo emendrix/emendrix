@@ -1,0 +1,13 @@
+{
+  "judge_model": "openrouter:openai/gpt-5.6-sol",
+  "key": "801c41a136f0684646e675dbcb1aab0739167f5bbef4c0107b1d7319cc5358d1",
+  "output": {
+    "faithful": false,
+    "issue": "Sentence 1 incorrectly states that Member States pay at the specified rate, whereas the text says they may be required to pay fees at that rate."
+  },
+  "prompt": "BEFORE:\nArticle 69Access to the pool of experts by the Member States1.Member States may call upon experts of the scientific panel to support their enforcement activities under this Regulation.2.The Member States may be required to pay fees for the advice and support provided by the experts. The structure and the level of fees as well as the scale and structure of recoverable costs shall be set out in the implementing act referred to in Article 68(1), taking into account the objectives of the adequate implementation of this Regulation, cost-effectiveness and the necessity of ensuring effective access to experts for all Member States.3.The Commission shall facilitate timely access to the experts by the Member States, as needed, and ensure that the combination of support activities carried out by Union AI testing support pursuant to Article 84 and experts pursuant to this Article is efficiently organised and provides the best possible added value.\n\nAFTER:\nArticle 69Access to the pool of experts by the Member States1.Member States may call upon experts of the scientific panel to support their enforcement activities under this Regulation.2.The Member States may be required to pay fees for the advice and support provided by the experts at a rate equivalent to the remuneration fees applicable to the Commission pursuant to the implementing act referred to in Article 68(1).3.The Commission shall facilitate timely access to the experts by the Member States, as needed, and ensure that the combination of support activities carried out by Union AI testing support pursuant to Article 84 and experts pursuant to this Article is efficiently organised and provides the best possible added value.\n\nSENTENCES:\n1. The provision on fees for expert advice was simplified to specify that Member States pay at a rate equivalent to the remuneration fees applicable to the Commission, rather than requiring those fees to be set out in an implementing act with consideration of multiple objectives.",
+  "recorded_with": "openrouter:openai/gpt-5.6-sol",
+  "rubric_sha": "85dc3b14eec835c9caabd3e11f15a84fc754649eb26b94d408928a4b656cda8e",
+  "schema_version": 1,
+  "synthetic": false
+}

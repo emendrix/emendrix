@@ -1,0 +1,46 @@
+# 32006R1907  20220501 -> 20221014
+# emendrix validation trace, generated 2026-08-05
+
+amending acts in window: 32022R0477
+units in v(20220501): 158   units in v(20221014): 158
+
+## signal 1 - structural Formex diff
+inserted 0 - modified 5 - deleted 0 - unchanged 153 -> 5 touched
+  inserted: -
+  deleted : -
+  modified: AN IX | AN VI | AN VII | AN VIII | AN X
+
+## signal 2 - CELLAR modification annotations
+64 annotations -> 5 touched units
+  roles: {'DEL': 6, 'J': 9, 'R': 49}
+  units: AN IX | AN VI | AN VII | AN VIII | AN X
+  location codes seen: {'ALN': 1, 'AN': 64, 'COL': 28, 'FR': 5, 'PA': 6, 'PO': 46, 'SBS': 18, 'TIRE': 1, 'TXT': 20}
+  annotations with no keyable top-level unit: 0
+
+## signal 3 - naive instruction-prose parse of the amending acts
+0 units named
+
+## agreement (D7 granularity: top-level provision)
+### diff vs metadata
+  predicted 5 - reference 5 - P 1.000 - R 1.000 - F1 1.000
+  only in predicted: -
+  only in reference: -
+
+### diff vs metadata, articles only
+  predicted 0 - reference 0 - P n/a - R n/a - F1 n/a (both sets empty)
+  only in predicted: -
+  only in reference: -
+
+### prose vs metadata, same window
+  predicted 0 - reference 5 - P 0.000 - R 0.000 - F1 0.000
+  only in predicted: -
+  only in reference: AN IX | AN VI | AN VII | AN VIII | AN X
+
+# note: instruction prose carries no date, so a naive parse names every provision
+# the amending act touches, not the subset that entered into force in this window.
+# The block below is the fair measure of the prose parser.
+### prose vs metadata, whole amending acts
+  predicted 0 - reference 5 - P 0.000 - R 0.000 - F1 0.000
+  only in predicted: -
+  only in reference: AN IX | AN VI | AN VII | AN VIII | AN X
+

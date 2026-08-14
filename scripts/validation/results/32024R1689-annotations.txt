@@ -1,0 +1,9 @@
+# modification annotations of 32024R1689 (notice=branch, fetched 2026-08-05)
+
+1 amending acts - 88 annotations
+roles observed: {'DEL': 4, 'J': 39, 'R': 45}
+location codes observed: {'ALN': 13, 'AN': 5, 'AR': 83, 'PA': 71, 'PO': 7, 'PTA': 11, 'SCT': 4, 'TIT': 2, 'TXT': 1}
+annotations with no keyable top-level unit: 0
+
+## per amending act (sorted by earliest START_OF_VALIDITY)
+32026R1744  n=88  roles={'DEL': 4, 'J': 39, 'R': 45}  start_of_validity={'2026-07-27': 88}

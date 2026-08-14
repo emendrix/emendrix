@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>emendrix, from the ground up</title>
+<meta name="description" content="A five-level walkthrough of the emendrix architecture: the sealed core vocabulary, the seven-stage loop, the mechanism inside each stage, and the measured evidence.">
+<!--
+  A hand-written explainer. Self-contained by rule: no CDN, no webfont URL, no remote image,
+  no script. It opens from a clone, offline, in any browser. See ./README.md for the
+  conventions this file keeps and for why this one directory is HTML rather than Markdown.
+-->
+<style>
+  :root {
+    --ground: #F7F7F4;
+    --surface: #FFFFFF;
+    --surface-2: #EFEFE9;
+    --ink: #1A1B20;
+    --ink-2: #545768;
+    --ink-3: #7C8093;
+    --rule: #DEDDD4;
+    --rule-strong: #C3C2B6;
+    --det: #2E3D78;
+    --det-soft: #E7EAF5;
+    --model: #93331E;
+    --model-soft: #F7E9E3;
+    --warn: #7E5A11;
+    --warn-soft: #F4EDDC;
+    --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, "Iowan Old Style", Palatino, Georgia, serif;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14151A;
+      --surface: #1B1D23;
+      --surface-2: #22242C;
+      --ink: #E9E7E1;
+      --ink-2: #A3A6B5;
+      --ink-3: #787C8C;
+      --rule: #2C2F39;
+      --rule-strong: #3E4250;
+      --det: #97A9EC;
+      --det-soft: #1D2340;
+      --model: #E3927A;
+      --model-soft: #33201B;
+      --warn: #D5A94C;
+      --warn-soft: #2C2517;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14151A;
+    --surface: #1B1D23;
+    --surface-2: #22242C;
+    --ink: #E9E7E1;
+    --ink-2: #A3A6B5;
+    --ink-3: #787C8C;
+    --rule: #2C2F39;
+    --rule-strong: #3E4250;
+    --det: #97A9EC;
+    --det-soft: #1D2340;
+    --model: #E3927A;
+    --model-soft: #33201B;
+    --warn: #D5A94C;
+    --warn-soft: #2C2517;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17.5px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 0 6rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  section { display: flex; flex-direction: column; align-items: center; gap: 1.15rem; width: 100%; padding: 0 0 3.2rem; }
+  .col { width: min(100% - 2.5rem, 700px); }
+  .wide { width: min(100% - 2rem, 1060px); }
+
+  h1, h2, h3, h4 { font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.22; }
+  h1 { font-size: clamp(2.1rem, 5.5vw, 3.1rem); letter-spacing: -0.015em; }
+  h2 { font-size: clamp(1.5rem, 3.4vw, 1.95rem); letter-spacing: -0.01em; }
+  h3 { font-size: 1.22rem; margin-top: 0.6rem; }
+  h4 { font-size: 1rem; font-family: var(--sans); font-weight: 650; letter-spacing: 0.005em; }
+  p { margin: 0; }
+  a { color: var(--det); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--det); outline-offset: 3px; border-radius: 2px; }
+
+  code, .mono { font-family: var(--mono); font-size: 0.83em; }
+  code { background: var(--surface-2); padding: 0.08em 0.34em; border-radius: 3px; }
+
+  .eyebrow {
+    font-family: var(--sans); font-size: 0.66rem; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);
+  }
+
+  /* masthead */
+  .masthead { padding: 4.5rem 0 3rem; gap: 1.4rem; }
+  .masthead .col { display: flex; flex-direction: column; gap: 1.1rem; }
+  .rule-top { border-top: 3px solid var(--ink); padding-top: 0.7rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .standfirst { font-size: 1.16rem; color: var(--ink-2); max-width: 40ch; }
+  .loopline {
+    font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.02em;
+    color: var(--ink-2); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    padding: 0.7rem 0; overflow-x: auto; white-space: nowrap;
+  }
+  .loopline b { color: var(--model); font-weight: 600; }
+  .stamp { font-family: var(--sans); font-size: 0.8rem; color: var(--ink-3); }
+  .stamp b { color: var(--ink-2); font-weight: 620; }
+
+  /* level headers */
+  .levelhead { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1.2rem; border-top: 1px solid var(--rule-strong); }
+  .levelhead .num { font-family: var(--mono); font-size: 0.72rem; color: var(--det); letter-spacing: 0.1em; }
+  .levelhead .sub { color: var(--ink-2); font-size: 0.95rem; }
+
+  /* blocks */
+  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1.05rem 1.15rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .card h4 { color: var(--ink); }
+  .card p { font-size: 0.95rem; color: var(--ink-2); }
+  .card p strong { color: var(--ink); font-weight: 600; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: 0.9rem; }
+
+  .note { border-left: 3px solid var(--det); background: var(--det-soft); padding: 0.85rem 1rem; border-radius: 0 4px 4px 0; font-size: 0.95rem; }
+  .note.model { border-left-color: var(--model); background: var(--model-soft); }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note .lab { font-family: var(--sans); font-size: 0.64rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-bottom: 0.3rem; color: var(--ink-2); }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: 0.83rem; }
+  th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th { font-size: 0.66rem; letter-spacing: 0.11em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.c { text-align: center; }
+  .yes { color: var(--model); font-weight: 700; }
+  .no { color: var(--ink-3); }
+  td .mono, th .mono { font-size: 0.78rem; }
+  caption { text-align: left; padding: 0.7rem 0.8rem 0.2rem; }
+
+  /* figures */
+  figure { margin: 0; display: flex; flex-direction: column; gap: 0.7rem; }
+  figure svg { width: 100%; height: auto; display: block; }
+  .svgwrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem 0.8rem; }
+  figcaption { font-size: 0.88rem; color: var(--ink-2); max-width: 78ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+
+  /* svg primitives */
+  .d-box { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1.2; }
+  .d-box-core { fill: var(--det-soft); stroke: var(--det); stroke-width: 1.4; }
+  .d-box-model { fill: var(--model-soft); stroke: var(--model); stroke-width: 1.4; }
+  .d-box-soft { fill: var(--surface-2); stroke: var(--rule); stroke-width: 1.1; }
+  .d-mask { fill: var(--surface); stroke: none; }
+  .d-line { stroke: var(--ink-3); stroke-width: 1.3; fill: none; }
+  .d-line-dash { stroke: var(--ink-3); stroke-width: 1.2; fill: none; stroke-dasharray: 4 4; }
+  .d-line-model { stroke: var(--model); stroke-width: 1.4; fill: none; }
+  .d-arrow { fill: var(--ink-3); }
+  .d-arrow-model { fill: var(--model); }
+  .d-t { fill: var(--ink); font-family: var(--sans); font-size: 12.5px; font-weight: 620; }
+  .d-t-sm { fill: var(--ink-2); font-family: var(--mono); font-size: 9.5px; }
+  .d-lab { fill: var(--ink-2); font-family: var(--mono); font-size: 10.5px; }
+  .d-lab-s { fill: var(--ink-2); font-family: var(--sans); font-size: 10.5px; }
+  .d-em { fill: var(--model); font-family: var(--sans); font-size: 11px; font-weight: 650; }
+  .d-det { fill: var(--det); font-family: var(--sans); font-size: 11px; font-weight: 650; }
+  .d-head { fill: var(--ink-3); font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; }
+
+  /* misc */
+  ul, ol { margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  li { padding-left: 0.15rem; }
+  .lede { font-size: 1.04rem; }
+  .kicker { color: var(--ink-2); }
+  pre { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0.85rem 1rem; overflow-x: auto; font-family: var(--mono); font-size: 0.78rem; line-height: 1.6; color: var(--ink); }
+  pre .c { color: var(--ink-3); }
+  pre .m { color: var(--model); }
+  footer { width: min(100% - 2.5rem, 700px); margin: 0 auto; border-top: 1px solid var(--rule-strong); padding-top: 1rem; font-size: 0.85rem; color: var(--ink-3); display: flex; flex-direction: column; gap: 0.5rem; }
+  .toc { display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; font-family: var(--sans); font-size: 0.82rem; }
+  .toc a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
+  .toc a:hover { color: var(--det); border-bottom-color: var(--det); }
+</style>
+</head>
+<body>
+<main>
+
+<!-- ============================== MASTHEAD ============================== -->
+<section class="masthead">
+  <div class="col">
+    <div class="rule-top">
+      <span class="eyebrow">Architecture walkthrough &middot; five levels</span>
+      <span class="eyebrow mono">emendrix v0.1.0</span>
+    </div>
+    <h1>emendrix, from the ground up</h1>
+    <p class="standfirst">A regulatory change engine, read in the order it was built: the vocabulary first, then the loop, then what happens inside each stage, then the evidence that any of it works.</p>
+    <div class="loopline">WATCH &rarr; FETCH &rarr; DELTA &rarr; CORROBORATE &rarr; <b>EXPLAIN</b> &rarr; GATE &rarr; EMIT&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--ink-3)">every stage but one is deterministic Python</span></div>
+    <p class="stamp">Written <b>2026-08-09</b>, describing revision <b class="mono">162a8d7</b>. To see how far it has drifted: <code>git log 162a8d7..HEAD -- src/</code>. Figures are quoted from <span class="mono">reports/eval/2026-08-10-d6e7596.md</span>, the newest committed report; where that report and this page disagree, this page is wrong.</p>
+    <nav class="toc" aria-label="Contents">
+      <a href="#l0">0 &middot; The claim</a>
+      <a href="#l1">1 &middot; Building blocks</a>
+      <a href="#l2">2 &middot; The loop</a>
+      <a href="#l3">3 &middot; Inside each stage</a>
+      <a href="#l4">4 &middot; The evidence</a>
+      <a href="#worked">A worked example</a>
+      <a href="#read">Reading it yourself</a>
+    </nav>
+  </div>
+</section>
+
+<!-- ============================== LEVEL 0 ============================== -->
+<section id="l0">
+  <div class="col levelhead">
+    <span class="num">LEVEL 0</span>
+    <h2>The claim the whole design is arranged around</h2>
+    <p class="sub">One sentence, and everything below is a consequence of it.</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:1rem">
+    <p class="lede">EUR-Lex will show you the <em>current</em> text of a regulation but not <em>what changed</em>. emendrix subscribes to the EU's own publication feed, notices when an act you watch is amended, computes a provision-level delta between two consolidated versions, and writes a plain-English changelog into a git repository, where every sentence carries a citation that resolves.</p>
+
+    <div class="note">
+      <span class="lab">The technical thesis</span>
+      The amending act already says what changed, and that part is <strong>parsing, not inference</strong>. The model's only job is to say what the difference means, constrained to the two texts in front of it.
+    </div>
+
+    <p>That thesis buys a very specific division of labour, and the codebase enforces it mechanically rather than by convention. The model never decides <em>whether</em> something changed, <em>which</em> provisions are involved, or <em>how</em> to classify a change. It is handed two verbatim texts and a set of citation keys, and it may return sentences. Nothing else.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h4>Enforced by import boundary</h4>
+        <p><code>pydantic_ai</code> may be imported only under <code>explain/</code>, plus the eval judge. <code>langgraph</code> only under <code>graph/build.py</code>. Network only in <code>eu/http</code>, <code>eu/cache</code>, <code>eu/feed</code>. A test greps for violations.</p>
+      </div>
+      <div class="card">
+        <h4>Enforced by the output type</h4>
+        <p>The model returns <code>Explanation</code>: sentences plus citation <em>keys</em>. There is no URL field, no location field, no change-type field. A hijacked call has no slot to put a payload in.</p>
+      </div>
+      <div class="card">
+        <h4>Enforced by the clock rule</h4>
+        <p>No wall-clock read inside diff, classification, corroboration, gating or rendering. Dates arrive as values from the CLI boundary. Two runs over the same inputs produce identical bytes.</p>
+      </div>
+      <div class="card">
+        <h4>Enforced by first-class states</h4>
+        <p><code>ConsolidationPending</code>, <code>EnglishUnavailable</code>, <code>Disputed</code>, <code>ApplicabilityUnknown</code> are <em>values</em> that flow to the output and get counted. Raising where one applies is a bug.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== LEVEL 1 ============================== -->
+<section id="l1">
+  <div class="col levelhead">
+    <span class="num">LEVEL 1</span>
+    <h2>Building blocks: the sealed vocabulary</h2>
+    <p class="sub"><code>emendrix.core</code>: pure typed values, with no I/O, no clock, no model, and no knowledge of EU law. Everything imports it; it imports nothing back.</p>
+  </div>
+
+  <div class="col">
+    <p>Four ideas in <code>core/</code> carry the whole system. If you understand these, every other module is an implementation of something already named here.</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+
+    <div class="card">
+      <h4>1 &middot; A provision location is a string</h4>
+      <p><code>AR 5 PA 1 ALN 1 PTA (bb)</code>, <code>AN III</code>. A path of <code>(code, value)</code> segments that round-trips through one canonical string, sorts deterministically, and answers containment: <code>AR 5</code> contains <code>AR 5 PA 1</code>. That string is the <strong>identity</strong>: what changes are keyed by, what goes into sets, what appears in the JSON.</p>
+      <p>The grammar is positional, not lexical. At a segment boundary the next token is a code, and the token after it is that code's value unless it is itself a known code. Codes outside the vocabulary become <code>UnknownCode</code> and are counted, never rejected. The top-level segment is the unit of change (the article or the annex), and every headline metric is computed at that granularity.</p>
+      <p class="mono" style="color:var(--ink-3)">core/location.py &middot; core/location_codes.py</p>
+    </div>
+
+    <div class="card">
+      <h4>2 &middot; A provision tree carries its text twice</h4>
+      <p>Each <code>ProvisionNode</code> holds <code>text</code>, verbatim and never normalised, which is what the changelog quotes; and <code>comparison_text</code>, whitespace-collapsed, which is what the diff compares. The second is built by the parser <strong>at extraction time</strong>, with a separator at every element boundary.</p>
+      <p>This is not redundancy, and the repo records why: collapsing whitespace afterwards cannot put back an element boundary that extraction never emitted. On the REACH 2008 to 2009 pair, an extraction that lost those boundaries reported all 143 units as modified against 40 real ones.</p>
+      <p class="mono" style="color:var(--ink-3)">core/provisions.py</p>
+    </div>
+
+    <div class="card">
+      <h4>3 &middot; A Change is what the machinery computes, a Delta is the set of them</h4>
+      <p>A <code>Change</code> carries its type (<code>INSERTED</code> / <code>MODIFIED</code> / <code>DELETED</code> / <code>RENUMBERED</code> / <code>DEFERRED</code>), the provision it lands on, verbatim <code>before</code> and <code>after</code>, the sub-coordinates that differ, the dates that moved, <strong>two separate clocks</strong>, and a <code>SignalSet</code> recording which of three independent signals saw it.</p>
+      <p>Validators do real work here: <code>disputed</code> is <em>derived</em> from the signals and a value contradicting them is rejected; an <code>INSERTED</code> change must have no <code>before</code>; a <code>Delta</code> refuses changes belonging to another act.</p>
+      <p class="mono" style="color:var(--ink-3)">core/delta.py &middot; core/changes.py</p>
+    </div>
+
+    <div class="card">
+      <h4>4 &middot; Two clocks, kept apart</h4>
+      <p><code>in_force</code> comes from CELLAR's <code>START_OF_VALIDITY</code> and is a date. <code>applies_from</code> is a date <em>only</em> when it can be read deterministically from a date change in the act's own application article; otherwise it is <code>ApplicabilityUnknown</code> carrying a reason. Many unknowns is the correct outcome. The model is never asked to fill one in.</p>
+      <p class="mono" style="color:var(--ink-3)">core/changes.py &middot; diff/deferred.py</p>
+    </div>
+
+  </div>
+
+  <div class="wide">
+    <figure>
+      <div class="svgwrap">
+        <svg viewBox="0 0 960 432" role="img" aria-label="Dependency diagram: ten packages all import emendrix.core, which imports nothing back; the EU package reaches core only through the four-method CorpusAdapter protocol.">
+          <defs>
+            <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow"/>
+            </marker>
+          </defs>
+
+          <text x="20" y="16" class="d-head">EVERY ARROW IS AN IMPORT</text>
+
+          <rect x="20"  y="26" width="168" height="48" rx="3" class="d-box"/>
+          <text x="104" y="47" class="d-t" text-anchor="middle">watch/</text>
+          <text x="104" y="63" class="d-t-sm" text-anchor="middle">poll_once</text>
+
+          <rect x="208" y="26" width="168" height="48" rx="3" class="d-box"/>
+          <text x="292" y="47" class="d-t" text-anchor="middle">eu/</text>
+          <text x="292" y="63" class="d-t-sm" text-anchor="middle">CELLAR + Formex 4</text>
+
+          <rect x="396" y="26" width="168" height="48" rx="3" class="d-box"/>
+          <text x="480" y="47" class="d-t" text-anchor="middle">diff/</text>
+          <text x="480" y="63" class="d-t-sm" text-anchor="middle">compute_delta</text>
+
+          <rect x="584" y="26" width="168" height="48" rx="3" class="d-box"/>
+          <text x="668" y="47" class="d-t" text-anchor="middle">corroborate/</text>
+          <text x="668" y="63" class="d-t-sm" text-anchor="middle">three signals</text>
+
+          <rect x="772" y="26" width="168" height="48" rx="3" class="d-box-model"/>
+          <text x="856" y="47" class="d-t" text-anchor="middle">explain/</text>
+          <text x="856" y="63" class="d-t-sm" text-anchor="middle">the one model call</text>
+
+          <rect x="204" y="112" width="176" height="34" rx="17" class="d-box-core"/>
+          <text x="292" y="133" class="d-det" text-anchor="middle">CorpusAdapter &middot; 4 methods</text>
+          <line x1="292" y1="74" x2="292" y2="108" class="d-line" marker-end="url(#a1)"/>
+          <line x1="292" y1="146" x2="292" y2="186" class="d-line" marker-end="url(#a1)"/>
+
+          <line x1="104" y1="74" x2="104" y2="186" class="d-line" marker-end="url(#a1)"/>
+          <line x1="480" y1="74" x2="480" y2="186" class="d-line" marker-end="url(#a1)"/>
+          <line x1="668" y1="74" x2="668" y2="186" class="d-line" marker-end="url(#a1)"/>
+          <line x1="856" y1="74" x2="856" y2="186" class="d-line" marker-end="url(#a1)"/>
+
+          <rect x="60" y="190" width="840" height="92" rx="4" class="d-box-core"/>
+          <text x="84" y="228" class="d-t" style="font-size:17px">emendrix.core</text>
+          <text x="84" y="250" class="d-lab-s">locations &middot; provision trees &middot; changes &middot; citations &middot; the two clocks &middot; first-class states</text>
+          <text x="84" y="268" class="d-lab-s">no I/O &middot; no network &middot; no clock read &middot; no model call &middot; no EU vocabulary</text>
+          <text x="876" y="270" class="d-det" text-anchor="end">imports nothing</text>
+
+          <line x1="104" y1="352" x2="104" y2="286" class="d-line" marker-end="url(#a1)"/>
+          <line x1="292" y1="352" x2="292" y2="286" class="d-line" marker-end="url(#a1)"/>
+          <line x1="480" y1="352" x2="480" y2="286" class="d-line" marker-end="url(#a1)"/>
+          <line x1="668" y1="352" x2="668" y2="286" class="d-line" marker-end="url(#a1)"/>
+          <line x1="856" y1="352" x2="856" y2="286" class="d-line" marker-end="url(#a1)"/>
+
+          <rect x="20"  y="356" width="168" height="48" rx="3" class="d-box"/>
+          <text x="104" y="377" class="d-t" text-anchor="middle">gate/</text>
+          <text x="104" y="393" class="d-t-sm" text-anchor="middle">citation check</text>
+
+          <rect x="208" y="356" width="168" height="48" rx="3" class="d-box"/>
+          <text x="292" y="377" class="d-t" text-anchor="middle">graph/</text>
+          <text x="292" y="393" class="d-t-sm" text-anchor="middle">LangGraph wiring</text>
+
+          <rect x="396" y="356" width="168" height="48" rx="3" class="d-box"/>
+          <text x="480" y="377" class="d-t" text-anchor="middle">output/</text>
+          <text x="480" y="393" class="d-t-sm" text-anchor="middle">changelog repo</text>
+
+          <rect x="584" y="356" width="168" height="48" rx="3" class="d-box"/>
+          <text x="668" y="377" class="d-t" text-anchor="middle">eval_/</text>
+          <text x="668" y="393" class="d-t-sm" text-anchor="middle">measured numbers</text>
+
+          <rect x="772" y="356" width="168" height="48" rx="3" class="d-box"/>
+          <text x="856" y="377" class="d-t" text-anchor="middle">demo/</text>
+          <text x="856" y="393" class="d-t-sm" text-anchor="middle">static page</text>
+        </svg>
+      </div>
+      <figcaption><b>The seam.</b> Ten packages depend on the core vocabulary and the core depends on none of them. The EU adapter reaches the engine only through a four-method Protocol: <span class="mono">discover_versions</span>, <span class="mono">fetch_version</span>, <span class="mono">parse_amending_act</span>, <span class="mono">render_citation</span>. A deliberately alien second implementor, <span class="mono">tests/toy_corpus.py</span>, a flat's house rules, which is not law at all, keeps the Protocol honest: if <span class="mono">CELEX</span> or <span class="mono">Formex</span> ever appears in <span class="mono">core</span> or <span class="mono">corroborate</span>, the seam is broken.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================== LEVEL 2 ============================== -->
+<section id="l2">
+  <div class="col levelhead">
+    <span class="num">LEVEL 2</span>
+    <h2>The loop, and what flows along each arrow</h2>
+    <p class="sub">Seven stages. Six of them are pure functions over typed values; one of them talks to a model.</p>
+  </div>
+
+  <div class="col">
+    <p>The most useful way to hold the system in your head is not the package list but the sequence of <em>types</em>. Each stage takes the previous stage's document and returns a strictly richer one. Nothing is dropped along the way: a change that cannot be fetched, cannot be explained, or that the signals disagree about still arrives at the end, carrying the reason.</p>
+  </div>
+
+  <div class="wide">
+    <figure>
+      <div class="svgwrap">
+        <svg viewBox="0 0 760 762" role="img" aria-label="Vertical flow of the seven pipeline stages, showing the data type produced by each, and the single bounded retry loop from the gate back to the explain stage.">
+          <defs>
+            <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow"/>
+            </marker>
+            <marker id="a2m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow-model"/>
+            </marker>
+          </defs>
+
+          <rect x="230" y="14" width="300" height="38" rx="3" class="d-box-soft"/>
+          <text x="380" y="38" class="d-t" text-anchor="middle" style="font-weight:520">CELLAR notification feed (Atom)</text>
+          <line x1="380" y1="52" x2="380" y2="92" class="d-line" marker-end="url(#a2)"/>
+          <text x="548" y="76" class="d-lab">FeedEntry &times; n</text>
+
+          <rect x="230" y="96" width="300" height="58" rx="3" class="d-box"/>
+          <text x="250" y="122" class="d-t">WATCH</text>
+          <text x="250" y="140" class="d-t-sm">watch/poll.py &middot; poll_once</text>
+          <line x1="380" y1="154" x2="380" y2="186" class="d-line" marker-end="url(#a2)"/>
+          <text x="548" y="174" class="d-lab">AmendmentEvent &times; n</text>
+
+          <rect x="230" y="190" width="300" height="58" rx="3" class="d-box"/>
+          <text x="250" y="216" class="d-t">FETCH</text>
+          <text x="250" y="234" class="d-t-sm">graph/stages.py &middot; fetch</text>
+          <line x1="380" y1="248" x2="380" y2="280" class="d-line" marker-end="url(#a2)"/>
+          <text x="548" y="268" class="d-lab">ProvisionTree &times; 2</text>
+
+          <rect x="230" y="284" width="300" height="58" rx="3" class="d-box"/>
+          <text x="250" y="310" class="d-t">DELTA</text>
+          <text x="250" y="328" class="d-t-sm">diff/api.py &middot; compute_delta</text>
+          <line x1="380" y1="342" x2="380" y2="374" class="d-line" marker-end="url(#a2)"/>
+          <text x="548" y="362" class="d-lab">Delta: Change &times; n</text>
+
+          <rect x="230" y="378" width="300" height="58" rx="3" class="d-box"/>
+          <text x="250" y="404" class="d-t">CORROBORATE</text>
+          <text x="250" y="422" class="d-t-sm">corroborate/merge.py</text>
+          <line x1="380" y1="436" x2="380" y2="468" class="d-line" marker-end="url(#a2)"/>
+          <text x="548" y="456" class="d-lab">+ SignalSet, disputed</text>
+
+          <rect x="230" y="472" width="300" height="58" rx="3" class="d-box-model"/>
+          <text x="250" y="498" class="d-t">EXPLAIN</text>
+          <text x="250" y="516" class="d-t-sm">explain/engine.py</text>
+          <text x="548" y="502" class="d-em">&#8592; the only model call</text>
+          <line x1="380" y1="530" x2="380" y2="562" class="d-line" marker-end="url(#a2)"/>
+          <text x="548" y="550" class="d-lab">ExplainRun</text>
+
+          <rect x="230" y="566" width="300" height="58" rx="3" class="d-box"/>
+          <text x="250" y="592" class="d-t">GATE</text>
+          <text x="250" y="610" class="d-t-sm">gate/run.py &middot; first_round</text>
+          <line x1="380" y1="624" x2="380" y2="656" class="d-line" marker-end="url(#a2)"/>
+          <text x="548" y="644" class="d-lab">GatedDelta</text>
+
+          <rect x="230" y="660" width="300" height="58" rx="3" class="d-box"/>
+          <text x="250" y="686" class="d-t">EMIT</text>
+          <text x="250" y="704" class="d-t-sm">graph/report.py &rarr; output/repo.py</text>
+          <line x1="380" y1="718" x2="380" y2="742" class="d-line" marker-end="url(#a2)"/>
+          <text x="548" y="738" class="d-lab">CHANGELOG.md + .json</text>
+          <text x="380" y="756" class="d-lab-s" text-anchor="middle">committed into a git repository emendrix created</text>
+
+          <polyline points="230,595 150,595 150,501 226,501" class="d-line-model" marker-end="url(#a2m)"/>
+          <text x="142" y="536" class="d-em" text-anchor="end">pending and</text>
+          <text x="142" y="550" class="d-em" text-anchor="end">retries &lt; 1</text>
+          <text x="142" y="566" class="d-lab-s" text-anchor="end">exactly one revision</text>
+        </svg>
+      </div>
+      <figcaption><b>One conditional edge in the whole graph, and it is arithmetic.</b> After the gate, <span class="mono">after_gate()</span> asks only whether a revision is still owed and whether the retry budget (<span class="mono">MAX_GATE_RETRIES = 1</span>) is spent. It makes no judgement about content: whether an explanation failed was decided deterministically in <span class="mono">gate/check.py</span>. A run that cannot proceed is never routed around. It carries its reason in its own <span class="mono">ActRun</span> and reaches the report as a skipped act, because routing around the failure is how a pipeline loses a change.</figcaption>
+    </figure>
+  </div>
+
+  <div class="wide">
+    <div class="tablewrap">
+      <table>
+        <caption class="eyebrow">The invariant, stage by stage</caption>
+        <thead>
+          <tr><th>Stage</th><th>Does what</th><th class="c">Network</th><th class="c">Model</th><th class="c">Clock</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>WATCH</b></td><td>One window of the feed against the watchlist and the seen-state, out come events</td><td class="c yes">cached</td><td class="c no">no</td><td class="c no">no</td></tr>
+          <tr><td><b>FETCH</b></td><td>Both sides of the transition, or the first-class state saying why not</td><td class="c yes">cached</td><td class="c no">no</td><td class="c no">no</td></tr>
+          <tr><td><b>DELTA</b></td><td>Structural tree diff over the two fetched trees, byte-stable</td><td class="c no">no</td><td class="c no">no</td><td class="c no">no</td></tr>
+          <tr><td><b>CORROBORATE</b></td><td>Holds the diff against two other readings of the same question</td><td class="c no">no</td><td class="c no">no</td><td class="c no">no</td></tr>
+          <tr><td><b>EXPLAIN</b></td><td>One bounded call per change, no tools, no memory, no retrieval</td><td class="c no">no</td><td class="c yes">yes</td><td class="c no">no</td></tr>
+          <tr><td><b>GATE</b></td><td>Parse, resolve, containment, on every citation of every sentence</td><td class="c no">no</td><td class="c no">no</td><td class="c no">no</td></tr>
+          <tr><td><b>EMIT</b></td><td>Assemble the typed report, render, commit</td><td class="c no">no</td><td class="c no">no</td><td class="c no">no</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="note">
+      <span class="lab">Why a graph framework at all</span>
+      LangGraph is confined to one file, <code>graph/build.py</code>, and buys exactly three things: typed state threading (the state is a pydantic model, validated at every node boundary), a real cycle (gate back to explain, bounded at one), and resumable checkpoints. Everything else in <code>graph/</code> is ordinary Python the tests call directly. No <code>Send</code> fan-out, no tools, no agent prebuilts, no interrupts: nothing in the graph decides anything, so there is nothing to interrupt for.
+    </div>
+  </div>
+</section>
+
+<!-- ============================== LEVEL 3 ============================== -->
+<section id="l3">
+  <div class="col levelhead">
+    <span class="num">LEVEL 3</span>
+    <h2>Inside each stage</h2>
+    <p class="sub">The mechanisms, and the measured facts that shaped them.</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <h3>WATCH: noticing an amendment exactly once</h3>
+    <p>The watcher reads the Publications Office notification feed for one time window, matches entries against a watchlist of CELEX identifiers, and turns each hit into an <code>AmendmentEvent</code>. The hard part is not detection but <em>not detecting twice</em>.</p>
+    <p>There are two dedupe layers, because one is not enough. The first is by entry identity, which makes overlapping windows free: the poller can assume it died mid-run last time and simply re-scan. The second is by what the entry <em>resolved to</em>. CELLAR re-notified the AI Act's Digital Omnibus consolidation <strong>46 times in one day</strong>, each under a fresh entry id. Without the second layer the watcher would announce the same amendment 46 times.</p>
+    <p>An entry the corpus has not consolidated yet does not fail. It becomes a persisted <code>ConsolidationPending</code> row, re-checked at the <em>start</em> of every poll before the window is walked, so an act whose text has finally arrived is reported even on a poll where the feed says nothing new. Measured lag between publication and a consolidated text: about ten days.</p>
+    <p class="mono kicker" style="font-size:0.78rem">watch/poll.py &middot; watch/state.py &middot; eu/feed.py</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <h3>FETCH: four possible answers, three of them states</h3>
+    <p>Retrieval goes through CELLAR by content negotiation, always behind a disk cache. The design point is that a refusal is frequently a <em>fact about the corpus</em>, not an error:</p>
+    <pre><span class="c">consolidated &lt;lang&gt; fmx4        &rarr;</span>  FormexPackage
+<span class="c">   &darr; no such manifestation, and this is the act's first consolidation</span>
+<span class="c">the act as published in the OJ  &rarr;</span>  FormexPackage, marked `fell_back`
+<span class="c">   &darr; not available either, or the fallback does not apply</span>
+<span class="c">no text in that language        &rarr;</span>  EnglishUnavailable
+<span class="c">no structured text at all       &rarr;</span>  StructuredTextUnavailable
+<span class="c">version not consolidated yet    &rarr;</span>  ConsolidationPending</pre>
+    <p>Only <code>404</code> and <code>406</code> are read as "the document is not there". Every other non-200 (a 403, a 429, a challenge page) is the server refusing <em>us</em>, and turning that into <code>EnglishUnavailable</code> would persist a false claim about an act, so it raises loudly instead. The fallback to the original OJ text is deliberately narrow: it applies only when the requested version is the act's <em>earliest</em> consolidation, and the package records that it happened.</p>
+    <div class="note warn">
+      <span class="lab">Verified reality, not assumption</span>
+      AKN4EU does not exist for these acts; the structured format is <strong>Formex 4</strong>. Provision-level ELI URIs 404, so citations render as EUR-Lex anchors. English is not guaranteed for a given consolidated version. XML is parsed only through <code>eu/xml_.py</code> using <code>defusedxml</code>, because every document here came off a socket and the stdlib parser expands internal entities.
+    </div>
+    <p class="mono kicker" style="font-size:0.78rem">eu/cellar.py &middot; eu/http.py &middot; eu/packages.py &middot; eu/formex/</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <h3>DELTA: the structural diff</h3>
+    <p>The diff works on top-level units only. It builds a dictionary of each version's roots keyed by canonical location and classifies every pairing. Units present in both with identical <em>comparison</em> text are counted as unchanged and never emitted. Units present in both with differing text are <code>MODIFIED</code>, unless the only difference is the dates they carry and the application date moved, in which case they refine to <code>DEFERRED</code>.</p>
+  </div>
+
+  <div class="wide">
+    <figure>
+      <div class="svgwrap">
+        <svg viewBox="0 0 780 356" role="img" aria-label="Unit matching between two versions: identical units are counted unchanged, differing units are modified, a unit with no counterpart in the new version is deleted, one with no counterpart in the old is inserted, and a unit whose only difference is a date becomes deferred.">
+          <defs>
+            <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow"/>
+            </marker>
+          </defs>
+
+          <text x="70" y="34" class="d-head">BEFORE: ROOTS OF v1</text>
+          <text x="710" y="34" class="d-head" text-anchor="end">AFTER: ROOTS OF v2</text>
+
+          <rect x="70" y="56"  width="170" height="40" rx="3" class="d-box-soft"/><text x="86" y="81" class="d-t">AR 1</text>
+          <rect x="70" y="112" width="170" height="40" rx="3" class="d-box"/><text x="86" y="137" class="d-t">AR 4</text>
+          <rect x="70" y="168" width="170" height="40" rx="3" class="d-box"/><text x="86" y="193" class="d-t">AR 5</text>
+          <rect x="70" y="224" width="170" height="40" rx="3" class="d-box"/><text x="86" y="249" class="d-t">AR 60</text>
+          <rect x="70" y="280" width="170" height="40" rx="3" class="d-box"/><text x="86" y="305" class="d-t">AR 113</text>
+
+          <rect x="540" y="56"  width="170" height="40" rx="3" class="d-box-soft"/><text x="556" y="81" class="d-t">AR 1</text>
+          <rect x="540" y="112" width="170" height="40" rx="3" class="d-box"/><text x="556" y="137" class="d-t">AR 4</text>
+          <rect x="540" y="168" width="170" height="40" rx="3" class="d-box"/><text x="556" y="193" class="d-t">AR 4a</text>
+          <rect x="540" y="224" width="170" height="40" rx="3" class="d-box"/><text x="556" y="249" class="d-t">AR 5</text>
+          <rect x="540" y="280" width="170" height="40" rx="3" class="d-box"/><text x="556" y="305" class="d-t">AR 113</text>
+
+          <line x1="240" y1="76" x2="536" y2="76" class="d-line-dash" marker-end="url(#a3)"/>
+          <text x="390" y="68" class="d-lab-s" text-anchor="middle">identical comparison text &rarr; unchanged, counted only</text>
+
+          <line x1="240" y1="132" x2="536" y2="132" class="d-line" marker-end="url(#a3)"/>
+          <text x="390" y="124" class="d-lab-s" text-anchor="middle">text differs &rarr; MODIFIED</text>
+
+          <circle cx="330" cy="188" r="4" class="d-arrow"/>
+          <line x1="336" y1="188" x2="536" y2="188" class="d-line" marker-end="url(#a3)"/>
+          <text x="440" y="180" class="d-lab-s" text-anchor="middle">no counterpart in v1 &rarr; INSERTED</text>
+
+          <line x1="240" y1="188" x2="536" y2="244" class="d-line" marker-end="url(#a3)"/>
+          <rect x="336" y="205" width="140" height="15" class="d-mask"/>
+          <text x="406" y="216" class="d-lab-s" text-anchor="middle">MODIFIED, at its new slot</text>
+
+          <line x1="240" y1="244" x2="326" y2="244" class="d-line"/>
+          <line x1="322" y1="238" x2="334" y2="250" class="d-line"/>
+          <line x1="334" y1="238" x2="322" y2="250" class="d-line"/>
+          <text x="344" y="264" class="d-lab-s">no counterpart in v2 &rarr; DELETED</text>
+
+          <line x1="240" y1="300" x2="536" y2="300" class="d-line" marker-end="url(#a3)"/>
+          <text x="390" y="292" class="d-lab-s" text-anchor="middle">only the dates moved &rarr; DEFERRED</text>
+
+          <text x="70" y="344" class="d-lab-s">Emission order is the document order of v2; a deleted unit is emitted straight after its nearest surviving predecessor.</text>
+        </svg>
+      </div>
+      <figcaption><b>The unit pass.</b> Ordering is a contract, not an accident: changelogs are diffed in git, so any two runs must produce identical bytes. Renumbering is detected only between the leftover insertions and deletions, first by exact text equality, then by a bounded fuzzy pass (similarity at least 0.95, texts at least 100 characters, at most 50 by 50 candidates over 2000-character prefixes). It has never been observed in any traced transition. The caps exist so an unobserved case cannot cost real time on a 180&nbsp;kB amending article.</figcaption>
+    </figure>
+  </div>
+
+  <div class="col">
+    <p>Below the unit, the diff also localises <em>which sub-provisions</em> differ (<code>changed_within</code>) and which machine-readable dates moved (<code>dates_removed</code>, <code>dates_added</code>). Those ride along as detail on the unit and never become units of their own, because every published metric is computed at article granularity and a second granularity would quietly change what the numbers mean.</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <h3>CORROBORATE: three readings of the same question</h3>
+    <p>This is the evaluation story, and it is the part of the design that most distinguishes the project. The question <em>which provisions changed?</em> is answered three independent ways:</p>
+    <ol>
+      <li><strong>The structural diff</strong>, the primary shipped signal and the only one carrying actual text.</li>
+      <li><strong>CELLAR modification metadata</strong>, the annotations the Publications Office publishes per amendment. This is the reference label set and the source of the <code>in_force</code> clock. Role codes <code>R</code>, <code>J</code> and <code>DEL</code> are empirical: the authority tables publish no English labels.</li>
+      <li><strong>The instruction-prose parse</strong>, read from the amending act's own text ("in Article 5, paragraph 2 is replaced by the following"). A measured cross-check, never ground truth.</li>
+    </ol>
+    <p>Each change ends up with a <code>SignalSet</code> of three verdicts. The crucial distinction is that <code>UNAVAILABLE</code> is silence, not dissent: a corpus publishing no metadata cannot disagree with anything.</p>
+  </div>
+
+  <div class="wide">
+    <div class="tablewrap">
+      <table>
+        <caption class="eyebrow">How three verdicts become one outcome</caption>
+        <thead>
+          <tr><th>Unit</th><th>Structural diff</th><th>Corpus metadata</th><th>Instruction parse</th><th>Ships as</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">AR 5</td><td>observed</td><td>observed</td><td>observed</td><td>agreed, an ordinary change</td></tr>
+          <tr><td class="mono">AR 12</td><td>observed</td><td class="yes">absent</td><td>observed</td><td><b>disputed</b> on presence</td></tr>
+          <tr><td class="mono">AR 60</td><td class="yes">absent</td><td>observed</td><td>absent</td><td><b>disputed</b>, appended with <em>no text</em></td></tr>
+          <tr><td class="mono">AN III</td><td>observed</td><td>observed</td><td class="no">unavailable</td><td>agreed; silence is not dissent</td></tr>
+          <tr><td class="mono">AR 7</td><td>observed &middot; MODIFIED</td><td>observed &middot; INSERTED</td><td class="no">unavailable</td><td><b>disputed</b> on kind</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <p>Row three is the one worth dwelling on. A unit that the metadata names and the diff never saw is <em>appended to the delta</em> as a change with a location, a kind, no quotable text, and <code>disputed = True</code>. It is never dropped and never merged into a neighbour. Downstream, the explain stage recognises it as having nothing to explain and records that reason instead of calling a model.</p>
+    <div class="note">
+      <span class="lab">The metadata is a reference, never an oracle</span>
+      On the REACH 2008 to 2009 transition the diff finds 40 units and the annotations name 9, because the corpus annotates a blanket amendment <em>once</em> and does not enumerate the thirty-odd places it lands. That produces 33 disputed changes, and it should: the disagreement <em>is</em> the finding, and the diff is the one that is right. Those are the figures <span class="mono">tests/corroborate/test_eu_corroboration.py</span> asserts; an earlier count of 8 and 32 came from a script that discarded a title the corpus names, and discarding it is forbidden.
+    </div>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <h3>EXPLAIN: the one place a model may speak</h3>
+    <p>One bounded call per change: no tools, no memory, no multi-turn, no retrieval. What it is given is what <code>prompt.py</code> built; what it may return is what <code>schema.py</code> allows. Changes are independent, so a delta is explained concurrently under a semaphore, and <code>asyncio.gather</code> preserves order so result <em>i</em> is always change <em>i</em>.</p>
+    <p>The prompt opens with a header of deterministic facts, and it states the change type as a <em>fact</em> ("established by a structural diff, not by you") rather than asking for it: which provision this is, what type of change it is, which sub-provisions differ, which dates moved. The header is there so the model does not have to work any of it out, which means it is part of the evidence the writer had, and since 2026-08-09 the faithfulness judge and the human review worksheet are shown it too, with one boundary. Header facts ground a claim about <em>which</em> provisions changed; only the two texts ground a claim about <em>what the words say</em>. Those texts are printed inside fences, capped at 40 000 characters a side with the truncation <em>visibly marked</em> and the dropped count carried into the run statistics; the cap was 8 000 until 2026-08-09, sized when the pin was a cheaper model, and at 40 000 exactly one prompt of the pinned subset is still trimmed. It prints the offered citation keys. Then twelve binding rules: describe only the difference, no legal advice, at most three sentences, every sentence carries a key copied character for character, do not re-quote the texts, an honest "the only change is X" beats an inflated one, and, from a hand review of twenty shipped explanations on 2026-08-08, four more: nothing past the truncation marker, what the words changed rather than what the change legally accomplishes, no unverified claim about ordering or renumbering or counts, and the actor the text names is the actor named.</p>
+    <div class="note model">
+      <span class="lab">On prompt injection, honestly</span>
+      The fenced text is verbatim legislation from a remote endpoint. It can say anything, including something that reads as an instruction. The fence is not a constant it could forge: the delimiters are <code>&lt;&lt;&lt;</code> and <code>&gt;&gt;&gt;</code> followed by twelve characters of a <code>sha256</code> of the texts about to be fenced, named one line above the first block, and a text cannot contain the digest of itself. What defends against the rest is that a hijacked call has nowhere to go: the output type has no URL field, no location field and no change-type field; citation keys are opaque tokens the caller minted, and the gate tests membership against the very object the prompt printed; the call is one bounded turn with no tools. The worst outcome is a bad sentence, which the faithfulness measurement catches and publishes.
+    </div>
+    <p><strong>Failure is a value.</strong> A provider error, a refusal or an exhausted schema-repair budget yields <code>ExplanationUnavailable</code> on that one change and the batch continues. Two exceptions propagate deliberately, a cassette miss and a corrupt cassette, because both are build faults rather than answers about a change. A corrupt one is the worse of the two, since it also shrinks the denominator every published rate is computed over.</p>
+    <p><strong>Cassettes</strong> are how a model stage runs in CI at all. Every exchange is recorded to disk keyed by the model id, the system prompt, the user prompt and the schema version. In replay mode the provider agent is never even constructed, so no API key is read and no client exists to make a request. A schema change misses every existing cassette loudly instead of replaying a stale shape into a new validator.</p>
+    <p class="mono kicker" style="font-size:0.78rem">explain/engine.py &middot; explain/prompt.py &middot; explain/schema.py &middot; explain/cassette.py</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <h3>GATE: why a citation cannot be hallucinated</h3>
+    <p>This is the mechanism to understand if you only have time for one. The trick is that a citation is never something the model <em>composes</em>. The caller mints an opaque key for each provision the change may cite, and it decides which ones structurally, from the change type: an insertion has no "before" to cite, a deletion has no "after", so those keys simply do not exist in the offered set. The prompt prints that set. The gate then checks membership against <em>the same object</em>. There is no second construction of the offered set to drift from the first, which is the classic silent hole in a gate like this one.</p>
+  </div>
+
+  <div class="wide">
+    <figure>
+      <div class="svgwrap">
+        <svg viewBox="0 0 960 416" role="img" aria-label="The citation gate: one ExplainContext object is both printed into the prompt and checked against by the gate, so a cited key that was not offered is rejected as an unknown key, with three possible outcomes: passed, one retry, or a verbatim quotation fallback.">
+          <defs>
+            <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow"/>
+            </marker>
+            <marker id="a4m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" class="d-arrow-model"/>
+            </marker>
+          </defs>
+
+          <text x="16" y="30" class="d-head">A CITATION IS AN OPAQUE TOKEN THE CALLER MINTS. THE MODEL ONLY EVER COPIES ONE.</text>
+
+          <rect x="16" y="120" width="172" height="96" rx="3" class="d-box"/>
+          <text x="32" y="146" class="d-t">Change</text>
+          <text x="32" y="168" class="d-t-sm">type: MODIFIED</text>
+          <text x="32" y="184" class="d-t-sm">before &rarr; AR 34 @ v1</text>
+          <text x="32" y="200" class="d-t-sm">after &nbsp;&rarr; AR 34 @ v2</text>
+          <line x1="188" y1="168" x2="222" y2="168" class="d-line" marker-end="url(#a4)"/>
+
+          <rect x="226" y="140" width="176" height="56" rx="3" class="d-box"/>
+          <text x="242" y="164" class="d-t">build_context()</text>
+          <text x="242" y="182" class="d-t-sm">explain/context.py</text>
+          <line x1="314" y1="196" x2="314" y2="234" class="d-line" marker-end="url(#a4)"/>
+
+          <rect x="206" y="238" width="230" height="96" rx="3" class="d-box-core"/>
+          <text x="222" y="262" class="d-t">ExplainContext.offered</text>
+          <text x="222" y="284" class="d-t-sm">AR 34@02017R0745-20170505</text>
+          <text x="222" y="300" class="d-t-sm">AR 34@02017R0745-20200424</text>
+          <text x="222" y="322" class="d-lab-s">one object, used twice</text>
+
+          <polyline points="436,262 490,262 490,92 536,92" class="d-line" marker-end="url(#a4)"/>
+          <text x="484" y="140" class="d-lab-s" text-anchor="end">printed</text>
+          <polyline points="436,306 536,306" class="d-line" marker-end="url(#a4)"/>
+          <text x="486" y="298" class="d-lab-s" text-anchor="middle">checked against</text>
+
+          <rect x="540" y="62" width="200" height="58" rx="3" class="d-box"/>
+          <text x="556" y="86" class="d-t">the prompt</text>
+          <text x="556" y="104" class="d-t-sm">key &nbsp;=&nbsp; human label</text>
+          <line x1="640" y1="120" x2="640" y2="156" class="d-line" marker-end="url(#a4)"/>
+
+          <rect x="540" y="160" width="200" height="70" rx="3" class="d-box-model"/>
+          <text x="556" y="184" class="d-t">the model</text>
+          <text x="556" y="202" class="d-t-sm">copies keys, no URL field</text>
+          <text x="556" y="220" class="d-t-sm">at most 3 sentences</text>
+          <line x1="640" y1="230" x2="640" y2="266" class="d-line-model" marker-end="url(#a4m)"/>
+          <text x="630" y="252" class="d-lab" text-anchor="end">Explanation</text>
+
+          <rect x="540" y="270" width="200" height="70" rx="3" class="d-box"/>
+          <text x="556" y="294" class="d-t">gate/check.py</text>
+          <text x="556" y="312" class="d-t-sm">1. was the key offered?</text>
+          <text x="556" y="328" class="d-t-sm">2. does it resolve?</text>
+
+          <rect x="490" y="368" width="250" height="40" rx="3" class="d-box-soft"/>
+          <text x="506" y="392" class="d-t-sm">TreeResolver: the two trees this run fetched</text>
+          <line x1="640" y1="368" x2="640" y2="344" class="d-line" marker-end="url(#a4)"/>
+
+          <line x1="740" y1="292" x2="786" y2="252" class="d-line" marker-end="url(#a4)"/>
+          <line x1="740" y1="305" x2="786" y2="305" class="d-line" marker-end="url(#a4)"/>
+          <line x1="740" y1="318" x2="786" y2="358" class="d-line" marker-end="url(#a4)"/>
+
+          <rect x="790" y="228" width="156" height="44" rx="3" class="d-box"/>
+          <text x="804" y="248" class="d-t" style="font-size:11.5px">PASSED</text>
+          <text x="804" y="264" class="d-t-sm">ships as written</text>
+
+          <rect x="790" y="283" width="156" height="44" rx="3" class="d-box"/>
+          <text x="804" y="303" class="d-t" style="font-size:11.5px">RETRY, once</text>
+          <text x="804" y="319" class="d-t-sm">with the complaint</text>
+
+          <rect x="790" y="338" width="156" height="44" rx="3" class="d-box"/>
+          <text x="804" y="358" class="d-t" style="font-size:11.5px">FALLBACK</text>
+          <text x="804" y="374" class="d-t-sm">verbatim quotation</text>
+        </svg>
+      </div>
+      <figcaption><b>Two checks, no judgement.</b> "Does the citation parse" and "does it resolve" collapse into one lookup, and that is a strengthening rather than a shortcut: a malformed citation is simply an unknown key. A sentence fails as a whole if any one of its keys fails, because a sentence stands on all of them. Note what the gate deliberately does <em>not</em> do. A factually wrong sentence with a valid citation passes here, and is supposed to. Whether the sentence follows from the texts is <em>faithfulness</em>, measured separately against a different reference; blurring the two would make the grounding number mean nothing.</figcaption>
+    </figure>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <p>The retry policy is one sentence long, and the code is arranged so it stays that way: <strong>check; on failure ask once more with the specific complaint; on a second failure quote the provision.</strong> The gate itself never calls a model. <code>first_round</code> hands back which changes want a revision, the orchestrator makes the call, and <code>second_round</code> rules on the answers, because a stage that both re-asked the model and decided whether the answer was acceptable would be the model marking its own homework.</p>
+    <p>Two properties are asserted as properties rather than examples: the gated delta is positionally aligned with the delta it came from, so input changes equal output changes always; and no ungrounded sentence ships, since every sentence in a settled delta either passed the check or was written by the gate as a verbatim quotation.</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <h3>EMIT: the product claim, cashed</h3>
+    <p>The claim is that your regulatory dependencies get the same review workflow as your code dependencies, and it is cashed here: a run ends as a commit in a repository somebody can diff, review in a pull request and blame.</p>
+    <pre>&lt;repo&gt;/.emendrix-output                                <span class="c">this repository is one emendrix created</span>
+&lt;repo&gt;/eu/32017R0745/CHANGELOG.md                      <span class="c">newest entry first, rewritten in place</span>
+&lt;repo&gt;/eu/32017R0745/changes/02017R0745-20200424.json  <span class="c">the same event, structured</span></pre>
+    <p>Three policies, each a decision rather than a detail. <strong>The repository is the user's</strong>: emendrix creates it if absent, commits into it, and never pushes. <strong>It must be a repository emendrix made</strong>: a path inside an existing working tree is refused, and a path that <em>is</em> a repository without the marker file is refused too. Both checks are needed, because after the first write the output repository legitimately has a <code>.git</code> of its own. <strong>Re-emitting is a no-op</strong>: rendered bytes are compared with what is on disk before anything is written, so an hourly cron produces one commit per amendment, not one per hour.</p>
+  </div>
+</section>
+
+<!-- ============================== LEVEL 4 ============================== -->
+<section id="l4">
+  <div class="col levelhead">
+    <span class="num">LEVEL 4</span>
+    <h2>The evidence, and what it does not say</h2>
+    <p class="sub">Every figure below is measured and generated from a committed report, over 18 transitions across four acts.</p>
+  </div>
+
+  <div class="col">
+    <p>The eval harness is a fourth thing worth understanding in its own right, because the discipline it enforces is what keeps the numbers meaningful: the layers are scored separately, on purpose, and never share a figure.</p>
+  </div>
+
+  <div class="wide">
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Measure</th><th class="num">Result</th><th class="num">n</th><th>What it means, and what it does not</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Localisation</b><br><span class="kicker">which provisions changed</span></td>
+            <td class="num">P 0.806<br>R 0.975<br><b>F1 0.883</b></td>
+            <td class="num">18 transitions</td>
+            <td>Structural diff against the corpus's own modification metadata, at article-or-annex granularity. <em>Not</em> a measure of whether the explanation is any good. Precision is dragged down by blanket amendments the reference set annotates only once.</td>
+          </tr>
+          <tr>
+            <td>Instruction-parse agreement<br><span class="kicker">cross-check</span></td>
+            <td class="num">P 0.861<br>R 0.886<br>F1 0.873</td>
+            <td class="num">13 transitions</td>
+            <td>A third independent reading, from the amending act's own prose. Weaker by construction: it cannot read a range ("Annexes VI to X") or an instruction delegating to an annex, and those are counted as unread, never approximated.</td>
+          </tr>
+          <tr>
+            <td>Disputed changes</td>
+            <td class="num">0.343</td>
+            <td class="num">108 changes</td>
+            <td>Changes at least one signal named and another did not. They ship marked <code>disputed</code>. A high rate is a data-quality finding, not a hidden failure.</td>
+          </tr>
+          <tr>
+            <td>Change classification</td>
+            <td class="num">1.000</td>
+            <td class="num">79 units</td>
+            <td>Insert, modify or delete against the metadata's role codes, on units both signals named. The role semantics are empirical; the authority tables publish no labels.</td>
+          </tr>
+          <tr>
+            <td><b>Citation grounding</b><br><span class="kicker">gate pass, no retry</span></td>
+            <td class="num">1.000</td>
+            <td class="num">55 changes</td>
+            <td>The share whose first answer cited only provisions it had been offered. <strong>Citation validity, not explanation quality</strong>: a wrong sentence with a good citation passes. Every change of the subset is in the denominator: at the 40 000-character cap in force since 2026-08-09, none of them is left with two identical texts, and the stage still refuses such a prompt rather than asking for a description of a difference it showed none of.</td>
+          </tr>
+          <tr>
+            <td>Quote-fallback rate</td>
+            <td class="num">0.000</td>
+            <td class="num">55 changes</td>
+            <td>Where the gate replaced the model's prose with a verbatim quotation after one failed retry. Correct by construction and visibly marked. This is where grounding losses go, and no change is ever dropped.</td>
+          </tr>
+          <tr>
+            <td><b>Explanation faithfulness</b><br><span class="kicker">sampled</span></td>
+            <td class="num">0.850</td>
+            <td class="num">n = 20</td>
+            <td>Whether the shipped sentences follow from the evidence the writer was given: the prompt's deterministic-facts header and the two capped texts, with the header grounding which provisions changed and only the texts grounding what the words say. <strong>The weakest number here.</strong> A sampled judgement by a stronger model than the explainer, from a different vendor, which is the strongest form of that claim this project has and still not independence: both read the same English. A person reading the same twenty triples by hand on 2026-08-09 found 18 faithful and 2 not, and the two disagreed on exactly one entry with the judge the strict one. The header joined the evidence base on 2026-08-09, so a rate recorded before that date answers a narrower question and is not comparable with one recorded after it.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <h4>Four systematic disagreements the report names rather than tunes away</h4>
+    <ol>
+      <li><strong>Blanket amendments are annotated once.</strong> "…shall be replaced by … throughout the text" is one annotation and dozens of touched provisions. The diff finds them all; precision against the metadata collapses.</li>
+      <li><strong>Corrigenda are not amendments.</strong> A consolidation carrying only a corrigendum has no modification annotations at all, so every unit the diff finds scores zero precision. The MDR's first consolidation is exactly this case.</li>
+      <li><strong>The two location vocabularies spell some annexes differently.</strong> Legacy notices number four of REACH's annexes in Arabic where the Formex markup uses Roman, so the same annex appears as two units that neither signal shares.</li>
+      <li><strong>The instruction parse has two named blind spots</strong>, both counted as unread rather than approximated.</li>
+    </ol>
+    <div class="note warn">
+      <span class="lab">The rule these numbers are published under</span>
+      Never curate bad cases out of the corpus; never blur citation grounding into explanation quality; every metric carries what it does and does not mean. The model-layer figures are facts about <em>one recording</em>, made on 2026-08-09 against <span class="mono">openrouter:anthropic/claude-sonnet-5</span> as the explainer and <span class="mono">openrouter:openai/gpt-5.6-sol</span> as the judge, and replayed offline ever since. A rate that gets better because the question changed says so in the same breath as the number: the faithfulness row rose from 0.800 to 0.850 across a change of evidence base and a raised character cap, so it is not the previous rate improved and the two are not comparable.
+    </div>
+  </div>
+</section>
+
+<!-- ============================== WORKED EXAMPLE ============================== -->
+<section id="worked">
+  <div class="col levelhead">
+    <span class="num">END TO END</span>
+    <h2>One provision, all seven stages</h2>
+    <p class="sub">Medical Devices Regulation, <span class="mono">02017R0745-20170505</span> to <span class="mono">02017R0745-20200424</span>, Article 34.</p>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <p>This transition is the COVID-era postponement of the MDR. The whole run touches nine provisions: three substantive, six date-only, none disputed. Follow Article 34 through.</p>
+
+    <div class="card">
+      <h4>WATCH</h4>
+      <p>A feed entry names <code>02017R0745-20200424</code>. It matches the watchlist, is not in the seen set, and the version inventory lists it with English available, so out comes an <code>AmendmentEvent</code> with <code>previous_version = 02017R0745-20170505</code>.</p>
+    </div>
+    <div class="card">
+      <h4>FETCH</h4>
+      <p>Two Formex 4 packages come back through the disk cache and parse into two <code>ProvisionTree</code>s. Article 34 is a root node in both, each carrying verbatim text and a separately built comparison form.</p>
+    </div>
+    <div class="card">
+      <h4>DELTA</h4>
+      <p>Keys match, comparison texts differ, so <code>MODIFIED</code>. Then the date reader finds the only difference is <code>25 March 2020</code> becoming <code>25 March 2021</code>, so the type refines to <code>DEFERRED</code> and <code>applies_from</code> becomes a real date, 2021-03-25. Sub-localisation records <code>AR 34 PA 1 ALN 1</code>.</p>
+    </div>
+    <div class="card">
+      <h4>CORROBORATE</h4>
+      <p>The metadata names the unit and supplies <code>in_force = 2020-04-24</code>. Signals agree, so <code>disputed</code> stays false.</p>
+    </div>
+    <div class="card">
+      <h4>EXPLAIN</h4>
+      <p>Two keys are minted, one per side, and printed. The model returns one sentence, citing both keys it was handed. It offers no applicability note, and rule 7 asks for one only where the after text says when the provision applies; the date on the headline came from the diff, not from the model.</p>
+    </div>
+    <div class="card">
+      <h4>GATE</h4>
+      <p>Both keys are in the offered set and both resolve in the fetched trees, so <code>PASSED</code>, first round, no retry. Had the model written an applicability note, the gate would also have checked it for containment in the after text as the model was shown it, and dropped and counted it if it were a paraphrase.</p>
+    </div>
+    <div class="card">
+      <h4>EMIT</h4>
+      <p>The entry is rendered, the citation key becomes a EUR-Lex anchor, and the file is committed.</p>
+    </div>
+
+    <pre><span class="c">**DEFERRED · Art. 34 — Functionality of Eudamed** · applies from: 2021-03-25</span>
+
+<span class="c">*within*</span> `AR 34 PA 1 ALN 1` <span class="c">*dates*</span> -2020-03-25 +2021-03-25
+
+The only change is the date by which the plan for implementing Eudamed's
+functional specifications must allow the Commission to publish the notice
+referred to in paragraph 3, which shifts from 25 March 2020 to 25 March 2021.
+<span class="m">[Art. 34, v1]</span> <span class="m">[Art. 34, v2]</span>
+
+<span class="c">*before* (`02017R0745-20170505`)   verbatim, quoted from the Change, not the model
+*after*  (`02017R0745-20200424`)   verbatim, quoted from the Change, not the model</span></pre>
+    <p class="kicker" style="font-size:0.93rem">Note what the model contributed: one sentence. The change type, the provision, both dates, the sub-coordinate, the two clocks, the quoted texts and the resolvable links were all produced by deterministic Python before and after the call. The sample above is quoted from <span class="mono">tests/output/golden/mdr-changelog.md</span>, with the two citation links shown as their labels and the long verbatim quotations elided on the two lines that say so.</p>
+  </div>
+</section>
+
+<!-- ============================== READING ORDER ============================== -->
+<section id="read">
+  <div class="col levelhead">
+    <span class="num">NEXT</span>
+    <h2>Reading it yourself</h2>
+  </div>
+
+  <div class="col" style="display:flex;flex-direction:column;gap:0.9rem">
+    <p>A reading order that follows the dependency direction rather than the alphabet:</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Read</th><th>To understand</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">core/location.py</td><td>The identity every change is keyed by</td></tr>
+          <tr><td class="mono">core/delta.py</td><td>What the pipeline computes, and the validators that keep it honest</td></tr>
+          <tr><td class="mono">core/adapter.py</td><td>The entire seam, in four methods</td></tr>
+          <tr><td class="mono">diff/tree_diff.py</td><td>The matching algorithm and its ordering contract</td></tr>
+          <tr><td class="mono">corroborate/merge.py</td><td>How disagreement is preserved instead of resolved</td></tr>
+          <tr><td class="mono">explain/prompt.py</td><td>The full prompt, as literal text, under a snapshot test</td></tr>
+          <tr><td class="mono">gate/check.py</td><td>The anti-hallucination mechanism, in about 150 lines</td></tr>
+          <tr><td class="mono">graph/build.py</td><td>The wiring, and everything deliberately not used</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Running it</h4>
+    <pre><span class="c"># the deterministic half: no API key, no network</span>
+uv run emendrix diff 32024R1689 02024R1689-20240801 02024R1689-20260727 --markdown \
+  --fixture-dir tests/fixtures/eu
+
+<span class="c"># the quality gate CI mirrors exactly</span>
+uv run ruff format . &amp;&amp; uv run ruff check . &amp;&amp; uv run mypy &amp;&amp; uv run pytest
+
+<span class="c"># the measured report this page quotes</span>
+uv run emendrix eval run --fixture-dir tests/fixtures/eu</pre>
+
+    <div class="note">
+      <span class="lab">The flagship regression, asserted in tests</span>
+      AI Act <code>32024R1689</code> v1 to v2 (Digital Omnibus <code>32026R1744</code>): 6 inserted, 36 modified, 0 deleted, 77 unchanged, so <strong>42 touched units</strong>, from 88 metadata annotations, <code>in_force</code> 2026-07-27, structural-diff-against-metadata <strong>F1 = 1.000</strong>. If a change moves those numbers, that is a finding to explain, not a test to update.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p><b>Not legal advice.</b> emendrix output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only. This page describes the software.</p>
+  <p>Figures are quoted from <span class="mono">reports/eval/2026-08-10-d6e7596.md</span> and the README metrics table generated from it. Model-layer numbers describe one recording made on 2026-08-09.</p>
+</footer>
+
+</main>
+</body>
+</html>

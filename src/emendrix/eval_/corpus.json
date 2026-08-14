@@ -1,0 +1,1174 @@
+{
+  "acts": [
+    {
+      "amending_acts": 1,
+      "annotations": 88,
+      "celex": "32024R1689",
+      "note": "",
+      "title": "Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised rules on artificial intelligence and amending Regulations (EC) No 300/2008, (EU) No 167/2013, (EU) No 168/2013, (EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144 and Directives 2014/90/EU, (EU) 2016/797 and (EU) 2020/1828 (Artificial Intelligence Act) (Text with EEA relevance)",
+      "transitions_possible": 1,
+      "transitions_selected": 1,
+      "versions": 3,
+      "versions_usable": 2
+    },
+    {
+      "amending_acts": 10,
+      "annotations": 61,
+      "celex": "32017R0745",
+      "note": "",
+      "title": "Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC (Text with EEA relevance. )",
+      "transitions_possible": 7,
+      "transitions_selected": 7,
+      "versions": 8,
+      "versions_usable": 8
+    },
+    {
+      "amending_acts": 85,
+      "annotations": 391,
+      "celex": "32006R1907",
+      "note": "",
+      "title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "transitions_possible": 62,
+      "transitions_selected": 10,
+      "versions": 69,
+      "versions_usable": 63
+    },
+    {
+      "amending_acts": 0,
+      "annotations": 0,
+      "celex": "32022R2065",
+      "note": "no transition: the corpus publishes no second readable version \u2014 a corpus member for future amendments",
+      "title": "Regulation (EU) 2022/2065 of the European Parliament and of the Council of 19\u00a0October 2022 on a Single Market For Digital Services and amending Directive\u00a02000/31/EC (Digital Services Act) (Text with EEA relevance)",
+      "transitions_possible": 0,
+      "transitions_selected": 0,
+      "versions": 2,
+      "versions_usable": 1
+    }
+  ],
+  "built_on": "2026-08-06",
+  "cases": [
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32008R0987"
+      ],
+      "annotations": 2,
+      "bridged": [],
+      "from_date": "2007-11-23",
+      "from_original": false,
+      "from_version": "02006R1907-20071123",
+      "id": "32006R1907@20081012",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "3ab0dc0a4db711d53cbcb2b5ff3e229fe2de0ff76c633a884ea20689b62cfb98",
+          "size": 214129,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20071123.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "4680a3257ed404805ed2a8160b3c7244c82e8fdcb8d267ffbd8268ff109735f0",
+          "size": 9806,
+          "url": "https://publications.europa.eu/resource/oj/JOL_2008_268_R_0014_01.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "ec80018363b1a0f229ac8a86b6efec65e0983f532352331b21e9efa913342b2b",
+          "size": 94552,
+          "url": "https://publications.europa.eu/resource/celex/32008R0987"
+        },
+        {
+          "role": "to",
+          "sha256": "abc537f6eae38937cf39825d6e0c0e85015c2c84b26aabc91cddcf7c85ee7688",
+          "size": 213731,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20081012.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32008R0987",
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2008-10-12",
+      "to_version": "02006R1907-20081012"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32012R0836"
+      ],
+      "annotations": 1,
+      "bridged": [],
+      "from_date": "2012-06-05",
+      "from_original": false,
+      "from_version": "02006R1907-20120605",
+      "id": "32006R1907@20121009",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "46665b15d4c5957cfc792114a3b02d6ba2bf40e7bd52b7cc539b914de0a04e07",
+          "size": 276955,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20120605.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "82e087aded4a9c8d42e02fcae7124306e7ed5a97792aef476e5ce28a58fa4ee7",
+          "size": 6874,
+          "url": "https://publications.europa.eu/resource/oj/JOL_2012_252_R_0004_01.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "6e29de4c74846f42ea4aec467e6556486e18dc8122fcfc0f9d78d3034669bedb",
+          "size": 83575,
+          "url": "https://publications.europa.eu/resource/celex/32012R0836"
+        },
+        {
+          "role": "to",
+          "sha256": "446c6f7a70e0dd0caf59342bb99cb395b01dc9bedadcc4f40565499fa5839436",
+          "size": 277891,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20121009.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32012R0836",
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2012-10-09",
+      "to_version": "02006R1907-20121009"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32015R0282",
+        "32015R0326"
+      ],
+      "annotations": 4,
+      "bridged": [],
+      "from_date": "2015-01-01",
+      "from_original": false,
+      "from_version": "02006R1907-20150101",
+      "id": "32006R1907@20150323",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "8d4b1d4504855a6dead0e75dd621018974c738a8bfe8949d1ba4fbfbdf97c748",
+          "size": 283599,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20150101.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "to",
+          "sha256": "21457dd4d788f6f5d1fd01edfdcf230b46f1021d32e0f5b5aadb304658be8ef5",
+          "size": 301366,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20150323.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "the window names 2 amending acts; the third signal reads one",
+      "instruction_source": null,
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2015-03-23",
+      "to_version": "02006R1907-20150323"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32016R0217"
+      ],
+      "annotations": 1,
+      "bridged": [],
+      "from_date": "2016-02-03",
+      "from_original": false,
+      "from_version": "02006R1907-20160203",
+      "id": "32006R1907@20160308",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "148ee10d0c0599e227d35358d5a1606ffa3b23e9f0ee5fd11b2e750c3989b225",
+          "size": 289111,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20160203.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "a0f84c3a57d103cfa664fbf9ca9a6a83f46fe2b6d1d5512b3540c29d228fc49e",
+          "size": 4455,
+          "url": "https://publications.europa.eu/resource/uriserv/OJ.L_.2016.040.01.0005.01.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "2ed2e64ad522d55677c29d7223c0389c0fa3394ddf83a95c2fd274ec8046fac0",
+          "size": 51302,
+          "url": "https://publications.europa.eu/resource/celex/32016R0217"
+        },
+        {
+          "role": "to",
+          "sha256": "e33d8be3039ee907ff952f3c5798e960c6772d80944f8f898cffb3b1ce97228a",
+          "size": 289311,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20160308.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32016R0217",
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2016-03-08",
+      "to_version": "02006R1907-20160308"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32017R0999",
+        "32017R1000"
+      ],
+      "annotations": 2,
+      "bridged": [],
+      "from_date": "2017-03-02",
+      "from_original": false,
+      "from_version": "02006R1907-20170302",
+      "id": "32006R1907@20170704",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "70ff77fa7bd63af232cbe690d180edce9fc46a688e26cd93b1aafb74a123b082",
+          "size": 274019,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20170302.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "to",
+          "sha256": "82829447b4734c9d7958b49cf22830f2e0a96c5adbd31cb0a3b9e9c981017238",
+          "size": 277828,
+          "url": "https://publications.europa.eu/resource/celex/02006R1907-20170704.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "the window names 2 amending acts; the third signal reads one",
+      "instruction_source": null,
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2017-07-04",
+      "to_version": "02006R1907-20170704"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32019R0957"
+      ],
+      "annotations": 1,
+      "bridged": [],
+      "from_date": "2019-01-07",
+      "from_original": false,
+      "from_version": "02006R1907-20190107",
+      "id": "32006R1907@20190702",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "47956fdc1562eba6c5e920ec48a1f4bb5a9eb6337d5315e65386c676aebbc1f1",
+          "size": 286420,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20190107.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "4ae0f8994fea8a627ea8036079af897cee4112ecc778cc3471088180b99383c8",
+          "size": 5893,
+          "url": "https://publications.europa.eu/resource/uriserv/OJ.L_.2019.154.01.0037.01.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "b3a997055bdd768ce8e104bee186f1a703eabcfc9d17a75b5dcdb6d465802d40",
+          "size": 63298,
+          "url": "https://publications.europa.eu/resource/celex/32019R0957"
+        },
+        {
+          "role": "to",
+          "sha256": "7466c896c46c67570933013000fb1bb5dcddd0a9758bae6083a1c60c2e1735b5",
+          "size": 287079,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20190702.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32019R0957",
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2019-07-02",
+      "to_version": "02006R1907-20190702"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32019R1148",
+        "32020R2081",
+        "32020R2096",
+        "32021R0057"
+      ],
+      "annotations": 14,
+      "bridged": [],
+      "from_date": "2021-01-01",
+      "from_original": false,
+      "from_version": "02006R1907-20210101",
+      "id": "32006R1907@20210215",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "35bc5d2d7aa50940607669d45c15d89fadb84e76fc3eaefe59cb4c1f69803112",
+          "size": 303840,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20210101.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "to",
+          "sha256": "65db2166d9dd32aba2ceede12d8fd9e369f8e1837a88b1c301247a01005bd11e",
+          "size": 311628,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20210215.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "the window names 4 amending acts; the third signal reads one",
+      "instruction_source": null,
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2021-02-15",
+      "to_version": "02006R1907-20210215"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32022R0586"
+      ],
+      "annotations": 5,
+      "bridged": [],
+      "from_date": "2022-03-01",
+      "from_original": false,
+      "from_version": "02006R1907-20220301",
+      "id": "32006R1907@20220501",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "9696eab7060999fb77ccf7acae0edf7ceb603d945297c915e6eee8515fabfefa",
+          "size": 318971,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20220301.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "836686bb97889078052faaf132ae87e7a111a678c235643e29647358b086fa22",
+          "size": 7945,
+          "url": "https://publications.europa.eu/resource/uriserv/OJ.L_.2022.112.01.0006.01.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "5579979ab8343612ebc899178c075f5b57f4d223c8fa37e6c6f6e31ea894889e",
+          "size": 63696,
+          "url": "https://publications.europa.eu/resource/celex/32022R0586"
+        },
+        {
+          "role": "to",
+          "sha256": "c34d8e32f8af8524d3ad01acf46e2f94880563cba34d6f197b3fcee43093162d",
+          "size": 319443,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20220501.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32022R0586",
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2022-05-01",
+      "to_version": "02006R1907-20220501"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32024R1328"
+      ],
+      "annotations": 1,
+      "bridged": [],
+      "from_date": "2023-12-01",
+      "from_original": false,
+      "from_version": "02006R1907-20231201",
+      "id": "32006R1907@20240606",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "c36bd60d981b1aaf3241fdff7e7fc8713212da866cfead24400bcefb6d940b79",
+          "size": 340356,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20231201.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "ae2f9467aea68d01eaf4439eb5ca55b3c04f42c622eadd680ed26ab3ee8c8023",
+          "size": 10214,
+          "url": "https://publications.europa.eu/resource/oj/L_202401328.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "e29b6f46e37a7c4b57993abeceaab8ab8d8284d2cc1922dc521963ad70f287de",
+          "size": 42382,
+          "url": "https://publications.europa.eu/resource/celex/32024R1328"
+        },
+        {
+          "role": "to",
+          "sha256": "fca63b305cb5324ba2ff984e84e3038c2f6769e930dea6a7253f2edf1ba97773",
+          "size": 341732,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20240606.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32024R1328",
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2024-06-06",
+      "to_version": "02006R1907-20240606"
+    },
+    {
+      "act": "32006R1907",
+      "act_title": "Regulation (EC) No\u00a01907/2006 of the European Parliament and of the Council of 18\u00a0December 2006 concerning the Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH), establishing a European Chemicals Agency, amending Directive 1999/45/EC and repealing Council Regulation (EEC) No\u00a0793/93 and Commission Regulation (EC) No\u00a01488/94 as well as Council Directive 76/769/EEC and Commission Directives 91/155/EEC, 93/67/EEC, 93/105/EC and 2000/21/EC",
+      "amending_acts": [
+        "32026R0859"
+      ],
+      "annotations": 1,
+      "bridged": [],
+      "from_date": "2025-10-23",
+      "from_original": false,
+      "from_version": "02006R1907-20251023",
+      "id": "32006R1907@20260511",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "cccef16349107b847498c830e6be3f5f96adc3549eeb028784309c36afc51b2d",
+          "size": 348145,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20251023.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "f3d79be8e8efc8879e37cb4be97e4830db76c93b4c930614f0cea9a3385bb101",
+          "size": 11076,
+          "url": "https://publications.europa.eu/resource/oj/L_202600859.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "c60e1e48ab16635c2ce0dd41877cd4ef99453b9a119ae8debdf5159151b76bac",
+          "size": 241229,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "c35ab31d77744b9cdedb35707aad4dd9bf16198b4b8c5289b97191994733a11f",
+          "size": 793268,
+          "url": "https://publications.europa.eu/resource/celex/32006R1907"
+        },
+        {
+          "role": "routing",
+          "sha256": "b7097fa1a285b4765cb90d7d2055619d02e240f9bf9d37616bca3fa24e86d77f",
+          "size": 40479,
+          "url": "https://publications.europa.eu/resource/celex/32026R0859"
+        },
+        {
+          "role": "to",
+          "sha256": "52d5549178cc5e47d88646ffa7950fe4dfe17f84b28c527989a8469f958c7cf1",
+          "size": 349085,
+          "url": "https://publications.europa.eu/resource/consolidation/2006R1907%2F20260511.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32026R0859",
+      "selection": "sample 10 of 62, evenly spread",
+      "to_date": "2026-05-11",
+      "to_version": "02006R1907-20260511"
+    },
+    {
+      "act": "32017R0745",
+      "act_title": "Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC (Text with EEA relevance. )",
+      "amending_acts": [],
+      "annotations": 0,
+      "bridged": [],
+      "from_date": "2017-04-05",
+      "from_original": true,
+      "from_version": "32017R0745",
+      "id": "32017R0745@20170505",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "1c169fbd58c9c2fafbc1b9ee39243011038ede570e0b39487d4db820b4273ba5",
+          "size": 192636,
+          "url": "https://publications.europa.eu/resource/oj/JOL_2017_117_R_0001.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "fe6aeb722523d1a96aa534bee6be854c41a29e101f54136d60e5ae92bb0c839d",
+          "size": 36074,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "8769637bde14ce4ae80ce09f1ed8e3c97a8c17aadf371191071dfb3679cd7232",
+          "size": 154488,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "to",
+          "sha256": "1dfa888ca6b519c6bb4375fac73fccbb0c1a24bdccb6a7b3f74a4f74d50b2d1b",
+          "size": 156093,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20170505.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "the window names 0 amending acts; the third signal reads one",
+      "instruction_source": null,
+      "selection": "all",
+      "to_date": "2017-05-05",
+      "to_version": "02017R0745-20170505"
+    },
+    {
+      "act": "32017R0745",
+      "act_title": "Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC (Text with EEA relevance. )",
+      "amending_acts": [
+        "32020R0561"
+      ],
+      "annotations": 26,
+      "bridged": [],
+      "from_date": "2017-05-05",
+      "from_original": false,
+      "from_version": "02017R0745-20170505",
+      "id": "32017R0745@20200424",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "1dfa888ca6b519c6bb4375fac73fccbb0c1a24bdccb6a7b3f74a4f74d50b2d1b",
+          "size": 156093,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20170505.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "e8642509226f380c259c8f49d1a4d012ac39159dc2f8e156d0db3a7dbfd67461",
+          "size": 7459,
+          "url": "https://publications.europa.eu/resource/oj/JOL_2020_130_R_0004.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "fe6aeb722523d1a96aa534bee6be854c41a29e101f54136d60e5ae92bb0c839d",
+          "size": 36074,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "8769637bde14ce4ae80ce09f1ed8e3c97a8c17aadf371191071dfb3679cd7232",
+          "size": 154488,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "421ac36749424dba1a53f8c00501afb69b8109addce6f851b1ac07665a0df35f",
+          "size": 63061,
+          "url": "https://publications.europa.eu/resource/celex/32020R0561"
+        },
+        {
+          "role": "to",
+          "sha256": "081ccdf0196d91ed35606a24f5e9adeba7b1b8bbc9cb9f9ba503cc2dc9b6ffd9",
+          "size": 157721,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20200424.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32020R0561",
+      "selection": "all",
+      "to_date": "2020-04-24",
+      "to_version": "02017R0745-20200424"
+    },
+    {
+      "act": "32017R0745",
+      "act_title": "Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC (Text with EEA relevance. )",
+      "amending_acts": [
+        "32023R0502"
+      ],
+      "annotations": 1,
+      "bridged": [],
+      "from_date": "2020-04-24",
+      "from_original": false,
+      "from_version": "02017R0745-20200424",
+      "id": "32017R0745@20230311",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "081ccdf0196d91ed35606a24f5e9adeba7b1b8bbc9cb9f9ba503cc2dc9b6ffd9",
+          "size": 157721,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20200424.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "ba5c246f4a71d60d63317bd29724ff9686a9999de252aace297eb79ec9d563cc",
+          "size": 3807,
+          "url": "https://publications.europa.eu/resource/uriserv/OJ.L_.2023.070.01.0001.01.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "fe6aeb722523d1a96aa534bee6be854c41a29e101f54136d60e5ae92bb0c839d",
+          "size": 36074,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "8769637bde14ce4ae80ce09f1ed8e3c97a8c17aadf371191071dfb3679cd7232",
+          "size": 154488,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "076632619d4fcb96bb5f1145d99029ec4d22bd4f20937543b69c4a58bc25de08",
+          "size": 62842,
+          "url": "https://publications.europa.eu/resource/celex/32023R0502"
+        },
+        {
+          "role": "to",
+          "sha256": "3c814e4c49b9329ec39d36e263c0d81c6c90fc22de08843eea1501dfcb788693",
+          "size": 158132,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20230311.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32023R0502",
+      "selection": "all",
+      "to_date": "2023-03-11",
+      "to_version": "02017R0745-20230311"
+    },
+    {
+      "act": "32017R0745",
+      "act_title": "Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC (Text with EEA relevance. )",
+      "amending_acts": [
+        "32023R0607"
+      ],
+      "annotations": 6,
+      "bridged": [],
+      "from_date": "2023-03-11",
+      "from_original": false,
+      "from_version": "02017R0745-20230311",
+      "id": "32017R0745@20230320",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "3c814e4c49b9329ec39d36e263c0d81c6c90fc22de08843eea1501dfcb788693",
+          "size": 158132,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20230311.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "fd70d25245ce616ce1be18816e4f836c7ef7dee557235a868cab94faf1ade382",
+          "size": 7893,
+          "url": "https://publications.europa.eu/resource/celex/32023R0607.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "fe6aeb722523d1a96aa534bee6be854c41a29e101f54136d60e5ae92bb0c839d",
+          "size": 36074,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "8769637bde14ce4ae80ce09f1ed8e3c97a8c17aadf371191071dfb3679cd7232",
+          "size": 154488,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "d7f5e619bb7be7e83d988af6671cf6c29d4220f53443388f41af688caa76eb11",
+          "size": 68068,
+          "url": "https://publications.europa.eu/resource/celex/32023R0607"
+        },
+        {
+          "role": "to",
+          "sha256": "d66d8c513aa4b1b05f62123372c710d58bb6f6e5953e4b4333aa6c79f1a34f88",
+          "size": 159388,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20230320.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32023R0607",
+      "selection": "all",
+      "to_date": "2023-03-20",
+      "to_version": "02017R0745-20230320"
+    },
+    {
+      "act": "32017R0745",
+      "act_title": "Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC (Text with EEA relevance. )",
+      "amending_acts": [
+        "32024R1860"
+      ],
+      "annotations": 18,
+      "bridged": [],
+      "from_date": "2023-03-20",
+      "from_original": false,
+      "from_version": "02017R0745-20230320",
+      "id": "32017R0745@20240709",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "d66d8c513aa4b1b05f62123372c710d58bb6f6e5953e4b4333aa6c79f1a34f88",
+          "size": 159388,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20230320.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "e9208f735238b74d814e5dfd49ff260e930f9b4d65a0f10fc59674bc81506f39",
+          "size": 12052,
+          "url": "https://publications.europa.eu/resource/oj/L_202401860.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "fe6aeb722523d1a96aa534bee6be854c41a29e101f54136d60e5ae92bb0c839d",
+          "size": 36074,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "8769637bde14ce4ae80ce09f1ed8e3c97a8c17aadf371191071dfb3679cd7232",
+          "size": 154488,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "886096cb87f93b85c87bc26338587820e6958550e5bdccbb507475d98153bd14",
+          "size": 55829,
+          "url": "https://publications.europa.eu/resource/celex/32024R1860"
+        },
+        {
+          "role": "to",
+          "sha256": "98a2bd0b4069e0e8db2d247263dcbe515f17bb954ed069aeb29a2eb0a424794c",
+          "size": 160234,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20240709.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32024R1860",
+      "selection": "all",
+      "to_date": "2024-07-09",
+      "to_version": "02017R0745-20240709"
+    },
+    {
+      "act": "32017R0745",
+      "act_title": "Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC (Text with EEA relevance. )",
+      "amending_acts": [
+        "32024R0568",
+        "32024R1860"
+      ],
+      "annotations": 2,
+      "bridged": [],
+      "from_date": "2024-07-09",
+      "from_original": false,
+      "from_version": "02017R0745-20240709",
+      "id": "32017R0745@20250110",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "98a2bd0b4069e0e8db2d247263dcbe515f17bb954ed069aeb29a2eb0a424794c",
+          "size": 160234,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20240709.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "fe6aeb722523d1a96aa534bee6be854c41a29e101f54136d60e5ae92bb0c839d",
+          "size": 36074,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "8769637bde14ce4ae80ce09f1ed8e3c97a8c17aadf371191071dfb3679cd7232",
+          "size": 154488,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "to",
+          "sha256": "f5eea01ceaa14e82dbf79f2dd9c26a0357798c43440f135fa106f90603ce93ec",
+          "size": 161070,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20250110.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "the window names 2 amending acts; the third signal reads one",
+      "instruction_source": null,
+      "selection": "all",
+      "to_date": "2025-01-10",
+      "to_version": "02017R0745-20250110"
+    },
+    {
+      "act": "32017R0745",
+      "act_title": "Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC (Text with EEA relevance. )",
+      "amending_acts": [
+        "32025R2457"
+      ],
+      "annotations": 4,
+      "bridged": [],
+      "from_date": "2025-01-10",
+      "from_original": false,
+      "from_version": "02017R0745-20250110",
+      "id": "32017R0745@20260101",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "f5eea01ceaa14e82dbf79f2dd9c26a0357798c43440f135fa106f90603ce93ec",
+          "size": 161070,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20250110.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "ec3613d86b174227951e3a43ab7ed42d68c3b7522c45633932d8e2d1af2327ce",
+          "size": 12911,
+          "url": "https://publications.europa.eu/resource/oj/L_202502457.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "fe6aeb722523d1a96aa534bee6be854c41a29e101f54136d60e5ae92bb0c839d",
+          "size": 36074,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "8769637bde14ce4ae80ce09f1ed8e3c97a8c17aadf371191071dfb3679cd7232",
+          "size": 154488,
+          "url": "https://publications.europa.eu/resource/celex/32017R0745"
+        },
+        {
+          "role": "routing",
+          "sha256": "a5bdc0318f93aeac25a1067feda1d905c81d358e3b0d3960caf3a17af91fe47e",
+          "size": 54365,
+          "url": "https://publications.europa.eu/resource/celex/32025R2457"
+        },
+        {
+          "role": "to",
+          "sha256": "16f75f7a63fcf4c45f9d753a85c0ff8b0a8b5a3d822dc803db3be88b483d4f88",
+          "size": 161559,
+          "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20260101.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32025R2457",
+      "selection": "all",
+      "to_date": "2026-01-01",
+      "to_version": "02017R0745-20260101"
+    },
+    {
+      "act": "32024R1689",
+      "act_title": "Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised rules on artificial intelligence and amending Regulations (EC) No 300/2008, (EU) No 167/2013, (EU) No 168/2013, (EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144 and Directives 2014/90/EU, (EU) 2016/797 and (EU) 2020/1828 (Artificial Intelligence Act) (Text with EEA relevance)",
+      "amending_acts": [
+        "32026R1744"
+      ],
+      "annotations": 88,
+      "bridged": [
+        "02024R1689-20240712"
+      ],
+      "from_date": "2024-06-13",
+      "from_original": true,
+      "from_version": "32024R1689",
+      "id": "32024R1689@20260727",
+      "inputs": [
+        {
+          "role": "from",
+          "sha256": "8c895eef861ecaa597b3c8824d42b0c9d75782deb370cc0004ebe38188038e0b",
+          "size": 171234,
+          "url": "https://publications.europa.eu/resource/oj/L_202401689.ENG.fmx4"
+        },
+        {
+          "role": "instructions",
+          "sha256": "4742c5db6c4e04f7ea6e92e6b55dcbe2c48822142036175e560d25923b96c94c",
+          "size": 44619,
+          "url": "https://publications.europa.eu/resource/oj/L_202601744.ENG.fmx4"
+        },
+        {
+          "role": "metadata",
+          "sha256": "897bf4872d8a1757a688632a346b45f7c0ac85d0bbb46d765607af3a1aa62c07",
+          "size": 37796,
+          "url": "https://publications.europa.eu/resource/celex/32024R1689"
+        },
+        {
+          "role": "routing",
+          "sha256": "cb6229f5e5cc209ba2263dbf0d04f73b9e0b084e5e3d3781d5e92ebbdfd14af1",
+          "size": 98127,
+          "url": "https://publications.europa.eu/resource/celex/32024R1689"
+        },
+        {
+          "role": "routing",
+          "sha256": "4ccfbfa42a913b69f58694371fd62677f63d33631037cd1e2f0eb92fb632342e",
+          "size": 36403,
+          "url": "https://publications.europa.eu/resource/celex/32026R1744"
+        },
+        {
+          "role": "to",
+          "sha256": "6eb260fa503d69c2d57a39b6d2dad5fcd573b2127fcc0776d8246b9128c03cf1",
+          "size": 107831,
+          "url": "https://publications.europa.eu/resource/consolidation/2024R1689%2F20260727.ENG.fmx4"
+        }
+      ],
+      "instruction_note": "",
+      "instruction_source": "32026R1744",
+      "selection": "all",
+      "to_date": "2026-07-27",
+      "to_version": "02024R1689-20260727"
+    }
+  ],
+  "explain_subset": {
+    "cases": [
+      {
+        "case_id": "32024R1689@20260727",
+        "selection": "every explainable change of the flagship transition",
+        "units": [
+          "AR 1",
+          "AR 2",
+          "AR 3",
+          "AR 4",
+          "AR 4a",
+          "AR 5",
+          "AR 6",
+          "AR 10",
+          "AR 11",
+          "AR 17",
+          "AR 25",
+          "AR 27",
+          "AR 28",
+          "AR 29",
+          "AR 30",
+          "AR 40",
+          "AR 42",
+          "AR 43",
+          "AR 50",
+          "AR 56",
+          "AR 57",
+          "AR 58",
+          "AR 60",
+          "AR 60a",
+          "AR 63",
+          "AR 64",
+          "AR 69",
+          "AR 70",
+          "AR 72",
+          "AR 75",
+          "AR 75a",
+          "AR 75b",
+          "AR 75c",
+          "AR 75d",
+          "AR 76",
+          "AR 77",
+          "AR 95",
+          "AR 96",
+          "AR 97",
+          "AR 99",
+          "AR 111",
+          "AR 113",
+          "AN I",
+          "AN VIII",
+          "AN XIV"
+        ]
+      },
+      {
+        "case_id": "32006R1907@20081012",
+        "selection": "sample of 10 from 53, evenly spread over the other transitions",
+        "units": [
+          "AN IV"
+        ]
+      },
+      {
+        "case_id": "32006R1907@20150323",
+        "selection": "sample of 10 from 53, evenly spread over the other transitions",
+        "units": [
+          "AN X"
+        ]
+      },
+      {
+        "case_id": "32006R1907@20210215",
+        "selection": "sample of 10 from 53, evenly spread over the other transitions",
+        "units": [
+          "AN XIV"
+        ]
+      },
+      {
+        "case_id": "32017R0745@20170505",
+        "selection": "sample of 10 from 53, evenly spread over the other transitions",
+        "units": [
+          "AR 2",
+          "AR 88",
+          "AN VIII"
+        ]
+      },
+      {
+        "case_id": "32017R0745@20200424",
+        "selection": "sample of 10 from 53, evenly spread over the other transitions",
+        "units": [
+          "AR 59",
+          "AN IX"
+        ]
+      },
+      {
+        "case_id": "32017R0745@20240709",
+        "selection": "sample of 10 from 53, evenly spread over the other transitions",
+        "units": [
+          "AR 78"
+        ]
+      },
+      {
+        "case_id": "32017R0745@20260101",
+        "selection": "sample of 10 from 53, evenly spread over the other transitions",
+        "units": [
+          "AN I"
+        ]
+      }
+    ],
+    "flagship": "32024R1689@20260727",
+    "note": "Generated by `emendrix eval build-subset`: every explainable change of the flagship transition (32024R1689@20260727), plus a sample of 10 from 53, evenly spread over the other transitions. Nothing in it was chosen by hand or after seeing a result.",
+    "sample": 10
+  },
+  "note": "Generated by `emendrix eval build-corpus` from the acts' own CELLAR tree and branch notices. No label in this file was written by hand.",
+  "skips": [
+    {
+      "act": "32006R1907",
+      "detail": "the tree notice offers pdf, xhtml in English",
+      "reason": "structured_text_unavailable",
+      "version": "02006R1907-20100402",
+      "version_date": "2010-04-02"
+    },
+    {
+      "act": "32006R1907",
+      "detail": "the tree notice offers pdfa1a, xhtml in English",
+      "reason": "structured_text_unavailable",
+      "version": "02006R1907-20101201",
+      "version_date": "2010-12-01"
+    },
+    {
+      "act": "32006R1907",
+      "detail": "the tree notice offers pdfa1a, xhtml in English",
+      "reason": "structured_text_unavailable",
+      "version": "02006R1907-20110221",
+      "version_date": "2011-02-21"
+    },
+    {
+      "act": "32006R1907",
+      "detail": "the tree notice offers pdfa1a, xhtml in English",
+      "reason": "structured_text_unavailable",
+      "version": "02006R1907-20110306",
+      "version_date": "2011-03-06"
+    },
+    {
+      "act": "32006R1907",
+      "detail": "the tree notice offers pdfa1a, xhtml in English",
+      "reason": "structured_text_unavailable",
+      "version": "02006R1907-20110505",
+      "version_date": "2011-05-05"
+    },
+    {
+      "act": "32006R1907",
+      "detail": "the tree notice offers pdf, print in English",
+      "reason": "structured_text_unavailable",
+      "version": "32006R1907",
+      "version_date": "2006-12-18"
+    },
+    {
+      "act": "32022R2065",
+      "detail": "the tree notice offers no English expression, only FRA",
+      "reason": "structured_text_unavailable",
+      "version": "02022R2065-20221027",
+      "version_date": "2022-10-27"
+    },
+    {
+      "act": "32024R1689",
+      "detail": "the tree notice offers no English expression, only FRA",
+      "reason": "structured_text_unavailable",
+      "version": "02024R1689-20240712",
+      "version_date": "2024-07-12"
+    }
+  ]
+}

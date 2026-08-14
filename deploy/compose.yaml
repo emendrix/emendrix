@@ -1,0 +1,107 @@
+# Reference deployment: a web server that serves a directory of files, and two one-shot jobs.
+#
+# There is no scheduler container. The schedule is **host cron**, calling `docker compose run`,
+# and that is a decision rather than an omission: a scheduler service is a third image to keep
+# patched, a second place a failure can hide, and a thing to debug at the moment the feed
+# endpoint changes. Host cron writes to syslog, is already monitored on any machine that has a
+# machine's worth of monitoring, and is the tool the operator already knows.
+#
+#   17 * * * * cd /srv/emendrix && docker compose run --rm poller && docker compose run --rm page
+#
+# The README's "Running it on a server" section is the runbook: what runs when, which volumes
+# hold what, what breaks when the notification endpoint moves, and how to re-run a missed window.
+#
+#   docker compose build
+#   docker compose up -d web                  # serve whatever is in the site volume
+#   docker compose run --rm poller            # one poll → diff → explain → gate → commit
+#   docker compose run --rm page              # regenerate the static site
+#
+# Secrets: `OPENROUTER_API_KEY` (or `ANTHROPIC_API_KEY`) comes from `deploy/.env`, which is
+# gitignored and never baked into an image. Without one the explain stage cannot run live; the
+# deterministic half of the loop does not need it.
+
+name: emendrix
+
+services:
+  web:
+    # Pinned by manifest-list digest for the reason `deploy/Dockerfile`'s header gives: a tag
+    # moves, and the tag in front of the digest is for a reader, not for docker. Resolved
+    # 2026-08-09 with `docker buildx imagetools inspect nginx:1.27-alpine`.
+    image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - site:/usr/share/nginx/html:ro
+      # One directive, so that nginx's own trailing-slash redirect stays path-relative and cannot
+      # send an `https://` reader to an `http://` URL behind a TLS-terminating proxy. The file says
+      # why; it drops in beside the image's own `default.conf` and replaces nothing, so serving a
+      # directory as its `index.html`, which the generated tree relies on, is still the upstream
+      # config's job. Editing it means recreating this container, since nginx reads its
+      # configuration at startup.
+      - ./absolute-redirect.conf:/etc/nginx/conf.d/absolute-redirect.conf:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+
+  # One poll of the notification feed, end to end, ending in a commit in the changelog
+  # repository. Exits when it is done: this is a cron job, not a daemon.
+  poller:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    # The registry name the release carries, and the tag the `build:` stanza above writes locally,
+    # so `page` below has an image whether the operator built from a clone or pulled a published
+    # one. A version rather than a moving tag: what a moving tag means changes under a deployment
+    # that has not been redeployed. Only `:<short sha>` and `:main` are pushed on every gated
+    # commit (`.github/workflows/publish.yml`), so a version tag is a build or a release, never
+    # something that appeared on its own.
+    image: ghcr.io/emendrix/emendrix:0.1.0
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      EMENDRIX_OUTPUT_REPO: /work/changelogs
+    volumes:
+      - changelogs:/work/changelogs
+      - cache:/home/emendrix/.cache
+      - state:/home/emendrix/.local/share
+      - ./watchlist.toml:/work/watchlist.toml:ro
+    command: ["run", "--once"]
+
+  # The public site, rebuilt from what the poller committed plus the reports baked into the
+  # image. Reads only; it fetches nothing and needs no key.
+  #
+  # `--site-url` is the deployment's own address and the one fact the generator cannot infer.
+  # A feed's links and entry IDs are absolute by definition, so without it no feed file is
+  # written at all and `/feeds/` says why. Change it here when the site moves, and nowhere
+  # else. `--repo-url` is the public home of the source: with it every page's footer links the
+  # repository, without it the footer names it in plain words rather than rendering a dead link.
+  # The watchlist is read from `/work/watchlist.toml`, the default relative to the image's
+  # `WORKDIR`, which is the file mounted below.
+  page:
+    image: ghcr.io/emendrix/emendrix:0.1.0
+    volumes:
+      - changelogs:/work/changelogs:ro
+      - site:/work/site
+      - ./watchlist.toml:/work/watchlist.toml:ro
+    command:
+      - "site"
+      - "build"
+      - "--out"
+      - "/work/site"
+      - "--changelogs"
+      - "/work/changelogs"
+      - "--report-dir"
+      - "/app/reports/eval"
+      - "--site-url"
+      - "https://emendrix.symber.net"
+      - "--repo-url"
+      - "https://github.com/emendrix/emendrix"
+
+volumes:
+  changelogs:  # the output git repository: yours, never pushed by emendrix
+  site:        # the generated site: pages, feeds, the search index and its script
+  cache:       # the HTTP response cache; disposable, rebuilt on demand
+  state:       # the watcher's seen-state cursor; NOT disposable

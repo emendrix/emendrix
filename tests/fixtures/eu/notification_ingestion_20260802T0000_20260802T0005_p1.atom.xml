@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed
+        xmlns:notifReq="http://publications.europa.eu/atom/notificationRequest"
+        xmlns:notifEntry="http://publications.europa.eu/atom/notificationEntry"
+        xmlns="http://www.w3.org/2005/Atom">
+  <title>IngestionNotificationMessagesResponse</title>
+  <id>http://publications.europa.eu/webapi/notification/ingestion</id>
+  <link href="http://publications.europa.eu/webapi/notification/ingestion" rel="self" type="application/rss+xml"/>
+  <updated>2026-08-06T13:49:42.420+02:00</updated>
+  <author>
+    <name>Cellar</name>
+  </author>
+  <notifReq:startDate>2026-08-02T00:00:00.000+02:00</notifReq:startDate>
+  <notifReq:endDate>2026-08-02T00:05:00.000+02:00</notifReq:endDate>
+  <notifReq:page>1</notifReq:page>
+  <notifReq:moreEntries>false</notifReq:moreEntries>
+</feed>

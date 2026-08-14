@@ -1,0 +1,13 @@
+{
+  "judge_model": "openrouter:openai/gpt-5.6-sol",
+  "key": "202f2ddf8643e456595b4f241177fd834119827df0719e89590842fc436abcfc",
+  "output": {
+    "faithful": true,
+    "issue": null
+  },
+  "prompt": "BEFORE:\nArticle 4AI literacyProviders and deployers of AI systems shall take measures to ensure, to their best extent, a sufficient level of AI literacy of their staff and other persons dealing with the operation and use of AI systems on their behalf, taking into account their technical knowledge, experience, education and training and the context the AI systems are to be used in, and considering the persons or groups of persons on whom the AI systems are to be used.\n\nAFTER:\nArticle 4AI literacy1.Providers and deployers of AI systems shall take measures to support the development of AI literacy of their staff and other persons dealing with the operation and use of AI systems on their behalf, taking into account their technical knowledge, experience, education and training and the context the AI systems are to be used in, and considering the persons or groups of persons on whom the AI systems are to be used. This obligation does not require providers or deployers to guarantee any specific level of AI literacy of any individual.2.The Commission and the Member States shall support and facilitate the efforts of providers and deployers of AI systems, in particular SMEs, in fulfilling their obligation under paragraph 1 of this Article. For that purpose, the Commission shall publish practical examples of how to comply with that obligation on the single information platform referred to in Article 62(3), point (b).3.The Board shall adopt recommendations, taking into account European competence frameworks, to support the Commission and Member States in the promotion of AI literacy required under paragraph 1, including by setting out common objectives.\n\nSENTENCES:\n1. The provision is now divided into three numbered paragraphs instead of a single unnumbered paragraph.\n2. Paragraph 1 shifts the obligation from ensuring a sufficient level of AI literacy to supporting the development of AI literacy, and adds an explicit statement that providers and deployers are not required to guarantee any specific level of literacy for any individual.\n3. Paragraphs 2 and 3 introduce new obligations for the Commission, Member States, and the Board to support and facilitate AI literacy efforts and to adopt recommendations based on European competence frameworks.",
+  "recorded_with": "openrouter:openai/gpt-5.6-sol",
+  "rubric_sha": "85dc3b14eec835c9caabd3e11f15a84fc754649eb26b94d408928a4b656cda8e",
+  "schema_version": 1,
+  "synthetic": false
+}

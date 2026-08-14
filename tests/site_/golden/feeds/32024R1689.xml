@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<title>emendrix — AI Act</title>
+<id>https://example.invalid/site/feeds/32024R1689.xml</id>
+<link rel="self" href="https://example.invalid/site/feeds/32024R1689.xml"/>
+<link rel="alternate" href="https://example.invalid/site/acts/32024R1689/"/>
+<updated>2026-08-06T00:00:00Z</updated>
+<author><name>emendrix</name></author>
+</feed>

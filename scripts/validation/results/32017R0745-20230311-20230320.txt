@@ -1,0 +1,46 @@
+# 32017R0745  20230311 -> 20230320
+# emendrix validation trace, generated 2026-08-05
+
+amending acts in window: 32023R0607
+units in v(20230311): 140   units in v(20230320): 140
+
+## signal 1 - structural Formex diff
+inserted 0 - modified 3 - deleted 0 - unchanged 137 -> 3 touched
+  inserted: -
+  deleted : -
+  modified: AR 120 | AR 122 | AR 123
+
+## signal 2 - CELLAR modification annotations
+6 annotations -> 3 touched units
+  roles: {'R': 6}
+  units: AR 120 | AR 122 | AR 123
+  location codes seen: {'ALN': 3, 'AR': 6, 'PA': 4, 'PTA': 1, 'TIRE': 1, 'TXT': 1}
+  annotations with no keyable top-level unit: 0
+
+## signal 3 - naive instruction-prose parse of the amending acts
+3 units named
+
+## agreement (D7 granularity: top-level provision)
+### diff vs metadata
+  predicted 3 - reference 3 - P 1.000 - R 1.000 - F1 1.000
+  only in predicted: -
+  only in reference: -
+
+### diff vs metadata, articles only
+  predicted 3 - reference 3 - P 1.000 - R 1.000 - F1 1.000
+  only in predicted: -
+  only in reference: -
+
+### prose vs metadata, same window
+  predicted 3 - reference 3 - P 1.000 - R 1.000 - F1 1.000
+  only in predicted: -
+  only in reference: -
+
+# note: instruction prose carries no date, so a naive parse names every provision
+# the amending act touches, not the subset that entered into force in this window.
+# The block below is the fair measure of the prose parser.
+### prose vs metadata, whole amending acts
+  predicted 3 - reference 3 - P 1.000 - R 1.000 - F1 1.000
+  only in predicted: -
+  only in reference: -
+

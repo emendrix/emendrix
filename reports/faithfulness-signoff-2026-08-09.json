@@ -1,0 +1,129 @@
+{
+  "reviewed_on": "2026-08-08",
+  "reviewer": "Martins Erts",
+  "worksheet": "reports/faithfulness-review-2026-08-09.md",
+  "sample_digest": "c439dbf37c78facaf405577bf1269df1e8dca054cc7199905d114b014a7f20cb",
+  "summary": "reviewed 20/20 on 2026-08-08 by Martins Erts: 15 faithful, 5 not faithful, judge disagreed on 1 (lenient)",
+  "entries": [
+    {
+      "slug": "32024R1689@20260727 AR 1",
+      "prompt_sha": "ceecc592e8c3cf8c79972f41b0c4998c2529a6be1a5005af7e216426f14b18b6",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 4",
+      "prompt_sha": "8c6aa8cea544173a36032b609722bf6ea434cec22e44e1b97efd5ecc8e13f39d",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 6",
+      "prompt_sha": "913180d7c3a08b74d4d105c4ba9189b24f8d3bb76bc1a777d76d9f86024d8050",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 11",
+      "prompt_sha": "6c1db038f490fef104af2ecd6ef06199e7a3a5755b3811c071e241b0bf9f2e1e",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 27",
+      "prompt_sha": "9678a6a0130e8f399ea1e3f08fabaf98762460e0fc104e350444d2f53d7a9081",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 30",
+      "prompt_sha": "5dcc9a80447ab4a853cffcd3cb17dae6d5d4da6021d821d8eb1981aa4a5a9300",
+      "faithful": false,
+      "note": "Sentence 2 compresses the delegated power into \"adding, withdrawing, or moving codes, categories, or types of AI systems\", which reads as allowing categories to be moved; the added text permits moving only a code or a type of AI system from one category to another."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 43",
+      "prompt_sha": "17a931f72d515469c989028b43dcda5b12f9f518396a79760220c77c45d2e897",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 57",
+      "prompt_sha": "aaa931d5e0dfe37d92f1c32a21effecc92c420880d222618dc3930fad21c82e2",
+      "faithful": false,
+      "note": "Sentence 3 says paragraph 10 adds a reference to competent data protection authorities, but the earlier text already referred to national data protection authorities, so the wording was substituted, not added; the same sentence also asserts further differences in paragraphs 12 and 14, which lie beyond the truncation markers and cannot be verified."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 60",
+      "prompt_sha": "6dcd4ad0b044566a97a6504638fda3b6c3eae3d5409ac4b125e8d8903ab42f2b",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 64",
+      "prompt_sha": "4261ad1e21efd1589827ba892c0935eae3300af039770fae0e434caf07236db3",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 72",
+      "prompt_sha": "be205a1d1740a53f6339c2c41308397b10ad3606aed274f2eb73f28da636682e",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 75b",
+      "prompt_sha": "d73e48b5b26c37197e3b3fa0f81827fad37e285ec5fa82cf758ae5ec5a84db01",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 75d",
+      "prompt_sha": "7108450a4f5999ce4b9499d77b66c203bd6e628035f7ede455393a2c69e52089",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 95",
+      "prompt_sha": "197766e74cb84f2046969a5daae1aad1b3ef5006a8ed54dd22de6282dd1ea0b3",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 99",
+      "prompt_sha": "4806a370a29d39709f035135ec71a9be7ac05c6d4bc5878ed72d43b8c027a0d3",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AN I",
+      "prompt_sha": "ac425a116d612c4776d2021e89c9a8418f87be4f4d6f7e4e5956e55ff1318156",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32006R1907@20081012 AN IV",
+      "prompt_sha": "15dee7a6a73d07266ddc92c5093e0733766692f4014559b76163e7e838f6c300",
+      "faithful": false,
+      "note": "Sentence 1 counts glyceride entries identified by SDA numbers among the substances that no longer appear, but walking the two lists shows both SDA-identified glyceride entries (266-948-4 and 270-312-1) are retained in the later text, as sentence 3 itself notes; only fatty-acid SDA entries were removed."
+    },
+    {
+      "slug": "32006R1907@20210215 AN XIV",
+      "prompt_sha": "6aaed8d11f1f931cdfcc875a4edfcabf43aee5a4afb0ab939f5dd1da3b9c39bf",
+      "faithful": false,
+      "note": "Sentence 2 claims the entry list otherwise appears unchanged, but both texts are truncated at different points (the earlier within entry 39, the later within entry 37), so the remainders cannot be compared and a claim that they agree cannot be verified."
+    },
+    {
+      "slug": "32017R0745@20170505 AN VIII",
+      "prompt_sha": "c9ab4977f2cc75c934647eebd750dcd6e27532193a7734a486ba979fef23a5dc",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32017R0745@20240709 AR 78",
+      "prompt_sha": "62e9c1071e908d915d16d139dab483c9b8b0acdef100daa5eef792e646f463b8",
+      "faithful": false,
+      "note": "Sentence 2 names Article 78(14)(1) and (2), subdivisions that appear in neither shown text and lie beyond the truncation markers, so the claimed extent of the change cannot be verified from the texts as given."
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+# --- emendrix-specific -------------------------------------------------------
+# Working notes and scratch space. Nothing committed may reference anything outside the
+# repository: what explains why the code is the way it is lives in the code, the README,
+# the CHANGELOG and docs/.
+temp/
+CLAUDE.md
+
+# The validation scripts' HTTP cache. `scripts/validation/results/` is committed as the measured
+# record; the fetched bytes are not.
+scripts/validation/.cache/
+
+# An installation's own watchlist and watch cursor, when either is kept beside the code rather
+# than in the user-data directory. `watchlist.example.toml` is the committed template.
+watchlist.toml
+deploy/watchlist.toml
+watch-state.json*
+
+# The backfill resume record, one run's lock on it, and a record this build could not read. All
+# three are an installation's own progress, not a fact about the project.
+backfill-ledger.json
+backfill-ledger.json.corrupt
+backfill-ledger.json.lock
+
+# The generated public site: `uv run emendrix site build --out site/` rebuilds it from committed
+# artifacts, so the artifacts are what is worth committing and the rendering is not. The reviewed
+# golden copy lives in tests/site_/golden/.
+site/
+
+# Local secrets and model credentials, which the explain layer reads from the environment.
+# `.envrc` and `.envrc.example` are committed and hold no secret; the key lives in
+# `.envrc.local`, listed separately because `.env.*` does not match it.
+.env
+.env.*
+!.env.example
+.envrc.local
+deploy/.env
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Environments
+.venv/
+venv/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# --- Editors / OS ------------------------------------------------------------
+.idea/
+.vscode/
+.DS_Store
+.superpowers/

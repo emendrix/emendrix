@@ -1,0 +1,93 @@
+# modification annotations of 32006R1907 (notice=branch, fetched 2026-08-05)
+
+85 amending acts - 391 annotations
+roles observed: {'A': 10, 'C': 4, 'DEL': 7, 'J': 105, 'M': 26, 'R': 238, 'TXT': 1}
+location codes observed: {'ALN': 19, 'AN': 356, 'APP': 57, 'AR': 34, 'COL': 60, 'FOOTNOTE': 1, 'FR': 20, 'NOTE': 7, 'PA': 44, 'PO': 154, 'PT': 15, 'PTA': 6, 'PTI': 1, 'SBS': 60, 'SCT': 9, 'SECTION': 8, 'TAB': 39, 'TABL': 13, 'TIRE': 10, 'TIT': 9, 'TXT': 128}
+annotations with no keyable top-level unit: 1
+
+## per amending act (sorted by earliest START_OF_VALIDITY)
+32007R1354  n=1  roles={'M': 1}  start_of_validity={'2007-11-23': 1}
+32008R0987  n=2  roles={'M': 2}  start_of_validity={'2008-10-12': 2}
+32008R1272  n=68  roles={'A': 6, 'J': 1, 'R': 61}  start_of_validity={'2009-01-20': 28, '2010-12-01': 28, '2015-06-01': 12}
+32009R0134  n=1  roles={'M': 1}  start_of_validity={'2009-02-20': 1}
+32009R0552  n=1  roles={'M': 1}  start_of_validity={'2009-06-27': 1}
+32010R0276  n=1  roles={'M': 1}  start_of_validity={'2010-04-02': 1}
+32010R0453  n=3  roles={'M': 1, 'R': 2}  start_of_validity={'2010-12-01': 2, '2015-06-01': 1}
+32011R0143  n=1  roles={'M': 1}  start_of_validity={'2011-02-21': 1}
+32011R0207  n=1  roles={'M': 1}  start_of_validity={'2011-03-06': 1}
+32011R0253  n=1  roles={'R': 1}  start_of_validity={'2011-03-19': 1}
+32011R0252  n=16  roles={'M': 1, 'R': 15}  start_of_validity={'2011-05-05': 16}
+32011R0366  n=1  roles={'M': 1}  start_of_validity={'2011-05-05': 1}
+32012R0835  n=1  roles={'M': 1}  start_of_validity={'2011-12-10': 1}
+32011R0494  n=1  roles={'M': 1}  start_of_validity={'2012-01-10': 1}
+32012R0125  n=1  roles={'TXT': 1}  start_of_validity={'2012-02-18': 1}
+32012R0109  n=1  roles={'M': 1}  start_of_validity={'2012-06-01': 1}
+32012R0412  n=1  roles={'M': 1}  start_of_validity={'2012-06-05': 1}
+32012R0836  n=1  roles={'M': 1}  start_of_validity={'2012-10-09': 1}
+32013R0126  n=1  roles={'M': 1}  start_of_validity={'2013-03-06': 1}
+32013R0348  n=1  roles={'M': 1}  start_of_validity={'2013-04-21': 1}
+32013R0517  n=2  roles={'R': 2}  start_of_validity={'2013-07-01': 2}
+32014R0317  n=8  roles={'A': 1, 'J': 7}  start_of_validity={'2014-04-01': 2, '2015-01-01': 2, '2016-04-01': 4}
+32012R0847  n=1  roles={'M': 1}  start_of_validity={'2014-04-10': 1}
+32014R0895  n=1  roles={'C': 1}  start_of_validity={'2014-08-22': 1}
+32015R0282  n=3  roles={'M': 3}  start_of_validity={'2015-03-13': 3}
+32015R0326  n=1  roles={'M': 1}  start_of_validity={'2015-03-23': 1}
+32014R0301  n=1  roles={'J': 1}  start_of_validity={'2015-05-01': 1}
+32015R0628  n=1  roles={'M': 1}  start_of_validity={'2015-05-13': 1}
+32014R0474  n=1  roles={'C': 1}  start_of_validity={'2015-06-01': 1}
+32015R0830  n=1  roles={'R': 1}  start_of_validity={'2015-06-01': 1}
+32015R1494  n=1  roles={'C': 1}  start_of_validity={'2015-09-25': 1}
+32013R1272  n=1  roles={'C': 1}  start_of_validity={'2015-12-27': 1}
+32016R0026  n=1  roles={'J': 1}  start_of_validity={'2016-02-03': 1}
+32016R0217  n=1  roles={'M': 1}  start_of_validity={'2016-03-08': 1}
+32016R0863  n=2  roles={'R': 2}  start_of_validity={'2016-06-21': 2}
+32016R1005  n=1  roles={'R': 1}  start_of_validity={'2016-07-13': 1}
+32016R1017  n=1  roles={'J': 1}  start_of_validity={'2016-07-14': 1}
+32016R1688  n=1  roles={'R': 1}  start_of_validity={'2016-10-11': 1}
+32017R0706  n=1  roles={'R': 1}  start_of_validity={'2016-10-11': 1}
+32016R2235  n=1  roles={'J': 1}  start_of_validity={'2017-01-02': 1}
+32017R0227  n=1  roles={'J': 1}  start_of_validity={'2017-03-02': 1}
+32017R0999  n=1  roles={'J': 1}  start_of_validity={'2017-07-04': 1}
+32017R1000  n=1  roles={'J': 1}  start_of_validity={'2017-07-04': 1}
+32017R1510  n=7  roles={'J': 5, 'R': 2}  start_of_validity={'2017-09-20': 2, '2018-03-01': 5}
+32012R0848  n=1  roles={'J': 1}  start_of_validity={'2017-10-10': 1}
+32018R0675  n=5  roles={'J': 4, 'R': 1}  start_of_validity={'2017-12-01': 2, '2018-05-24': 1, '2018-12-01': 2}
+32018R0035  n=1  roles={'J': 1}  start_of_validity={'2018-01-31': 1}
+32018R0589  n=1  roles={'J': 1}  start_of_validity={'2018-05-09': 1}
+32018R0588  n=1  roles={'J': 1}  start_of_validity={'2018-05-09': 1}
+32018R1513  n=2  roles={'J': 2}  start_of_validity={'2018-11-01': 2}
+32018R2005  n=1  roles={'R': 1}  start_of_validity={'2019-01-07': 1}
+32019R0957  n=1  roles={'J': 1}  start_of_validity={'2019-07-02': 1}
+32020R2160  n=2  roles={'R': 2}  start_of_validity={'2019-07-04': 2}
+32019R1691  n=1  roles={'R': 1}  start_of_validity={'2019-10-30': 1}
+32018R1881  n=57  roles={'J': 12, 'M': 1, 'R': 44}  start_of_validity={'2020-01-01': 57}
+32020R0171  n=3  roles={'J': 1, 'R': 2}  start_of_validity={'2020-02-27': 3}
+32020R0507  n=2  roles={'R': 2}  start_of_validity={'2020-04-28': 2}
+32020R2096  n=16  roles={'A': 2, 'J': 6, 'R': 8}  start_of_validity={'2020-07-04': 1, '2021-01-05': 10, '2021-07-05': 2, '2021-10-01': 3}
+32020R1149  n=1  roles={'J': 1}  start_of_validity={'2020-08-24': 1}
+32020R0878  n=1  roles={'R': 1}  start_of_validity={'2021-01-01': 1}
+32020R2081  n=2  roles={'J': 2}  start_of_validity={'2021-01-04': 2}
+32019R1148  n=1  roles={'A': 1}  start_of_validity={'2021-02-01': 1}
+32021R0057  n=1  roles={'J': 1}  start_of_validity={'2021-02-15': 1}
+32021R1199  n=1  roles={'J': 1}  start_of_validity={'2021-08-10': 1}
+32021R1297  n=1  roles={'R': 1}  start_of_validity={'2021-08-25': 1}
+32021R2030  n=1  roles={'J': 1}  start_of_validity={'2021-12-12': 1}
+32021R2045  n=4  roles={'R': 4}  start_of_validity={'2021-12-14': 4}
+32021R0979  n=30  roles={'DEL': 1, 'J': 11, 'R': 18}  start_of_validity={'2022-01-08': 30}
+32021R2204  n=5  roles={'J': 5}  start_of_validity={'2022-03-01': 3, '2022-12-17': 2}
+32022R0586  n=5  roles={'J': 5}  start_of_validity={'2022-05-01': 5}
+32022R0477  n=64  roles={'DEL': 6, 'J': 9, 'R': 49}  start_of_validity={'2022-10-14': 64}
+32023R0923  n=1  roles={'J': 1}  start_of_validity={'2023-05-28': 1}
+32023R1132  n=6  roles={'J': 2, 'R': 4}  start_of_validity={'2023-06-29': 4, '2023-12-01': 2}
+32023R1464  n=2  roles={'J': 2}  start_of_validity={'2023-08-06': 2}
+32026R1168  n=3  roles={'J': 1, 'R': 2}  start_of_validity={'2023-10-17': 2, '2028-06-22': 1}
+32023R2055  n=3  roles={'J': 3}  start_of_validity={'2023-10-17': 3}
+32023R2482  n=2  roles={'R': 2}  start_of_validity={'2023-11-15': 2}
+32024R1328  n=1  roles={'R': 1}  start_of_validity={'2024-06-06': 1}
+32024R2462  n=1  roles={'J': 1}  start_of_validity={'2024-10-10': 1}
+32024R2929  n=6  roles={'R': 6}  start_of_validity={'2024-12-18': 6}
+32025R0660  n=1  roles={'J': 1}  start_of_validity={'2025-04-22': 1}
+32025R1090  n=2  roles={'J': 2}  start_of_validity={'2025-06-23': 2}
+32025R1731  n=4  roles={'J': 4}  start_of_validity={'2025-08-31': 1, '2025-09-01': 3}
+32025R1988  n=1  roles={'J': 1}  start_of_validity={'2025-10-23': 1}
+32026R0859  n=1  roles={'J': 1}  start_of_validity={'2026-05-11': 1}

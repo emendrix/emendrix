@@ -1,0 +1,113 @@
+# Builds the runtime image on a push to `main` and publishes it to the GitHub Container Registry.
+#
+# What it guarantees: an image reaches the registry only from a commit that passed the same
+# four-command quality gate `ci.yml` runs, and only after the built image has been executed once.
+# The gate is repeated here rather than borrowed because Actions cannot express a dependency on a
+# job in a different workflow file, and an unlinked publish would let a commit with a red gate
+# move the `:main` tag. That matters more than the duplicated three minutes: `:main` is the tag an
+# automated digest watcher follows, so it must never point at something nobody vouched for.
+#
+# Two tags, with different contracts:
+#
+#   :<short-sha>  immutable. Points at one commit forever, and is what a deployment pins,
+#                 by digest, deliberately.
+#   :main         a moving pointer to the newest gated build. Read by tooling, never deployed
+#                 from directly, because what it means changes under you.
+#
+# There is no credential to store and no secret to configure. The login step uses the
+# `GITHUB_TOKEN` the runner is handed for the duration of the run, which is why this workflow
+# asks for `packages: write` below; without it the push fails with a 403 that reads like a
+# credentials problem.
+name: Publish
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/emendrix/emendrix
+
+jobs:
+  # A deliberate copy of `ci.yml`'s gate, minus the advisory audit step, which is advisory
+  # precisely because it must not decide whether a commit ships. If the four commands here ever
+  # drift from the four there, the gate has stopped meaning one thing, and that is the bug.
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        # `enable-cache` is left at its default, which caches on a GitHub-hosted runner.
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Sync dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: ruff format
+        run: uv run ruff format --check .
+
+      - name: ruff check
+        run: uv run ruff check .
+
+      - name: mypy --strict
+        run: uv run mypy
+
+      - name: pytest
+        run: uv run pytest
+
+  publish:
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Seven characters of the commit sha, so a tag names the commit that produced it.
+      - name: Derive the image tag
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_ENV"
+
+      # Both tags are applied at build time. Tagging is not pushing: nothing leaves this runner
+      # until the explicit push steps below, which is what lets the smoke test sit in between.
+      - name: Build the runtime image
+        run: |
+          docker build -f deploy/Dockerfile \
+            --build-arg VERSION="${SHORT_SHA}" \
+            -t "${IMAGE}:${SHORT_SHA}" \
+            -t "${IMAGE}:main" \
+            .
+
+      # Before the push, not after. An image that cannot start is worth catching while it still
+      # exists only on this runner; once pushed, `:main` has already moved and something may
+      # already have pulled it.
+      - name: The image runs the shipped CLI
+        run: docker run --rm "${IMAGE}:${SHORT_SHA}" --help
+
+      - name: Login to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # The immutable tag first. If the second push fails, the registry holds a complete,
+      # addressable image and only the convenience pointer is stale; the reverse order would
+      # leave `:main` naming something no immutable tag records.
+      - name: Push the immutable tag
+        run: docker push "${IMAGE}:${SHORT_SHA}"
+
+      - name: Move the :main pointer
+        run: docker push "${IMAGE}:main"
+
+      # The digest is the thing a deployment actually pins, so print it into the log where the
+      # run that produced it can be read next to it, rather than making someone go and ask the
+      # registry which build this was.
+      - name: Report the digest
+        run: docker inspect --format '{{join .RepoDigests "\n"}}' "${IMAGE}:${SHORT_SHA}"

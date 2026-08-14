@@ -1,0 +1,14 @@
+# consolidated versions of 32017R0745 (from notice=tree, fetched 2026-08-05)
+
+7 versions; ENG manifestations per version
+
+20170505  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20200424  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20230311  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20230320  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20240709  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20250110  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+20260101  fmx4=yes formats=fmx4,pdfa2a,xhtml via=consolidation
+
+versions without an English Formex manifestation: 0
+  (none)

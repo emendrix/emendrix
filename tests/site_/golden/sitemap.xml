@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>https://example.invalid/site/</loc>
+<lastmod>2020-04-24</lastmod>
+</url>
+<url>
+<loc>https://example.invalid/site/acts/</loc>
+<lastmod>2020-04-24</lastmod>
+</url>
+<url>
+<loc>https://example.invalid/site/methodology/</loc>
+<lastmod>2026-08-13</lastmod>
+</url>
+<url>
+<loc>https://example.invalid/site/feeds/</loc>
+<lastmod>2020-04-24</lastmod>
+</url>
+<url>
+<loc>https://example.invalid/site/acts/32024R1689/</loc>
+</url>
+<url>
+<loc>https://example.invalid/site/acts/32022R2065/</loc>
+</url>
+<url>
+<loc>https://example.invalid/site/acts/32017R0745/</loc>
+<lastmod>2020-04-24</lastmod>
+</url>
+<url>
+<loc>https://example.invalid/site/acts/32006R1907/</loc>
+</url>
+</urlset>

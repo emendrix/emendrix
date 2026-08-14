@@ -1,0 +1,129 @@
+{
+  "reviewed_on": "2026-08-08",
+  "reviewer": "Martins Erts",
+  "worksheet": "reports/faithfulness-review-2026-08-08.md",
+  "sample_digest": "6e48a705468aefa5442dce506538adcbc0e422c407c3e1e2a9f8cd94873cf830",
+  "summary": "reviewed 20/20 on 2026-08-08 by Martins Erts: 13 faithful, 7 not faithful, judge disagreed on 5 (all lenient)",
+  "entries": [
+    {
+      "slug": "32024R1689@20260727 AR 1",
+      "prompt_sha": "af46a164dac7a99425ecc1a69642d23df7a16651528f80320590d2a5ae232730",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 4",
+      "prompt_sha": "c809a1a6e96a26a409ab5ebd26367429f4a734708b56788c1efc2cad9801434d",
+      "faithful": false,
+      "note": "AI Act AR 4. Sentence 3 attributes the adoption of recommendations jointly to the Commission, Member States and the Board, but paragraph 3 gives that task to the Board alone; it also says the recommendations are \"based on European competence frameworks\" where the text says only \"taking into account\"."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 6",
+      "prompt_sha": "b13c152cab8b8ee4c1cb7b0252c970f5815e96f59fb01c2cb31067d2c51d10e8",
+      "faithful": false,
+      "note": "AI Act AR 6. Sentence 3 says paragraph 1c \"excludes from the high-risk category\", but the text says only that such a product \"shall not be considered as fulfilling the condition in paragraph 1, point (b)\"; that defeats the paragraph-1 route while the Annex III route in paragraph 2 is untouched, so the stated exclusion is a conclusion the texts do not show."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 17",
+      "prompt_sha": "da9729767190dfacfbbed30c8ff8fa2a1fa9601969696a79a99287ef2e8d5664",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 27",
+      "prompt_sha": "6c3af03bf2fe928c576cdb07cd3fec58c65ad4efabbcda309c4767096127156c",
+      "faithful": false,
+      "note": "AI Act AR 27. Sentence 1 says deployers may \"satisfy the fundamental rights impact assessment requirement by cross-referencing\", but the text only permits the deployer, when conducting that assessment, to include cross-references to or relevant parts of the data protection impact assessment; the assessment itself must still be performed, so the sentence states an effect the texts do not show."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 30",
+      "prompt_sha": "af3a1af06cb8881e438753ba78fc79b34c2ff0f9605a7a3d6558ed7dd40925b5",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 43",
+      "prompt_sha": "66d3fedbe947aa561b801dcdf7199311da7ebf2b86e65daf85a647e3e1b60210",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 57",
+      "prompt_sha": "435fa44332e75bf6260b74cf7dff98a336a3bb02f2d405b6b592cd04ea6cf488",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 60a",
+      "prompt_sha": "3ae13a9df0500c6338ab9a2ee8a5b3b9e1ad3d06ecc0410a626f4a59c4222a13",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 69",
+      "prompt_sha": "d0270088c1e42f9664e87630fc18482b5ce6d687bebd0686683dfc23fbbc496c",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 72",
+      "prompt_sha": "9daea3fabf06533b7ce3f5e1b0fb7b5edf1006e30fb996d33eee3fa905be7dc3",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 75b",
+      "prompt_sha": "72ae69f300f2cb35922a3102a55cc51dca8bd7a43e11201f6a9014f0b8ccbc5a",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 76",
+      "prompt_sha": "7cc43b9f8d2da9278dfc715d50471f57634057d9c27eba85b5d3ab156c60d50e",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 96",
+      "prompt_sha": "56bca4cd71ed4ca303afd3fe2740f6f7bebc4b9a0bd4a4bb104718617af36a79",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 111",
+      "prompt_sha": "c9db5824d62d45bab9205dd1e3634e6a03778940d1721e4e2d435508ec507d1b",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AN VIII",
+      "prompt_sha": "9dfe1aca6bc7a3e27c2f79519c8b36f54d1ba298e8a4382f686f63f64799e18a",
+      "faithful": false,
+      "note": "AI Act AN VIII. The shipped sentence has the direction of the change reversed. In the Before text, Section B item 8 ends …recalled); and in the After it ends …recalled). — so a semicolon became a period, while the sentence claims item 8 \"now ends with a semicolon instead of a period\". It also claims item 9 \"has been renumbered\", but item 9 is item 9 in both texts."
+    },
+    {
+      "slug": "32006R1907@20081012 AN IV",
+      "prompt_sha": "9ed8e76a9e83b7c3185113c34ad403a236be71621ee2e83041c2bb73bc7edbae",
+      "faithful": false,
+      "note": "REACH AN IV. Sentence 3 claims \"some existing entries were reordered\", but walking both tables shows every surviving entry keeps its relative order; the versions differ only by removals, insertions placed at their sorted positions, and wording tweaks, so the reordering is a difference the texts do not show. The additions and removals in sentences 2 and 3, and the wording examples, all check out."
+    },
+    {
+      "slug": "32017R0745@20170505 AR 2",
+      "prompt_sha": "d431bcfd4c8d95d8cad69efccda3f03f643bbb042d450d10641e1bbd06f7aca9",
+      "faithful": false,
+      "note": "MDR AR 2. The visible text stops mid-sentence at the opening words of point (27) in both versions, so \"and beyond\" asserts sameness over text not shown; the truncation markers differ (10 599 vs 10 600 characters omitted), meaning the actual modification lies entirely in the omitted part and nothing in the sentence is verifiable from the texts as given."
+    },
+    {
+      "slug": "32017R0745@20200424 AR 59",
+      "prompt_sha": "ee9c96e8f0c21f2c369aba52a2b6b4061d14af911ff3e4f9cc791fd6673ef801",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32017R0745@20260101 AN I",
+      "prompt_sha": "62175301b77ed1f5c865ec79b22907bac051dae445921bb96d9c85cab05ac5ea",
+      "faithful": false,
+      "note": "#20 — MDR AN I. Sentence 1 claims the \"where justified pursuant to Section 10.4.2\" qualification is new, but that exact phrase is already present in the Before excerpt (both visible portions are identical, ending at the same spot in 10.4.1). Sentences 2 and 3 describe changes to 10.4.2(d), 10.4.3 and 10.4.4, none of which appear in either excerpt — the real change is inside the ~43k truncated characters, so nothing in these sentences is verifiable from the texts as given."
+    }
+  ]
+}

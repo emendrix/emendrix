@@ -1,0 +1,13 @@
+{
+  "judge_model": "openrouter:openai/gpt-5.6-sol",
+  "key": "57282bf12828f287d6d5eda450bd0b9e394e5b310ec5c0a7a5392126df73440a",
+  "output": {
+    "faithful": true,
+    "issue": null
+  },
+  "prompt": "BEFORE: (none — this side of the change does not exist)\n\nAFTER:\nArticle 75bCommitmentsIf, during proceedings under Article 75a(2), the operator concerned offers commitments to ensure compliance with the relevant provisions of this Regulation, the AI Office may, by decision, make those commitments binding on the operator concerned and declare that there are no further grounds for action. The AI Office may, upon request or on its own initiative, reopen the proceedings where:(a)there has been a material change in any of the facts on which the decision was based;(b)the operator acts contrary to its commitments; or(c)the decision was based on incomplete, incorrect or misleading information provided by the operator concerned.Where the AI Office considers that the commitments offered by the operator concerned are unable to ensure effective compliance with the relevant provisions of this Regulation, it shall reject those commitments in a reasoned decision when concluding the proceedings.\n\nSENTENCES:\n1. This provision is new and establishes a procedure by which the AI Office may accept binding commitments from an operator to ensure compliance with the Regulation during proceedings, or reject those commitments if they are insufficient.\n2. The AI Office may reopen proceedings if material facts change, the operator breaches its commitments, or the decision was based on incomplete or misleading information.",
+  "recorded_with": "openrouter:openai/gpt-5.6-sol",
+  "rubric_sha": "85dc3b14eec835c9caabd3e11f15a84fc754649eb26b94d408928a4b656cda8e",
+  "schema_version": 1,
+  "synthetic": false
+}

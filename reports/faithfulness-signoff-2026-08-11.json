@@ -1,0 +1,129 @@
+{
+  "reviewed_on": "2026-08-11",
+  "reviewer": "Martins Erts",
+  "worksheet": "reports/faithfulness-review-2026-08-11.md",
+  "sample_digest": "d4bb0264930bb78a69e143a5afa768de09556122991fc3fdd2d6712dc0e20486",
+  "summary": "reviewed 20/20 on 2026-08-11 by Martins Erts: 18 faithful, 2 not faithful, judge disagreed on 1 (strict). Same question as 2026-08-09; the sample moved by one triple, re-recorded after the instruction-scope fix, and both failures were also flagged by the judge.",
+  "entries": [
+    {
+      "slug": "32024R1689@20260727 AR 1",
+      "prompt_sha": "476b2e291a60ff050bf2209a2b3d254dddd72a13b477cb821f6edd86c23fb2bf",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 4",
+      "prompt_sha": "b3db5f4d9a321ad5599cc94ff12637a28b794530f27cd285adf9a2502c3ae09d",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 6",
+      "prompt_sha": "276cfbb1d6a69a085e37b87a7bcd9316c20f061cc59f4e9450c45f2e37733a5f",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 17",
+      "prompt_sha": "54144eed6ebe3384c2c2159ad74eef909969f11a994f52ae453f6c2998563809",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 27",
+      "prompt_sha": "0e3a154011f5e408d93789e0e13e591f8c778cdb072a7d894e9e49a509c50efd",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 30",
+      "prompt_sha": "4baa29f24529e355d076819bf76b43f7e3367be507d4c238827a4596d9f7960b",
+      "faithful": false,
+      "note": "sentence 2 says the delegated acts may add, withdraw, or move \"codes, categories, or types of AI systems\", but the text permits moving only a code or type of AI system from one category to another, not moving a category. Sentences 1 and 3 are supported. Agrees with the judge."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 43",
+      "prompt_sha": "a672bb6838bce4ff734b1610a8ac7739019aa2d2f1cc9de30742c34967f0c34f",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 57",
+      "prompt_sha": "01e3b8050645450b7d7dbf273ece2cab7a2773d3e6927fcb13f278c491a736e6",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 60a",
+      "prompt_sha": "1bc492c629d7ec67cb69c6ce4cd5e2c8afffb8f1af31b9dd42421663a596be49",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 69",
+      "prompt_sha": "4b7ec66c488777ac8319e60319c49d2c0148fbeef8b9ef22fe8684eb2d424c15",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 72",
+      "prompt_sha": "db296b593c060bcb45445c7f899a370c02d0c0b11129984c76bdb48ee1e6cf7b",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 75b",
+      "prompt_sha": "b129c541e53bbde10a0898b8615509f3a5bfdbfa713b5e726c10350b18f8dc87",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 76",
+      "prompt_sha": "cb1153341bf6cf641e0f4fd0075aa7f46277b9677c920e60ba84a0b0544b310b",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 96",
+      "prompt_sha": "60ef2d970d02930037e5286be9537ef1e84544b5c94f63185f624e64db5a4d88",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 111",
+      "prompt_sha": "3f8aa5826853e23ca0f8351d4c698f143b3a22b12a16ff1f6a20e3e4eb5e2ec7",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AN VIII",
+      "prompt_sha": "47271505a909227348e3a0c760a7c76e294be13cd4894d05ff13133cf2953880",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32006R1907@20081012 AN IV",
+      "prompt_sha": "9558f20e6eee116cbc68ab53694fb9bba8409d60591889bfa0434aa45e336e35",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32017R0745@20170505 AR 2",
+      "prompt_sha": "0e0be7aaa7a2aae9b87d3ed3a56653d68c95c0c79dd249b1f40804118cf536ce",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32017R0745@20200424 AR 59",
+      "prompt_sha": "c5e7b6456109ceb55c2a9b7219fa1d03bb8949118a61c8a5a3e78b914137cc86",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32017R0745@20260101 AN I",
+      "prompt_sha": "992c06126a448e452e426f2a46a6ae3d71201228bd18f05b73985e03e1b1ff00",
+      "faithful": false,
+      "note": "sentence 3 calls 26 May 2018 and 26 May 2020 \"mandate deadlines\"; in the earlier text 26 May 2018 is the deadline for giving the scientific committee its mandate and 26 May 2020 is the date by which the guidelines were to be ready, so the second date is misdescribed. Sentences 1 and 2, and the rest of sentence 3, are supported. Agrees with the judge."
+    }
+  ]
+}

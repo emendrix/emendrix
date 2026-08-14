@@ -1,0 +1,18 @@
+# modification annotations of 32017R0745 (notice=branch, fetched 2026-08-05)
+
+10 amending acts - 61 annotations
+roles observed: {'DEL': 2, 'J': 11, 'R': 48}
+location codes observed: {'ALN': 17, 'AN': 7, 'AR': 54, 'FR': 7, 'PA': 46, 'PRT': 2, 'PTA': 18, 'SCT': 7, 'TEXT': 9, 'TIRE': 8, 'TXT': 9}
+annotations with no keyable top-level unit: 0
+
+## per amending act (sorted by earliest START_OF_VALIDITY)
+32020R0561  n=26  roles={'J': 3, 'R': 23}  start_of_validity={'2020-04-24': 26}
+32023R0502  n=1  roles={'R': 1}  start_of_validity={'2023-03-11': 1}
+32023R0607  n=6  roles={'R': 6}  start_of_validity={'2023-03-20': 6}
+32024R1860  n=19  roles={'DEL': 2, 'J': 6, 'R': 11}  start_of_validity={'2024-07-09': 18, '2025-01-10': 1}
+32024R0568  n=1  roles={'R': 1}  start_of_validity={'2025-01-01': 1}
+32025R2457  n=4  roles={'R': 4}  start_of_validity={'2026-01-01': 4}
+32026R1359  n=1  roles={'R': 1}  start_of_validity={'2026-07-19': 1}
+32026R1451  n=1  roles={'R': 1}  start_of_validity={'2026-07-19': 1}
+32023R2197  n=1  roles={'J': 1}  start_of_validity={'2026-11-09': 1}
+32025R1920  n=1  roles={'J': 1}  start_of_validity={'2028-11-01': 1}

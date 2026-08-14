@@ -1,0 +1,129 @@
+{
+  "reviewed_on": "2026-08-13",
+  "reviewer": "Martins Erts",
+  "worksheet": "reports/faithfulness-review-2026-08-12.md",
+  "sample_digest": "087887b64f695d19ca134ce3f1774358e72313d66a6819b959372402298ac951",
+  "summary": "reviewed 20/20 on 2026-08-13 by Martins Erts: 17 faithful, 3 not faithful. Same question as 2026-08-11, over the recording of 2026-08-12; all three failures were also flagged by the judge.",
+  "entries": [
+    {
+      "slug": "32024R1689@20260727 AR 1",
+      "prompt_sha": "137e1ccfe19b3f548c2ad00a91828d7e5ff6fa9bf82442d0be52d047f0090dae",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 4",
+      "prompt_sha": "0fe4d75082ba8dfec91d42f7240bd7261909dd1f26dc99dc5f551fc69bcd87aa",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 6",
+      "prompt_sha": "6395157b77be06e54a84d454b3cb77603e3e0337ea0bae69cb5ea240ccea5964",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 17",
+      "prompt_sha": "a350fce7ddf5a069b336994bf2937926c3b64e9cbfc42cb684c7a8bfdc19c17a",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 27",
+      "prompt_sha": "1c440ec4ff4c97d7d8fd06eee58c94192b0f5c6b785102c1577f6eacfeaffc8c",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 30",
+      "prompt_sha": "adbe6912231f03fc51ca20da0fd5ccbdd0cee6749b9917dcdcd0293cfaf34fae",
+      "faithful": false,
+      "note": "sentence 2 says the delegated acts may add, withdraw, or move codes, categories, or types of AI systems, but the text permits moving only a code or type of AI system from one category to another, not moving a category. Sentence 1 is supported. Agrees with the judge."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 43",
+      "prompt_sha": "899cb5716721ba51acdb2eceae8b6982e8d634efcfac6df589f1ee1e368e652c",
+      "faithful": false,
+      "note": "sentence 3 says manufacturers are not required to use third-party assessment solely because of the Article 6(1) classification; the text says they are not required to choose it only because the product includes a high-risk AI system as a safety component, and only where the Union harmonisation legislation listed in Section A of Annex I does not require it. Sentences 1 and 2 are supported. Agrees with the judge."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 57",
+      "prompt_sha": "673291ee5c9e93c481f687cb7889f2e00aa952c8ac88761051294af0c8790db1",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 60a",
+      "prompt_sha": "df2c3c0777cb7042ce35f508562ca4b780e10c9e24c6e7f5f039c24ccaa30f21",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 69",
+      "prompt_sha": "ccb30b98661bce44dc1c03ba79ef5adcae201a50d2147f63f045a1cd84ff2be0",
+      "faithful": false,
+      "note": "sentence 1 describes the objectives of adequate implementation, cost-effectiveness and effective access for all Member States as having been set out in the Article 68(1) implementing act; the earlier text set out only the fee structure and level and the recoverable costs there, and listed those objectives as considerations to be taken into account. Sentence 2 is supported. Agrees with the judge."
+    },
+    {
+      "slug": "32024R1689@20260727 AR 72",
+      "prompt_sha": "117fbdb399200c6018e9cff4302d7ca29d88fde526083e5fa83c45e64e832c87",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 75b",
+      "prompt_sha": "1298e8cbe7d804b672ce12c7cf614de476a9905dc58f4da0a22df111ae1ccc54",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 76",
+      "prompt_sha": "12857f298367a09471810dfedd520936f06d5eedb394752ce48df218891648c0",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 96",
+      "prompt_sha": "8e4292240777067f54a48598301f2cfbaf9a796af3c5c2ca82469ee6c28db875",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AR 111",
+      "prompt_sha": "5f461d3fe7c44a0c760b1664060deb32eae5b0a6a0f717c66f1aaf4c9508ced9",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32024R1689@20260727 AN VIII",
+      "prompt_sha": "193f116a741bcccc578a793dc828cf1a820e1ef7772a401138c88b7ba41b3832",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32006R1907@20081012 AN IV",
+      "prompt_sha": "e288c9ac6bb0d9e378cbfc2c61e44e656d00f7db1faf3b9358ec9a586016d1ea",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32017R0745@20170505 AR 2",
+      "prompt_sha": "d4ed233b282ed07769e7ce704241bafa930c0e5a49242745d6e3cef481cca06a",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32017R0745@20200424 AR 59",
+      "prompt_sha": "62b89851c3bdf38937bff06b1173ff0d86f86de22886056022aead33e78cf7ff",
+      "faithful": true,
+      "note": ""
+    },
+    {
+      "slug": "32017R0745@20260101 AN I",
+      "prompt_sha": "beabb8bd6042a48453f84ebd6f44bbfb0c3068d03812b800fed4694eabcae851",
+      "faithful": true,
+      "note": ""
+    }
+  ]
+}

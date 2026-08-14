@@ -1,0 +1,121 @@
+# CI on a GitHub-hosted runner: the quality gate, the offline eval, and a best-effort image build.
+#
+# The gate mirrors the local four-command quality gate exactly:
+#   uv run ruff format . && uv run ruff check . && uv run mypy && uv run pytest
+# The one difference is `ruff format --check .`, which fails instead of rewriting. The parallel
+# flags `-n auto --dist loadscope` live in pyproject.toml and not here, which is what keeps the
+# command identical to the local one; every test that writes writes under pytest's `tmp_path`,
+# so the worker count changes nothing.
+#
+# Nothing here reaches the network beyond installing dependencies. `pytest` runs with
+# `-m 'not live and not record'` from pyproject.toml, and the eval job scores from the committed
+# fixture set (`--fixture-dir`), which has no code path to a socket. The explain stage answers
+# from committed cassettes in `CassetteMode.REPLAY`, constructs no provider client and reads no
+# API key, so no secret is configured and none is needed. Excluding the `record` marker also
+# keeps a CI run from mutating an artifact the rest of the suite asserts against.
+#
+# `uv sync --locked` in every job rather than plain `uv sync`: plain `uv sync` updates `uv.lock`
+# when pyproject.toml has drifted from it, so the gate could otherwise pass against a dependency
+# set nobody committed. `--locked` asserts the lockfile is current and fails instead.
+name: CI
+
+on: [push, pull_request]
+
+# Least privilege by default: the job token starts read-only rather than at whatever the
+# repository default happens to be.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        # `enable-cache` is left at its default, which caches on a GitHub-hosted runner.
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+
+      - name: Set up Python
+        # Reads `.python-version` (3.12), so CI and local dev run the same interpreter.
+        run: uv python install
+
+      - name: Sync dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: ruff format
+        run: uv run ruff format --check .
+
+      - name: ruff check
+        run: uv run ruff check .
+
+      - name: mypy --strict
+        run: uv run mypy
+
+      - name: pytest
+        run: uv run pytest
+
+      # Advisory, and deliberately outside the four-command gate: that gate means exactly the
+      # four commands, and an advisory published upstream today must not retroactively fail a
+      # commit that was green yesterday. It runs against the exported lockfile, the same
+      # dependency set `--locked` just asserted, so what it audits is what would ship.
+      - name: Audit dependencies (advisory)
+        continue-on-error: true
+        run: |
+          uv export --format requirements-txt --no-emit-project > "${RUNNER_TEMP:-/tmp}/requirements.txt"
+          uvx pip-audit --strict -r "${RUNNER_TEMP:-/tmp}/requirements.txt"
+
+  eval:
+    # The full eval over the committed labelled corpus, scored offline from the pinned fixtures:
+    # the deterministic layers over every transition, and the model layer (citation grounding,
+    # the gate's one retry, the quote fallback) replayed from the committed cassettes over the
+    # pinned explanation subset. No key, no provider client, no socket. `--check` fails the build
+    # when a number falls below a floor committed in `src/emendrix/eval_/thresholds.py`: a
+    # measured number may rise silently, never fall.
+    #
+    # That the README's published table matches the newest committed report is enforced in the
+    # other job, by `tests/eval/test_readme_table.py`, which regenerates the section and fails on
+    # any difference: a hand-edited number does not survive a build.
+    #
+    # The report is written to a scratch directory and thrown away. Committed reports are
+    # produced deliberately, by a person, with `uv run emendrix eval run`; CI publishes no
+    # numbers of its own.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        # `enable-cache` is left at its default here too.
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Sync dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Eval, deterministic layers and, from cassettes, the model layer
+        run: >-
+          uv run emendrix eval run
+          --fixture-dir tests/fixtures/eu
+          --report-dir "${RUNNER_TEMP:-/tmp}/emendrix-eval"
+          --check
+
+  image:
+    # Best-effort, and deliberately not part of the gate: building a container is not one of the
+    # four commands, and a failure here must not decide whether a commit ships.
+    #
+    # The README carries the same build command for a human to run locally.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build the runtime image
+        run: docker build -f deploy/Dockerfile -t emendrix:ci .
+
+      - name: The image runs the shipped CLI
+        run: docker run --rm emendrix:ci --help
