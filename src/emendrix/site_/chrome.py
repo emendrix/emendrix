@@ -15,9 +15,8 @@ index remain the whole navigation. `generated_on` is a parameter, never a clock 
 
 from __future__ import annotations
 
-from datetime import date
-
 from emendrix import DISCLAIMER
+from emendrix.site_.inputs import PageChrome
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.seo import head_metadata
 from emendrix.site_.urls import depth_of, up
@@ -37,16 +36,22 @@ def nav_links(depth: int) -> Html:
     )
 
 
-def _footer(generated_on: date, repo_url: str) -> Html:
+def _footer(chrome: PageChrome) -> Html:
     """The disclaimer, the build date and what the site does on the reader's machine.
 
     An unset repository URL renders as plain words rather than a dead link: a link that goes
-    nowhere is worse than a sentence naming the repository.
+    nowhere is worse than a sentence naming the repository. The same rule holds for the
+    changelog-data repository, so either sentence half reads correctly with its URL missing.
     """
     source = (
-        Html(f'<a href="{escape(repo_url)}">the emendrix repository</a>')
-        if repo_url
+        Html(f'<a href="{escape(chrome.repo_url)}">the emendrix repository</a>')
+        if chrome.repo_url
         else Html("the emendrix repository")
+    )
+    changelogs = (
+        Html(f'<a href="{escape(chrome.changelogs_url)}">the changelog repository</a>')
+        if chrome.changelogs_url
+        else Html("the changelog repository")
     )
     return join(
         (
@@ -57,9 +62,9 @@ def _footer(generated_on: date, repo_url: str) -> Html:
                 "EUR-Lex</a>.</p>"
             ),
             Html(
-                f"<p>Generated on {generated_on.isoformat()} from artifacts committed in "
-                f"{source}. One small script for search; no cookies, no analytics, no "
-                f"third-party requests.</p>"
+                f"<p>Generated on {chrome.generated_on.isoformat()} from artifacts committed in "
+                f"{source}; the changelog data it renders is public in {changelogs}. One small "
+                f"script for search; no cookies, no analytics, no third-party requests.</p>"
             ),
             Html("</footer>"),
         ),
@@ -73,10 +78,8 @@ def page(
     description: str,
     body: Html,
     path: str,
-    generated_on: date,
-    repo_url: str,
+    chrome: PageChrome,
     noindex: bool = False,
-    site_url: str = "",
     feeds: tuple[tuple[str, str], ...] = (),
     structured: Html | None = None,
 ) -> Html:
@@ -90,14 +93,15 @@ def page(
     list. The icon link is relative like every other asset link, so it needs no base address
     and is written on every page unconditionally.
 
-    `site_url`, `feeds` and `structured` are what the page declares about itself: its one
-    absolute address and the link preview built from it, the Atom feeds it advertises as
-    `(path, title)` pairs, and its JSON-LD block. All three default to nothing, and
-    `seo.head_metadata` contributes no line at all without a base address, so a build given no
-    site URL writes a head with nothing in it from here rather than one carrying a blank line.
+    `feeds` and `structured` are what the page declares about itself: the Atom feeds it
+    advertises as `(path, title)` pairs, and its JSON-LD block. Both default to nothing.
 
-    That is ten keyword arguments, which is the edge of what a signature should carry. An
-    eleventh is the signal to gather them into one frozen model, not to add one more.
+    Everything site-wide, the build date, the public repository URLs and the site's one
+    absolute address, arrives gathered in `chrome`: the signature once carried each as its own
+    keyword argument, reached ten, and was folded into the frozen model rather than grow an
+    eleventh. `seo.head_metadata` contributes no line at all without a base address, so a
+    build given no site URL writes a head with nothing in it from here rather than one
+    carrying a blank line.
     """
     depth = depth_of(path)
     root = up(depth)
@@ -116,7 +120,7 @@ def page(
                 title=title,
                 description=description,
                 path=path,
-                site_url=site_url,
+                site_url=chrome.site_url,
                 root=root,
                 feeds=feeds,
                 structured=structured,
@@ -130,7 +134,7 @@ def page(
             Html("<main>"),
             body,
             Html("</main>"),
-            _footer(generated_on, repo_url),
+            _footer(chrome),
             Html("</body>"),
             Html("</html>"),
             Html(""),

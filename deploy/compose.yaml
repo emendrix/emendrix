@@ -76,8 +76,9 @@ services:
   # `--site-url` is the deployment's own address and the one fact the generator cannot infer.
   # A feed's links and entry IDs are absolute by definition, so without it no feed file is
   # written at all and `/feeds/` says why. Change it here when the site moves, and nowhere
-  # else. `--repo-url` is the public home of the source: with it every page's footer links the
-  # repository, without it the footer names it in plain words rather than rendering a dead link.
+  # else. `--repo-url` is the public home of the source and `--changelogs-url` the public home
+  # of the changelog data: with them every page's footer links both repositories, without them
+  # the footer names each in plain words rather than rendering a dead link.
   # The watchlist is read from `/work/watchlist.toml`, the default relative to the image's
   # `WORKDIR`, which is the file mounted below.
   page:
@@ -99,6 +100,8 @@ services:
       - "https://emendrix.symber.net"
       - "--repo-url"
       - "https://github.com/emendrix/emendrix"
+      - "--changelogs-url"
+      - "https://github.com/emendrix/changelogs"
 
 volumes:
   changelogs:  # the output git repository: yours, never pushed by emendrix

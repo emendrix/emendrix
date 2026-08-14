@@ -85,8 +85,6 @@ def render_acts_index(site: SiteInputs) -> Html:
         ),
         body=join(lines, "\n"),
         path=_PATH,
-        generated_on=site.generated_on,
-        repo_url=site.repo_url,
-        site_url=site.site_url,
+        chrome=site.chrome,
         feeds=((feed_path(None), feed_title(None)),),
     )

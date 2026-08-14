@@ -42,7 +42,7 @@ from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import slug
 from emendrix.watch.config import Watchlist
 
-__all__ = ["ActSite", "SiteInputs", "collect_site", "event_dated", "read_entries"]
+__all__ = ["ActSite", "PageChrome", "SiteInputs", "collect_site", "event_dated", "read_entries"]
 
 
 def event_dated(entry: ChangelogEntry) -> date:
@@ -73,6 +73,23 @@ class ActSite(BaseModel):
         return event_dated(self.entries[0]) if self.entries else None
 
 
+class PageChrome(BaseModel):
+    """The site-wide facts every page's shell renders, whatever the page is about.
+
+    Gathered into one frozen model because `chrome.page` had reached ten keyword arguments,
+    and its own docstring named an eleventh as the signal to gather rather than grow. It lives
+    here rather than in `chrome` because `seo` reads this module and `chrome` reads `seo`, so
+    this is the one place both can import it from without a cycle.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    generated_on: date = Field(description="Passed in at the CLI boundary; never clock-read.")
+    repo_url: str = Field(default="", description="Public home of the source, or ''.")
+    changelogs_url: str = Field(default="", description="Public home of the changelog data, or ''.")
+    site_url: str = Field(default="", description="Absolute base for feeds, or '' for none.")
+
+
 class SiteInputs(BaseModel):
     """Everything the site renders, resolved. Frozen, so rendering cannot change it."""
 
@@ -84,7 +101,18 @@ class SiteInputs(BaseModel):
     acts: tuple[ActSite, ...] = ()
     configured: bool = False
     repo_url: str = Field(default="", description="Public home of the source, or ''.")
+    changelogs_url: str = Field(default="", description="Public home of the changelog data, or ''.")
     site_url: str = Field(default="", description="Absolute base for feeds, or '' for none.")
+
+    @property
+    def chrome(self) -> PageChrome:
+        """The shell's slice of these inputs, in the one form `chrome.page` accepts."""
+        return PageChrome(
+            generated_on=self.generated_on,
+            repo_url=self.repo_url,
+            changelogs_url=self.changelogs_url,
+            site_url=self.site_url,
+        )
 
     @property
     def report_markdown(self) -> str:
@@ -138,6 +166,7 @@ def collect_site(
     watchlist: Watchlist | None = None,
     configured: bool = False,
     repo_url: str = "",
+    changelogs_url: str = "",
     site_url: str = "",
     eurlex_urls: dict[str, str] | None = None,
 ) -> SiteInputs:
@@ -188,5 +217,6 @@ def collect_site(
         acts=resolved,
         configured=configured,
         repo_url=repo_url,
+        changelogs_url=changelogs_url,
         site_url=site_url,
     )

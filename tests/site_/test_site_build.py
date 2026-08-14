@@ -212,6 +212,26 @@ def test_the_command_refuses_a_repo_url_that_is_not_https(tmp_path: Path) -> Non
     assert "must be an https:// URL" in result.output
 
 
+def test_the_command_refuses_a_changelogs_url_that_is_not_https(tmp_path: Path) -> None:
+    """The same rule `--repo-url` lives under: only https:// may reach a public footer."""
+    result = runner.invoke(
+        app,
+        [
+            "site",
+            "build",
+            "--out",
+            str(tmp_path / "s"),
+            "--report-dir",
+            str(REPORTS),
+            "--changelogs-url",
+            "http://example.invalid/changelogs",
+        ],
+        env={"EMENDRIX_OUTPUT_REPO": ""},
+    )
+    assert result.exit_code == 2
+    assert "must be an https:// URL" in result.output
+
+
 def test_the_environment_variable_is_the_second_source_of_the_changelog_repository(
     tmp_path: Path, changelog_repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

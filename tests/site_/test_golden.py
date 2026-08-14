@@ -19,6 +19,14 @@ files moved: the methodology page, whose spot-review cell names a reviewer and a
 `pending` and whose provenance line follows the newest report, and that page's `lastmod` in the
 sitemap. No measured figure moved with them.
 
+Read again on 2026-08-14, when the footer grew the sentence naming the public changelog-data
+repository. Nine files moved, the nine pages that carry the footer: `404.html`, `index.html`,
+`acts/index.html`, `feeds/index.html`, `methodology/index.html`, and the four act pages under
+`acts/`. Each moved by that one footer line, which now says the changelog data is public in the
+changelog repository, in plain words because the golden build passes no `--changelogs-url`; the
+linked form is asserted next to the shell itself. No feed, no `sitemap.xml` and no `style.css`
+moved, and no measured figure moved with them.
+
 **It is deliberately wired to the newest report**, not to a pinned one, the same rule the
 README's metrics table lives under: a new `reports/eval/*.json` breaks this suite until the
 site is regenerated, so a figure on a page can never be stale with respect to the numbers the
@@ -100,15 +108,28 @@ def test_every_page_carries_the_disclaimer(site: Path) -> None:
         assert "Not legal advice" in text, page
 
 
-def test_external_links_leave_only_for_eur_lex_or_the_configured_repo(
+def test_external_links_leave_only_for_eur_lex_or_the_configured_repositories(
     tmp_path: Path, changelog_repo: Path
 ) -> None:
-    """Built with a repository URL, because that is the one other host a page may name."""
-    out = build(tmp_path / "site", changelog_repo, "--repo-url", "https://example.invalid/emendrix")
+    """Built with both repository URLs, because those are the only other hosts a page may name.
+
+    The two are on distinct hosts here so the allowlist below is exercised prefix by prefix
+    rather than one prefix happening to cover both.
+    """
+    out = build(
+        tmp_path / "site",
+        changelog_repo,
+        "--repo-url",
+        "https://example.invalid/emendrix",
+        "--changelogs-url",
+        "https://data.example.invalid/changelogs",
+    )
     for page in _pages(out):
         for link in re.findall(r'href="(https?://[^"]+)"', page.read_text(encoding="utf-8")):
-            ok = link.startswith("https://eur-lex.europa.eu/") or link.startswith(
-                "https://example.invalid/"
+            ok = (
+                link.startswith("https://eur-lex.europa.eu/")
+                or link.startswith("https://example.invalid/")
+                or link.startswith("https://data.example.invalid/")
             )
             assert ok, f"{page}: {link}"
 

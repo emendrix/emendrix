@@ -62,9 +62,7 @@ def render_not_found(site: SiteInputs) -> Html:
         ),
         body=join(lines, "\n"),
         path=_PATH,
-        generated_on=site.generated_on,
-        repo_url=site.repo_url,
+        chrome=site.chrome,
         noindex=True,
-        site_url=site.site_url,
         feeds=((feed_path(None), feed_title(None)),),
     )

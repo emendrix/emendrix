@@ -182,9 +182,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
         description=description,
         body=body,
         path=act_href(act.slug),
-        generated_on=site.generated_on,
-        repo_url=site.repo_url,
-        site_url=site.site_url,
+        chrome=site.chrome,
         # The act's own feed leads, because a reader subscribing from this page is asking for
         # this act; the global one follows so the offer is never only the narrow one.
         feeds=((feed_path(act), feed_title(act)), (feed_path(None), feed_title(None))),

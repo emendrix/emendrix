@@ -209,8 +209,6 @@ def render_methodology(site: SiteInputs) -> Html:
         ),
         body=body,
         path=_PATH,
-        generated_on=site.generated_on,
-        repo_url=site.repo_url,
-        site_url=site.site_url,
+        chrome=site.chrome,
         feeds=((feed_path(None), feed_title(None)),),
     )

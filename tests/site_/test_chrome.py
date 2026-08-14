@@ -6,19 +6,19 @@ from datetime import date
 
 from emendrix import DISCLAIMER
 from emendrix.site_.chrome import nav_links, page
+from emendrix.site_.inputs import PageChrome
 from emendrix.site_.markup import Html, escape
 
 GENERATED = date(2026, 8, 9)
 
 
-def _page(path: str = "", repo_url: str = "") -> str:
+def _page(path: str = "", repo_url: str = "", changelogs_url: str = "") -> str:
     return page(
         title="t",
         description="d",
         body=Html("<p>body</p>"),
         path=path,
-        generated_on=GENERATED,
-        repo_url=repo_url,
+        chrome=PageChrome(generated_on=GENERATED, repo_url=repo_url, changelogs_url=changelogs_url),
     )
 
 
@@ -49,5 +49,13 @@ def test_no_external_asset_and_no_analytics() -> None:
 
 def test_repo_url_is_a_link_only_when_configured() -> None:
     assert "<a href" not in _page().split("<footer>")[1].split("Not legal advice")[0]
+    assert "the emendrix repository" in _page()
     linked = _page(repo_url="https://example.invalid/emendrix")
     assert '<a href="https://example.invalid/emendrix">' in linked
+
+
+def test_changelogs_url_is_a_link_only_when_configured() -> None:
+    assert "<a href" not in _page().split("<footer>")[1].split("Not legal advice")[0]
+    assert "the changelog repository" in _page()
+    linked = _page(changelogs_url="https://example.invalid/changelogs")
+    assert '<a href="https://example.invalid/changelogs">' in linked

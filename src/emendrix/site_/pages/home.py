@@ -188,9 +188,7 @@ def render_home(site: SiteInputs, *, limit: int = 20) -> Html:
         description=description,
         body=body,
         path=_PATH,
-        generated_on=site.generated_on,
-        repo_url=site.repo_url,
-        site_url=site.site_url,
+        chrome=site.chrome,
         feeds=((feed_path(None), feed_title(None)),),
         structured=website_json_ld(site, description=description) if site.site_url else None,
     )

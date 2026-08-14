@@ -118,6 +118,12 @@ def build(
     repo_url: Annotated[
         str, typer.Option("--repo-url", help="Public https:// home of the source, for links.")
     ] = "",
+    changelogs_url: Annotated[
+        str,
+        typer.Option(
+            "--changelogs-url", help="Public https:// home of the changelog data, for links."
+        ),
+    ] = "",
     site_url: Annotated[
         str,
         typer.Option("--site-url", help="Public https:// base of the site. Without it, no feeds."),
@@ -136,7 +142,11 @@ def build(
     Deterministic: the same artifacts and the same date produce the same bytes, which is what
     lets a golden test assert the tree rather than assert around it.
     """
-    for name, value in (("--repo-url", repo_url), ("--site-url", site_url)):
+    for name, value in (
+        ("--repo-url", repo_url),
+        ("--changelogs-url", changelogs_url),
+        ("--site-url", site_url),
+    ):
         if value and not value.startswith("https://"):
             typer.echo(f"{name} must be an https:// URL; got {value!r}", err=True)
             raise typer.Exit(code=2)
@@ -160,6 +170,7 @@ def build(
         watchlist=watchlist,
         configured=root is not None,
         repo_url=repo_url,
+        changelogs_url=changelogs_url,
         # Joined with a single separator wherever a feed builds an absolute link, so the base
         # carries none of its own.
         site_url=site_url.rstrip("/"),
