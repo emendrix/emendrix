@@ -30,6 +30,7 @@ from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.seo import website_json_ld
+from emendrix.site_.untouched import UNTOUCHED_CARD, untouched
 from emendrix.site_.urls import act_href, depth_of, up
 
 __all__ = ["render_home"]
@@ -114,7 +115,7 @@ def _card(act: ActSite, entry: ChangelogEntry) -> Html:
     quiet lie about a fact this project treats as first class.
     """
     counts = entry.counts
-    touched = count(counts.touched, "provision")
+    touched = UNTOUCHED_CARD if untouched(entry) else count(counts.touched, "provision")
     if counts.disputed:
         touched += f", {counts.disputed} disputed"
     dated = (

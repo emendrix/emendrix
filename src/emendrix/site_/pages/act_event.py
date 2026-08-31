@@ -17,6 +17,9 @@ Four promises live here, each as a line of markup rather than a claim made elsew
   tidier and the counts wrong.
 - **An event no amending act is named for says so**, once, above its changes: a label and a
   sentence about the corpus's records for the window, never a doubt about the text below.
+- **An event that touched nothing states the finding in words**: a sentence in place of the
+  count line, and a note saying how much was compared, because a row of zeros reads like a
+  counter that failed rather than a comparison that ran.
 - **Nothing here is cut.** A summary panel that merely points at the artifact can justify
   capping a sentence; this is where a reader arrives instead, so the sentences run in full and
   the before/after text sits one `<details>` away, uncut and verbatim.
@@ -45,6 +48,7 @@ from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, un
 from emendrix.site_.diffview import render_texts
 from emendrix.site_.dispute import dispute_note
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched, untouched_note
 
 __all__ = ["pill", "render_event"]
 
@@ -137,9 +141,20 @@ def _change_block(emitted: EmittedChange, entry: ChangelogEntry, anchor: str) ->
 
 
 def _facts(entry: ChangelogEntry) -> list[Html]:
-    """The dates and the counts, all of them read off the document, none of them recomputed."""
+    """The dates and the counts, all of them read off the document, none of them recomputed.
+
+    An event that touched nothing states the finding as a sentence instead of the count line:
+    "0 provisions touched" with three more zeros and a gate clause reads like a counter that
+    failed, where the sentence says what the comparison found.
+    """
     counts = entry.counts
     in_force = ", ".join(value.isoformat() for value in entry.in_force) or "not stated"
+    dates = Html(
+        f'<p class="facts">in force {escape(in_force)} · '
+        f"detected {entry.detected_on.isoformat()}</p>"
+    )
+    if untouched(entry):
+        return [dates, Html(f'<p class="facts">{escape(UNTOUCHED_SENTENCE)}</p>')]
     gate = (
         "the explain stage did not run for this event, so it carries the structural facts only"
         if entry.diff_only
@@ -147,10 +162,7 @@ def _facts(entry: ChangelogEntry) -> list[Html]:
         f"{count(counts.unexplained, 'change')} shipped without an explanation"
     )
     return [
-        Html(
-            f'<p class="facts">in force {escape(in_force)} · '
-            f"detected {entry.detected_on.isoformat()}</p>"
-        ),
+        dates,
         Html(
             f'<p class="facts">{escape(count(counts.touched, "provision"))} touched — '
             f"{counts.substantive} substantive, {counts.date_only} date-only, "
@@ -181,6 +193,8 @@ def render_event(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
     ]
     if unnamed:
         lines.append(Html(f'<p class="small muted">{escape(UNATTRIBUTED_NOTE)}</p>'))
+    if untouched(entry):
+        lines.append(Html(f'<p class="small muted">{escape(untouched_note(entry))}</p>'))
     for emitted, anchor in zip(entry.changes, anchors, strict=True):
         lines.extend(_change_block(emitted, entry, anchor))
     lines.extend(

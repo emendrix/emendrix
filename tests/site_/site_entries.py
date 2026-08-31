@@ -27,7 +27,7 @@ from toy_corpus import AMENDMENT, HOUSE_RULES, V1, V2, ToyCorpusAdapter
 OBSERVED_ON = date(2026, 8, 9)
 IN_FORCE = date(2026, 6, 1)
 
-__all__ = ["IN_FORCE", "OBSERVED_ON", "attributed_entry", "unattributed_entry"]
+__all__ = ["IN_FORCE", "OBSERVED_ON", "attributed_entry", "unattributed_entry", "untouched_entry"]
 
 
 def _toy_delta() -> Delta:
@@ -64,6 +64,21 @@ def unattributed_entry() -> ChangelogEntry:
     hands `corroborate()`, so this entry is the shape the committed class ships in.
     """
     return _entry_of(_toy_delta(), None)
+
+
+def untouched_entry() -> ChangelogEntry:
+    """The toy act compared against itself: corroborated, and the comparison matched every unit.
+
+    The shape the committed zero-touched events ship in: a corroboration report is present,
+    both non-diff signals are unavailable, and the change list is empty because nothing
+    differed. Comparing one version with itself is the honest way to build that delta; the
+    committed cases carry two distinct version identifiers, but nothing rendered from the
+    entry reads the pair for sameness.
+    """
+    adapter = ToyCorpusAdapter(observed_on=OBSERVED_ON)
+    before = adapter.fetch_version(HOUSE_RULES, V1)
+    assert not isinstance(before, Exception)
+    return _entry_of(compute_delta(before, before), None)  # type: ignore[arg-type]
 
 
 def attributed_entry() -> ChangelogEntry:

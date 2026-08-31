@@ -37,6 +37,7 @@ from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_dated
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched
 from emendrix.site_.urls import act_href, depth_of, up
 
 __all__ = ["feed_path", "feed_title", "render_feed", "render_feeds_page"]
@@ -92,16 +93,20 @@ def _summary(entry: ChangelogEntry) -> str:
     rest, because a feed that quietly reported only the undisputed ones would be the one
     place on this site where a disagreement disappears. An event no amending act is named
     for keeps its entry whole and says so first, for the same reason: the feed carries every
-    event, worded as what it is.
+    event, worded as what it is. An event that touched nothing states the finding as a
+    sentence rather than a row of zeros: a subscriber told nothing changed has learned
+    something, and the words say it was a finding rather than a failure.
     """
     counts = entry.counts
     in_force = ", ".join(value.isoformat() for value in entry.in_force) or "not stated"
     lead = f"{UNATTRIBUTED_FEED_LEAD} " if unattributed(entry) else ""
-    return (
-        f"{lead}{count(counts.touched, 'provision')} touched: {counts.substantive} substantive, "
-        f"{counts.date_only} date-only, {counts.disputed} disputed. "
-        f"In force {in_force}. {DISCLAIMER}"
+    counted = (
+        UNTOUCHED_SENTENCE
+        if untouched(entry)
+        else f"{count(counts.touched, 'provision')} touched: {counts.substantive} substantive, "
+        f"{counts.date_only} date-only, {counts.disputed} disputed."
     )
+    return f"{lead}{counted} In force {in_force}. {DISCLAIMER}"
 
 
 def _entry_xml(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
