@@ -57,10 +57,27 @@ def test_the_global_feed_is_valid_atom_with_one_entry_per_event() -> None:
 
 
 def test_entry_ids_are_permalinks_and_stable_across_builds() -> None:
+    """The id is the address the event was first published at, the act page's fragment, and
+    it survived the event getting a page of its own: minting a fresh id that day would have
+    renotified every subscriber about events none of them missed."""
     site = _site()
     assert render_feed(site, None) == render_feed(site, None)
     key = site.acts[0].entries[0].key
-    assert f"#{key}</id>" in render_feed(site, None)
+    slug = site.acts[0].slug
+    assert f"<id>https://example.invalid/site/acts/{slug}/#{key}</id>" in render_feed(site, None)
+
+
+def test_the_alternate_link_points_at_the_events_own_page() -> None:
+    """An id identifies and a link locates: the link follows the content to the event page."""
+    site = _site()
+    act = site.acts[0]
+    entry = act.entries[0]
+    root = ElementTree.fromstring(render_feed(site, None))
+    (found,) = root.findall(f"{ATOM}entry/{ATOM}link")
+    href = found.get("href")
+    assert href == f"https://example.invalid/site/acts/{act.slug}/{entry.key}/"
+    ident = root.findtext(f"{ATOM}entry/{ATOM}id")
+    assert ident is not None and ident != href
 
 
 def test_the_per_act_feed_carries_only_that_acts_events_and_its_path_is_the_slug() -> None:
@@ -81,7 +98,7 @@ def test_every_summary_carries_the_disclaimer() -> None:
 
 def test_an_event_naming_no_amending_act_keeps_its_entry_and_says_so_first() -> None:
     """The feed carries every event; this one is worded as what it is, and only worded:
-    its id and link are the same permalink any entry gets, so no reader is re-notified."""
+    its id is the same permalink any entry gets, so no reader is re-notified."""
     site = collect_site(
         generated_on=OBSERVED,
         run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),

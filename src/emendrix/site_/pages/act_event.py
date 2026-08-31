@@ -1,9 +1,14 @@
-"""One amendment event, as a card: the facts, then one block per provision that moved.
+"""One amendment event, wherever it appears: the facts, and on its own page the evidence.
 
-The half of the act page that renders a single committed changelog entry. It sits beside
-`act.py` rather than inside it because the page and the card are two jobs: the page decides what
-an act's history looks like as a whole (header, index, order), the card decides how one event
-states what it did and what evidence it has.
+The module that renders a single committed changelog entry, on the two surfaces the site gives
+one: `render_event_summary` is the card on the act page's timeline, the facts and a link to the
+evidence; `render_event` is the body of the event's own page, the same facts and then one block
+per provision that moved. Both open through one shared header, so the two surfaces cannot state
+one event differently, and the card keeps minting `id="{entry.key}"` on the act page because
+that fragment was published in every feed entry before the event had a page of its own. It sits
+beside `act.py` rather than inside it because the page and the card are two jobs: the page
+decides what an act's history looks like as a whole (header, index, order), this module decides
+how one event states what it did and what evidence it has.
 
 Four promises live here, each as a line of markup rather than a claim made elsewhere:
 
@@ -50,7 +55,22 @@ from emendrix.site_.dispute import dispute_note
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched, untouched_note
 
-__all__ = ["pill", "render_event"]
+__all__ = ["pill", "render_event", "render_event_summary"]
+
+_THREE_SOURCES = (
+    "Emendrix checks every change against three independent sources. Where they disagree it "
+    "says so rather than picking a winner."
+)
+"""Said once above an event's first disagreement, and only on a page that has one.
+
+It lives here rather than on the act page because the disagreement notes it primes render
+here: since the evidence moved to the event's own page, a reader meets the sentence where the
+first "Sources disagree" marker actually is, and a page whose changes all agree does not get
+it, since an explanation of something not present reads as a warning about it.
+"""
+
+_SUMMARY_LINK = "Every change in this event, with the text before and after →"
+"""The card's one link. The words promise exactly what the event page holds and no more."""
 
 
 def pill(change_type: ChangeType, *, disputed: bool = False) -> Html:
@@ -171,12 +191,13 @@ def _facts(entry: ChangelogEntry) -> list[Html]:
     ]
 
 
-def render_event(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
-    """One event card. `anchors` is one fragment per change, in the entry's own order.
+def _event_header(entry: ChangelogEntry) -> list[Html]:
+    """The article's opening, shared by the card and the event page: id, versions, facts.
 
-    The anchors are computed once for the whole page and handed down, so the provision index
-    and the change blocks point at the same fragments by construction rather than by both
-    sides running the same counter.
+    The `id` is the fragment every feed entry's `<id>` was minted from, so the card on the act
+    page must keep answering to it forever; the event page carries the same id so a link built
+    against either surface lands on this event. Two surfaces opening through one function is
+    what keeps them stating one event the same way.
     """
     versions = (
         f"<code>{escape(str(entry.from_version))}</code> → "
@@ -195,6 +216,34 @@ def render_event(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
         lines.append(Html(f'<p class="small muted">{escape(UNATTRIBUTED_NOTE)}</p>'))
     if untouched(entry):
         lines.append(Html(f'<p class="small muted">{escape(untouched_note(entry))}</p>'))
+    return lines
+
+
+def render_event_summary(entry: ChangelogEntry, href: str) -> list[Html]:
+    """One event as the act page's card: the facts, and where the evidence is.
+
+    `href` is the event's own page, already climbed to the site root and back down by the
+    caller, the convention every cross-page link on the site follows. No verbatim text and no
+    per-change block reaches the card: the act page stays a timeline a phone can hold, and the
+    evidence sits one link away instead of one fold away.
+    """
+    return [
+        *_event_header(entry),
+        Html(f'<p><a href="{escape(href)}">{escape(_SUMMARY_LINK)}</a></p>'),
+        Html("</article>"),
+    ]
+
+
+def render_event(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
+    """One event's full body. `anchors` is one fragment per change, in the entry's own order.
+
+    The anchors are computed once for the whole page and handed down, so an index over the
+    changes and the blocks themselves point at the same fragments by construction rather than
+    by both sides running the same counter.
+    """
+    lines = _event_header(entry)
+    if any(emitted.change.disputed for emitted in entry.changes):
+        lines.append(Html(f'<p class="small muted">{escape(_THREE_SOURCES)}</p>'))
     for emitted, anchor in zip(entry.changes, anchors, strict=True):
         lines.extend(_change_block(emitted, entry, anchor))
     lines.extend(

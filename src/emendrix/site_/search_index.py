@@ -11,13 +11,13 @@ written once. What is in it is deliberately narrow:
   moved and nothing at all for one it did not, so indexing an untouched coordinate would
   promise a destination that does not exist.
 
-The anchors are not recomputed here. A provision's url is the fragment the act page publishes
-for the newest change at that coordinate, and it comes from `urls.entry_anchors`, the one place
-the occurrence counter lives. An index running its own counter would drift from the page the
-moment one entry touched one coordinate twice, and the symptom would be a search result landing
-at the top of a long page instead of at the change: the sort of defect nobody reports. Newest
-first is the entry order `collect_site` guarantees, so the first anchor seen for a coordinate is
-the newest one and later events do not overwrite it.
+The anchors are not recomputed here. A provision's url is the fragment the event page publishes
+for the newest change at that coordinate, on that event's own page, and it comes from
+`urls.entry_anchors`, the one place the occurrence counter lives. An index running its own
+counter would drift from the page the moment one entry touched one coordinate twice, and the
+symptom would be a search result landing at the top of a page instead of at the change: the
+sort of defect nobody reports. Newest first is the entry order `collect_site` guarantees, so
+the first anchor seen for a coordinate is the newest one and later events do not overwrite it.
 
 Deterministic bytes: entries are sorted by label, kind and url before serialisation, object
 keys are sorted by the serialiser, and the separators are pinned, so two builds of one
@@ -32,7 +32,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix.site_.inputs import ActSite, SiteInputs
-from emendrix.site_.urls import act_href, entry_anchors
+from emendrix.site_.urls import act_href, entry_anchors, event_href
 
 __all__ = ["IndexEntry", "IndexKind", "search_index_json"]
 
@@ -68,10 +68,10 @@ def _names(act: ActSite) -> list[IndexEntry]:
 
 def _provisions(act: ActSite) -> list[IndexEntry]:
     """Every coordinate this act's watched history touched, at its newest change."""
-    href = act_href(act.slug)
     entries: list[IndexEntry] = []
     seen: set[str] = set()
     for entry in act.entries:
+        href = event_href(act.slug, entry.key)
         anchors = entry_anchors(
             entry.key, [emitted.change.location.canonical for emitted in entry.changes]
         )

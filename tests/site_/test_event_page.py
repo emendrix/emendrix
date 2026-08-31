@@ -1,0 +1,165 @@
+"""One event's page: every change with its anchor, and the honesty markers it may never lose.
+
+These assertions lived beside the act page's until the evidence moved to each event's own
+page; what a change block owes a reader did not move with the address, so the tests moved
+whole: the stable anchor, the disagreement marker in a newcomer's words, the gate's
+provenance marker, and a stated reason wherever prose is absent.
+"""
+
+from __future__ import annotations
+
+from datetime import date
+from pathlib import Path
+
+from emendrix.core import Delta, ProvisionLocation, ProvisionTree, Signal, SignalClaim, SignalReport
+from emendrix.corroborate import corroborate
+from emendrix.diff import compute_delta
+from emendrix.eval_.readme_table import latest_report
+from emendrix.eval_.runner import EvalRun
+from emendrix.gate import GateOutcome
+from emendrix.graph.report import EmittedChange, EmittedDelta, EmittedSentence
+from emendrix.output import ChangelogEntry, diff_only_entry
+from emendrix.site_.inputs import SiteInputs, collect_site
+from emendrix.site_.pages.event import render_event_page
+from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
+
+REPO = Path(__file__).resolve().parents[2]
+REPORTS = REPO / "reports" / "eval"
+OBSERVED = date(2026, 8, 9)
+
+
+def _run() -> EvalRun:
+    return EvalRun.model_validate_json(latest_report(REPORTS).read_bytes())
+
+
+def _delta() -> Delta:
+    adapter = ToyCorpusAdapter(observed_on=OBSERVED)
+    before = adapter.fetch_version(HOUSE_RULES, V1)
+    after = adapter.fetch_version(HOUSE_RULES, V2)
+    assert isinstance(before, ProvisionTree) and isinstance(after, ProvisionTree)
+    return compute_delta(before, after)
+
+
+def _site(*entries: ChangelogEntry) -> SiteInputs:
+    return collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries)
+
+
+def _page(entry: ChangelogEntry) -> str:
+    site = _site(entry)
+    return render_event_page(site, site.acts[0], site.acts[0].entries[0])
+
+
+def test_the_page_shows_every_change_with_a_stable_anchor() -> None:
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    rendered = _page(entry)
+    assert f'id="{entry.key}"' in rendered
+    for emitted in entry.changes:
+        assert emitted.change.location.human in rendered
+    assert rendered.count('<div class="chg"') == len(entry.changes)
+    assert "<details" in rendered
+
+
+def test_the_page_names_its_act_and_links_back_to_the_timeline() -> None:
+    """A reader lands here from a feed or a search result, so the act's identity and the way
+    to the rest of its history cannot be assumed to have been seen already."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = _site(entry)
+    rendered = _page(entry)
+    assert f"<h1>{site.acts[0].label}</h1>" in rendered
+    assert f'href="../../../acts/{site.acts[0].slug}/"' in rendered
+    assert "every event for this act" in rendered
+
+
+def _disputed_entry() -> ChangelogEntry:
+    """One entry whose changes the metadata signal saw only for `AR 9`, so the rest disagree."""
+    metadata = SignalReport(
+        signal=Signal.CORPUS_METADATA,
+        claims=(SignalClaim(location=ProvisionLocation.parse("AR 9")),),
+    )
+    return diff_only_entry(corroborate(_delta(), metadata=metadata).delta, detected_on=OBSERVED)
+
+
+def test_a_disputed_change_says_what_disagreed_without_saying_disputed() -> None:
+    """The stored vocabulary is `disputed`; a page that prints it invites the wrong reading.
+
+    A newcomer takes "disputed" for a claim about the law. The claim is about the tool, so the
+    marker names the sources and says neither is overruled.
+    """
+    rendered = _page(_disputed_entry())
+    assert "<strong>Sources disagree</strong>" in rendered
+    assert (
+        "the text comparison found this change; the EU&#x27;s own amendment metadata does not "
+        "list it. Both are shown; neither is overruled." in rendered
+    )
+    assert "<strong>Disputed</strong>" not in rendered
+
+
+def test_the_three_sources_explainer_is_said_once_above_the_first_disagreement() -> None:
+    rendered = _page(_disputed_entry())
+    assert rendered.count("Emendrix checks every change against three independent sources") == 1
+    assert rendered.index("three independent sources") < rendered.index("Sources disagree")
+
+
+def test_a_page_with_no_disagreement_does_not_explain_one() -> None:
+    """An explanation of something absent from the page reads as a warning about it."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    assert entry.counts.disputed == 0
+    rendered = _page(entry)
+    assert "three independent sources" not in rendered
+
+
+def test_a_gate_written_sentence_keeps_its_marker_and_is_not_capped() -> None:
+    delta = _delta()
+    adapter = ToyCorpusAdapter(observed_on=OBSERVED)
+    long_text = "A sentence the gate quoted verbatim from the rule. " * 20
+    entry = ChangelogEntry.of(
+        EmittedDelta(
+            act=delta.act,
+            from_version=delta.from_version,
+            to_version=delta.to_version,
+            summary=delta.summary,
+            changes=tuple(
+                EmittedChange(
+                    change=change,
+                    outcome=GateOutcome.FALLBACK,
+                    sentences=(
+                        EmittedSentence(
+                            text=long_text,
+                            fallback=True,
+                            citations=(adapter.render_citation(change.provision),),
+                        ),
+                    ),
+                )
+                for change in delta.changes
+            ),
+        ),
+        detected_on=OBSERVED,
+    )
+    rendered = _page(entry)
+    assert "Quoted verbatim by the citation gate" in rendered
+    assert "truncated by emendrix" not in rendered
+    assert " ".join(long_text.split()) in rendered
+
+
+def test_a_change_with_no_prose_says_why_rather_than_showing_nothing() -> None:
+    """The stage ran and produced nothing for this change; the block says which of the two."""
+    delta = _delta()
+    entry = ChangelogEntry.of(
+        EmittedDelta(
+            act=delta.act,
+            from_version=delta.from_version,
+            to_version=delta.to_version,
+            summary=delta.summary,
+            changes=tuple(
+                EmittedChange(
+                    change=change,
+                    outcome=GateOutcome.UNEXPLAINED,
+                    unexplained="the model returned no sentence for this change",
+                )
+                for change in delta.changes
+            ),
+        ),
+        detected_on=OBSERVED,
+    )
+    rendered = _page(entry)
+    assert "the model returned no sentence for this change" in rendered

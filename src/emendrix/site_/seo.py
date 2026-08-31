@@ -36,11 +36,12 @@ from __future__ import annotations
 import json
 from typing import Final
 
+from emendrix.output import ChangelogEntry
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape
-from emendrix.site_.urls import act_href
+from emendrix.site_.urls import act_href, event_href
 
-__all__ = ["act_json_ld", "canonical_url", "head_metadata", "website_json_ld"]
+__all__ = ["act_json_ld", "canonical_url", "event_json_ld", "head_metadata", "website_json_ld"]
 
 _NAME: Final = "emendrix"
 """What the site calls itself, in Open Graph and in every JSON-LD payload alike."""
@@ -166,25 +167,34 @@ def website_json_ld(site: SiteInputs, *, description: str) -> Html:
     return _ld_block(payload)
 
 
-def act_json_ld(site: SiteInputs, act: ActSite, *, title: str, description: str) -> Html:
-    """One act page's breadcrumb trail and the page itself, as one element holding two things.
+def _breadcrumb(rungs: tuple[tuple[str, str], ...]) -> dict[str, object]:
+    """One `BreadcrumbList` from `(name, absolute url)` pairs in trail order.
 
-    The breadcrumb is derived entirely from the URL structure, which is the one shape here that
-    earns a real search result: the trail a reader sees under the link. It is three rungs deep
-    because that is how deep the site is, and no rung is invented.
-
-    `about` is a `Legislation`, schema.org's ELI-derived type, and ELI is the vocabulary EU
-    legislation is actually published under, so it is the honest label even though no engine
-    renders anything from it. `sameAs` points at the official document and is omitted rather
-    than emitted empty for an act with no committed event, which has no resolved address; that
-    is the same omission the act page already makes visibly.
-
-    The act's own key is a corpus identifier and belongs here: it is core vocabulary rather
-    than the vocabulary of any one corpus, and it is what identifies the act everywhere else.
+    Shared by every page whose breadcrumb is the URL trail itself, so a rung's position and
+    its address are computed in one place however many rungs the URL actually has, and no
+    page can invent a rung its address does not carry.
     """
-    home = canonical_url(site.site_url, "")
-    roster = canonical_url(site.site_url, _ACTS_INDEX)
-    here = canonical_url(site.site_url, act_href(act.slug))
+    return {
+        "@context": _SCHEMA,
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": position, "name": name, "item": item}
+            for position, (name, item) in enumerate(rungs, start=1)
+        ],
+    }
+
+
+def _legislation(act: ActSite) -> dict[str, str]:
+    """The `about` object every page describing this act shares.
+
+    A `Legislation`, schema.org's ELI-derived type, and ELI is the vocabulary EU legislation
+    is actually published under, so it is the honest label even though no engine renders
+    anything from it. `sameAs` points at the official document and is omitted rather than
+    emitted empty for an act with no resolved address; that is the same omission the act page
+    already makes visibly. The act's own key is a corpus identifier and belongs here: it is
+    core vocabulary rather than the vocabulary of any one corpus, and it is what identifies
+    the act everywhere else.
+    """
     about: dict[str, str] = {
         "@type": "Legislation",
         "name": act.label,
@@ -192,23 +202,61 @@ def act_json_ld(site: SiteInputs, act: ActSite, *, title: str, description: str)
     }
     if act.eurlex_url:
         about["sameAs"] = act.eurlex_url
+    return about
+
+
+def _webpage(
+    here: str, *, title: str, description: str, about: dict[str, str]
+) -> dict[str, object]:
+    """The `WebPage` object every described page carries, its `@id` its canonical address."""
+    return {
+        "@context": _SCHEMA,
+        "@type": "WebPage",
+        "@id": here,
+        "name": title,
+        "description": description,
+        "about": about,
+    }
+
+
+def act_json_ld(site: SiteInputs, act: ActSite, *, title: str, description: str) -> Html:
+    """One act page's breadcrumb trail and the page itself, as one element holding two things.
+
+    The breadcrumb is derived entirely from the URL structure, which is the one shape here that
+    earns a real search result: the trail a reader sees under the link. It is three rungs deep
+    because that is how deep the site is here, and no rung is invented.
+    """
+    home = canonical_url(site.site_url, "")
+    roster = canonical_url(site.site_url, _ACTS_INDEX)
+    here = canonical_url(site.site_url, act_href(act.slug))
     payload: list[dict[str, object]] = [
-        {
-            "@context": _SCHEMA,
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-                {"@type": "ListItem", "position": 1, "name": _NAME, "item": home},
-                {"@type": "ListItem", "position": 2, "name": "All watched acts", "item": roster},
-                {"@type": "ListItem", "position": 3, "name": act.label, "item": here},
-            ],
-        },
-        {
-            "@context": _SCHEMA,
-            "@type": "WebPage",
-            "@id": here,
-            "name": title,
-            "description": description,
-            "about": about,
-        },
+        _breadcrumb(((_NAME, home), ("All watched acts", roster), (act.label, here))),
+        _webpage(here, title=title, description=description, about=_legislation(act)),
+    ]
+    return _ld_block(payload)
+
+
+def event_json_ld(
+    site: SiteInputs, act: ActSite, entry: ChangelogEntry, *, title: str, description: str
+) -> Html:
+    """One event page's breadcrumb trail and the page itself. Four rungs, because the site is
+    four deep here: home, the roster, the act, this event, the same no-invented-rung rule
+    `act_json_ld` holds at three.
+
+    `about` is the same `Legislation` the act page names, because this page still describes
+    that act; which transition it describes is stated by the fourth rung and by
+    `title`/`description`, and schema.org has no honest type for one amendment event, so no
+    machine-readable field pretends to one.
+    """
+    home = canonical_url(site.site_url, "")
+    roster = canonical_url(site.site_url, _ACTS_INDEX)
+    act_page = canonical_url(site.site_url, act_href(act.slug))
+    here = canonical_url(site.site_url, event_href(act.slug, entry.key))
+    event = f"{entry.from_version} → {entry.to_version}"
+    payload: list[dict[str, object]] = [
+        _breadcrumb(
+            ((_NAME, home), ("All watched acts", roster), (act.label, act_page), (event, here))
+        ),
+        _webpage(here, title=title, description=description, about=_legislation(act)),
     ]
     return _ld_block(payload)

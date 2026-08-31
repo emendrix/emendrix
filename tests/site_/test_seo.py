@@ -82,6 +82,10 @@ def _act_pages(site: Path) -> list[Path]:
     return sorted((site / "acts").glob("*/index.html"))
 
 
+def _event_pages(site: Path) -> list[Path]:
+    return sorted((site / "acts").glob("*/*/index.html"))
+
+
 def _payloads(page: Path) -> list[Any]:
     """Every JSON-LD block on one page, parsed, having first checked it cannot break out."""
     found: list[Any] = []
@@ -162,9 +166,47 @@ def test_the_official_document_is_named_only_where_one_was_resolved(site: Path) 
     assert seen, "no act page linked an official document, so the omission proves nothing"
 
 
+def test_an_event_page_carries_its_four_rung_breadcrumb_and_the_page_itself(site: Path) -> None:
+    """Four rungs because the site is four deep here, and the last one is this page's address.
+
+    The `about` is the same `Legislation` the act page names: the page still describes that
+    act, and which transition it describes is the fourth rung's job.
+    """
+    pages = _event_pages(site)
+    assert pages, "the fixture transition writes at least one event page"
+    for page in pages:
+        payloads = _payloads(page)
+        assert len(payloads) == 1, page
+        crumbs, described = payloads[0]
+        assert crumbs["@type"] == "BreadcrumbList", page
+        items = crumbs["itemListElement"]
+        assert [item["position"] for item in items] == [1, 2, 3, 4], page
+        assert items[0]["item"] == f"{SITE_URL}/", page
+        assert items[1]["item"] == f"{SITE_URL}/acts/", page
+        assert items[2]["item"] == f"{SITE_URL}/acts/{page.parent.parent.name}/", page
+        canonical = CANONICAL.findall(page.read_text(encoding="utf-8"))
+        assert [items[3]["item"]] == canonical, page
+        assert described["@type"] == "WebPage", page
+        assert [described["@id"]] == canonical, page
+        assert described["about"]["@type"] == "Legislation", page
+
+
+def test_an_event_page_offers_its_own_acts_feed_before_the_global_one(site: Path) -> None:
+    """The act page's rule, held one level down: a reader here is asking about this act."""
+    for page in _event_pages(site):
+        found = ALTERNATE.findall(page.read_text(encoding="utf-8"))
+        assert len(found) == 2, page
+        assert found[0][1].endswith(f"feeds/{page.parent.parent.name}.xml"), page
+        assert found[1][1].endswith("feeds/all.xml"), page
+
+
 def test_the_pages_that_describe_nothing_a_type_names_declare_nothing(site: Path) -> None:
     """A one-rung breadcrumb on `/acts/` restates the URL, and the other three have no type."""
-    described = {"index.html", *(str(page.relative_to(site)) for page in _act_pages(site))}
+    described = {
+        "index.html",
+        *(str(page.relative_to(site)) for page in _act_pages(site)),
+        *(str(page.relative_to(site)) for page in _event_pages(site)),
+    }
     for page in _pages(site):
         if str(page.relative_to(site)) in described:
             continue

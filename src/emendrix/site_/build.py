@@ -11,7 +11,8 @@ robots.txt                      the crawl policy, and where the sitemap is
 search-index.json               what that script fetches, prebuilt
 sitemap.xml                     every page, with the date its content last moved
 acts/index.html                 the roster
-acts/<slug>/index.html          one page per watched act
+acts/<slug>/index.html          one page per watched act: its timeline and index
+acts/<slug>/<key>/index.html    one page per event: the changes and the verbatim text
 methodology/index.html          what the numbers mean
 feeds/index.html                what feeds exist
 feeds/all.xml                   every event, newest first
@@ -49,16 +50,18 @@ from pathlib import Path
 from emendrix.site_.assets import icon_svg, og_png, search_js
 from emendrix.site_.discovery import ROBOTS, SITEMAP, robots_txt, sitemap_xml
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
-from emendrix.site_.inputs import SiteInputs
+from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.pages.act import render_act
 from emendrix.site_.pages.acts_index import render_acts_index
+from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.home import render_home
 from emendrix.site_.pages.methodology import render_methodology
 from emendrix.site_.pages.not_found import render_not_found
 from emendrix.site_.search_index import search_index_json
 from emendrix.site_.style import STYLE
+from emendrix.site_.urls import act_href, event_href
 
-__all__ = ["write_site"]
+__all__ = ["act_pages", "write_site"]
 
 STYLESHEET = "style.css"
 """Where `chrome.page` says the stylesheet is. Both ends of that link are in this package."""
@@ -70,6 +73,20 @@ INDEX = "search-index.json"
 ICON = "icon.svg"
 CARD = "og.png"
 """The favicon and the link-preview card, both at the root every page links relative to."""
+
+
+def act_pages(site: SiteInputs, act: ActSite) -> dict[str, str]:
+    """One act's whole page tree, path -> contents: its timeline and every one of its events.
+
+    Factored out of `_files` because the scale suite needs exactly this slice, one act's index
+    beside the event pages it links into, without assembling the rest of the site around it,
+    for the reason `entry_anchors` is one function rather than one counter per caller: the
+    pages that must agree are built by the one code path the builder itself runs.
+    """
+    files: dict[str, str] = {f"{act_href(act.slug)}index.html": render_act(site, act)}
+    for entry in act.entries:
+        files[f"{event_href(act.slug, entry.key)}index.html"] = render_event_page(site, act, entry)
+    return files
 
 
 def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
@@ -88,7 +105,7 @@ def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
         "feeds/index.html": render_feeds_page(site),
     }
     for act in site.acts:
-        files[f"acts/{act.slug}/index.html"] = render_act(site, act)
+        files.update(act_pages(site, act))
     if site.site_url:
         files[SITEMAP] = sitemap_xml(site)
         files[feed_path(None)] = render_feed(site, None)

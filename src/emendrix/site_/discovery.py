@@ -18,7 +18,9 @@ only its `Sitemap:` line, because a crawl policy is about paths. Every `<loc>` i
 `seo.canonical_url`, the same function that writes the page's canonical, so a sitemap entry and
 a canonical cannot name two addresses for one page.
 
-Pages only: the four fixed ones and one per act. Feeds are advertised by `rel="alternate"` in
+Pages only: the four fixed ones, one per act and one per amendment event. An event page's
+`<lastmod>` is that event's own `event_dated`, the same clock its feed entry's `<updated>`
+reads, so the two records of one fact cannot disagree. Feeds are advertised by `rel="alternate"` in
 every head and a sitemap indexes pages rather than subscriptions; the stylesheet, the script,
 the search index, the icon and the card are assets. `404.html` is absent by construction,
 because a sitemap entry for a page marked `noindex` is a contradiction handed to a crawler.
@@ -44,7 +46,7 @@ from emendrix.site_.clocks import event_dated
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.seo import canonical_url
-from emendrix.site_.urls import act_href
+from emendrix.site_.urls import act_href, event_href
 
 __all__ = ["ROBOTS", "SITEMAP", "robots_txt", "sitemap_xml"]
 
@@ -106,6 +108,11 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     fixed.extend(
         (act_href(act.slug), event_dated(act.entries[0]) if act.entries else None)
         for act in site.acts
+    )
+    fixed.extend(
+        (event_href(act.slug, entry.key), event_dated(entry))
+        for act in site.acts
+        for entry in act.entries
     )
     return tuple(fixed)
 

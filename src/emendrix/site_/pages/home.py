@@ -9,8 +9,8 @@ of it at once rather than scrolling past it to get to the facts.
 Three things this page will not do:
 
 - **No explanation prose.** A card carries the act, the version pair, the counts and the date,
-  all of them read off the committed document. Sentences a model wrote live on the act page,
-  next to the verbatim text they describe.
+  all of them read off the committed document. Sentences a model wrote live on the event
+  pages, next to the verbatim text they describe.
 - **No number without its qualification.** The credibility strip publishes the localisation
   figure and links straight to the row that says what it does not mean.
 - **No silence.** An empty changelog repository, or none at all, is a sentence saying which,
@@ -31,7 +31,7 @@ from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.seo import website_json_ld
 from emendrix.site_.untouched import UNTOUCHED_CARD, untouched
-from emendrix.site_.urls import act_href, depth_of, up
+from emendrix.site_.urls import act_href, depth_of, event_href, up
 
 __all__ = ["render_home"]
 
@@ -123,7 +123,7 @@ def _card(act: ActSite, entry: ChangelogEntry) -> Html:
         if entry.in_force
         else f"detected {entry.detected_on.isoformat()}"
     )
-    href = f"{up(_DEPTH)}{act_href(act.slug)}#{entry.key}"
+    href = f"{up(_DEPTH)}{event_href(act.slug, entry.key)}"
     return Html(
         f'<div class="cardrow">'
         f'<h3><a href="{escape(href)}">{escape(act.label)}</a> '

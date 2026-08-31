@@ -18,7 +18,8 @@ A directory of files, not a page:
 index.html            search, the latest amendments, and the one-line measured claim
 404.html              the page a mistyped address gets, with a way back
 acts/index.html       every watched act, grouped by the domain the watchlist gives it
-acts/<celex>/         one page per act: the whole watched history, newest first
+acts/<celex>/         one page per act: the whole watched history, newest first, as cards
+acts/<celex>/<key>/   one page per event: the changes and the verbatim text
 methodology/          the metrics table with its caveats, the loop, the disclaimer in full
 feeds/                what the feeds are and where they are
 feeds/all.xml         every amendment event, as Atom
@@ -42,9 +43,13 @@ report's run date, never from the build clock, so a rebuild that changed nothing
 nothing changed, and an act nothing has happened to yet carries no `<lastmod>` at all rather than
 a guessed one.
 
-An act page carries the evidence rather than a link to it. Each amendment event lists its
-provision changes with the sentences that survived the citation gate, and each change opens onto
-the before and after text in full: a **unified word diff** computed at build time by
+The evidence is on the site rather than behind a link out of it, one page per event. An act's
+own page is the timeline: a card per event with the facts and the anchor every feed entry was
+published under, linking the event's page. That split is a weight decision: an act's history is
+unbounded and one backfilled act served 6.1 MB as a single page, where an event is bounded by
+one consolidation. The event page lists the provision changes with the sentences that survived
+the citation gate, and each change opens onto the before and after text in full: a **unified
+word diff** computed at build time by
 `difflib.SequenceMatcher` over whitespace-split tokens, with deleted and inserted spans marked in
 place. Below a similarity of 0.5 the texts are shown stacked instead, labelled as too different
 to diff inline, because an inline rendering of a rewrite is noise wearing the clothes of a
@@ -94,8 +99,9 @@ link, an entry ID, a canonical address, an `og:image` and a sitemap `<loc>` are 
 definition. Without it no feed file and no `sitemap.xml` is written, `/feeds/` says why, and no
 page carries a canonical, an Open Graph tag or a JSON-LD block at all. All of it or none of it,
 per page: a page carrying `og:title` with no `og:url` renders a preview that is wrong, which is
-worse than a page with no preview. Entry IDs are the permalink of the event, so a rebuild never
-re-notifies a subscriber.
+worse than a page with no preview. Entry IDs are the address an event was first published at, the
+act page's fragment, and never change, so a rebuild never re-notifies a subscriber; the entry's
+link follows the content to the event's own page.
 
 It also never prints where the changelog repository lives on the operator's machine. That path is
 somebody's home directory, and a public site is the wrong place for it; the paths it does print

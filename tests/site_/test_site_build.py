@@ -121,6 +121,18 @@ def test_every_watched_act_gets_a_page_and_a_feed_including_the_quiet_ones(
         assert f"feeds/{act_slug}.xml" in tree, act_slug
 
 
+def test_every_committed_event_gets_its_own_page(tmp_path: Path, changelog_repo: Path) -> None:
+    """One page per changelog document, nested under its act: where the evidence now lives."""
+    out = build(tmp_path / "site", changelog_repo)
+    tree = _tree(out)
+    event_pages = {name for name in tree if name.startswith("acts/") and name.count("/") == 3}
+    committed = sorted(changelog_repo.glob("*/*/changes/*.json"))
+    assert committed
+    assert len(event_pages) == len(committed)
+    for name in event_pages:
+        assert name.endswith("/index.html"), name
+
+
 def test_two_builds_of_one_set_of_artifacts_are_byte_identical(
     tmp_path: Path, changelog_repo: Path
 ) -> None:

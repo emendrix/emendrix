@@ -15,6 +15,7 @@ from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import collect_site
 from emendrix.site_.pages.acts_index import render_acts_index
 from emendrix.site_.pages.home import render_home
+from emendrix.site_.urls import event_href
 from emendrix.watch.config import Watchlist
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -50,7 +51,7 @@ def test_home_leads_with_search_hero_and_recent_events() -> None:
     rendered = render_home(site)
     entry = site.acts[0].entries[0]
     assert "What changed in your regulations?" in rendered
-    assert f'#{entry.key}"' in rendered
+    assert f'href="{event_href(site.acts[0].slug, entry.key)}"' in rendered
     assert "Latest amendments" in rendered
 
 
@@ -120,7 +121,7 @@ def test_home_excludes_events_naming_no_amending_act_and_says_how_many() -> None
     rendered = render_home(site)
     assert rendered.count('<div class="cardrow">') == 1
     assert "1 event naming no amending act is on the act pages, not in this list." in rendered
-    assert f'#{unnamed.key}"' not in rendered
+    assert f"/{unnamed.key}/" not in rendered
 
 
 def test_home_with_only_events_naming_no_amending_act_says_so() -> None:

@@ -1,4 +1,10 @@
-"""One act's page: timeline, sidebar, anchors, and the honesty markers it may never lose."""
+"""One act's page: the timeline of cards, the sidebar, and the anchor it may never lose.
+
+The evidence itself, the per-change blocks and the verbatim text, lives on each event's own
+page and is asserted in `test_event_page.py`; what this page owes a reader is the act's
+identity, a card per event that still answers to the fragment every feed entry published,
+and links that land where the evidence went.
+"""
 
 from __future__ import annotations
 
@@ -7,16 +13,14 @@ from pathlib import Path
 
 from site_entries import unattributed_entry
 
-from emendrix.core import Delta, ProvisionLocation, ProvisionTree, Signal, SignalClaim, SignalReport
-from emendrix.corroborate import corroborate
+from emendrix.core import Delta, ProvisionTree
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
-from emendrix.gate import GateOutcome
-from emendrix.graph.report import EmittedChange, EmittedDelta, EmittedSentence
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.pages.act import render_act
+from emendrix.site_.urls import event_href
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -57,90 +61,21 @@ def test_the_header_dates_the_newest_amendment_by_its_own_clock() -> None:
     assert "newest amendment in force 2024-06-01" in rendered
 
 
-def test_the_page_shows_every_change_with_a_stable_anchor() -> None:
+def test_the_timeline_keeps_the_event_anchor_and_links_the_evidence() -> None:
+    """The card still answers to the fragment every feed entry was published under, and the
+    per-change evidence is one link away rather than on this page: a long history was
+    shipping megabytes of collapsed text here, and the anchor is the one part of that page
+    an address outside the site holds on to."""
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     rendered = render_act(site, site.acts[0])
     assert f'id="{entry.key}"' in rendered
-    for emitted in entry.changes:
-        assert emitted.change.location.human in rendered
-    assert rendered.count('<div class="chg"') == len(entry.changes)
-    assert "<details" in rendered
-
-
-def _disputed_entry() -> ChangelogEntry:
-    """One entry whose changes the metadata signal saw only for `AR 9`, so the rest disagree."""
-    metadata = SignalReport(
-        signal=Signal.CORPUS_METADATA,
-        claims=(SignalClaim(location=ProvisionLocation.parse("AR 9")),),
-    )
-    return diff_only_entry(corroborate(_delta(), metadata=metadata).delta, detected_on=OBSERVED)
-
-
-def test_a_disputed_change_says_what_disagreed_without_saying_disputed() -> None:
-    """The stored vocabulary is `disputed`; a page that prints it invites the wrong reading.
-
-    A newcomer takes "disputed" for a claim about the law. The claim is about the tool, so the
-    marker names the sources and says neither is overruled.
-    """
-    site = _site(_disputed_entry())
-    rendered = render_act(site, site.acts[0])
-    assert "<strong>Sources disagree</strong>" in rendered
-    assert (
-        "the text comparison found this change; the EU&#x27;s own amendment metadata does not "
-        "list it. Both are shown; neither is overruled." in rendered
-    )
-    assert "<strong>Disputed</strong>" not in rendered
-
-
-def test_the_three_sources_explainer_is_said_once_above_the_first_disagreement() -> None:
-    site = _site(_disputed_entry())
-    rendered = render_act(site, site.acts[0])
-    assert rendered.count("Emendrix checks every change against three independent sources") == 1
-    assert rendered.index("three independent sources") < rendered.index("Sources disagree")
-
-
-def test_a_page_with_no_disagreement_does_not_explain_one() -> None:
-    """An explanation of something absent from the page reads as a warning about it."""
-    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
-    assert entry.counts.disputed == 0
-    site = _site(entry)
-    rendered = render_act(site, site.acts[0])
-    assert "three independent sources" not in rendered
-
-
-def test_a_gate_written_sentence_keeps_its_marker_and_is_not_capped() -> None:
-    delta = _delta()
-    adapter = ToyCorpusAdapter(observed_on=OBSERVED)
-    long_text = "A sentence the gate quoted verbatim from the rule. " * 20
-    entry = ChangelogEntry.of(
-        EmittedDelta(
-            act=delta.act,
-            from_version=delta.from_version,
-            to_version=delta.to_version,
-            summary=delta.summary,
-            changes=tuple(
-                EmittedChange(
-                    change=change,
-                    outcome=GateOutcome.FALLBACK,
-                    sentences=(
-                        EmittedSentence(
-                            text=long_text,
-                            fallback=True,
-                            citations=(adapter.render_citation(change.provision),),
-                        ),
-                    ),
-                )
-                for change in delta.changes
-            ),
-        ),
-        detected_on=OBSERVED,
-    )
-    site = _site(entry)
-    rendered = render_act(site, site.acts[0])
-    assert "Quoted verbatim by the citation gate" in rendered
-    assert "truncated by emendrix" not in rendered
-    assert " ".join(long_text.split()) in rendered
+    assert f'href="../../{event_href(site.acts[0].slug, entry.key)}"' in rendered
+    assert "with the text before and after" in rendered
+    assert '<div class="chg"' not in rendered
+    assert 'class="verbatim"' not in rendered
+    # The one fold left on the page is the sidebar's own, not a change's evidence.
+    assert rendered.count("<details") == 1
 
 
 def _quiet() -> str:
@@ -179,38 +114,16 @@ def test_a_quiet_act_does_not_repeat_its_name_as_an_official_title() -> None:
 
 
 def test_the_sidebar_lists_touched_provisions_and_amendments() -> None:
+    """Both lists now link into event pages, since that is where the evidence lives."""
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     rendered = render_act(site, site.acts[0])
     sidebar = rendered.split('<aside class="sidebar">')[1].split("</aside>")[0]
-    assert f'href="#{entry.key}"' in sidebar
+    target = f"../../{event_href(site.acts[0].slug, entry.key)}"
+    assert f'href="{target}"' in sidebar
+    assert f'href="{target}#' in sidebar
     first = entry.changes[0].change
     assert first.location.human in sidebar
-
-
-def test_a_change_with_no_prose_says_why_rather_than_showing_nothing() -> None:
-    """The stage ran and produced nothing for this change; the block says which of the two."""
-    delta = _delta()
-    entry = ChangelogEntry.of(
-        EmittedDelta(
-            act=delta.act,
-            from_version=delta.from_version,
-            to_version=delta.to_version,
-            summary=delta.summary,
-            changes=tuple(
-                EmittedChange(
-                    change=change,
-                    outcome=GateOutcome.UNEXPLAINED,
-                    unexplained="the model returned no sentence for this change",
-                )
-                for change in delta.changes
-            ),
-        ),
-        detected_on=OBSERVED,
-    )
-    site = _site(entry)
-    rendered = render_act(site, site.acts[0])
-    assert "the model returned no sentence for this change" in rendered
 
 
 def test_an_event_naming_no_amending_act_is_labelled_and_explained_once() -> None:

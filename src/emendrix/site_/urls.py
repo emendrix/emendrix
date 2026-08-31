@@ -9,6 +9,9 @@ and search results point at one specific change.
 The entry key rather than the amending act's identifier, because no stage of the loop
 resolves the amending act (an event names the consolidation it produced, and a change's
 amending acts can be empty), while the entry key is always present and unique per event.
+The same key also names the event's own page as a directory segment under its act, so an
+event has one identifier however it is addressed: as a page, or as the fragment its card on
+the act page answers to.
 
 Pages reference each other relatively (`up(depth)`), so the tree works from `file://`, from
 a subpath, and from the site root alike.
@@ -20,7 +23,15 @@ import re
 from collections.abc import Iterable
 from typing import Final
 
-__all__ = ["act_href", "change_anchor", "depth_of", "entry_anchors", "location_slug", "up"]
+__all__ = [
+    "act_href",
+    "change_anchor",
+    "depth_of",
+    "entry_anchors",
+    "event_href",
+    "location_slug",
+    "up",
+]
 
 _SEPARATORS: Final = re.compile(r"\s+")
 _DROPPED: Final = re.compile(r"[()]")
@@ -88,6 +99,18 @@ def entry_anchors(entry_key: str, canonicals: Iterable[str]) -> tuple[str, ...]:
 def act_href(act_slug: str) -> str:
     """One act's page, relative to the site root."""
     return f"acts/{act_slug}/"
+
+
+def event_href(act_slug: str, entry_key: str) -> str:
+    """One event's own page, nested under its act.
+
+    Built on `act_href` rather than repeating the directory, because an event page always
+    sits under its act's own directory and the two must not be able to drift. Both segments
+    are canonical identifiers, the act's key and the version the event produced, so the same
+    entry key names the event twice: as this page's directory, and as the fragment its card
+    on the act page keeps for every address published before the page existed.
+    """
+    return f"{act_href(act_slug)}{entry_key}/"
 
 
 def depth_of(path: str) -> int:

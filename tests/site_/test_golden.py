@@ -52,6 +52,18 @@ and which is therefore not in the class: the front-page exclusion, the event lab
 fallback and the feed lead are all asserted on toy entries in the unit suites instead. No
 measured figure moved with it.
 
+Read again on 2026-08-31, later again, when the act page split into a timeline and one page per
+event. Ten files moved. The four act pages became indexes: a card per event keeps the versions,
+the facts lines and the `id` every feed entry was published under, and links the event's own
+page, which is new under `acts/<slug>/<key>/` and carries what the card used to hold, the
+change blocks and the verbatim text, beneath a header naming the act. The MDR feed and the
+global feed keep every `<id>` byte-identical and move only `<link rel="alternate">` to the
+event page, so no subscriber is re-notified; the sitemap gains the event page under the event's
+own date; the search index sends provisions to the event page at the same fragments; the home
+card follows. The live site's heaviest act page was 6.1 MB in one document when this was
+decided, and the split bounds a page by one consolidation instead of by an act's whole history.
+No measured figure moved with it.
+
 **It is deliberately wired to the newest report**, not to a pinned one, the same rule the
 README's metrics table lives under: a new `reports/eval/*.json` breaks this suite until the
 site is regenerated, so a figure on a page can never be stale with respect to the numbers the
@@ -215,6 +227,29 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
         text = (site / name).read_text(encoding="utf-8").replace(SVG_NS, "")
         for banned in ("http://", "https://", "@import", "url("):
             assert banned not in text, f"{name}: {banned}"
+
+
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 36084)
+"""The heaviest page in the committed golden, path and exact bytes, read off the tree the day
+the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
+page, the one place the golden's verbatim text now lives. The full-tree comparison above
+already pins every byte; this pins the one number that grew tenfold unnoticed on the live site,
+so a page regaining that shape is a stated finding rather than a diff nobody weighs."""
+
+
+def test_the_largest_page_is_a_reviewed_number() -> None:
+    """The heaviest page, named and weighed, updated only with the golden itself.
+
+    Asserted over the committed tree rather than the built one because the two are already
+    asserted equal above, and a reviewer updating the golden should see this number move in
+    the same diff.
+    """
+    pages = [(page.relative_to(GOLDEN).as_posix(), page.stat().st_size) for page in _pages(GOLDEN)]
+    heaviest = max(pages, key=lambda item: (item[1], item[0]))
+    assert heaviest == _LARGEST_PAGE, (
+        f"the largest page is now {heaviest[0]} at {heaviest[1]} bytes; if the change is "
+        "intended, update _LARGEST_PAGE with the golden and say why in the docstring above"
+    )
 
 
 def test_no_absolute_path_of_this_machine_reaches_the_tree(

@@ -13,7 +13,7 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.assets import search_js
 from emendrix.site_.inputs import collect_site
-from emendrix.site_.pages.act import render_act
+from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.search_index import search_index_json
 from emendrix.watch.config import Watchlist
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
@@ -68,17 +68,23 @@ def test_an_alias_finds_the_same_page_as_the_name() -> None:
     assert urls["32016R0679"] == "acts/32016R0679/"
 
 
-def test_provision_urls_are_the_anchors_the_act_page_publishes() -> None:
-    """The index may not recount occurrences: it reads the act page's own anchor scheme."""
+def test_provision_urls_are_the_anchors_the_event_page_publishes() -> None:
+    """The index may not recount occurrences: it reads the event page's own anchor scheme,
+    and it points at the page that holds the change rather than at the act's timeline."""
     site = collect_site(
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)
     )
-    rendered = render_act(site, site.acts[0])
+    act = site.acts[0]
+    pages = {
+        f"acts/{act.slug}/{entry.key}/": render_event_page(site, act, entry)
+        for entry in act.entries
+    }
     payload = json.loads(search_index_json(site))
     for item in payload["entries"]:
         if item["kind"] == "provision":
-            _, _, anchor = item["url"].partition("#")
-            assert f'id="{anchor}"' in rendered
+            path, _, anchor = item["url"].partition("#")
+            assert path in pages, item["url"]
+            assert f'id="{anchor}"' in pages[path]
 
 
 def test_the_index_bytes_are_deterministic() -> None:

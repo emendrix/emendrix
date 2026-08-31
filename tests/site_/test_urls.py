@@ -9,6 +9,7 @@ from emendrix.site_.urls import (
     change_anchor,
     depth_of,
     entry_anchors,
+    event_href,
     location_slug,
     up,
 )
@@ -73,3 +74,16 @@ def test_depth_counts_the_separators_of_a_site_root_relative_path() -> None:
 def test_an_act_page_sits_two_directories_down() -> None:
     """The number `pages/act.py` holds as a literal, because its path needs an act to exist."""
     assert depth_of(act_href("32024R1689")) == 2
+
+
+def test_an_event_page_nests_under_its_act() -> None:
+    """One directory scheme, not two: the event path is the act path plus the entry key."""
+    assert event_href("32016R0679", "02016R0679-20160504") == (
+        "acts/32016R0679/02016R0679-20160504/"
+    )
+    assert event_href("32016R0679", "k").startswith(act_href("32016R0679"))
+
+
+def test_an_event_page_sits_three_directories_down() -> None:
+    """The number `pages/event.py` holds as a literal, because its path needs an entry to exist."""
+    assert depth_of(event_href("32024R1689", "02024R1689-20260727")) == 3

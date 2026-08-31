@@ -1,6 +1,7 @@
 """The one page that argues. Everything the front page shed, with nothing softened.
 
-The rest of the site shows: an act page states what moved and puts the verbatim text under it.
+The rest of the site shows: an act page states what moved, and each event's own page puts the
+verbatim text under it.
 This page is where the claims live, and it is deliberately one page rather than a section on
 each, because a caveat that is easy to meet is easy to skip past, and a reader who wants to
 know how much to trust a number should find every qualification in one place.

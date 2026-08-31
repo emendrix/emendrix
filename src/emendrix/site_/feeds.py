@@ -7,12 +7,20 @@ artifact people subscribe to. Every interpolated value goes through `markup.esca
 HTML escaping and is also valid XML escaping for a text node and for a quoted attribute value.
 
 An Atom entry's `<id>` is a promise: reissue it and every reader is notified again. So the id is
-the permalink of the event on this site, `{site_url}/acts/{slug}/#{entry.key}`. The entry key is
-the version the event produced, fixed the moment the corpus publishes that consolidation, so the
-id is stable across rebuilds, across re-runs of the loop, and across a change to anything else
-on the page. A `tag:` URI is the other conventional answer and is rejected deliberately: it
+the address the event was first published at, `{site_url}/acts/{slug}/#{entry.key}`, and it never
+changes again, not even the day the site grew a page per event: the act page still carries a card
+at that fragment, so the old address still lands on the right event, and a fresh id minted for
+the new page would have renotified every subscriber about events none of them missed. The entry
+key is the version the event produced, fixed the moment the corpus publishes that consolidation,
+so the id is stable across rebuilds, across re-runs of the loop, and across a change to anything
+else on the page. A `tag:` URI is the other conventional answer and is rejected deliberately: it
 needs a tagging authority, meaning a domain plus a date on which the operator held it, and
 nothing here knows either, while the permalink is just as stable and a reader can paste it.
+
+`<link rel="alternate">` is a different promise, where the entry's content actually is, and that
+one moves with the content: it names the event's own page, which carries the verbatim text the
+act page no longer does. An id identifies and a link locates, and both are minted in this module
+so the two can be read side by side rather than trusted to agree.
 
 An entry is dated by `event_dated`: the in-force date the changes carry, or failing that the
 date the event was detected, rendered as midnight UTC of that day. The corpus dates an amendment
@@ -38,7 +46,7 @@ from emendrix.site_.clocks import event_dated
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched
-from emendrix.site_.urls import act_href, depth_of, up
+from emendrix.site_.urls import act_href, depth_of, event_href, up
 
 __all__ = ["feed_path", "feed_title", "render_feed", "render_feeds_page"]
 
@@ -81,8 +89,13 @@ def _stamp(value: date) -> str:
 
 
 def _permalink(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
-    """The event's own place on this site: the act page, at the event's anchor."""
+    """The `<id>`'s address: the act page, at the event's card. A promise, never reissued."""
     return f"{site.site_url}/{act_href(act.slug)}#{entry.key}"
+
+
+def _event_link(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
+    """The `<link rel="alternate">`'s address: the event's own page, where the content is."""
+    return f"{site.site_url}/{event_href(act.slug, entry.key)}"
 
 
 def _summary(entry: ChangelogEntry) -> str:
@@ -110,14 +123,15 @@ def _summary(entry: ChangelogEntry) -> str:
 
 
 def _entry_xml(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
-    """One amendment event as one Atom entry, id and link both the permalink."""
-    link = escape(_permalink(site, act, entry))
+    """One amendment event as one Atom entry. The id never moves; the link follows the content."""
+    ident = escape(_permalink(site, act, entry))
+    link = escape(_event_link(site, act, entry))
     title = escape(f"{act.label}: {entry.from_version} → {entry.to_version}")
     return join(
         (
             Html("<entry>"),
             Html(f"<title>{title}</title>"),
-            Html(f"<id>{link}</id>"),
+            Html(f"<id>{ident}</id>"),
             Html(f'<link rel="alternate" href="{link}"/>'),
             Html(f"<updated>{_stamp(event_dated(entry))}</updated>"),
             Html(f"<summary>{escape(_summary(entry))}</summary>"),
