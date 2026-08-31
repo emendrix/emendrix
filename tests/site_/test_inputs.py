@@ -43,6 +43,24 @@ def test_event_dated_prefers_in_force_and_falls_back_to_detected() -> None:
     assert event_dated(bare) == OBSERVED
 
 
+def test_dated_carries_the_clock_that_produced_it() -> None:
+    """A page reading `dated` gets the date and which clock it came from, inseparably.
+
+    The date alone once let the acts index print a detection date under "last amended";
+    a value that names its clock makes that misreading a type error rather than a review
+    finding.
+    """
+    entry = _entry(date(2024, 6, 1))
+    stated = ActSite(act=entry.act, label="x", entries=(entry,)).dated
+    assert stated is not None
+    assert (stated.on, stated.in_force) == (date(2024, 6, 1), True)
+    bare = entry.model_copy(update={"in_force": ()})
+    fallen = ActSite(act=bare.act, label="x", entries=(bare,)).dated
+    assert fallen is not None
+    assert (fallen.on, fallen.in_force) == (OBSERVED, False)
+    assert ActSite(act=entry.act, label="x").dated is None
+
+
 def test_entries_group_under_their_act_newest_first() -> None:
     entries = tuple(_entry(day) for day in (date(2020, 1, 1), date(2024, 6, 1)))
     site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries)

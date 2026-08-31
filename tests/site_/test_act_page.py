@@ -38,6 +38,23 @@ def _site(*entries: ChangelogEntry) -> SiteInputs:
     return collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries)
 
 
+def test_the_header_dates_the_newest_amendment_by_its_own_clock() -> None:
+    """The header names the clock behind its date instead of claiming a version date.
+
+    "reflects the consolidated version of" once dressed `event_dated`'s fallback, a
+    detection date, as a fact about the official text.
+    """
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = _site(entry)
+    rendered = render_act(site, site.acts[0])
+    assert f"newest amendment detected {OBSERVED.isoformat()}" in rendered
+    assert "reflects the consolidated version" not in rendered
+    stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
+    site = _site(stated)
+    rendered = render_act(site, site.acts[0])
+    assert "newest amendment in force 2024-06-01" in rendered
+
+
 def test_the_page_shows_every_change_with_a_stable_anchor() -> None:
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)

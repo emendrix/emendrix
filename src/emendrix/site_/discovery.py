@@ -96,7 +96,9 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         ("methodology/", site.run.run_date),
         ("feeds/", newest),
     ]
-    fixed.extend((act_href(act.slug), act.dated) for act in site.acts)
+    fixed.extend(
+        (act_href(act.slug), None if act.dated is None else act.dated.on) for act in site.acts
+    )
     return tuple(fixed)
 
 

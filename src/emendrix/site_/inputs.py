@@ -42,12 +42,54 @@ from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import slug
 from emendrix.watch.config import Watchlist
 
-__all__ = ["ActSite", "PageChrome", "SiteInputs", "collect_site", "event_dated", "read_entries"]
+__all__ = [
+    "ActSite",
+    "EventDate",
+    "PageChrome",
+    "SiteInputs",
+    "collect_site",
+    "event_dated",
+    "read_entries",
+]
 
 
 def event_dated(entry: ChangelogEntry) -> date:
-    """When an event took effect: clock 1 if the changes carry it, else when it was seen."""
+    """When an event took effect: clock 1 if the changes carry it, else when it was seen.
+
+    A bare date, for sort keys and machine timestamps only: it drops which clock answered.
+    A page printing the date under words reads `ActSite.dated`, which keeps the clock.
+    """
     return max(entry.in_force) if entry.in_force else entry.detected_on
+
+
+class EventDate(BaseModel):
+    """A date and the clock that produced it, inseparable.
+
+    The corpus's own in-force date and the day emendrix first saw an event are different
+    claims, and a page that has only the date cannot help labelling one as the other.
+    The acts index once printed the fallback under "last amended", which told a reader
+    the act moved on a day emendrix merely ran; carrying the clock in the value makes
+    that misreading impossible to write by accident.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    on: date
+    in_force: bool = Field(
+        description="True for clock 1, the corpus's own answer; False when `on` is the "
+        "date the event was first seen."
+    )
+
+    @property
+    def words(self) -> str:
+        """The clock and the date, in the words every dated line on the site uses.
+
+        Rendered here once and imported rather than restated, for the reason `act_event`
+        gives: two renderings of one fact that describe it differently are how a caveat
+        gets softened in one of them.
+        """
+        clock = "in force" if self.in_force else "detected"
+        return f"{clock} {self.on.isoformat()}"
 
 
 class ActSite(BaseModel):
@@ -68,9 +110,12 @@ class ActSite(BaseModel):
         return slug(self.act.key)
 
     @property
-    def dated(self) -> date | None:
-        """The newest event's date, for the index; None when nothing was ever seen."""
-        return event_dated(self.entries[0]) if self.entries else None
+    def dated(self) -> EventDate | None:
+        """The newest event's date with its clock; None when nothing was ever seen."""
+        if not self.entries:
+            return None
+        newest = self.entries[0]
+        return EventDate(on=event_dated(newest), in_force=bool(newest.in_force))
 
 
 class PageChrome(BaseModel):

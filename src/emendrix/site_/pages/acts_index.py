@@ -12,6 +12,11 @@ answer rather than a group.
 
 An act with no events says so in words. A row that simply had no date would read as a rendering
 bug; "no amendments seen" is the actual state, and it is a real answer.
+
+A row's date names its clock, in the words the event cards already use: "in force" is the
+corpus's own answer, "detected" is the day emendrix first saw the event. The rule is the one
+`home.py` states for its cards; this page once broke it by printing whichever date existed
+under "last amended", so a backfill's run day read as an amendment a reader had missed.
 """
 
 from __future__ import annotations
@@ -56,7 +61,7 @@ def _row(act: ActSite) -> Html:
     if act.entries:
         facts.append(escape(short_title(act.entries[0].title)))
     dated = act.dated
-    last = f"last amended {dated.isoformat()}" if dated is not None else _QUIET
+    last = dated.words if dated is not None else _QUIET
     facts.append(Html(f'<span class="muted">{escape(last)}</span>'))
     return Html(f"<li>{join(facts, ' · ')}</li>")
 
@@ -81,7 +86,7 @@ def render_acts_index(site: SiteInputs) -> Html:
         title="All watched acts — emendrix",
         description=(
             "Every act emendrix watches, grouped by the domain the watchlist declares, with "
-            "the date each one was last amended."
+            "when each one's newest amendment came into force or was detected."
         ),
         body=join(lines, "\n"),
         path=_PATH,

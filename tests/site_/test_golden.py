@@ -35,6 +35,14 @@ neither repository URL and the how-built paragraph keeps its old wording, and on
 that configures both links. The footer line of the earlier entry did not move again, no other
 page moved, and no measured figure moved with it.
 
+Read again on 2026-08-31, when every dated line on the site started naming its clock. Two
+files moved. The acts index row and its meta description stopped saying "last amended": the
+label had printed `event_dated`'s fallback, a detection date, as an amendment date, so an act
+touched only by a backfill read as amended the day the backfill ran. The row now says
+"in force" or "detected", the words the home page cards already used, and the MDR act page's
+header says "newest amendment in force 2020-04-24" where it had claimed "reflects the
+consolidated version of" over the same ambiguous value. No measured figure moved with them.
+
 **It is deliberately wired to the newest report**, not to a pinned one, the same rule the
 README's metrics table lives under: a new `reports/eval/*.json` breaks this suite until the
 site is regenerated, so a figure on a page can never be stale with respect to the numbers the

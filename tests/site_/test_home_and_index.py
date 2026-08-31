@@ -124,6 +124,29 @@ def test_the_index_groups_by_domain_with_other_last() -> None:
     assert "no amendments seen" in rendered
 
 
+def test_the_index_dates_a_row_by_the_clock_that_produced_the_date() -> None:
+    """An in-force date reads "in force", never "last amended".
+
+    "last amended" over `event_dated`'s fallback branch once printed the day a backfill ran
+    as an amendment date, so the label is gone from the page entirely, meta description
+    included.
+    """
+    stated = _entry().model_copy(update={"in_force": (date(2024, 6, 1),)})
+    site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(stated,))
+    rendered = render_acts_index(site)
+    assert "in force 2024-06-01" in rendered
+    assert "last amended" not in rendered
+
+
+def test_the_index_calls_a_detection_date_detected() -> None:
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)
+    )
+    rendered = render_acts_index(site)
+    assert f"detected {OBSERVED.isoformat()}" in rendered
+    assert "last amended" not in rendered
+
+
 def test_every_act_on_the_index_links_its_page() -> None:
     site = collect_site(
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)

@@ -132,6 +132,10 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     The official title is rendered only when a recorded event carried one that says more than
     the watchlist label already does. Repeating the label under itself would dress a name
     somebody chose as the title the legislation publishes for itself.
+
+    The dated fact names its clock, like every dated line on the site. The header once said
+    "reflects the consolidated version of" over whichever date the newest event carried,
+    which dressed a detection date as a fact about the official text.
     """
     title = short_title(act.entries[0].title) if act.entries else act.label
     facts = [Html(f"<code>{escape(act.act.key)}</code>")]
@@ -144,7 +148,7 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
         facts.append(Html(f'<a href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
     dated = act.dated
     if dated is not None:
-        facts.append(escape(f"reflects the consolidated version of {dated.isoformat()}"))
+        facts.append(escape(f"newest amendment {dated.words}"))
     header = [Html(f"<h1>{escape(act.label)}</h1>")]
     if title != act.label:
         header.append(Html(f'<p class="official">{escape(title)}</p>'))
