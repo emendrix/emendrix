@@ -6,6 +6,7 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+from site_entries import unattributed_entry
 
 from emendrix.core import ActId, VersionId
 from emendrix.eval_.readme_table import latest_report
@@ -116,6 +117,20 @@ def test_dated_carries_the_clock_that_produced_it() -> None:
     assert fallen is not None
     assert (fallen.on, fallen.in_force) == (OBSERVED, False)
     assert ActSite(act=entry.act, label="x").dated is None
+
+
+def test_dated_is_never_an_event_naming_no_amending_act() -> None:
+    """`dated` backs every "newest amendment" line, and an event no amending act is named
+    for must not date one: it is skipped past, and an act with only such events answers
+    `None` over a non-empty history, which each caller says in its own words."""
+    unnamed = unattributed_entry()
+    only = ActSite(act=unnamed.act, label="x", entries=(unnamed,))
+    assert only.entries and only.dated is None
+    amended = _entry(date(2024, 6, 1)).model_copy(update={"to_version": VersionId("v9")})
+    mixed = ActSite(act=unnamed.act, label="x", entries=(unnamed, amended))
+    stated = mixed.dated
+    assert stated is not None
+    assert (stated.on, stated.in_force) == (date(2024, 6, 1), True)
 
 
 def test_entries_group_under_their_act_newest_first() -> None:

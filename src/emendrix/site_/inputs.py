@@ -42,6 +42,7 @@ from emendrix.eval_.report import DEFAULT_REPORT_DIR
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import slug
+from emendrix.site_.attribution import unattributed
 from emendrix.site_.clocks import EventDate, VersionDates, event_dated, sort_date
 from emendrix.watch.config import Watchlist
 
@@ -75,16 +76,23 @@ class ActSite(BaseModel):
 
     @property
     def dated(self) -> EventDate | None:
-        """The newest event's date with its clock; None when nothing was ever seen.
+        """The newest attributed event's date with its clock; None when there is no such event.
 
         Newest means newest by `sort_date`, the order `entries` arrives in; the date printed
         is still that entry's own in-force or detected clock, which is a true statement about
         that entry even when another entry carries a later detection date.
+
+        An event no amending act is named for is never the answer here: this property backs
+        every "newest amendment" line the site prints, and dating one of those lines by such
+        an event would dress it as an amendment. So `None` has two readings, told apart by
+        `entries`: nothing was ever seen, or everything seen names no amending act, and each
+        caller says which in words. The sitemap's `<lastmod>` answers a different question,
+        when the page's content last moved, and reads the newest entry directly.
         """
-        if not self.entries:
-            return None
-        newest = self.entries[0]
-        return EventDate(on=event_dated(newest), in_force=bool(newest.in_force))
+        for entry in self.entries:
+            if not unattributed(entry):
+                return EventDate(on=event_dated(entry), in_force=bool(entry.in_force))
+        return None
 
 
 class PageChrome(BaseModel):

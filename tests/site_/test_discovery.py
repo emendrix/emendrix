@@ -20,12 +20,13 @@ from xml.etree import ElementTree
 
 import pytest
 from helpers import REPORTS, SITE_URL, WATCHLIST, build, runner
+from site_entries import unattributed_entry
 
 from emendrix.cli import app
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.site_.discovery import robots_txt, sitemap_xml
-from emendrix.site_.inputs import SiteInputs
+from emendrix.site_.inputs import SiteInputs, collect_site
 from eu_pins import OBSERVED_ON
 
 SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
@@ -176,6 +177,26 @@ def test_an_act_is_dated_by_its_newest_event_and_a_quiet_one_is_not_dated_at_all
             assert lastmod == newest[:10], feed
             busy += 1
     assert quiet and busy, f"{quiet} quiet and {busy} amended acts; both cases must be covered"
+
+
+def test_an_act_with_only_unnamed_events_still_dates_its_page() -> None:
+    """`<lastmod>` answers when the page's content last moved, and an event naming no
+    amending act moved it like any other; only the human-facing "newest amendment" line
+    skips such events. A crawler told this page never changed would be told a lie."""
+    entry = unattributed_entry()
+    inputs = collect_site(
+        generated_on=OBSERVED_ON,
+        run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
+        report=Path("r.json"),
+        entries=(entry,),
+        site_url=SITE_URL,
+    )
+    assert inputs.acts[0].dated is None
+    rendered = sitemap_xml(inputs)
+    slug = inputs.acts[0].slug
+    block_start = rendered.index(f"{SITE_URL}/acts/{slug}/")
+    block = rendered[block_start : rendered.index("</url>", block_start)]
+    assert f"<lastmod>{entry.detected_on.isoformat()}</lastmod>" in block
 
 
 def test_the_build_date_reaches_no_lastmod(tmp_path: Path, changelog_repo: Path) -> None:

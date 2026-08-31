@@ -89,6 +89,12 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
 
     `max` needs its default: a checkout with a watchlist and an empty changelog repository is a
     real state, and every date here is then `None` except the methodology page's.
+
+    An act's date is its newest entry's, whatever that entry is: `<lastmod>` answers when the
+    page's content last moved, and an event no amending act is named for moved it like any
+    other. `ActSite.dated` answers the different question of when the act was last amended,
+    skips exactly those events, and must not be read here: a crawler told the page was stale
+    would be told a lie the human-facing date rule exists to prevent, not to cause.
     """
     newest = max((event_dated(entry) for _, entry in site.recent), default=None)
     fixed: list[tuple[str, date | None]] = [
@@ -98,7 +104,8 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         ("feeds/", newest),
     ]
     fixed.extend(
-        (act_href(act.slug), None if act.dated is None else act.dated.on) for act in site.acts
+        (act_href(act.slug), event_dated(act.entries[0]) if act.entries else None)
+        for act in site.acts
     )
     return tuple(fixed)
 

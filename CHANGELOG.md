@@ -54,6 +54,16 @@ two consolidated versions, and emits a reviewable changelog into an output git r
   carrying the metrics with their caveats, Atom feeds, and a discovery layer. It renders committed
   artifacts and nothing else: no network, no clock below the command line, no model, no cookies, no
   analytics, and two builds of one set of artifacts produce identical bytes.
+- **The site counts events naming no amending act apart from amendments.** A version pair whose
+  corroboration window names no amending act ships with both non-diff signals unavailable, no
+  per-change attribution and no in-force date; the commonest shape is the act as published set
+  against its own first consolidation, where no amending act can exist yet. The site derives the
+  class at build time from the committed document's own fields, with no pipeline, schema or
+  output-repository change: the front page excludes such events from "Latest amendments" and
+  states how many, the acts index counts them apart and never answers its date fact with one, the
+  act page keeps and labels every one, and the feeds keep every one with the fact leading the
+  summary. The label says only what was established, that no amending act is named, never a cause
+  such as a corrigendum.
 - **Deployment**: a two-stage `Dockerfile` with a non-root runtime and a reference `compose.yaml`.
 - **The CLI**: `diff`, `watch`, `explain`, `run`, `backfill`, `eval` and `site`, with the delay
   between network calls set by `--polite-delay` or `EMENDRIX_POLITE_DELAY_S`.

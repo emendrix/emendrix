@@ -24,6 +24,7 @@ subpath and it should be visible at every link rather than assumed here.
 from __future__ import annotations
 
 from emendrix.output import ChangelogEntry
+from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
@@ -51,6 +52,13 @@ _QUIET = (
 
 _QUIET_TAIL = "A quiet month is a real answer."
 
+_ALL_UNNAMED = (
+    "recorded so far named no amending act, so this list has nothing to show; each one is on "
+    "its act's page."
+)
+"""When every recorded event names no amending act: events exist, amendments do not, and the
+sentence says both rather than going dark over a non-empty record."""
+
 
 def _pitch(site: SiteInputs) -> str:
     """The one-line claim, and the roster size it is made over.
@@ -65,7 +73,12 @@ def _pitch(site: SiteInputs) -> str:
 
 
 def _recent_acts(site: SiteInputs) -> list[ActSite]:
-    """The most recently amended acts, each named once, newest first."""
+    """The acts with the newest events, each named once, newest first.
+
+    Deliberately unfiltered by attribution: the row names acts as a way in, claims nothing
+    about what happened to them, and an act whose newest event names no amending act still
+    deserves its link, since its own page carries the labelled picture.
+    """
     named: list[ActSite] = []
     seen: set[str] = set()
     for act, _ in site.recent:
@@ -120,22 +133,43 @@ def _card(act: ActSite, entry: ChangelogEntry) -> Html:
 
 
 def _amendments(site: SiteInputs, limit: int) -> list[Html]:
-    """The newest events, capped, with the remainder pointed at rather than dropped."""
+    """The newest amendment events, capped, with everything not shown counted in words.
+
+    Two kinds of event are pointed at rather than dropped: the ones past the cap, and the
+    ones no amending act is named for, which do not belong in a list titled "Latest
+    amendments" at all. Both exclusions are stated with a count, because a silent one would
+    make this window read as the whole record.
+    """
     recent = site.recent
     lines = [Html("<h2>Latest amendments</h2>")]
     if not recent:
         where = _QUIET[0] if site.configured else _QUIET[1]
         lines.append(Html(f'<p class="none">{escape(where)} {escape(_QUIET_TAIL)}</p>'))
         return lines
-    shown = recent[:limit]
+    amendments = [(act, entry) for act, entry in recent if not unattributed(entry)]
+    unnamed = len(recent) - len(amendments)
+    if not amendments:
+        lines.append(
+            Html(f'<p class="none">{escape(count(unnamed, "event"))} {escape(_ALL_UNNAMED)}</p>')
+        )
+        return lines
+    shown = amendments[:limit]
     lines.extend(_card(act, entry) for act, entry in shown)
-    older = len(recent) - len(shown)
+    older = len(amendments) - len(shown)
     if older:
         verb = "is" if older == 1 else "are"
         lines.append(
             Html(
                 f'<p class="small muted">{escape(count(older, "older event"))} {verb} on the '
                 f"act pages.</p>"
+            )
+        )
+    if unnamed:
+        verb = "is" if unnamed == 1 else "are"
+        lines.append(
+            Html(
+                f'<p class="small muted">{escape(count(unnamed, "event"))} naming no amending '
+                f"act {verb} on the act pages, not in this list.</p>"
             )
         )
     return lines

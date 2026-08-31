@@ -15,6 +15,8 @@ Four promises live here, each as a line of markup rather than a claim made elsew
   claim.
 - **A disputed change is shown and says what disagreed.** Dropping it would make the card
   tidier and the counts wrong.
+- **An event no amending act is named for says so**, once, above its changes: a label and a
+  sentence about the corpus's records for the window, never a doubt about the text below.
 - **Nothing here is cut.** A summary panel that merely points at the artifact can justify
   capping a sentence; this is where a reader arrives instead, so the sentences run in full and
   the before/after text sits one `<details>` away, uncut and verbatim.
@@ -39,6 +41,7 @@ from emendrix.output.markdown import (
     applies_text,
     short_label,
 )
+from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
 from emendrix.site_.diffview import render_texts
 from emendrix.site_.dispute import dispute_note
 from emendrix.site_.markup import Html, count, escape, join
@@ -167,11 +170,17 @@ def render_event(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
         f"<code>{escape(str(entry.from_version))}</code> → "
         f"<code>{escape(str(entry.to_version))}</code>"
     )
+    # The bare pill, no colour modifier: the label is a fact about the corpus's records, and
+    # the palette spends colour on diffs, disputes and links only (`style.py`).
+    unnamed = unattributed(entry)
+    marker = f' <span class="pill">{escape(UNATTRIBUTED_LABEL)}</span>' if unnamed else ""
     lines = [
         Html(f'<article class="event" id="{escape(entry.key)}">'),
-        Html(f"<h2>{versions}</h2>"),
+        Html(f"<h2>{versions}{marker}</h2>"),
         *_facts(entry),
     ]
+    if unnamed:
+        lines.append(Html(f'<p class="small muted">{escape(UNATTRIBUTED_NOTE)}</p>'))
     for emitted, anchor in zip(entry.changes, anchors, strict=True):
         lines.extend(_change_block(emitted, entry, anchor))
     lines.extend(

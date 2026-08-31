@@ -11,7 +11,9 @@ no evidence for. `Other` sorts last for the same reason it exists, that it is th
 answer rather than a group.
 
 An act with no events says so in words. A row that simply had no date would read as a rendering
-bug; "no amendments seen" is the actual state, and it is a real answer.
+bug; "no amendments seen" is the actual state, and it is a real answer. An act whose every
+recorded event names no amending act is a third state and gets its own words, because "no
+amendments seen" would deny events the act's own page shows.
 
 A row's date names its clock, in the words the event cards already use: "in force" is the
 corpus's own answer, "detected" is the day emendrix first saw the event. The rule is the one
@@ -22,6 +24,7 @@ under "last amended", so a backfill's run day read as an amendment a reader had 
 from __future__ import annotations
 
 from emendrix.output.markdown import short_title
+from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
@@ -38,6 +41,11 @@ _UNGROUPED = "Other"
 """Where an act with no declared domain lands, and the group that always sorts last."""
 
 _QUIET = "no amendments seen"
+
+_UNATTRIBUTED_ONLY = "events recorded, none names an amending act"
+"""The row's date fact when every recorded event names no amending act. Not `_QUIET`, because
+events were seen; not a date, because dating an "amended" fact by one of them would claim an
+amendment the pipeline did not find."""
 
 
 def _groups(site: SiteInputs) -> list[tuple[str, list[ActSite]]]:
@@ -61,20 +69,32 @@ def _row(act: ActSite) -> Html:
     if act.entries:
         facts.append(escape(short_title(act.entries[0].title)))
     dated = act.dated
-    last = dated.words if dated is not None else _QUIET
+    if dated is not None:
+        last = dated.words
+    elif act.entries:
+        last = _UNATTRIBUTED_ONLY
+    else:
+        last = _QUIET
     facts.append(Html(f'<span class="muted">{escape(last)}</span>'))
     return Html(f"<li>{join(facts, ' · ')}</li>")
 
 
 def render_acts_index(site: SiteInputs) -> Html:
-    """The roster page. Deterministic: same inputs, same bytes, no clock, no network."""
+    """The roster page. Deterministic: same inputs, same bytes, no clock, no network.
+
+    The lede counts the events no amending act is named for apart from the amendment events,
+    and prints both numbers even when either is zero: one figure covering both would call
+    every recorded event an amendment, which is the claim the split exists to stop.
+    """
     events = sum(len(act.entries) for act in site.acts)
+    unnamed = sum(1 for act in site.acts for entry in act.entries if unattributed(entry))
     lines = [
         Html("<h1>All watched acts</h1>"),
         Html(
             f'<p class="lede muted">{escape(count(len(site.acts), "act"))} watched, '
-            f"{escape(count(events, 'amendment event'))} recorded. Grouping comes from the "
-            f"watchlist; nothing here is inferred.</p>"
+            f"{escape(count(events - unnamed, 'amendment event'))} recorded, plus "
+            f"{escape(count(unnamed, 'event'))} naming no amending act. Grouping comes from "
+            f"the watchlist; nothing here is inferred.</p>"
         ),
     ]
     for domain, acts in _groups(site):

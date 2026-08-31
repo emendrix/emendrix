@@ -5,7 +5,9 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from emendrix.core import Delta, ProvisionTree
+from site_entries import unattributed_entry
+
+from emendrix.core import Delta, ProvisionTree, VersionId
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
@@ -107,6 +109,33 @@ def test_a_card_for_one_touched_provision_says_provision_not_provisions() -> Non
     assert "1 provision ·" in rendered
 
 
+def test_home_excludes_events_naming_no_amending_act_and_says_how_many() -> None:
+    """The list is titled "Latest amendments", and an event no amending act is named for is
+    not shown under that word; the exclusion is counted in words, never silent."""
+    unnamed = unattributed_entry().model_copy(update={"to_version": VersionId("v9")})
+    entries = (_entry().model_copy(update={"in_force": (date(2024, 6, 1),)}), unnamed)
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries, configured=True
+    )
+    rendered = render_home(site)
+    assert rendered.count('<div class="cardrow">') == 1
+    assert "1 event naming no amending act is on the act pages, not in this list." in rendered
+    assert f'#{unnamed.key}"' not in rendered
+
+
+def test_home_with_only_events_naming_no_amending_act_says_so() -> None:
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(unattributed_entry(),),
+        configured=True,
+    )
+    rendered = render_home(site)
+    assert '<div class="cardrow">' not in rendered
+    assert "1 event recorded so far named no amending act" in rendered
+
+
 def test_the_index_groups_by_domain_with_other_last() -> None:
     watchlist = Watchlist.model_validate(
         {
@@ -145,6 +174,34 @@ def test_the_index_calls_a_detection_date_detected() -> None:
     rendered = render_acts_index(site)
     assert f"detected {OBSERVED.isoformat()}" in rendered
     assert "last amended" not in rendered
+
+
+def test_the_index_counts_events_naming_no_amending_act_apart() -> None:
+    """Both numbers always render, zeros included: one figure over both kinds would call
+    every recorded event an amendment."""
+    unnamed = unattributed_entry().model_copy(update={"to_version": VersionId("v9")})
+    entries = (_entry().model_copy(update={"in_force": (date(2024, 6, 1),)}), unnamed)
+    site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries)
+    rendered = render_acts_index(site)
+    assert "1 amendment event recorded, plus 1 event naming no amending act." in rendered
+    bare = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)
+    )
+    assert "1 amendment event recorded, plus 0 events naming no amending act." in render_acts_index(
+        bare
+    )
+
+
+def test_the_index_row_for_an_act_with_only_unnamed_events_says_so() -> None:
+    """Neither a date (nothing was amended) nor "no amendments seen" (events exist and the
+    act's page shows them): the third state gets its own words."""
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(unattributed_entry(),)
+    )
+    rendered = render_acts_index(site)
+    assert "events recorded, none names an amending act" in rendered
+    assert "no amendments seen" not in rendered
+    assert "in force 2" not in rendered and "detected 2" not in rendered
 
 
 def test_every_act_on_the_index_links_its_page() -> None:

@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
+from site_entries import unattributed_entry
+
 from emendrix.core import Delta, ProvisionLocation, ProvisionTree, Signal, SignalClaim, SignalReport
 from emendrix.corroborate import corroborate
 from emendrix.diff import compute_delta
@@ -209,6 +211,25 @@ def test_a_change_with_no_prose_says_why_rather_than_showing_nothing() -> None:
     site = _site(entry)
     rendered = render_act(site, site.acts[0])
     assert "the model returned no sentence for this change" in rendered
+
+
+def test_an_event_naming_no_amending_act_is_labelled_and_explained_once() -> None:
+    """The card carries the label and one sentence about the corpus's records; the header
+    states the same fact instead of falling silent over a timeline the reader can see."""
+    site = _site(unattributed_entry())
+    rendered = render_act(site, site.acts[0])
+    assert '<span class="pill">no amending act named</span>' in rendered
+    assert rendered.count("No amending act is named for this event") == 1
+    assert "recorded events name no amending act" in rendered
+    assert "newest amendment" not in rendered
+
+
+def test_an_ordinary_event_carries_no_attribution_label() -> None:
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = _site(entry)
+    rendered = render_act(site, site.acts[0])
+    assert "no amending act named" not in rendered
+    assert "No amending act is named" not in rendered
 
 
 def test_the_facts_line_counts_one_touched_provision_in_the_singular() -> None:

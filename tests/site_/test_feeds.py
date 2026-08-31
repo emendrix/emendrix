@@ -13,6 +13,7 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 import pytest
+from site_entries import unattributed_entry
 
 from emendrix import DISCLAIMER
 from emendrix.core import ProvisionTree
@@ -76,6 +77,26 @@ def test_every_summary_carries_the_disclaimer() -> None:
     summary = root.find(f"{ATOM}entry/{ATOM}summary")
     assert summary is not None and summary.text is not None
     assert DISCLAIMER in summary.text
+
+
+def test_an_event_naming_no_amending_act_keeps_its_entry_and_says_so_first() -> None:
+    """The feed carries every event; this one is worded as what it is, and only worded:
+    its id and link are the same permalink any entry gets, so no reader is re-notified."""
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
+        report=Path("r.json"),
+        entries=(unattributed_entry(),),
+        site_url="https://example.invalid/site",
+    )
+    root = ElementTree.fromstring(render_feed(site, None))
+    entries = root.findall(f"{ATOM}entry")
+    assert len(entries) == 1
+    summary = entries[0].findtext(f"{ATOM}summary")
+    assert summary is not None
+    assert summary.startswith("No amending act is named for this event. ")
+    entry_id = entries[0].findtext(f"{ATOM}id")
+    assert entry_id is not None and entry_id.startswith("https://example.invalid/site/acts/")
 
 
 def test_the_feeds_page_lists_the_global_feed_and_every_watched_act() -> None:

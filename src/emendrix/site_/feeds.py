@@ -32,6 +32,7 @@ from datetime import date
 
 from emendrix import DISCLAIMER
 from emendrix.output import ChangelogEntry
+from emendrix.site_.attribution import UNATTRIBUTED_FEED_LEAD, unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_dated
 from emendrix.site_.inputs import ActSite, SiteInputs
@@ -89,12 +90,15 @@ def _summary(entry: ChangelogEntry) -> str:
     Every number is read off `entry.counts`, which the emit stage computed; nothing here
     recounts anything. A disputed change is counted in the open, in the same sentence as the
     rest, because a feed that quietly reported only the undisputed ones would be the one
-    place on this site where a disagreement disappears.
+    place on this site where a disagreement disappears. An event no amending act is named
+    for keeps its entry whole and says so first, for the same reason: the feed carries every
+    event, worded as what it is.
     """
     counts = entry.counts
     in_force = ", ".join(value.isoformat() for value in entry.in_force) or "not stated"
+    lead = f"{UNATTRIBUTED_FEED_LEAD} " if unattributed(entry) else ""
     return (
-        f"{count(counts.touched, 'provision')} touched: {counts.substantive} substantive, "
+        f"{lead}{count(counts.touched, 'provision')} touched: {counts.substantive} substantive, "
         f"{counts.date_only} date-only, {counts.disputed} disputed. "
         f"In force {in_force}. {DISCLAIMER}"
     )

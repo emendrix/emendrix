@@ -51,6 +51,18 @@ to diff inline, because an inline rendering of a rewrite is noise wearing the cl
 comparison. The stored text is never touched: the diff is a comparison-time rendering, the same
 category as the whitespace handling inside the comparison functions.
 
+Some committed events name no amending act at all: their corroboration window turned up no
+modification annotations and no amending-act instructions, so only the text comparison observed
+them. The commonest shape is the act as published set against its own first consolidation, where
+no amending act can exist yet. The site derives the class at build time from the committed
+document's own fields (`site_/attribution.py`) and says the fact rather than a cause: the front
+page leaves these events out of "Latest amendments" and counts the exclusion in words, the acts
+index counts them apart from the amendment events and never answers a date fact with one, the act
+page keeps every one in place under the label "no amending act named" with one sentence saying
+what it means, and the feeds keep every one with the same fact leading the summary. Nothing is
+dropped: the difference in the published text is real and stays shown; what the pipeline did not
+establish is which act, if any, caused it, and no page claims more than that.
+
 ## No backend, and that is the more interesting decision
 
 A minimal backend is the obvious alternative, and this project has **none**. Static generation wins

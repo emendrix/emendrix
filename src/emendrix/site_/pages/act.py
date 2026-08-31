@@ -136,7 +136,9 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
 
     The dated fact names its clock, like every dated line on the site. The header once said
     "reflects the consolidated version of" over whichever date the newest event carried,
-    which dressed a detection date as a fact about the official text.
+    which dressed a detection date as a fact about the official text. An act whose every
+    event names no amending act has no amendment to date, and the header says that instead
+    of falling silent over a timeline the reader can see is not empty.
     """
     title = short_title(act.entries[0].title) if act.entries else act.label
     facts = [Html(f"<code>{escape(act.act.key)}</code>")]
@@ -150,6 +152,8 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     dated = act.dated
     if dated is not None:
         facts.append(escape(f"newest amendment {dated.words}"))
+    elif act.entries:
+        facts.append(escape("recorded events name no amending act"))
     header = [Html(f"<h1>{escape(act.label)}</h1>")]
     if title != act.label:
         header.append(Html(f'<p class="official">{escape(title)}</p>'))

@@ -43,6 +43,15 @@ touched only by a backfill read as amended the day the backfill ran. The row now
 header says "newest amendment in force 2020-04-24" where it had claimed "reflects the
 consolidated version of" over the same ambiguous value. No measured figure moved with them.
 
+Read again on 2026-08-31, later the same day, when the site started counting events naming no
+amending act apart from amendments. One file moved, `acts/index.html`, by one line: the lede
+now reads "1 amendment event recorded, plus 0 events naming no amending act", both numbers
+always printed so the split can never quietly collapse back into one figure. Nothing else
+moved, because the golden's one event is the MDR postponement, whose window names `32020R0561`
+and which is therefore not in the class: the front-page exclusion, the event label, the row
+fallback and the feed lead are all asserted on toy entries in the unit suites instead. No
+measured figure moved with it.
+
 **It is deliberately wired to the newest report**, not to a pinned one, the same rule the
 README's metrics table lives under: a new `reports/eval/*.json` breaks this suite until the
 site is regenerated, so a figure on a page can never be stale with respect to the numbers the
