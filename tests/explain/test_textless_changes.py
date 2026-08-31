@@ -47,6 +47,7 @@ from emendrix.eu.formex import parse_act
 from emendrix.eu.identifiers import Celex
 from emendrix.eu.modmeta import metadata_signal, parse_branch_modifications
 from emendrix.explain import (
+    MODEL_FAILED,
     NO_EVIDENCE_PAST_CAP,
     NOTHING_TO_EXPLAIN,
     CassetteMode,
@@ -136,6 +137,7 @@ def test_one_textless_change_does_not_destroy_the_batch() -> None:
     skipped = run.results[1]
     assert not skipped.ok
     assert skipped.unavailable is not None
+    assert skipped.unavailable.kind == "nothing_to_explain"
     assert skipped.unavailable.reason == NOTHING_TO_EXPLAIN
     assert skipped.cassette_key == "", "no call was made, so there is no exchange to key"
     assert skipped.usage.requests == 0
@@ -150,6 +152,7 @@ def test_a_delta_of_nothing_but_textless_changes_still_returns_a_run() -> None:
     assert run.stats.changes == 2
     assert run.stats.explained == 0
     assert run.stats.unavailable == 2
+    assert run.stats.nothing_to_explain == 2
     assert run.stats.usage.requests == 0
 
 
@@ -182,9 +185,10 @@ def past_the_cap(location: str) -> Change:
 def test_a_change_with_no_evidence_in_its_prompt_never_reaches_the_model() -> None:
     """The refusal is deterministic, so the provider is never asked and never has to be right.
 
-    The engine turns any provider failure into a counted reason, so a raising model would show up
-    as its own exception text if the call happened. The reason below is the one the stage writes
-    when it declines to make the call at all.
+    The engine turns any provider failure into the counted `model_failed` state, so a raising
+    model shows up under that kind if the call happened. The reason below is the one the stage
+    writes when it declines to make the call at all, and the two kinds telling the cases apart
+    is the point of having kinds.
     """
     delta = Delta(
         act=ACT, from_version=V1, to_version=V2, changes=(past_the_cap("AR 5"), with_text("AR 20"))
@@ -196,6 +200,7 @@ def test_a_change_with_no_evidence_in_its_prompt_never_reaches_the_model() -> No
     refused = run.results[0]
     assert refused.no_evidence
     assert refused.unavailable is not None
+    assert refused.unavailable.kind == "no_evidence_past_cap"
     assert refused.unavailable.reason == NO_EVIDENCE_PAST_CAP
     assert refused.cassette_key == "", "no call was made, so there is no exchange to key"
     assert refused.usage.requests == 0
@@ -204,9 +209,13 @@ def test_a_change_with_no_evidence_in_its_prompt_never_reaches_the_model() -> No
 
     called = run.results[1]
     assert called.unavailable is not None
-    assert "AssertionError" in called.unavailable.reason, (
+    assert called.unavailable.kind == "model_failed", (
         "the control change reached the model and was refused there, which is what makes the "
         "first change's reason evidence that no call was attempted for it"
+    )
+    assert called.unavailable.reason == MODEL_FAILED
+    assert "AssertionError" not in called.unavailable.reason, (
+        "the exception's own text is for the log, never for a field that reaches a document"
     )
     assert called.no_evidence is False
 

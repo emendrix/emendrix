@@ -99,6 +99,24 @@ Named rather than discovered later; the eval report's disagreement list is the l
   the case is gone. Still 0 over the recording of 2026-08-12, with one prompt trimmed as before:
   the boundary separator lengthened `Annex I`, whose dropped characters went from 23 115 to 24
   066, and it is the only unit in the subset whose set of shown coordinates moved at all.
+- **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
+  cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
+  rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure
+  is one first-class state, kind `model_failed`, shipping one curated sentence in the register of
+  the rest of the output and counted in the report's reason breakdown beside the cap's refusal;
+  the exception's class and message go to the operator's log and never to a stored field. Before
+  that date the exception's own text shipped in the `unexplained` field, and the published
+  changelog carries the two measured instances, `Art. 25` and `Art. 57` of the AI Act event
+  `02024R1689-20260727`, until that repository is amended; no committed document in this
+  repository carries one, verified 2026-08-31 by searching every golden, report and cassette for
+  library exception names. The gate's verbatim quotation was considered for this case and
+  rejected: the fallback replaces a claim the gate rejected, a change that never got an
+  explanation made no claim, the texts a quotation would repeat already ship with the entry, and
+  counting a failed call into `fallback` would fold provider availability into the quote-fallback
+  rate, which measures citation failures. Whether the same two provisions fail again on a
+  re-record is unknown and left unanswered on purpose: a failed exchange is never recorded, a
+  cassette holds only a well-formed answer, and answering would cost a recording about a question
+  no published figure depends on.
 - **Explanations can still outrun their evidence, and the shape of it has changed.** The hand
   review of 2026-08-08 over the prose that shipped then marked 3 of 20 entries unfaithful at the
   truncation marker. That count was published as one class and it was three different things, and

@@ -115,6 +115,16 @@ class ModelMetrics(BaseModel):
         ge=0,
         description="Changes a character cap left with two identical texts, never sent.",
     )
+    model_failed: int = Field(
+        default=0,
+        ge=0,
+        description="Changes whose live call failed and shipped the stated reason instead.",
+    )
+    nothing_to_explain: int = Field(
+        default=0,
+        ge=0,
+        description="Changes another signal named that the diff saw no text for.",
+    )
     schema_repairs: int = Field(default=0, ge=0)
     missing_units: int = Field(default=0, ge=0)
     first_round: GateStats = GateStats()
@@ -182,6 +192,8 @@ def pool(model_id: str, cases: tuple[ModelCaseResult, ...]) -> ModelMetrics:
         synthetic=sum(item.synthetic for item in stats),
         truncated=sum(item.truncated for item in stats),
         no_evidence=sum(item.no_evidence for item in stats),
+        model_failed=sum(item.model_failed for item in stats),
+        nothing_to_explain=sum(item.nothing_to_explain for item in stats),
         schema_repairs=usage.schema_repairs,
         missing_units=sum(len(case.missing_units) for case in cases),
         first_round=first,

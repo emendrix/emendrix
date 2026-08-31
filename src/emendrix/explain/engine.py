@@ -33,6 +33,8 @@ stage at all.
 from __future__ import annotations
 
 import asyncio
+import logging
+from typing import Final
 
 from pydantic_ai import Agent
 from pydantic_ai.models import Model
@@ -53,7 +55,20 @@ from emendrix.explain.results import CallUsage, ExplainedChange, ExplainRun, Run
 from emendrix.explain.schema import SCHEMA_VERSION, Explanation, ExplanationUnavailable
 from emendrix.explain.settings import CassetteMode, ExplainSettings
 
-__all__ = ["ExplainEngine"]
+__all__ = ["MODEL_FAILED", "ExplainEngine"]
+
+_log = logging.getLogger(__name__)
+
+MODEL_FAILED: Final = (
+    "the model did not return a well-formed explanation for this change, so none is shipped; "
+    "the verbatim before and after texts are unaffected"
+)
+"""The reader-facing reason for every way a live call can fail: timeout, refusal, rate limit,
+exhausted repair budget. One sentence for all of them, because the distinctions are about the
+provider and the reader's situation is the same in each — the change ships, thinner, with the
+texts it always carries. The exception's own class and message go to the log for the operator;
+they never reach a stored field, because a published document is not the place a library names
+its errors."""
 
 
 class ExplainEngine:
@@ -172,9 +187,15 @@ class ExplainEngine:
         except Exception as error:
             # Deliberately broad: every way a provider can fail — timeout, refusal, rate
             # limit, exhausted repair budget — is one counted value, not five call sites.
+            _log.warning(
+                "explain failed for %s: %s: %s",
+                change.provision.location.canonical,
+                type(error).__name__,
+                error,
+            )
             return ExplainedChange(
                 provision=change.provision,
-                unavailable=ExplanationUnavailable(reason=f"{type(error).__name__}: {error}"),
+                unavailable=ExplanationUnavailable(kind="model_failed", reason=MODEL_FAILED),
                 cassette_key=cassette_key(
                     self.settings.model_id, parts.system, parts.user, SCHEMA_VERSION
                 ),
@@ -217,7 +238,9 @@ class ExplainEngine:
         """
         return ExplainedChange(
             provision=change.provision,
-            unavailable=ExplanationUnavailable(reason=NOTHING_TO_EXPLAIN),
+            unavailable=ExplanationUnavailable(
+                kind="nothing_to_explain", reason=NOTHING_TO_EXPLAIN
+            ),
         )
 
     def _no_evidence(self, change: Change, parts: PromptParts) -> ExplainedChange:
@@ -232,7 +255,9 @@ class ExplainEngine:
         """
         return ExplainedChange(
             provision=change.provision,
-            unavailable=ExplanationUnavailable(reason=NO_EVIDENCE_PAST_CAP),
+            unavailable=ExplanationUnavailable(
+                kind="no_evidence_past_cap", reason=NO_EVIDENCE_PAST_CAP
+            ),
             dropped_chars=parts.dropped_chars,
             no_evidence=True,
         )

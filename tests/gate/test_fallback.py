@@ -107,7 +107,9 @@ def explained(item: Change, explanation: Explanation | None) -> ExplainedChange:
     return ExplainedChange(
         provision=item.provision,
         explanation=explanation,
-        unavailable=None if explanation else ExplanationUnavailable(reason="the provider said no"),
+        unavailable=None
+        if explanation
+        else ExplanationUnavailable(kind="model_failed", reason="the provider said no"),
         usage=CallUsage(input_tokens=10, output_tokens=2, requests=1),
         synthetic=True,
     )

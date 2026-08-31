@@ -122,6 +122,16 @@ class RunStats(BaseModel):
         ge=0,
         description="Changes whose capped texts were identical, so no call was made at all.",
     )
+    model_failed: int = Field(
+        default=0,
+        ge=0,
+        description="Changes whose live call failed — timeout, refusal, exhausted repair budget.",
+    )
+    nothing_to_explain: int = Field(
+        default=0,
+        ge=0,
+        description="Changes another signal named that the diff saw no text for. No call made.",
+    )
     usage: CallUsage = CallUsage()
 
     @classmethod
@@ -138,6 +148,17 @@ class RunStats(BaseModel):
             synthetic=sum(1 for result in results if result.synthetic),
             truncated=sum(1 for result in results if result.dropped_chars),
             no_evidence=sum(1 for result in results if result.no_evidence),
+            model_failed=sum(
+                1
+                for result in results
+                if result.unavailable is not None and result.unavailable.kind == "model_failed"
+            ),
+            nothing_to_explain=sum(
+                1
+                for result in results
+                if result.unavailable is not None
+                and result.unavailable.kind == "nothing_to_explain"
+            ),
             usage=usage,
         )
 

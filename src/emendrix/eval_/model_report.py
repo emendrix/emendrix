@@ -154,8 +154,12 @@ def render_model_layer(metrics: ModelMetrics | None) -> list[str]:
                 "sentence fails if any one of its keys does.",
             ),
             "",
-            f"- **Changes with nothing to explain** — {metrics.unexplained} of "
-            f"{metrics.settled.changes}; they keep their slot and ship without sentences.",
+            f"- **Changes shipped without an explanation** — {metrics.unexplained} of "
+            f"{metrics.settled.changes}; they keep their slot and ship without sentences, each "
+            f"carrying its stated reason. Of them, {metrics.nothing_to_explain} had nothing to "
+            f"explain (a unit another signal named, with no text for the diff to show), "
+            f"{metrics.no_evidence} were the cap's refusal, and {metrics.model_failed} were "
+            "model failures — a live call that returned no well-formed explanation.",
             f"- **Schema repairs** — {metrics.schema_repairs} malformed structured outputs "
             "pydantic-ai had to ask again for.",
             f"- **Prompts a character cap trimmed** — {metrics.truncated}, each marked in the "

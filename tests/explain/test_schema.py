@@ -89,9 +89,18 @@ def test_explanations_are_frozen_value_types() -> None:
 
 def test_unavailable_is_a_value_that_must_say_why() -> None:
     """First-class states, never exceptions, and a state with no reason explains nothing."""
-    assert ExplanationUnavailable(reason="provider timed out").state == "explanation_unavailable"
+    unavailable = ExplanationUnavailable(kind="model_failed", reason="provider timed out")
+    assert unavailable.state == "explanation_unavailable"
     with pytest.raises(ValidationError):
-        ExplanationUnavailable(reason="")
+        ExplanationUnavailable(kind="model_failed", reason="")
+
+
+def test_unavailable_must_name_one_of_the_three_kinds() -> None:
+    """The kinds are a closed set the report counts over, so an unnamed one cannot slip in."""
+    with pytest.raises(ValidationError):
+        ExplanationUnavailable(reason="provider timed out")  # type: ignore[call-arg]
+    with pytest.raises(ValidationError):
+        ExplanationUnavailable(kind="provider_error", reason="x")  # type: ignore[arg-type]
 
 
 def test_the_schema_version_is_an_integer_that_cassette_keys_can_carry() -> None:

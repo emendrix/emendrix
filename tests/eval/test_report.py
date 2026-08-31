@@ -173,6 +173,36 @@ def test_the_unsupported_coordinate_count_is_published_as_a_floor() -> None:
     assert "synthetic tests are what keep it able to fire" in line
 
 
+def test_the_unexplained_count_is_published_with_its_reason_breakdown() -> None:
+    """A change can ship without an explanation for three reasons, and the report must say
+    which, because the three mean different things: a unit no text exists for, a cap the
+    project chose, and a provider failing on a call that was made. One flat count reads as one
+    phenomenon, and a model failure hiding inside a corpus artefact is exactly the kind of
+    blur the metrics rules forbid. All three read zero over the pinned subset as it ships, so
+    like the coordinate bullet above, the wording is fixed before a figure exercises it.
+    """
+    metrics = ModelMetrics(
+        model_id="test:model",
+        unexplained=4,
+        no_evidence=1,
+        model_failed=1,
+        nothing_to_explain=2,
+        settled=GateStats(changes=10, passed_first=6, unexplained=4, sentences=6),
+        first_round=GateStats(changes=10, passed_first=6, sentences=6, citations=6),
+    )
+    rendered = "\n".join(render_model_layer(metrics))
+    line = next(
+        line
+        for line in rendered.splitlines()
+        if line.startswith("- **Changes shipped without an explanation**")
+    )
+    assert "4 of 10" in line
+    assert "2 had nothing to explain" in line
+    assert "1 were the cap's refusal" in line
+    assert "1 were model failures" in line
+    assert "stated reason" in line
+
+
 def _judge_line(judge: str, explainer: str) -> str:
     """The one bullet naming the judge, out of a rendered faithfulness section."""
     report = FaithfulnessReport(judge_model=judge, sampled=1, judged=1, faithful=1)

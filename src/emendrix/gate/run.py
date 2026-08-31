@@ -66,6 +66,12 @@ def _unexplained(result: ExplainedChange) -> GatedChange:
     The change still ships: its verbatim before/after come from the `Change` itself and never
     from the model, so an entry with no sentences is thinner, not absent. The gate does not
     invent a quotation here, because there was no ungrounded claim to replace.
+
+    That asymmetry is deliberate, decided 2026-08-31: the verbatim fallback exists to replace
+    a claim the gate rejected, and a change that never got an explanation made no claim. The
+    texts a quotation would repeat already ship with the entry, and counting a failed call
+    into `fallback` would fold provider availability into `fallback_rate`, which measures
+    citation failures. So the change ships its stated reason instead, counted `unexplained`.
     """
     return GatedChange(
         provision=result.provision, outcome=GateOutcome.UNEXPLAINED, unavailable=result.unavailable

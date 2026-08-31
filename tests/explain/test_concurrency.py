@@ -32,6 +32,7 @@ from emendrix.core import (
     VersionId,
 )
 from emendrix.explain import (
+    MODEL_FAILED,
     CassetteMode,
     ExplainEngine,
     ExplainSettings,
@@ -138,7 +139,12 @@ def test_order_is_preserved_even_when_the_calls_finish_out_of_order() -> None:
 
 
 def test_one_failure_does_not_sink_the_batch() -> None:
-    """The failed change ships an `ExplanationUnavailable` marker for the gate to handle."""
+    """The failed change ships an `ExplanationUnavailable` marker for the gate to handle.
+
+    The reason is the curated `MODEL_FAILED` sentence, never the exception's own text: what the
+    library called its failure is for the operator's log, and a reader-facing field carrying
+    `RuntimeError: provider said no` would ship a crash message into a published document.
+    """
 
     async def call(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
         if "new 2" in str(messages[-1]):
@@ -149,10 +155,14 @@ def test_one_failure_does_not_sink_the_batch() -> None:
     assert len(run.results) == 5
     assert run.stats.explained == 4
     assert run.stats.unavailable == 1
+    assert run.stats.model_failed == 1
     failed = run.results[2]
     assert failed.explanation is None
     assert failed.unavailable is not None
-    assert "provider said no" in failed.unavailable.reason
+    assert failed.unavailable.kind == "model_failed"
+    assert failed.unavailable.reason == MODEL_FAILED
+    assert "provider said no" not in failed.unavailable.reason
+    assert "RuntimeError" not in failed.unavailable.reason
     assert not failed.ok
 
 

@@ -19,7 +19,7 @@ counted, because raising where a state applies is a bug.
 
 from __future__ import annotations
 
-from typing import Final
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -112,9 +112,18 @@ class ExplanationUnavailable(BaseModel):
 
     It reaches the changelog and the metrics exactly like `ConsolidationPending` and
     `EnglishUnavailable` do: a change is never dropped because the model failed on it.
+
+    `kind` is what happened, closed and countable; `reason` is the sentence a reader is shown,
+    always one of the curated constants beside the mechanism that mints it (`NOTHING_TO_EXPLAIN`
+    in `context.py`, `NO_EVIDENCE_PAST_CAP` in `capping.py`, `MODEL_FAILED` in `engine.py`).
+    `reason` is never an exception's text: what a library called its failure is a fact for the
+    operator's log, not for a document intended for publication.
     """
 
     model_config = ConfigDict(frozen=True)
 
-    state: str = "explanation_unavailable"
+    state: Literal["explanation_unavailable"] = "explanation_unavailable"
+    kind: Literal["nothing_to_explain", "no_evidence_past_cap", "model_failed"] = Field(
+        description="Which of the three ways a change ends up with no explanation this was."
+    )
     reason: str = Field(min_length=1, description="What went wrong, for the reader and the eval.")

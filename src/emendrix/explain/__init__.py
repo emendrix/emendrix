@@ -49,7 +49,7 @@ from emendrix.explain.context import (
     explainable,
 )
 from emendrix.explain.coordinates import mentioned_locations
-from emendrix.explain.engine import ExplainEngine
+from emendrix.explain.engine import MODEL_FAILED, ExplainEngine
 from emendrix.explain.prompt import (
     FENCE_TOKEN_CHARS,
     PromptParts,
@@ -83,6 +83,7 @@ __all__ = [
     "DEFAULT_MODEL",
     "FENCE_TOKEN_CHARS",
     "MAX_SENTENCES",
+    "MODEL_FAILED",
     "NOTHING_TO_EXPLAIN",
     "NO_EVIDENCE_PAST_CAP",
     "PUBLISHED_RATES",
