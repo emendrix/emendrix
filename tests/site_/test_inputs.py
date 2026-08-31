@@ -7,11 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from emendrix.core import ActId
+from emendrix.core import ActId, VersionId
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
-from emendrix.site_.inputs import ActSite, collect_site, event_dated
+from emendrix.site_.clocks import event_dated, sort_date
+from emendrix.site_.inputs import ActSite, collect_site
 from emendrix.watch.config import Watchlist
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -41,6 +42,62 @@ def test_event_dated_prefers_in_force_and_falls_back_to_detected() -> None:
     assert event_dated(entry) == date(2024, 6, 1)
     bare = entry.model_copy(update={"in_force": ()})
     assert event_dated(bare) == OBSERVED
+
+
+def test_sort_date_prefers_a_resolved_version_date_and_falls_back() -> None:
+    entry = _entry(date(2024, 6, 1))
+    dated = {(entry.act, entry.to_version): date(2020, 4, 24)}
+    assert sort_date(entry, dated) == date(2020, 4, 24)
+    assert sort_date(entry, {}) == event_dated(entry)
+
+
+def test_a_dated_backfill_does_not_outrank_a_version_dated_amendment() -> None:
+    """A backfill stamps old events with one recent detection date; the order ignores it.
+
+    Without version dates the backfilled event would sort first, because its detection date
+    is later than the amendment's in-force date and `event_dated` compares the two clocks
+    as one. The front page once did exactly that under "Latest amendments".
+    """
+    amendment = _entry(date(2026, 7, 27))
+    backfill = _entry(date(2020, 1, 1)).model_copy(
+        update={
+            "act": ActId(corpus=amendment.act.corpus, key="older-act"),
+            "in_force": (),
+            "detected_on": date(2026, 8, 13),
+        }
+    )
+    dated = {
+        (amendment.act, amendment.to_version): date(2026, 7, 27),
+        (backfill.act, backfill.to_version): date(2013, 6, 28),
+    }
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(amendment, backfill),
+        version_dates=dated,
+    )
+    assert [pair[1].act for pair in site.recent] == [amendment.act, backfill.act]
+
+
+def test_one_acts_entries_order_by_the_version_date_not_the_detection_date() -> None:
+    newest = _entry(date(2024, 6, 1))
+    older = newest.model_copy(
+        update={"to_version": VersionId("v9"), "in_force": (), "detected_on": date(2026, 8, 13)}
+    )
+    dated = {
+        (newest.act, newest.to_version): date(2024, 6, 1),
+        (older.act, older.to_version): date(2013, 6, 28),
+    }
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(newest, older),
+        version_dates=dated,
+    )
+    versions = [entry.to_version for entry in site.acts[0].entries]
+    assert versions == [newest.to_version, older.to_version]
 
 
 def test_dated_carries_the_clock_that_produced_it() -> None:

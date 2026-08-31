@@ -40,7 +40,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from emendrix.site_.inputs import SiteInputs, event_dated
+from emendrix.site_.clocks import event_dated
+from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.seo import canonical_url
 from emendrix.site_.urls import act_href

@@ -10,20 +10,66 @@ that the command writes every surface, twice over, to the same bytes.
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 
 import pytest
 from helpers import REPORTS, WATCHLIST, _tree, build, runner
 
 from emendrix.cli import app
-from emendrix.core import ProvisionTree
+from emendrix.core import ActId, ProvisionTree, VersionId
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
-from emendrix.output import diff_only_entry
+from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_ import collect_site, write_site
+from emendrix.site_.cli import _eurlex_urls, _version_dates
 from eu_pins import OBSERVED_ON
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
+
+
+def _toy_entry() -> ChangelogEntry:
+    adapter = ToyCorpusAdapter(observed_on=OBSERVED_ON)
+    before = adapter.fetch_version(HOUSE_RULES, V1)
+    after = adapter.fetch_version(HOUSE_RULES, V2)
+    assert isinstance(before, ProvisionTree) and isinstance(after, ProvisionTree)
+    return diff_only_entry(compute_delta(before, after), detected_on=OBSERVED_ON)
+
+
+def _eu_entry(
+    to_version: str, *, in_force: tuple[date, ...] = (), detected_on: date = OBSERVED_ON
+) -> ChangelogEntry:
+    """A committed-shaped event reworded onto an EU act, for the CLI's EU-only resolvers."""
+    return _toy_entry().model_copy(
+        update={
+            "act": ActId(corpus="eu", key="32017R0745"),
+            "to_version": VersionId(to_version),
+            "in_force": in_force,
+            "detected_on": detected_on,
+        }
+    )
+
+
+def test_version_dates_read_the_consolidated_versions_own_tag() -> None:
+    entry = _eu_entry("02017R0745-20200424")
+    assert _version_dates((entry,)) == {(entry.act, entry.to_version): date(2020, 4, 24)}
+
+
+def test_version_dates_skip_what_no_tag_answers() -> None:
+    """The OJ act itself, another corpus, and an unreadable tag all fall back, not fail."""
+    oj_act = _eu_entry("32017R0745")
+    other_corpus = _toy_entry()
+    unreadable = _eu_entry("not-a-version")
+    assert _version_dates((oj_act, other_corpus, unreadable)) == {}
+
+
+def test_the_eurlex_url_ranks_by_the_version_date_not_the_detection_date() -> None:
+    """A backfilled old version detected later may not pick the link an act shows."""
+    newest = _eu_entry("02017R0745-20200424", in_force=(date(2020, 4, 24),))
+    backfilled = _eu_entry("02017R0745-20170505", detected_on=date(2026, 8, 13))
+    entries = (newest, backfilled)
+    (url,) = _eurlex_urls(entries, _version_dates(entries)).values()
+    assert "02017R0745-20200424" in url
 
 
 def test_the_command_writes_every_surface(tmp_path: Path, changelog_repo: Path) -> None:
@@ -302,11 +348,7 @@ def test_the_builder_runs_on_a_corpus_that_is_not_law_at_all(tmp_path: Path) -> 
     The paths come back relative and sorted, which is what the summary line counts and what a
     caller would have to compare against a committed tree.
     """
-    adapter = ToyCorpusAdapter(observed_on=OBSERVED_ON)
-    before = adapter.fetch_version(HOUSE_RULES, V1)
-    after = adapter.fetch_version(HOUSE_RULES, V2)
-    assert isinstance(before, ProvisionTree) and isinstance(after, ProvisionTree)
-    entry = diff_only_entry(compute_delta(before, after), detected_on=OBSERVED_ON)
+    entry = _toy_entry()
     site = collect_site(
         generated_on=OBSERVED_ON,
         run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),

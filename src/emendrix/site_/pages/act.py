@@ -27,8 +27,9 @@ from __future__ import annotations
 from emendrix.core import ChangeType, ProvisionLocation
 from emendrix.output.markdown import short_title
 from emendrix.site_.chrome import page
+from emendrix.site_.clocks import event_dated
 from emendrix.site_.feeds import feed_path, feed_title
-from emendrix.site_.inputs import ActSite, SiteInputs, event_dated
+from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.pages.act_event import pill, render_event
 from emendrix.site_.seo import act_json_ld

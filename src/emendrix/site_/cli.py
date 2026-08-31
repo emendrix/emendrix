@@ -27,18 +27,22 @@ site is otherwise a pure function of committed artifacts.
 This module is where the EU corpus is allowed to be named. Which act has an EUR-Lex address is
 a corpus capability, not something the pages may know, so the URL is resolved here from the
 newest version each act has been consolidated to and handed down as a plain string, the same
-way the pipeline's root hands down an adapter.
+way the pipeline's root hands down an adapter. The date each consolidated version speaks as
+of is read here for the same reason: only this module may read a version tag, and that date
+is what every newest-first list on the site sorts by.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
+from emendrix.core import ActId, VersionId
 from emendrix.eu.http import today_utc
+from emendrix.eu.identifiers import ConsolidatedId, parse_version_id
 from emendrix.eu.links import document_url
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.report import DEFAULT_REPORT_DIR
@@ -46,7 +50,8 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, resolve_repo_path
 from emendrix.output.json_out import slug
 from emendrix.site_.build import write_site
-from emendrix.site_.inputs import collect_site, event_dated, read_entries
+from emendrix.site_.clocks import VersionDates, sort_date
+from emendrix.site_.inputs import collect_site, read_entries
 from emendrix.site_.markup import count
 from emendrix.watch.config import Watchlist, load_watchlist
 
@@ -75,19 +80,44 @@ def _watchlist(path: Path) -> Watchlist | None:
     return load_watchlist(path) if path.is_file() else None
 
 
-def _eurlex_urls(entries: tuple[ChangelogEntry, ...]) -> dict[str, str]:
-    """One EUR-Lex document URL per EU act, for the newest version it was consolidated to.
+def _version_dates(entries: tuple[ChangelogEntry, ...]) -> VersionDates:
+    """The date each EU consolidated version speaks as of, read off its own tag.
 
-    Keyed by the act's URL slug, which is what `collect_site` matches on. An act with no
-    committed event yet gets no entry here and no link, because the newest consolidation is
-    exactly the thing nothing has recorded for it.
+    `sort_date` orders every newest-first list by these. An entry outside this corpus, one
+    whose version is the OJ act itself rather than a consolidation, or one whose tag does
+    not parse gets no entry here and falls back to `event_dated`: an unreadable tag is a
+    gap to fall back past, not a reason to fail a build over committed data.
+    """
+    dated: dict[tuple[ActId, VersionId], date] = {}
+    for entry in entries:
+        if entry.act.corpus != _EU:
+            continue
+        try:
+            parsed = parse_version_id(entry.to_version)
+        except ValueError:
+            continue
+        if isinstance(parsed, ConsolidatedId):
+            dated[(entry.act, entry.to_version)] = parsed.version_date
+    return dated
+
+
+def _eurlex_urls(
+    entries: tuple[ChangelogEntry, ...], version_dates: VersionDates
+) -> dict[str, str]:
+    """One EUR-Lex document URL per EU act, for the version `sort_date` ranks newest.
+
+    Keyed by the act's URL slug, which is what `collect_site` matches on, and ranked by the
+    same clock every newest-first list uses, so the link an act shows and the event a reader
+    sees as newest cannot name two different versions. An act with no committed event yet
+    gets no entry here and no link, because the newest consolidation is exactly the thing
+    nothing has recorded for it.
     """
     newest: dict[str, tuple[tuple[str, str], str]] = {}
     for entry in entries:
         if entry.act.corpus != _EU:
             continue
         key = slug(entry.act.key)
-        ranked = (event_dated(entry).isoformat(), str(entry.to_version))
+        ranked = (sort_date(entry, version_dates).isoformat(), str(entry.to_version))
         if key not in newest or ranked > newest[key][0]:
             newest[key] = (ranked, document_url(entry.to_version))
     return {key: url for key, (_, url) in newest.items()}
@@ -162,6 +192,7 @@ def build(
         typer.echo(str(error), err=True)
         raise typer.Exit(code=2) from error
 
+    version_dates = _version_dates(entries)
     site = collect_site(
         generated_on=generated_on.date() if generated_on is not None else today_utc(),
         run=run,
@@ -174,7 +205,8 @@ def build(
         # Joined with a single separator wherever a feed builds an absolute link, so the base
         # carries none of its own.
         site_url=site_url.rstrip("/"),
-        eurlex_urls=_eurlex_urls(entries),
+        eurlex_urls=_eurlex_urls(entries, version_dates),
+        version_dates=version_dates,
     )
     written = write_site(out, site, home_limit=home_limit)
     pages = sum(1 for path in written if path.suffix == ".html")

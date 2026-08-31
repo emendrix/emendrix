@@ -33,7 +33,8 @@ from datetime import date
 from emendrix import DISCLAIMER
 from emendrix.output import ChangelogEntry
 from emendrix.site_.chrome import page
-from emendrix.site_.inputs import ActSite, SiteInputs, event_dated
+from emendrix.site_.clocks import event_dated
+from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.urls import act_href, depth_of, up
 

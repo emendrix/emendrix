@@ -14,7 +14,9 @@ each is a page that says so.
 
 Ordering is total and explicit, because two builds of one repository state have to produce one
 tree: `glob` order is not sorted on every filesystem, acts sort by label then by key, and
-events sort by the date they came into force, then by version tag and act.
+every newest-first list of events sorts by `sort_date`, the consolidated version's own date
+where the corpus resolved one, else `event_dated`. Why the two clocks may never share a sort
+key is `clocks`' own story.
 
 No absolute path reaches a page. Where the output repository lives is the operator's home
 directory and a public site is the last place it belongs, so `configured` records only whether
@@ -40,56 +42,16 @@ from emendrix.eval_.report import DEFAULT_REPORT_DIR
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import slug
+from emendrix.site_.clocks import EventDate, VersionDates, event_dated, sort_date
 from emendrix.watch.config import Watchlist
 
 __all__ = [
     "ActSite",
-    "EventDate",
     "PageChrome",
     "SiteInputs",
     "collect_site",
-    "event_dated",
     "read_entries",
 ]
-
-
-def event_dated(entry: ChangelogEntry) -> date:
-    """When an event took effect: clock 1 if the changes carry it, else when it was seen.
-
-    A bare date, for sort keys and machine timestamps only: it drops which clock answered.
-    A page printing the date under words reads `ActSite.dated`, which keeps the clock.
-    """
-    return max(entry.in_force) if entry.in_force else entry.detected_on
-
-
-class EventDate(BaseModel):
-    """A date and the clock that produced it, inseparable.
-
-    The corpus's own in-force date and the day emendrix first saw an event are different
-    claims, and a page that has only the date cannot help labelling one as the other.
-    The acts index once printed the fallback under "last amended", which told a reader
-    the act moved on a day emendrix merely ran; carrying the clock in the value makes
-    that misreading impossible to write by accident.
-    """
-
-    model_config = ConfigDict(frozen=True)
-
-    on: date
-    in_force: bool = Field(
-        description="True for clock 1, the corpus's own answer; False when `on` is the "
-        "date the event was first seen."
-    )
-
-    @property
-    def words(self) -> str:
-        """The clock and the date, in the words every dated line on the site uses.
-
-        Rendered here once and imported rather than restated, for the reason `act_event`
-        gives: two renderings of one fact that describe it differently are how a caveat
-        gets softened in one of them.
-        """
-        clock = "in force" if self.in_force else "detected"
-        return f"{clock} {self.on.isoformat()}"
 
 
 class ActSite(BaseModel):
@@ -102,7 +64,9 @@ class ActSite(BaseModel):
     domain: str = Field(default="", description="Index grouping; empty lands under 'Other'.")
     aliases: tuple[str, ...] = ()
     eurlex_url: str = Field(default="", description="Resolved at the CLI boundary; '' = none.")
-    entries: tuple[ChangelogEntry, ...] = Field(default=(), description="Newest first.")
+    entries: tuple[ChangelogEntry, ...] = Field(
+        default=(), description="Newest first by `sort_date`."
+    )
 
     @property
     def slug(self) -> str:
@@ -111,7 +75,12 @@ class ActSite(BaseModel):
 
     @property
     def dated(self) -> EventDate | None:
-        """The newest event's date with its clock; None when nothing was ever seen."""
+        """The newest event's date with its clock; None when nothing was ever seen.
+
+        Newest means newest by `sort_date`, the order `entries` arrives in; the date printed
+        is still that entry's own in-force or detected clock, which is a true statement about
+        that entry even when another entry carries a later detection date.
+        """
         if not self.entries:
             return None
         newest = self.entries[0]
@@ -144,6 +113,11 @@ class SiteInputs(BaseModel):
     run: EvalRun
     report: str = Field(min_length=1, description="Report file name, never its path.")
     acts: tuple[ActSite, ...] = ()
+    recent: tuple[tuple[ActSite, ChangelogEntry], ...] = Field(
+        default=(),
+        description="Every event with its act, newest first by `sort_date`. Resolved once "
+        "in `collect_site`; nothing downstream recomputes an order.",
+    )
     configured: bool = False
     repo_url: str = Field(default="", description="Public home of the source, or ''.")
     changelogs_url: str = Field(default="", description="Public home of the changelog data, or ''.")
@@ -164,20 +138,6 @@ class SiteInputs(BaseModel):
         """Where a reader finds the report in the repository, by committed convention."""
         return f"{DEFAULT_REPORT_DIR.as_posix()}/{self.report.removesuffix('.json')}.md"
 
-    @property
-    def recent(self) -> tuple[tuple[ActSite, ChangelogEntry], ...]:
-        """Every event on the site, newest first, with the act it belongs to."""
-        pairs = [(act, entry) for act in self.acts for entry in act.entries]
-        pairs.sort(
-            key=lambda pair: (
-                event_dated(pair[1]).isoformat(),
-                str(pair[1].to_version),
-                str(pair[1].act),
-            ),
-            reverse=True,
-        )
-        return tuple(pairs)
-
 
 def read_entries(root: Path) -> tuple[ChangelogEntry, ...]:
     """Every committed event in one output repository, in sorted path order.
@@ -197,9 +157,17 @@ def read_entries(root: Path) -> tuple[ChangelogEntry, ...]:
     return tuple(entries)
 
 
-def _sorted_entries(entries: list[ChangelogEntry]) -> tuple[ChangelogEntry, ...]:
-    """One act's events, newest first, with the version tag breaking a shared date."""
-    return tuple(sorted(entries, key=lambda e: (event_dated(e).isoformat(), e.key), reverse=True))
+def _sorted_entries(
+    entries: list[ChangelogEntry], version_dates: VersionDates
+) -> tuple[ChangelogEntry, ...]:
+    """One act's events, newest first by `sort_date`, the version tag breaking a shared date."""
+    return tuple(
+        sorted(
+            entries,
+            key=lambda e: (sort_date(e, version_dates).isoformat(), e.key),
+            reverse=True,
+        )
+    )
 
 
 def collect_site(
@@ -214,21 +182,26 @@ def collect_site(
     changelogs_url: str = "",
     site_url: str = "",
     eurlex_urls: dict[str, str] | None = None,
+    version_dates: VersionDates | None = None,
 ) -> SiteInputs:
     """Group the committed entries under their acts. Pure and total.
 
     With a watchlist, the watchlist is the roster: watched acts appear even with no events
     (a quiet act is a real answer), unwatched entries do not appear at all. Without one,
     the changelog repository is the roster.
+
+    `version_dates` is consumed here, ordering `entries` and `recent`, and never stored:
+    once the lists are resolved there is nothing left for a renderer to ask it.
     """
     urls = eurlex_urls or {}
+    dates: VersionDates = version_dates or {}
     by_act: dict[ActId, list[ChangelogEntry]] = {}
     for entry in entries:
         by_act.setdefault(entry.act, []).append(entry)
     acts: list[ActSite] = []
     if watchlist is None:
         for act, found in by_act.items():
-            acts.append(ActSite(act=act, label=act.key, entries=_sorted_entries(found)))
+            acts.append(ActSite(act=act, label=act.key, entries=_sorted_entries(found, dates)))
     else:
         for watched in watchlist.acts:
             act = watched.act
@@ -240,7 +213,7 @@ def collect_site(
                     label=watched.name or act.key,
                     domain=watched.domain or "",
                     aliases=watched.aliases,
-                    entries=_sorted_entries(by_act.get(act, [])),
+                    entries=_sorted_entries(by_act.get(act, []), dates),
                 )
             )
     acts.sort(key=lambda item: (item.label.casefold(), item.act.key))
@@ -255,11 +228,21 @@ def collect_site(
         item.model_copy(update={"eurlex_url": urls[item.slug]}) if item.slug in urls else item
         for item in acts
     )
+    pairs = [(item, entry) for item in resolved for entry in item.entries]
+    pairs.sort(
+        key=lambda pair: (
+            sort_date(pair[1], dates).isoformat(),
+            str(pair[1].to_version),
+            str(pair[1].act),
+        ),
+        reverse=True,
+    )
     return SiteInputs(
         generated_on=generated_on,
         run=run,
         report=report.name,
         acts=resolved,
+        recent=tuple(pairs),
         configured=configured,
         repo_url=repo_url,
         changelogs_url=changelogs_url,
