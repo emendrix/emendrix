@@ -26,13 +26,22 @@ without text.
 
 ## Which boundaries get one
 
-`BLOCK_ELEMENTS` and nothing else, and only when the line has text on it already. The set is
-measured, not guessed: an element is in it because across all 44 committed Formex packages it
-never once appears inside a run of text. The ten tags that do (`HT`, `DATE`, `NOTE`, `FT`,
-`LINK`, `REF.DOC`, `REF.DOC.OJ`, `QUOT.START`, `QUOT.END`, `QUOT.S`) are left joined with
-nothing, because a separator around them damages a sentence: `<DATE>` sits mid-clause, and a
-blanket one turns `from 24 April 2020 to 25 May 2021,` into `from  24 April 2020  to  25 May
-2021 ,`.
+`BLOCK_ELEMENTS` and `DETACHED_ELEMENTS`, and only when the line has text on it already.
+Both sets are measured, not guessed. An element is in the first because across all 44
+committed Formex packages it never once appears inside a run of text. The eight tags that do
+(`HT`, `DATE`, `FT`, `LINK`, `REF.DOC`, `REF.DOC.OJ`, `QUOT.START`, `QUOT.END`) are left
+joined with nothing, because a separator around them damages a sentence: `<DATE>` sits
+mid-clause, and a blanket one turns `from 24 April 2020 to 25 May 2021,` into `from  24 April
+2020  to  25 May 2021 ,`.
+
+`DETACHED_ELEMENTS` is the third case, and the reason there are two sets rather than one. A
+footnote (`NOTE`) and the quoted text of another act (`QUOT.S`) sit *inside* a run of text, so
+neither can join the first set without making its safety argument false, and their content is
+still a block the source leaves without a separator. Joined with nothing they run the sentence
+into the footnote: `CouncilRegulation (EU) 2017/745` and `the following point is added:(i)`,
+both in MDR Article 118 (read 2026-09-01), the same class as `59Derogation`. The break goes
+before their content and not after it, because the interrupted sentence resumes in the tail
+and a second break there strands its closing full stop on a line of its own.
 
 One subtree is excluded from **both** forms: `BIB.INSTANCE`, the publication metadata block
 (OJ page numbers, volume, document date) that a standalone `ANNEX` document carries and its
@@ -52,6 +61,7 @@ from emendrix.eu.dates import compact_date
 __all__ = [
     "BLOCK_ELEMENTS",
     "CONTEXT_LIMIT",
+    "DETACHED_ELEMENTS",
     "SKIPPED_SUBTREES",
     "comparison_text",
     "date_mentions",
@@ -128,6 +138,21 @@ needs and what an unrecognised one gets, so a tag this project has never seen ke
 conservative behaviour rather than acquiring a break in the middle of a sentence.
 """
 
+DETACHED_ELEMENTS: Final = frozenset({"NOTE", "QUOT.S"})
+"""Elements sitting inside a run of text whose content is a block of its own.
+
+A footnote and the quoted text of another act interrupt a sentence rather than continuing it,
+so the line breaks before their content even though the element itself has text right beside
+it. That is what keeps them out of `BLOCK_ELEMENTS`, whose members are exactly the tags that
+never carry adjacent text: these two carry it 2380 times, so admitting them there would falsify
+the one claim that set is safe because of.
+
+Both figures are measured over all 44 committed Formex packages on 2026-09-01, walking only the
+subtrees `verbatim_text` is ever called on. In those, `NOTE` and `QUOT.S` are the only tags
+outside `BLOCK_ELEMENTS` that hold a block child, 1904 times and 346 times, so this set is the
+whole class rather than the two instances that exposed it.
+"""
+
 _CONTINUED_BY: Final = frozenset({"NO.PARAG", "NO.P", "NO.GR.SEQ", "NO.ITEM"})
 """Enumerators. What follows one shares its line: `1.` and its paragraph are one line."""
 
@@ -166,6 +191,9 @@ def _separator(previous: str | None, tag: str) -> str:
 def _verbatim_fragments(element: Element) -> list[str]:
     """`_fragments`, with a separator inserted where the markup opens a new block.
 
+    A `DETACHED_ELEMENTS` child opens one too: its content is a block even though the element
+    interrupts a sentence rather than following one (see the module docstring).
+
     Every separator is decided by the element doing the walking and inserted into *its* own
     stream, never into a child's. A child's fragments therefore land contiguously and
     unaltered, which is what makes a descendant's verbatim text a literal substring of its
@@ -177,7 +205,9 @@ def _verbatim_fragments(element: Element) -> list[str]:
         parts.append(element.text)
     for child in element:
         if child.tag not in SKIPPED_SUBTREES:
-            if child.tag in BLOCK_ELEMENTS and _open_line(parts):
+            if (child.tag in BLOCK_ELEMENTS or child.tag in DETACHED_ELEMENTS) and _open_line(
+                parts
+            ):
                 parts.append(_separator(previous, child.tag))
             emitted = len(parts)
             parts.extend(_verbatim_fragments(child))

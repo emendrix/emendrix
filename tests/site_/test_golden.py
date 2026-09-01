@@ -229,12 +229,18 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 36084)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 36043)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
 already pins every byte; this pins the one number that grew tenfold unnoticed on the live site,
-so a page regaining that shape is a stated finding rather than a diff nobody weighs."""
+so a page regaining that shape is a stated finding rather than a diff nobody weighs.
+
+41 bytes lighter on 2026-09-01, when a footnote stopped being run into the sentence citing it
+(`eu/formex/text.py`, `DETACHED_ELEMENTS`). Two of those bytes are the line breaks the fix
+inserts into the verbatim text this page quotes; the page still lost weight overall because the
+one explanation on it moved key and its re-recording is shorter prose. Neither number is a
+measurement of anything, which is why only the total is pinned."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

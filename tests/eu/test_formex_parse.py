@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import io
 import zipfile
+from collections import Counter
 from datetime import UTC, date, datetime
 from xml.etree.ElementTree import Element
 
@@ -18,9 +19,9 @@ import pytest
 from emendrix.core import ProvisionLocation, ProvisionTree, VersionId, normalize_for_comparison
 from emendrix.eu.cellar import CellarClient
 from emendrix.eu.formex import Formex4Parser, parse_act
-from emendrix.eu.formex.documents import act_documents
+from emendrix.eu.formex.documents import act_documents, unit_elements
 from emendrix.eu.formex.model import CoverageCounter
-from emendrix.eu.formex.text import BLOCK_ELEMENTS, SKIPPED_SUBTREES
+from emendrix.eu.formex.text import BLOCK_ELEMENTS, DETACHED_ELEMENTS, SKIPPED_SUBTREES
 from emendrix.eu.identifiers import Celex, act_id
 from emendrix.eu.packages import FormexPackage, read_package
 from emendrix.eu.xml_ import NOT_WELL_FORMED, fromstring
@@ -261,6 +262,80 @@ def _block_boundaries(parent: Element, where: str) -> int:
             assert not trail.strip(), f"{where}: {parent.tag}/{child.tag} precedes {trail[:40]!r}"
         found += _block_boundaries(child, where)
     return found
+
+
+def test_a_detached_element_opens_a_line_instead_of_running_into_the_sentence(
+    client: CellarClient,
+) -> None:
+    """A footnote and a quoted act interrupt a sentence, and joining them to it invents words.
+
+    Both sit *inside* a run of text, so neither can go in `BLOCK_ELEMENTS` without falsifying
+    the claim the test above measures. Their content is a block all the same, and joining it
+    with nothing runs the sentence into the note: the same class as `59Derogation`, on a shape
+    the 2026-08-12 pass did not cover because it read the two tags as inline.
+
+    MDR Article 118 carries both in one provision, read off the 2017-05-05 consolidation on
+    2026-09-01: a point quoted into another regulation, and the footnote citing the MDR.
+    """
+    node = tree_of(client, MDR, MDR_V1).find("AR 118")
+    assert node is not None
+    assert "the following point is added:\n(i) medical devices" in node.text
+    assert "and of the Council\nRegulation\xa0(EU)\xa02017/745" in node.text
+    for run_together in ("added:(i)", "CouncilRegulation"):
+        assert run_together not in node.text
+
+
+def test_a_footnote_opens_a_line_in_the_2008_formex_generation_too(
+    client: CellarClient,
+) -> None:
+    """The same defect on the older generation, so the fix is not read off one document.
+
+    REACH Article 15 cites a directive and footnotes it immediately, which joined with nothing
+    reads `Directive 91/414/EECCouncil Directive 91/414/EEC` (read 2026-09-01).
+    """
+    node = tree_of(client, REACH, REACH_2008).find("AR 15")
+    assert node is not None
+    assert "Council Directive 91/414/EEC\nCouncil Directive 91/414/EEC of 15 July 1991" in node.text
+    assert "91/414/EECCouncil" not in node.text
+
+
+def test_the_detached_set_is_the_whole_class_and_not_two_instances_of_it() -> None:
+    """Why `DETACHED_ELEMENTS` holds two tags: because the corpus offers exactly two.
+
+    The companion to the block-boundary measurement above, and the check that this is a fix at
+    the seam rather than at the two articles that exposed it. A tag needs a break before its
+    content when it is *not* a block element and yet holds one, so this walks all 44 committed
+    packages, every unit subtree `verbatim_text` is ever called on, and collects every such
+    tag. On 2026-09-01 the answer is `NOTE` and `QUOT.S`, and nothing else.
+
+    **If a tag appears here that is not in the set, that is a finding to explain, not a test to
+    update:** it is another shape of the same run-on, and it moves stored text.
+    """
+    holders: Counter[str] = Counter()
+    for path in sorted(FIXTURE_DIR.glob("*.fmx4.zip")):
+        for member in read_package(path.read_bytes()):
+            if not member.is_xml:
+                continue
+            try:
+                root = fromstring(member.data)
+            except NOT_WELL_FORMED:  # a corrupt member is somebody else's test
+                continue
+            for unit, _ in unit_elements(root):
+                _collect_block_holders(unit, holders)
+    assert set(holders) == set(DETACHED_ELEMENTS)
+    assert holders == Counter({"NOTE": 1904, "QUOT.S": 346})
+
+
+def _collect_block_holders(parent: Element, found: Counter[str]) -> None:
+    """Every non-block element under `parent` that nonetheless holds a block child."""
+    for child in parent:
+        if child.tag in SKIPPED_SUBTREES:
+            continue
+        if child.tag not in BLOCK_ELEMENTS and any(
+            grandchild.tag in BLOCK_ELEMENTS for grandchild in child
+        ):
+            found[child.tag] += 1
+        _collect_block_holders(child, found)
 
 
 @pytest.mark.parametrize(

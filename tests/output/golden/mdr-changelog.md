@@ -26,9 +26,9 @@ Generated — do not edit by hand. Entries are delimited by `<!-- emendrix:entry
 
 *within* `AR 1 PA 2 ALN 2` · *dates* -2020-05-26 +2021-05-26 · *amended by* `32020R0561`
 
-In paragraph 2, the deadline by which the necessary common specifications must be adopted has moved from 26 May 2020 to 26 May 2021. [Art. 1, v2](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02017R0745-20200424#art_1)
+In paragraph 2, the deadline by which the necessary common specifications must be adopted was changed from 26 May 2020 to 26 May 2021. [Art. 1, v2](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02017R0745-20200424#art_1)
 
-Correspondingly, the alternative date used to determine when those common specifications apply, alongside the six-months-after-entry-into-force test, has also shifted from 26 May 2020 to 26 May 2021. [Art. 1, v2](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02017R0745-20200424#art_1)
+Correspondingly, the alternative application date used to determine when those common specifications apply was also changed from 26 May 2020 to 26 May 2021. [Art. 1, v2](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02017R0745-20200424#art_1)
 
 *before* (`02017R0745-20170505`)
 
@@ -37,7 +37,7 @@ Correspondingly, the alternative date used to determine when those common specif
 > 1. This Regulation lays down rules concerning the placing on the market, making available on the market or putting into service of medical devices for human use and accessories for such devices in the Union. This Regulation also applies to clinical investigations concerning such medical devices and accessories conducted in the Union.
 > 2. This Regulation shall also apply, as from the date of application of common specifications adopted pursuant to Article 9, to the groups of products without an intended medical purpose that are listed in Annex XVI, taking into account the state of the art, and in particular existing harmonised standards for analogous devices with a medical purpose, based on similar technology. The common specifications for each of the groups of products listed in Annex XVI shall address, at least, application of risk management as set out in Annex I for the group of products in question and, where necessary, clinical evaluation regarding safety.
 > The necessary common specifications shall be adopted by 26 May 2020. They shall apply as from six months after the date of their entry into force or from 26 May 2020, whichever is the latest.
-> Notwithstanding Article 122, Member States' measures regarding the qualification of the products covered by Annex XVI as medical devices pursuant to Directive 93/42/EEC shall remain valid until the date of application, as referred to in the first subparagraph, of the relevant common specifications […truncated by emendrix: 7834 characters omitted…]
+> Notwithstanding Article 122, Member States' measures regarding the qualification of the products covered by Annex XVI as medical devices pursuant to Directive 93/42/EEC shall remain valid until the date of application, as referred to in the first subparagraph, of the relevant common specifications […truncated by emendrix: 7836 characters omitted…]
 
 *after* (`02017R0745-20200424`)
 
@@ -46,7 +46,7 @@ Correspondingly, the alternative date used to determine when those common specif
 > 1. This Regulation lays down rules concerning the placing on the market, making available on the market or putting into service of medical devices for human use and accessories for such devices in the Union. This Regulation also applies to clinical investigations concerning such medical devices and accessories conducted in the Union.
 > 2. This Regulation shall also apply, as from the date of application of common specifications adopted pursuant to Article 9, to the groups of products without an intended medical purpose that are listed in Annex XVI, taking into account the state of the art, and in particular existing harmonised standards for analogous devices with a medical purpose, based on similar technology. The common specifications for each of the groups of products listed in Annex XVI shall address, at least, application of risk management as set out in Annex I for the group of products in question and, where necessary, clinical evaluation regarding safety.
 > The necessary common specifications shall be adopted by 26 May 2021. They shall apply as from six months after the date of their entry into force or from 26 May 2021, whichever is the latest.
-> Notwithstanding Article 122, Member States' measures regarding the qualification of the products covered by Annex XVI as medical devices pursuant to Directive 93/42/EEC shall remain valid until the date of application, as referred to in the first subparagraph, of the relevant common specifications […truncated by emendrix: 7834 characters omitted…]
+> Notwithstanding Article 122, Member States' measures regarding the qualification of the products covered by Annex XVI as medical devices pursuant to Directive 93/42/EEC shall remain valid until the date of application, as referred to in the first subparagraph, of the relevant common specifications […truncated by emendrix: 7836 characters omitted…]
 
 **DEFERRED · Art. 17 — Single-use devices and their reprocessing** · applies from: 2021-05-26
 

@@ -99,6 +99,34 @@ Named rather than discovered later; the eval report's disagreement list is the l
   the case is gone. Still 0 over the recording of 2026-08-12, with one prompt trimmed as before:
   the boundary separator lengthened `Annex I`, whose dropped characters went from 23 115 to 24
   066, and it is the only unit in the subset whose set of shown coordinates moved at all.
+- **A footnote and a quoted act ran into the sentence they interrupt, and no longer do.** The
+  2026-08-12 pass gave the verbatim form a line break wherever the markup opens a block, and it
+  did not cover two tags, both read as inline because both sit *inside* a run of text: `NOTE`, a
+  footnote, and `QUOT.S`, the quoted text of another act. Their content is a block all the same,
+  and it was joined to the interrupted sentence with nothing, producing `CouncilRegulation (EU)
+  2017/745` and `the following point is added:(i)` in MDR Article 118, and the same two shapes on
+  the ESPR pair `32024R1781` to `02024R1781-20240628` that exposed it. The published Formex was
+  read on both sides first and says neither: the citation appears once, inside a `NOTE` the
+  extraction was inlining. Since 2026-09-01 the line breaks before such content and not after it,
+  a second break there stranding the resumed sentence's closing full stop on a line of its own.
+  Measured over the 44 committed packages: 2025 of 69 223 nodes moved, 509 of them top-level
+  units, across 34 of the 44, and `NOTE` (1904) with `QUOT.S` (346) are the only tags outside the
+  block set that hold a block child inside a unit subtree, so this is the whole class and not two
+  instances of it. **The deterministic layer does not move at all**: the whole `EvalRun` over the
+  committed corpus serialises to identical bytes on either side of the fix, verified rather than
+  assumed, because the diff reads `comparison_text`, which separates at every boundary already.
+  The flagship numbers are untouched. What moved is stored text, so 4 of the 55 pinned subset
+  prompts changed key and were re-recorded, with 1 of the 20 judgements and the run set's
+  Article 118 exchange; the 6 superseded recordings were deleted, nothing asking for them again.
+  The published model-layer figures are unchanged over the new recording: citation grounding
+  1.000, quote fallback 0.000, citation validity 1.000 over 179 keys, judged faithfulness 16 of 20
+  (0.800). The one subset entry carrying a truncation marker is still `32017R0745@20260101
+  Annex I` and still the only one, its dropped characters moving from 11 631 to 11 635 on the
+  before side and 12 435 to 12 440 on the after, which is the inserted breaks and nothing else.
+  `human review` reverted to `pending` on its own, the sample digest having moved with the prompt.
+  Changelogs already published keep the text they were written with and are corrected forward, not
+  rewritten: measured 2026-09-01 over 369 committed change files of an output repository, 246
+  carry a run of this class.
 - **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
   cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
   rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure
