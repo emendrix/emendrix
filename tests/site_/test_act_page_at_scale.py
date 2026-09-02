@@ -68,9 +68,10 @@ provisions, the heaviest page is an event's. Either way the number moves only on
 
 17 bytes heavier on 2026-09-02, when the act page's title started saying what the page holds:
 `: every amendment` between the act's name and the site's, in the one `<title>` this build
-writes, since it passes no site URL and so carries no Open Graph copy of it."""
+writes, since it passes no site URL and so carries no Open Graph copy of it. Unmoved later
+that day, when every change block grew a heading: the index carries cards, not blocks."""
 
-_TOTAL_BYTES: Final = 954570
+_TOTAL_BYTES: Final = 972170
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -79,7 +80,13 @@ Before the split this input rendered as one page, which is the shape 6.1 MB arri
 moved its `<title>` from the version pair to the count and the dated clock, and its
 description from "What changed in" to the same count and clock in a sentence. That is the
 intended cost of a title that says what a reader learns by opening the page; no page
-gained markup below the head."""
+gained markup below the head.
+
+17 600 bytes heavier on 2026-09-02, later the same day, when every change block opened with
+an `<h3>` of three spans, pill, coordinate and title, and moved its applies line into a
+paragraph of its own: 22 bytes a block, 88 an event page, over two hundred pages. That is the
+cost of a heading a crawler can rank a passage under. No page here carries the in-page
+provision index, since four changes is under the six it starts at."""
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
 _LINKS: Final = re.compile(r'href="([^"]*)"')

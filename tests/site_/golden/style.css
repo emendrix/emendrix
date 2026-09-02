@@ -150,6 +150,13 @@ header.bar nav { display: flex; flex-wrap: wrap; gap: 1rem; font-size: .9rem; }
 .changes > li { padding: .7rem 0; border-top: 1px solid var(--rule); }
 .chg { padding: .8rem 0; border-top: 1px solid var(--rule); scroll-margin-top: 1rem; }
 .chg:target { background: var(--mark); }
+.chg h3 { font-size: 1rem; margin: 0; display: flex; flex-wrap: wrap; gap: .5rem;
+          align-items: baseline; }
+.chg .loc { font-weight: 600; }
+.chg .applies { margin: .1rem 0 .4rem; }
+.touched ol { columns: 2; list-style: none; padding: 0; margin: .5rem 0 1rem; font-size: .88rem; }
+/* A list item split across two columns reads as two provisions. */
+.touched li { break-inside: avoid; padding: .1rem 0; }
 .pill {
   display: inline-block;
   padding: .05rem .45rem;
