@@ -8,10 +8,11 @@
 # `celex:02024R1689-20260727` and `consolidation:2024R1689/20260727`, and both read back to
 # the act code of the CELEX below.
 #
-# `name` is a label for output only. Identity is the CELEX, always. `domain` and `aliases` are
-# optional labels of the same rank, read by the published site: `domain` groups the act in the
-# index, `aliases` are the other names a reader might search it under. Neither ever resolves an
-# act, so a typo in one costs a grouping or a search hit, never a match.
+# `name` is a label for output only. Identity is the CELEX, always. `long_name`, `domain` and
+# `aliases` are optional labels of the same rank, read by the published site: `long_name` is
+# what the site's headings call the act where `name` is an initialism, `domain` groups the act
+# in the index, `aliases` are the other names a reader might search it under. None of them ever
+# resolves an act, so a typo in one costs a heading, a grouping or a search hit, never a match.
 #
 # These four acts are the ones the labelled eval corpus is built from, so they are the four
 # with measured numbers behind them (`reports/`).
@@ -30,10 +31,11 @@
 # writes them. See docs/pipeline.md, "Running the whole loop".
 
 [[acts]]
-celex   = "32024R1689"
-name    = "AI Act"
-domain  = "Digital"
-aliases = ["Artificial Intelligence Act"]
+celex     = "32024R1689"
+name      = "AI Act"
+long_name = "Artificial Intelligence Act"
+domain    = "Digital"
+aliases   = ["Artificial Intelligence Act"]
 
 [[acts]]
 celex   = "32017R0745"
@@ -48,6 +50,7 @@ domain  = "Digital"
 aliases = ["DSA"]
 
 [[acts]]
-celex   = "32006R1907"
-name    = "REACH"
-domain  = "Chemicals"
+celex     = "32006R1907"
+name      = "REACH"
+long_name = "Registration, Evaluation, Authorisation and Restriction of Chemicals"
+domain    = "Chemicals"

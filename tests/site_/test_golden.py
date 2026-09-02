@@ -64,6 +64,21 @@ card follows. The live site's heaviest act page was 6.1 MB in one document when 
 decided, and the split bounds a page by one consolidation instead of by an act's whole history.
 No measured figure moved with it.
 
+Read again on 2026-09-02, when every page started naming its act the way a person types it.
+Seven files moved. The AI Act and REACH act pages, the two the example watchlist gives a
+`long_name`, carry the long form as H1, in the title as `{long name} ({label}): every
+amendment`, in the description and as the JSON-LD `Legislation`'s `name`, with the short label
+on the facts line before the key and as `alternateName`; the MDR and DSA act pages, which carry
+no long name, moved by `: every amendment` in the title alone. The MDR act page also renders
+its official title whole, all 284 characters, where it had been cut at the changelog's cap with
+`[…]`: the cut stays in the changelog and on the acts index, which is a list. The MDR event
+page's title moved from the version pair to `9 provisions changed, in force 2020-04-24`, and
+its description says the same in a sentence. `acts/index.html` links the long form on two rows
+with the label beside it, and `search-index.json` gained one alias row, REACH's long form; the
+AI Act's was already an alias and is indexed once. Every feed and `sitemap.xml` are
+byte-identical, and so is `index.html`, whose card builds its dated words through the same
+one helper the event title now uses. No measured figure moved with it.
+
 **It is deliberately wired to the newest report**, not to a pinned one, the same rule the
 README's metrics table lives under: a new `reports/eval/*.json` breaks this suite until the
 site is regenerated, so a figure on a page can never be stale with respect to the numbers the
@@ -229,7 +244,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 36043)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 36118)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -240,7 +255,13 @@ so a page regaining that shape is a stated finding rather than a diff nobody wei
 (`eu/formex/text.py`, `DETACHED_ELEMENTS`). Two of those bytes are the line breaks the fix
 inserts into the verbatim text this page quotes; the page still lost weight overall because the
 one explanation on it moved key and its re-recording is shorter prose. Neither number is a
-measurement of anything, which is why only the total is pinned."""
+measurement of anything, which is why only the total is pinned.
+
+75 bytes heavier on 2026-09-02, when the event page's title stopped restating the version pair
+the H2 already carries and started saying what the page holds, `9 provisions changed, in force
+2020-04-24`, with the description saying the same in a sentence. The title is written three
+times in the head (`<title>`, `og:title` and the JSON-LD `WebPage` name, with the description
+beside each), which is where all 75 bytes went; nothing below the head moved."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

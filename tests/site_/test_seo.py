@@ -24,6 +24,7 @@ import pytest
 from helpers import REPORTS, SITE_URL, WATCHLIST, build, runner
 
 from emendrix.cli import app
+from emendrix.watch.config import WatchedAct, load_watchlist
 from eu_pins import OBSERVED_ON
 
 CANONICAL = re.compile(r'<link rel="canonical" href="([^"]*)">')
@@ -96,6 +97,23 @@ def _payloads(page: Path) -> list[Any]:
     return found
 
 
+def _watched(celex: str) -> WatchedAct:
+    """The watchlist entry an act page was built from; the page's directory is its CELEX."""
+    return {entry.celex: entry for entry in load_watchlist(WATCHLIST).acts}[celex]
+
+
+def _assert_legislation_names_the_act(about: dict[str, Any], watched: WatchedAct) -> None:
+    """`name` is what the H1 says, the long form where the watchlist gives one; the short
+    label rides as `alternateName` exactly then, and is not repeated as one otherwise."""
+    assert about["@type"] == "Legislation"
+    assert about["name"] == (watched.long_name or watched.name)
+    assert about["identifier"] == watched.celex
+    if watched.long_name:
+        assert about["alternateName"] == watched.name
+    else:
+        assert "alternateName" not in about
+
+
 def test_every_page_states_its_own_address_as_its_canonical(site: Path) -> None:
     """The one assertion that makes a page impossible to add without a correct canonical."""
     for page in _pages(site):
@@ -150,7 +168,22 @@ def test_an_act_page_carries_its_breadcrumb_and_the_page_itself(site: Path) -> N
         assert [items[2]["item"]] == canonical, page
         assert described["@type"] == "WebPage", page
         assert [described["@id"]] == canonical, page
-        assert described["about"]["@type"] == "Legislation", page
+        watched = _watched(page.parent.name)
+        _assert_legislation_names_the_act(described["about"], watched)
+        # The breadcrumb is the short trail under a search result and keeps the short label.
+        assert items[2]["name"] == watched.name, page
+
+
+def test_the_legislation_carries_both_names_somewhere_in_the_tree(site: Path) -> None:
+    """The example watchlist sets a long name on some acts and not others, so the built tree
+    proves both branches rather than one of them happening to hold vacuously."""
+    with_alternate = [
+        page for page in _act_pages(site) if "alternateName" in _payloads(page)[0][1]["about"]
+    ]
+    assert with_alternate, "no act page carried an alternateName, so the branch is unproven"
+    assert len(with_alternate) < len(_act_pages(site)), (
+        "every act carried one; the omission is unproven"
+    )
 
 
 def test_the_official_document_is_named_only_where_one_was_resolved(site: Path) -> None:
@@ -188,7 +221,9 @@ def test_an_event_page_carries_its_four_rung_breadcrumb_and_the_page_itself(site
         assert [items[3]["item"]] == canonical, page
         assert described["@type"] == "WebPage", page
         assert [described["@id"]] == canonical, page
-        assert described["about"]["@type"] == "Legislation", page
+        watched = _watched(page.parent.parent.name)
+        _assert_legislation_names_the_act(described["about"], watched)
+        assert items[2]["name"] == watched.name, page
 
 
 def test_an_event_page_offers_its_own_acts_feed_before_the_global_one(site: Path) -> None:

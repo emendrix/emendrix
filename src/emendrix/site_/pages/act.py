@@ -28,7 +28,6 @@ from __future__ import annotations
 
 from emendrix.core import ChangeType, ProvisionLocation
 from emendrix.output import ChangelogEntry
-from emendrix.output.markdown import short_title
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_dated
 from emendrix.site_.feeds import feed_path, feed_title
@@ -132,9 +131,14 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     The feed's own module says where a feed lives, rather than this page spelling the path a
     second time: the two agreeing today is not the same as their being unable to disagree.
 
-    The official title is rendered only when a recorded event carried one that says more than
-    the watchlist label already does. Repeating the label under itself would dress a name
-    somebody chose as the title the legislation publishes for itself.
+    The H1 is the act's headline, the long form where the watchlist gives one, and the short
+    label then opens the facts line so it stays on the page beside the key. The official
+    title is rendered whole. The cut at `output.markdown.TITLE_CAP` belongs to a changelog
+    heading and to the acts index, where the title is one item in a list; this is the one
+    page whose job is to be the act, and the words a title carries past its first hundred
+    characters are the ones a reader searched for. It is rendered only when a recorded event
+    carried one that says more than either name already does: repeating a label under itself
+    would dress a name somebody chose as the title the legislation publishes for itself.
 
     The dated fact names its clock, like every dated line on the site. The header once said
     "reflects the consolidated version of" over whichever date the newest event carried,
@@ -142,8 +146,11 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     event names no amending act has no amendment to date, and the header says that instead
     of falling silent over a timeline the reader can see is not empty.
     """
-    title = short_title(act.entries[0].title) if act.entries else act.label
-    facts = [Html(f"<code>{escape(act.act.key)}</code>")]
+    title = act.entries[0].title if act.entries else act.label
+    facts: list[Html] = []
+    if act.headline != act.label:
+        facts.append(escape(act.label))
+    facts.append(Html(f"<code>{escape(act.act.key)}</code>"))
     if act.domain:
         facts.append(escape(act.domain))
     if site.site_url:
@@ -156,8 +163,8 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
         facts.append(escape(f"newest amendment {dated.words}"))
     elif act.entries:
         facts.append(escape("recorded events name no amending act"))
-    header = [Html(f"<h1>{escape(act.label)}</h1>")]
-    if title != act.label:
+    header = [Html(f"<h1>{escape(act.headline)}</h1>")]
+    if title != act.headline and title != act.label:
         header.append(Html(f'<p class="official">{escape(title)}</p>'))
     header.append(Html(f'<p class="facts">{join(facts, " · ")}</p>'))
     return header
@@ -183,9 +190,12 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
         else tuple(timeline)
     )
     body = join((*_header(act, site), *columns), "\n")
-    title = f"{act.label} — emendrix"
+    # The title names the act the way a person types it and says what the page holds; the
+    # short label rides along in brackets so a search for the initialism still reads right.
+    named = f"{act.headline} ({act.label})" if act.headline != act.label else act.label
+    title = f"{named}: every amendment — emendrix"
     description = (
-        f"Every amendment emendrix has seen for {act.label}. Each event's own page carries "
+        f"Every amendment emendrix has seen for {act.headline}. Each event's own page carries "
         "the provision text before and after each change."
     )
     return page(

@@ -65,9 +65,54 @@ def test_the_page_names_its_act_and_links_back_to_the_timeline() -> None:
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     rendered = _page(entry)
-    assert f"<h1>{site.acts[0].label}</h1>" in rendered
+    assert f"<h1>{site.acts[0].headline}</h1>" in rendered
     assert f'href="../../../acts/{site.acts[0].slug}/"' in rendered
     assert "every event for this act" in rendered
+
+
+def test_a_long_name_heads_the_page_and_the_label_opens_the_facts_line() -> None:
+    """The act page's rule, held on the event page: the long form is the H1, and the short
+    label a reader may have searched for stays visible beside the key."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = _site(entry)
+    act = site.acts[0].model_copy(update={"long_name": "House Rules of Flat 3B"})
+    rendered = render_event_page(site, act, act.entries[0])
+    assert "<h1>House Rules of Flat 3B</h1>" in rendered
+    assert f'<p class="facts">{act.label} · <code>{act.act.key}</code>' in rendered
+    assert f"<title>{act.label}: " in rendered
+    assert 'content="House Rules of Flat 3B: 4 provisions changed between' in rendered
+
+
+def test_the_title_names_the_count_and_the_clock_rather_than_the_version_pair() -> None:
+    """What a reader learns by opening the page, said in the title: how much changed and when,
+    with the clock named as every dated line on the site names it. The toy entry carries no
+    in-force date, so the clock is the detection one."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    assert not entry.in_force
+    assert entry.counts.touched == 4
+    site = _site(entry)
+    rendered = _page(entry)
+    label = site.acts[0].label
+    assert f"<title>{label}: 4 provisions changed, detected 2026-08-09 — emendrix</title>" in (
+        rendered
+    )
+    assert f"{label}: 4 provisions changed between v1 and v2, detected 2026-08-09, with" in (
+        rendered
+    )
+    stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
+    rendered = _page(stated)
+    assert f"<title>{label}: 4 provisions changed, in force 2024-06-01 — emendrix</title>" in (
+        rendered
+    )
+
+
+def test_an_event_that_touched_nothing_is_titled_in_words_not_as_a_zero() -> None:
+    """`0 provisions changed` reads as a counter that failed; the finding is a sentence."""
+    from site_entries import untouched_entry
+
+    rendered = _page(untouched_entry())
+    assert "no provisions differ, detected 2026-08-09 — emendrix</title>" in rendered
+    assert "0 provisions changed" not in rendered
 
 
 def _disputed_entry() -> ChangelogEntry:

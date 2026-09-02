@@ -20,7 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from emendrix.core import ActId, VersionId
 from emendrix.output import ChangelogEntry
 
-__all__ = ["EventDate", "VersionDates", "event_dated", "sort_date"]
+__all__ = ["EventDate", "VersionDates", "event_date", "event_dated", "sort_date"]
 
 
 def event_dated(entry: ChangelogEntry) -> date:
@@ -84,3 +84,14 @@ class EventDate(BaseModel):
         """
         clock = "in force" if self.in_force else "detected"
         return f"{clock} {self.on.isoformat()}"
+
+
+def event_date(entry: ChangelogEntry) -> EventDate:
+    """One event's date with its clock: the one place a page's dated words are built from.
+
+    The act header, the home card, the acts index row and the event page title all print the
+    same fact, and each once built it by hand from `in_force` and `detected_on`. One builder
+    means the clock a page names is decided once, and a line that says "in force" over a
+    detection date cannot be written by a renderer that forgot the second branch.
+    """
+    return EventDate(on=event_dated(entry), in_force=bool(entry.in_force))

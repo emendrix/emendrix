@@ -68,6 +68,42 @@ def test_an_alias_finds_the_same_page_as_the_name() -> None:
     assert urls["32016R0679"] == "acts/32016R0679/"
 
 
+def _indexed(watched: dict[str, object]) -> list[dict[str, str]]:
+    watchlist = Watchlist.model_validate({"acts": [watched]})
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), watchlist=watchlist
+    )
+    return list(json.loads(search_index_json(site))["entries"])
+
+
+def test_a_long_name_is_found_as_an_alias_and_lands_on_the_act_page() -> None:
+    """To a search the long form is one more name the act answers to, not a second act."""
+    entries = _indexed(
+        {
+            "celex": "32016R0679",
+            "name": "GDPR",
+            "long_name": "General Data Protection Regulation",
+        }
+    )
+    rows = [item for item in entries if item["label"] == "General Data Protection Regulation"]
+    assert rows == [
+        {"kind": "alias", "label": "General Data Protection Regulation", "url": "acts/32016R0679/"}
+    ]
+
+
+def test_a_long_name_already_among_the_aliases_is_indexed_once() -> None:
+    """The shipped example lists the AI Act's long form as an alias too; one row, not two."""
+    entries = _indexed(
+        {
+            "celex": "32024R1689",
+            "name": "AI Act",
+            "long_name": "Artificial Intelligence Act",
+            "aliases": ["Artificial Intelligence Act"],
+        }
+    )
+    assert sum(item["label"] == "Artificial Intelligence Act" for item in entries) == 1
+
+
 def test_provision_urls_are_the_anchors_the_event_page_publishes() -> None:
     """The index may not recount occurrences: it reads the event page's own anchor scheme,
     and it points at the page that holds the change rather than at the act's timeline."""

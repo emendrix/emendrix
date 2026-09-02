@@ -154,6 +154,30 @@ def test_the_index_groups_by_domain_with_other_last() -> None:
     assert "no amendments seen" in rendered
 
 
+def test_the_index_row_links_the_long_form_and_keeps_the_label_beside_it() -> None:
+    """A reader scanning the roster for an initialism still finds the row."""
+    watchlist = Watchlist.model_validate(
+        {
+            "acts": [
+                {
+                    "celex": "32016R0679",
+                    "name": "GDPR",
+                    "long_name": "General Data Protection Regulation",
+                },
+                {"celex": "32024R1689", "name": "AI Act"},
+            ]
+        }
+    )
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), watchlist=watchlist
+    )
+    rendered = render_acts_index(site)
+    assert (
+        '<a href="../acts/32016R0679/">General Data Protection Regulation</a> · GDPR · ' in rendered
+    )
+    assert '<a href="../acts/32024R1689/">AI Act</a> · <span' in rendered
+
+
 def test_the_index_dates_a_row_by_the_clock_that_produced_the_date() -> None:
     """An in-force date reads "in force", never "last amended".
 

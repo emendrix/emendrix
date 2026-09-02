@@ -194,12 +194,18 @@ def _legislation(act: ActSite) -> dict[str, str]:
     already makes visibly. The act's own key is a corpus identifier and belongs here: it is
     core vocabulary rather than the vocabulary of any one corpus, and it is what identifies
     the act everywhere else.
+
+    `name` is the headline, the long form where the watchlist gives one, because that is what
+    the page's own H1 says and a machine-readable name that disagreed with the visible one
+    would be the kind of mismatch an engine discounts. The short label then rides as
+    `alternateName`, omitted rather than emitted equal when there is no long form. The
+    breadcrumb rungs keep the short label on purpose: a breadcrumb is the trail printed under
+    a search result, and the long form would not fit in it.
     """
-    about: dict[str, str] = {
-        "@type": "Legislation",
-        "name": act.label,
-        "identifier": act.act.key,
-    }
+    about: dict[str, str] = {"@type": "Legislation", "name": act.headline}
+    if act.headline != act.label:
+        about["alternateName"] = act.label
+    about["identifier"] = act.act.key
     if act.eurlex_url:
         about["sameAs"] = act.eurlex_url
     return about

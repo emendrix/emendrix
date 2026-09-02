@@ -51,13 +51,17 @@ class IndexEntry(BaseModel):
 
 
 def _names(act: ActSite) -> list[IndexEntry]:
-    """The act under every name it answers to: its label, its aliases, its own key.
+    """The act under every name it answers to: its label, its long form, its aliases, its key.
 
-    The key is skipped when it is already the label, which is what an act with no configured
-    name looks like: one row saying the same string twice is noise in a result list.
+    The long form is indexed as an alias, since to a search it is one more name the act
+    answers to, and is skipped when the watchlist already lists it among the aliases. The key
+    is skipped when it is already the label, which is what an act with no configured name
+    looks like. Either way, one row saying the same string twice is noise in a result list.
     """
     href = act_href(act.slug)
     entries = [IndexEntry(label=act.label, kind="act", url=href)]
+    if act.long_name and act.long_name not in act.aliases:
+        entries.append(IndexEntry(label=act.long_name, kind="alias", url=href))
     entries.extend(
         IndexEntry(label=alias, kind="alias", url=href) for alias in act.aliases if alias
     )

@@ -64,8 +64,17 @@ def _groups(site: SiteInputs) -> list[tuple[str, list[ActSite]]]:
 
 
 def _row(act: ActSite) -> Html:
-    """One act: the link, what the official text calls it, and when it last moved."""
-    facts = [Html(f'<a href="{escape(up(_DEPTH) + act_href(act.slug))}">{escape(act.label)}</a>')]
+    """One act: the link, what the official text calls it, and when it last moved.
+
+    The link carries the headline and the short label follows it as a fact when the two
+    differ, so a reader scanning for an initialism still finds the row. The official title
+    stays cut here: this is a list, and a whole official title per row is a wall of text.
+    """
+    facts = [
+        Html(f'<a href="{escape(up(_DEPTH) + act_href(act.slug))}">{escape(act.headline)}</a>')
+    ]
+    if act.headline != act.label:
+        facts.append(escape(act.label))
     if act.entries:
         facts.append(escape(short_title(act.entries[0].title)))
     dated = act.dated

@@ -26,6 +26,7 @@ from __future__ import annotations
 from emendrix.output import ChangelogEntry
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
+from emendrix.site_.clocks import event_date
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
@@ -112,17 +113,14 @@ def _card(act: ActSite, entry: ChangelogEntry) -> Html:
 
     The date says which clock it came from. `in_force` is the corpus's own answer and is
     absent on plenty of events, and a detection date printed as an in-force date would be a
-    quiet lie about a fact this project treats as first class.
+    quiet lie about a fact this project treats as first class, which is why the words come
+    from `clocks.event_date` rather than being built here.
     """
     counts = entry.counts
     touched = UNTOUCHED_CARD if untouched(entry) else count(counts.touched, "provision")
     if counts.disputed:
         touched += f", {counts.disputed} disputed"
-    dated = (
-        f"in force {max(entry.in_force).isoformat()}"
-        if entry.in_force
-        else f"detected {entry.detected_on.isoformat()}"
-    )
+    dated = event_date(entry).words
     href = f"{up(_DEPTH)}{event_href(act.slug, entry.key)}"
     return Html(
         f'<div class="cardrow">'

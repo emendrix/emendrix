@@ -111,6 +111,52 @@ def test_a_quiet_act_does_not_repeat_its_name_as_an_official_title() -> None:
     rendered = _quiet()
     assert rendered.count("GDPR</") == 1
     assert 'class="official"' not in rendered
+    assert "<title>GDPR: every amendment — emendrix</title>" in rendered
+
+
+def test_a_long_name_heads_the_page_and_the_label_stays_on_the_facts_line() -> None:
+    """The H1 says the act the way a person types it; the short label and the key move one
+    step down, to the facts line, so nothing a reader used to find the act is gone."""
+    from emendrix.watch.config import Watchlist
+
+    watchlist = Watchlist.model_validate(
+        {
+            "acts": [
+                {
+                    "celex": "32016R0679",
+                    "name": "GDPR",
+                    "long_name": "General Data Protection Regulation",
+                }
+            ]
+        }
+    )
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), watchlist=watchlist
+    )
+    rendered = render_act(site, site.acts[0])
+    assert "<h1>General Data Protection Regulation</h1>" in rendered
+    assert '<p class="facts">GDPR · <code>32016R0679</code>' in rendered
+    assert (
+        "<title>General Data Protection Regulation (GDPR): every amendment — emendrix</title>"
+        in rendered
+    )
+    assert "seen for General Data Protection Regulation." in rendered
+    assert 'class="official"' not in rendered
+
+
+def test_the_official_title_is_rendered_whole_however_long_it_is() -> None:
+    """The cut at the changelog's cap stays for headings in a list; this is the one page whose
+    job is to be the act, and the words past the cap are the ones a reader searched for."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    long_title = "House Rules of Flat 3B, " + "as agreed by every tenant of the building, " * 4
+    assert len(long_title) > 120
+    renamed = entry.model_copy(
+        update={"act": entry.act.model_copy(update={"display_name": long_title})}
+    )
+    site = _site(renamed)
+    rendered = render_act(site, site.acts[0])
+    assert f'<p class="official">{long_title}</p>' in rendered
+    assert "[…]" not in rendered
 
 
 def test_the_sidebar_lists_touched_provisions_and_amendments() -> None:

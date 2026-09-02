@@ -68,10 +68,33 @@ def test_an_act_may_carry_a_domain_and_aliases_for_the_site(tmp_path: Path) -> N
     assert watched.aliases == ("General Data Protection Regulation",)
 
 
+def test_an_act_may_carry_a_long_name_for_the_site_headings(tmp_path: Path) -> None:
+    """`long_name` is what the site's H1 says; `name` stays the short label. Neither is identity."""
+    path = tmp_path / "watchlist.toml"
+    path.write_text(
+        '[[acts]]\ncelex = "32016R0679"\nname = "GDPR"\n'
+        'long_name = "General Data Protection Regulation"\n',
+        encoding="utf-8",
+    )
+    watched = load_watchlist(path).acts[0]
+    assert watched.long_name == "General Data Protection Regulation"
+    assert watched.act.display_name == "GDPR"
+
+
+def test_the_shipped_example_gives_a_long_name_only_where_the_name_is_an_initialism() -> None:
+    """The golden builds from the example, so it must exercise both the set and the unset case."""
+    by_celex = {entry.celex: entry for entry in load_watchlist(EXAMPLE).acts}
+    assert by_celex[AI_ACT].long_name == "Artificial Intelligence Act"
+    assert by_celex[REACH].long_name is not None
+    assert by_celex[MDR].long_name is None
+    assert by_celex[DSA].long_name is None
+
+
 def test_domain_and_aliases_default_to_absent(tmp_path: Path) -> None:
     path = tmp_path / "watchlist.toml"
     path.write_text('[[acts]]\ncelex = "32016R0679"\n', encoding="utf-8")
     watched = load_watchlist(path).acts[0]
+    assert watched.long_name is None
     assert watched.domain is None
     assert watched.aliases == ()
 

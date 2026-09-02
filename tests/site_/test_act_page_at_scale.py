@@ -60,16 +60,26 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 170615)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 170632)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
-provisions, the heaviest page is an event's. Either way the number moves only on purpose."""
+provisions, the heaviest page is an event's. Either way the number moves only on purpose.
 
-_TOTAL_BYTES: Final = 943339
+17 bytes heavier on 2026-09-02, when the act page's title started saying what the page holds:
+`: every amendment` between the act's name and the site's, in the one `<title>` this build
+writes, since it passes no site URL and so carries no Open Graph copy of it."""
+
+_TOTAL_BYTES: Final = 954570
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
-Before the split this input rendered as one page, which is the shape 6.1 MB arrived in."""
+Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
+
+11 231 bytes heavier on 2026-09-02: the 17 above, and each of the two hundred event pages
+moved its `<title>` from the version pair to the count and the dated clock, and its
+description from "What changed in" to the same count and clock in a sentence. That is the
+intended cost of a title that says what a reader learns by opening the page; no page
+gained markup below the head."""
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
 _LINKS: Final = re.compile(r'href="([^"]*)"')

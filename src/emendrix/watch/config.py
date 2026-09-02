@@ -3,21 +3,25 @@
 ```toml
 # watchlist.toml
 [[acts]]
-celex   = "32024R1689"
-name    = "AI Act"
-domain  = "Digital"                    # groups the act on the published site
-aliases = ["Artificial Intelligence Act"]   # other names a search should find it under
+celex     = "32024R1689"
+name      = "AI Act"
+long_name = "Artificial Intelligence Act"   # what the site's headings call it
+domain    = "Digital"                       # groups the act on the published site
+aliases   = ["Artificial Intelligence Act"] # other names a search should find it under
 
 [output]
-repo_path = "~/regulatory-changelog"   # where the committed changelog lives
+repo_path = "~/regulatory-changelog"        # where the committed changelog lives
 ```
 
-`name`, `domain` and `aliases` are labels for output only: identity is the CELEX, exactly as
-everywhere else in the system (`core.ActId`). The published site groups and searches by them, and
-nothing in the system ever resolves an act through any of them. A file naming an act twice, or
-naming something that is not a CELEX, is refused at load time with the line's own value in the
-message: this is the one input a person writes by hand, so it is the one place worth being
-strict.
+`name`, `long_name`, `domain` and `aliases` are labels for output only: identity is the CELEX,
+exactly as everywhere else in the system (`core.ActId`). `long_name` is a label of the same rank
+as `name`, used only in headings: the site's H1 and the act page's title say it where it is set,
+and the short `name` stays on the facts line beside the CELEX and leads every event page's
+title, where the count and the date are the news. The published site groups and searches by
+`domain` and `aliases`, and nothing in the system ever resolves an act through any of the four.
+A file naming an act twice, or naming something that is not a CELEX, is refused at load time
+with the line's own value in the message: this is the one input a person writes by hand, so it
+is the one place worth being strict.
 
 ## Why the index is a separate object
 
@@ -69,6 +73,10 @@ class WatchedAct(BaseModel):
 
     celex: str = Field(description="CELEX of the act as published, e.g. 32024R1689.")
     name: str | None = Field(default=None, description="Label for output; never identity.")
+    long_name: str | None = Field(
+        default=None,
+        description="The act's full human name, for headings; a label, never identity.",
+    )
     domain: str | None = Field(
         default=None, description="Site grouping label, e.g. 'Data & privacy'; never identity."
     )

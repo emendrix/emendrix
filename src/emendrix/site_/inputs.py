@@ -43,7 +43,7 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import slug
 from emendrix.site_.attribution import unattributed
-from emendrix.site_.clocks import EventDate, VersionDates, event_dated, sort_date
+from emendrix.site_.clocks import EventDate, VersionDates, event_date, sort_date
 from emendrix.watch.config import Watchlist
 
 __all__ = [
@@ -62,6 +62,7 @@ class ActSite(BaseModel):
 
     act: ActId
     label: str = Field(min_length=1)
+    long_name: str = Field(default="", description="The watchlist's long form, or ''.")
     domain: str = Field(default="", description="Index grouping; empty lands under 'Other'.")
     aliases: tuple[str, ...] = ()
     eurlex_url: str = Field(default="", description="Resolved at the CLI boundary; '' = none.")
@@ -73,6 +74,11 @@ class ActSite(BaseModel):
     def slug(self) -> str:
         """The act's path segment: its own key, made filesystem-safe."""
         return slug(self.act.key)
+
+    @property
+    def headline(self) -> str:
+        """What the page's H1 says: the long form when the watchlist gives one, else the label."""
+        return self.long_name or self.label
 
     @property
     def dated(self) -> EventDate | None:
@@ -91,7 +97,7 @@ class ActSite(BaseModel):
         """
         for entry in self.entries:
             if not unattributed(entry):
-                return EventDate(on=event_dated(entry), in_force=bool(entry.in_force))
+                return event_date(entry)
         return None
 
 
@@ -219,6 +225,7 @@ def collect_site(
                     # The act's own key, not the config field it was written in: this module
                     # renders whatever corpus the loop ran on and reads no corpus vocabulary.
                     label=watched.name or act.key,
+                    long_name=watched.long_name or "",
                     domain=watched.domain or "",
                     aliases=watched.aliases,
                     entries=_sorted_entries(by_act.get(act, []), dates),
