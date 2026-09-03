@@ -2,9 +2,10 @@
 
 A sibling of `test_event_page.py` rather than a tail on it: that module holds the honesty
 markers a block may never lose (anchor, disagreement, provenance, a stated reason), and this
-one holds the block's shape, a heading per provision with the applies line outside it, and
-the in-page index that lists every block by the anchor it carries. Each module builds its own
-toy page, as every site test module does, so a scoped run of either stands on its own.
+one holds the block's shape, a heading per provision with the applies line outside it, the
+size of the difference that heading prints, and the in-page index that lists every block by the
+anchor it carries. Each module builds its own toy page, as every site test module does, so a
+scoped run of either stands on its own.
 """
 
 from __future__ import annotations
@@ -22,9 +23,10 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import SiteInputs, collect_site
+from emendrix.site_.magnitude import magnitude_html, weight_class
 from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.event_index import INDEX_ABOVE
-from emendrix.site_.pages.texts import text_blocks
+from emendrix.site_.pages.texts import RenderedText, text_blocks
 from emendrix.site_.urls import location_slug
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -140,7 +142,7 @@ def test_a_long_page_opens_with_an_index_of_its_blocks_and_a_short_one_does_not(
     links = re.findall(r'href="#([^"]+)"', index)
     assert len(links) == INDEX_ABOVE
     assert links == re.findall(r'<div class="chg" id="([^"]+)"', rendered)
-    assert index.count("<li>") == INDEX_ABOVE
+    assert index.count("<li ") == INDEX_ABOVE
     assert index.count('<span class="pill') == INDEX_ABOVE
 
 
@@ -219,5 +221,64 @@ def test_the_index_says_how_many_blocks_it_lists_rather_than_how_many_provisions
     assert len(entry.changes) == INDEX_ABOVE
     assert len(coordinates) == INDEX_ABOVE - 1
     (index,) = _INDEX.findall(_page(entry))
-    assert f'<p class="small muted">{INDEX_ABOVE} changes in this event</p>' in index
-    assert index.count("<li>") == INDEX_ABOVE
+    assert f'<p class="small muted">{INDEX_ABOVE} changes in this event · ' in index
+    assert index.count("<li ") == INDEX_ABOVE
+
+
+# ------------------------------------------------------------------ how much of each moved
+
+
+def _blocks(entry: ChangelogEntry) -> tuple[str, tuple[RenderedText, ...]]:
+    """The page and the evidence blocks it was built from, so the two can be checked against
+    each other rather than against a number written down here."""
+    site = _site(entry)
+    entry = site.acts[0].entries[0]
+    texts = text_blocks(entry)
+    return render_event_page(site, site.acts[0], entry, texts), texts
+
+
+def test_every_change_heading_says_how_much_of_the_provision_moved() -> None:
+    """One figure per block, inside the heading, beside the pill that says what kind it was.
+
+    A punctuation fix and a rewritten paragraph are both `MODIFIED`, and this is what tells
+    them apart without opening forty-five blocks. The figure is the block's own, so it is read
+    back off the evidence the page was built from rather than restated here.
+    """
+    rendered, texts = _blocks(_entry())
+    headings = re.findall(r"<h3>.*?</h3>", rendered)
+    assert len(headings) == len(texts)
+    for heading, text in zip(headings, texts, strict=True):
+        assert heading.count('<span class="mag"') == 1
+        assert magnitude_html(text) in heading
+        assert heading.index('<span class="pill') < heading.index('<span class="mag"')
+
+
+def test_the_index_weights_each_link_by_the_characters_its_own_block_moved() -> None:
+    """The map and the page carry one measurement, so the class is the block's own decade."""
+    entry = _many(_entry(), INDEX_ABOVE)
+    rendered, texts = _blocks(entry)
+    (index,) = _INDEX.findall(rendered)
+    classes = re.findall(r'<li class="([^"]+)">', index)
+    assert classes == [weight_class(text) for text in texts]
+    assert index.count('<span class="mag"') == INDEX_ABOVE
+    for text in texts:
+        assert magnitude_html(text) in index
+
+
+def test_the_index_label_totals_the_characters_of_the_blocks_it_lists() -> None:
+    """Summed over the same blocks, and labelled `characters`, which is all it counts.
+
+    Nothing on the page reads it as a size of anything else: the label names the unit, and the
+    methodology page carries the paragraph saying what a character count is not.
+    """
+    entry = _many(_entry(), INDEX_ABOVE)
+    rendered, texts = _blocks(entry)
+    (index,) = _INDEX.findall(rendered)
+    inserted = sum(text.inserted for text in texts)
+    deleted = sum(text.deleted for text in texts)
+    assert inserted and deleted
+    label = (
+        f'<p class="small muted">{INDEX_ABOVE} changes in this event · '
+        f"+{inserted:,} −{deleted:,} characters</p>"
+    )
+    assert label in index

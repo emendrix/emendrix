@@ -19,11 +19,24 @@ appear in tables.
 
 Every text on this page came out of a legal document, so all of it goes through `escape`,
 including the runs the diff decided were unchanged.
+
+**The size of the difference is measured here too**, and for one reason: it must be the size of
+the difference this block was built from. A count taken from a second comparison could disagree
+with the marks a reader can see, and building that comparison would double the most expensive
+call the whole site build makes. So `render_texts` returns the characters it marked inserted
+and deleted along with the markup, and `site_/magnitude.py` decides how a page prints them.
+
+Built from, rather than shows, because of one branch. Below `SIMILARITY_FLOOR` the comparison
+is made and then not rendered: the page stacks two clean texts and says why, and the count
+still reports what that comparison found, which is the honest number for a rewrite and the
+only one that does not need a second matcher. Every other branch marks exactly what it counts.
 """
 
 from __future__ import annotations
 
-from typing import Final
+from typing import Final, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix.core import Change
 from emendrix.output import ChangelogEntry
@@ -35,7 +48,7 @@ from emendrix.site_.worddiff import (
     compare,
 )
 
-__all__ = ["render_texts"]
+__all__ = ["Rendered", "render_texts"]
 
 _NO_TEXT = (
     "No text on either side: this unit was named by a signal that carries no text, and only "
@@ -46,6 +59,31 @@ _NO_TEXT = (
 Two renderings of one fact must not describe it differently, so this matches
 `output.markdown`'s line rather than paraphrasing it.
 """
+
+
+class Rendered(BaseModel):
+    """A change's evidence as one block, with the size of the difference it shows.
+
+    The counts are characters of stored text, measured on the comparison this block was
+    rendered from. They say how much moved and nothing whatever about what the movement means:
+    two characters can move a deadline by sixteen months and two thousand can renumber a list.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    html: Html = Field(description="The evidence as markup, escaped by the renderer that made it.")
+    inserted: int = Field(
+        default=0,
+        ge=0,
+        description="Characters in inserted spans, or the whole text of an insertion.",
+    )
+    deleted: int = Field(
+        default=0, ge=0, description="Characters in deleted spans, or the whole text of a deletion."
+    )
+    granularity: Granularity | None = Field(
+        default=None,
+        description="What a counted unit was; None where no comparison was made.",
+    )
 
 
 def _verbatim(label: str, text: str, extra_class: str = "") -> Html:
@@ -138,28 +176,53 @@ def _unified(comparison: Comparison, entry: ChangelogEntry) -> Html:
     return join((label, Html(f'<p class="diff">{join(parts, "")}</p>')), "\n")
 
 
-def render_texts(change: Change, entry: ChangelogEntry) -> Html:
-    """Whatever evidence the change carries, in the most legible honest form."""
+def _stacked(before: str, after: str, entry: ChangelogEntry) -> Html:
+    """Both texts whole, one above the other, said to be too different to compare inline."""
+    return join(
+        (
+            Html('<p class="none">texts differ too much for an inline diff; shown separately</p>'),
+            _verbatim(f"before ({entry.from_version})", before),
+            _verbatim(f"after ({entry.to_version})", after),
+        ),
+        "\n",
+    )
+
+
+def _characters(comparison: Comparison, kind: Literal["deleted", "inserted"]) -> int:
+    """Characters inside the spans of one kind, read off the comparison the page renders.
+
+    Elision cannot move this: `_kept` shortens `equal` runs and nothing else, so what is hidden
+    is never what is counted.
+    """
+    return sum(len(span.text) for span in comparison.spans if span.kind == kind)
+
+
+def render_texts(change: Change, entry: ChangelogEntry) -> Rendered:
+    """Whatever evidence the change carries, in the most legible honest form, and its size."""
     before, after = change.before, change.after
     if before is not None and after is not None:
-        # One comparison, used for both questions: whether the unified view is worth showing
-        # and what it contains. Asking them separately built the matcher twice.
+        # One comparison, used for all three questions: whether the unified view is worth
+        # showing, what it contains, and how much of the provision moved. Asking them
+        # separately built the matcher twice.
         comparison = compare(before, after)
-        if comparison.ratio >= SIMILARITY_FLOOR:
-            return _unified(comparison, entry)
-        note = Html(
-            '<p class="none">texts differ too much for an inline diff; shown separately</p>'
+        unified = comparison.ratio >= SIMILARITY_FLOOR
+        return Rendered(
+            html=_unified(comparison, entry) if unified else _stacked(before, after, entry),
+            inserted=_characters(comparison, "inserted"),
+            deleted=_characters(comparison, "deleted"),
+            granularity=comparison.granularity,
         )
-        return join(
-            (
-                note,
-                _verbatim(f"before ({entry.from_version})", before),
-                _verbatim(f"after ({entry.to_version})", after),
-            ),
-            "\n",
-        )
+    # One side, so no comparison was made and none is claimed: the whole stored text is what
+    # arrived or what went, and `granularity` stays absent rather than naming a unit nothing
+    # was measured in.
     if after is not None:
-        return _verbatim(f"inserted text ({entry.to_version})", after, "ins")
+        return Rendered(
+            html=_verbatim(f"inserted text ({entry.to_version})", after, "ins"),
+            inserted=len(after),
+        )
     if before is not None:
-        return _verbatim(f"deleted text ({entry.from_version})", before, "del")
-    return Html(f'<p class="none">{escape(_NO_TEXT)}</p>')
+        return Rendered(
+            html=_verbatim(f"deleted text ({entry.from_version})", before, "del"),
+            deleted=len(before),
+        )
+    return Rendered(html=Html(f'<p class="none">{escape(_NO_TEXT)}</p>'))

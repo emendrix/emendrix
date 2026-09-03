@@ -73,6 +73,10 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+# U+2212 MINUS SIGN is typography rather than a homoglyph slip. The site prints how much of a
+# provision moved as `+1,204 −318`, where a hyphen is the character a location slug uses and
+# reads as a dash between two numbers; the confusable check is right about every other case.
+allowed-confusables = ["−"]
 
 [tool.ruff.format]
 # Defaults on purpose: formatting is not a place to have opinions.

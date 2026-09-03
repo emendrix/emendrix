@@ -102,7 +102,7 @@ this tree is not a provision page: the annex every one of the two hundred events
 53 782 bytes over two hundred steps, a third of the index, because 199 of those steps carry a
 link where the newest carries the diff."""
 
-_TOTAL_BYTES: Final = 2221580
+_TOTAL_BYTES: Final = 2364299
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -162,6 +162,16 @@ gained the citation row that pays part of this cost back on a page with prose, a
 changes is under the six an index starts at, so no page here carries the column wrapper, the
 count line or the link back to the top. `_HEAVIEST` does not move at all: the index is a
 timeline of cards and holds no change block.
+
+142 719 bytes heavier on 2026-09-03, later again, when every change started saying how much of
+its provision moved: 800 figures on the two hundred event pages and 401 more on the newest step
+of each provision page, at about 119 bytes each. Most of that is the `title` sentence saying
+what the characters are, 76 of the 120, and it is repeated per figure because a title is where
+a reader asks the question. It is the largest single move this pin has recorded and the
+cheapest place to have paid it would be a legend, which a page carrying four changes has no
+room for and a reader arriving at one block would never see. Nothing else moved: these events
+are diff-only and under the index threshold, so no page here carries the totals line or the
+weighted list, and `_HEAVIEST` does not move again, its page being a timeline of cards.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

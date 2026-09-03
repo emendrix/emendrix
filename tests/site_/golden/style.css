@@ -313,6 +313,11 @@ a.loc { color: inherit; font-weight: 600; }
 .step { margin: var(--space-4) 0; }
 .step h2 { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: baseline;
            margin: 0; padding: 0; border: 0; font-size: var(--step-1); }
+/* How much of the provision moved, in characters, beside the kind of change it was. The mono
+   face because it is a figure standing next to a label, and never wrapped: `+1,204` alone at
+   the end of a row would read as the whole count. */
+.mag { font-family: var(--mono); font-size: var(--step-xs); color: var(--muted);
+       white-space: nowrap; }
 /* A map of the page, not a second copy of it: one wrapping row, so forty-five provisions
    cost a few lines of height and a reader can see the whole event at once. */
 .touched { margin: var(--space-3) 0 var(--space-4); padding: var(--space-2) 0;
@@ -321,6 +326,14 @@ a.loc { color: inherit; font-weight: 600; }
 .touched ol { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3);
               list-style: none; margin: 0; padding: 0; font-size: var(--step-sm); }
 .touched li { display: flex; align-items: baseline; gap: var(--space-1); }
+/* The decade of characters a change moved, as weight on its link, so the index reads as a map
+   of where the text is rather than only of where a change is. Weight and nothing else: colour
+   is spent on diffs, disputes and links, and a heavier link is still a link. The classes are
+   decades and claim nothing about importance; the count beside each one is the fact. */
+.touched .mag-1 a { font-weight: 400; }
+.touched .mag-2 a { font-weight: 500; }
+.touched .mag-3 a { font-weight: 600; }
+.touched .mag-4 a { font-weight: 700; }
 /* The same grid the act page draws, with the event's index as the left column, at the one
    width the act page becomes two columns. The `.sidebar` cap above is deliberately not reused:
    that one bounds a `<details>` of hundreds of links at every width, where this is a row of

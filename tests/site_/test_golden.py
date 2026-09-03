@@ -184,7 +184,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 38773)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 41083)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -256,7 +256,17 @@ the blocks, the count line above the index, and the link back to the top. It gav
 inline pairs became nine rows of the distinct citations, and Art. 59, whose three sentences
 each cited the same single anchor, now prints that anchor once. The saving grows with the
 prose, so the pages this pin exists to watch, the ones carrying hundreds of explained
-changes, pay proportionally less of the 1053 than this one does."""
+changes, pay proportionally less of the 1053 than this one does.
+
+2310 bytes heavier on 2026-09-03, later again, when every change started saying how much of
+its provision moved. Eighteen figures at about 128 bytes each: one in each of the nine change
+headings and one in each of the nine index items, the bulk of it the `title` sentence saying
+what the characters are, repeated per figure because a title is where a reader asks. The index
+items carry a weight class as well, and the count line above them gained the event's totals.
+This is the most expensive markup per change the page has ever gained, and it is spent on the
+one fact the type pill cannot carry: six of these nine changes are date moves of 4 to 50
+characters and three are prose, which a reader could previously tell apart only by opening
+nine `<details>`. Nothing inside one moved and no anchor did."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

@@ -172,3 +172,30 @@ def test_an_unset_build_keeps_the_old_sentence_and_names_no_host() -> None:
     assert "no link leaves the site except to EUR-Lex and the repositories this page names" in (
         section
     )
+
+
+def test_the_build_section_says_what_the_character_count_is_and_is_not() -> None:
+    """The site prints a size beside every change, so this page says what a size is worth.
+
+    Both halves are asserted, because either alone is the failure: what the number counts,
+    and that it is not a measure of legal effect. The words appear in the build section, which
+    is where the site describes its own rendering.
+    """
+    section = render_methodology(_site()).split("How this site is built")[1]
+    assert "It is not a measure of legal effect." in section
+    assert "the characters inside the inserted and deleted spans" in section
+    assert "the characters in the whole lines that changed" in section
+    assert "computes it at build time from the committed" in section
+
+
+def test_the_character_count_never_becomes_a_row_of_the_measured_table() -> None:
+    """The table is the eval harness's, generated row by row from the committed report.
+
+    A row here would be a figure with no provenance in the one place on the site that exists
+    to refuse them, so the body's row count is pinned to what `metric_rows` produced.
+    """
+    site = _site()
+    rendered = render_methodology(site)
+    body = rendered.split("<tbody>")[1].split("</tbody>")[0]
+    assert body.count("<tr>") == len(metric_rows(site.run))
+    assert "characters" not in body

@@ -60,6 +60,14 @@ to diff inline, because an inline rendering of a rewrite is noise wearing the cl
 comparison. The stored text is never touched: the diff is a comparison-time rendering, the same
 category as the whitespace handling inside the comparison functions.
 
+Every change heading, and the index entry that points at it, carries a figure such as `+1,204
+−318`: the characters the comparison below it marked inserted and deleted, or for a provision
+compared line by line the characters in the lines that changed. It is measured on that one
+comparison rather than computed again, it is labelled `characters` wherever it is totalled, and
+it is **not a measure of legal effect**, which the methodology page states in full; the index
+gives each link a weight by decade of characters so a page of forty-five changes shows where
+the text actually moved.
+
 An event of six changes or more opens with an index of the provisions it touched, and from
 60rem wide that index is a sticky column beside the changes rather than a row above them, so a
 reader forty blocks down can still see the map; narrower than that it stays the wrapping row,

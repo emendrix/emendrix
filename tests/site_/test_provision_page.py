@@ -30,6 +30,7 @@ from emendrix.graph.report import EmittedChange, EmittedSentence
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.history import ProvisionHistory, histories
 from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
+from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.provision import render_provision_page
 from emendrix.site_.pages.texts import text_blocks
@@ -293,3 +294,22 @@ def test_a_step_carries_the_change_s_citations_as_one_row() -> None:
     for item in cited:
         assert rendered.count(f'href="{escape(item.url)}"') == 1
     assert "<p>Sentence 2.</p>" in rendered
+
+
+def test_only_the_step_showing_its_evidence_says_how_much_moved() -> None:
+    """The count belongs to the comparison a page renders, and one step here renders one.
+
+    An older step's evidence is on its event page, and so is its count; a figure printed here
+    beside a link would be a measurement of markup the reader cannot see from this page.
+    """
+    site = _site(_entry(2), _entry(1))
+    act = site.acts[0]
+    history = _first(act)
+    rendered = _render(site, act, history)
+    assert len(history.steps) > 1
+    newest = text_blocks(history.steps[0].entry)[history.steps[0].index]
+    headings = re.findall(r"<h2>.*?</h2>", rendered, re.DOTALL)
+    magnitudes = [heading for heading in headings if '<span class="mag"' in heading]
+    assert len(magnitudes) == 1
+    assert magnitude_html(newest) in magnitudes[0]
+    assert magnitudes[0].index('<span class="pill') < magnitudes[0].index('<span class="mag"')

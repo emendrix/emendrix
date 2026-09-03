@@ -38,6 +38,7 @@ from emendrix.site_.dispute import dispute_note
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.history import ProvisionHistory, ProvisionStep
 from emendrix.site_.inputs import ActSite, SiteInputs
+from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.prose import permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
@@ -111,17 +112,22 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     its `<details>`, because a reader arriving from a search for this provision wants the
     current text visible; an older step links the block on the event page that holds its own.
 
+    The heading carries how much moved only where the evidence is on this page, for the same
+    reason: the count is measured on a rendered comparison, and an older step's comparison is
+    rendered on the event page, which is where that step's count is printed.
+
     The heading closes with the same permalink a change block carries on its event page, and
     on the same anchor, so one change can be handed to somebody from either view of it.
     """
     entry = step.entry
     change = step.change
+    magnitude = magnitude_html(text) if text is not None else Html("")
     lines = [
         Html(f'<article class="chg step" id="{escape(step.anchor)}">'),
         Html(
             f"<h2>{escape(event_date(entry).words)} "
             f"{pill(change.change_type, disputed=change.disputed)}"
-            f"{permalink(step.anchor)}</h2>"
+            f"{magnitude}{permalink(step.anchor)}</h2>"
         ),
     ]
     acts = amenders(site.amending, entry)

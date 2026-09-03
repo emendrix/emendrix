@@ -76,6 +76,25 @@ _LOOP_NOTE = (
 )
 
 
+_MAGNITUDE = (
+    "Each change carries a figure such as <code>+1,204 −318</code>. Those are <b>characters</b>: "
+    "the characters inside the inserted and deleted spans of the word-level comparison shown "
+    "under that change, or, for a provision too large to compare word by word, the characters "
+    "in the whole lines that changed. The site computes it at build time from the committed "
+    "texts, which is why it is not in the table above: it measures this page's own rendering "
+    "and evaluates nothing. <b>It is not a measure of legal effect.</b> A two-character change "
+    "can move a deadline by sixteen months and a two-thousand-character one can renumber a "
+    "list, so nothing on the site calls a change minor, significant or substantial on the "
+    "strength of it."
+)
+"""What the size beside every change counts, and the thing it must never be read as.
+
+It sits in the build section rather than in the metrics table on purpose. The table is the eval
+harness's, generated row by row from the committed report; this number is the site measuring its
+own rendering, and a row here would be a figure with no provenance in the one place that exists
+to refuse them.
+"""
+
 _GITHUB: Final = "https://github.com/"
 """The one public host whose file layout this module knows. A prefix, not a vendor endorsement."""
 
@@ -225,6 +244,7 @@ def _how_this_site_is_built(site: SiteInputs) -> list[Html]:
             "clock, reaches the network, or calls a model. One small script adds search; no "
             "link leaves the site except to EUR-Lex and the repositories this page names.</p>"
         ),
+        Html(f"<p>{_MAGNITUDE}</p>"),
     ]
 
 

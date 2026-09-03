@@ -303,4 +303,27 @@ does not move, its page being a timeline of cards with no change block on it; `_
 moves by 133 304, which is 1600 permalinks over two hundred event pages and four hundred and
 one provision pages of diff-only changes, where no citation row exists to pay any of it back.
 No measured figure moved with it.
+
+**2026-09-03, how much of each provision moved.** Twelve files moved and none was added: the
+MDR event page, its nine provision pages, `methodology/index.html` and `style.css`. Every
+change now prints the characters the comparison under it marked inserted and deleted, beside
+the pill in the heading on both surfaces that show a change, with a `title` saying what the
+characters are and, at line granularity, that a whole changed line is counted. The event
+page's index carries the same figure per item, a weight class by decade of characters, and
+the event's totals on its label, `9 changes in this event · +1,050 −248 characters`. The
+reading of that page is the point of the pass: six of the nine changes are date moves of 4 to
+50 characters and three are prose, +576 −15 on Art. 59, +236 −130 on Art. 123, +151 −16 on
+Art. 122, which is the honest picture of a postponement and was previously visible only by
+opening nine `<details>`. The count is the rendered comparison's own and no second comparison
+is made. The methodology page gained one paragraph in the build section saying what a
+character count is and what it is not, and the metrics table is untouched, because that table
+is the eval harness's and this number evaluates nothing. `style.css` grew from 18 701 to
+19 587 bytes for the figure's own rule and four weight classes; no hex value moved, so the
+contrast pairs are unchanged in both schemes and the only colour used here is `--muted`,
+already measured on every surface it sits on. Both feeds, `sitemap.xml`,
+`search-index.json`, `robots.txt` and the three assets are byte-identical, `og.png` included,
+every feed `<id>` with them, and no anchor or relative path already published moved.
+`_LARGEST_PAGE` moves by 2310 bytes and stays the MDR event page, eighteen figures at about
+128 bytes; `_HEAVIEST` does not move, its page being a timeline of cards; `_TOTAL_BYTES`
+moves by 142 719 over 1201 figures. No measured figure moved with it.
 """

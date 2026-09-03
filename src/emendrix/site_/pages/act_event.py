@@ -32,6 +32,9 @@ The promises live here, each as a line of markup rather than a claim made elsewh
   the before/after text sits one `<details>` away, uncut and verbatim.
 - **Every provision is a heading**, and a long page opens with a list of them built from the
   same anchors the blocks carry, so the list cannot point where no block is.
+- **Every change says how much of the provision moved**, in characters, measured on the very
+  comparison the block below it renders. It is a size and never a judgement: the words for that
+  are in `site_/magnitude.py`, which prints the count and the sentence saying what it is not.
 - **Every coordinate leads to its own history.** The heading's coordinate is a link to the
   provision's page, which is the same act's directory one level up from this event's, so a
   reader who arrived asking what this event did can ask what has ever been done to Annex XVII.
@@ -68,6 +71,7 @@ from emendrix.site_.amending import AmendingAct, amending_lines
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
 from emendrix.site_.clocks import event_date
 from emendrix.site_.dispute import dispute_note
+from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, count, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
 from emendrix.site_.pages.prose import permalink, pill, prose
@@ -120,7 +124,9 @@ def _change_block(
 
     `text` is the evidence, rendered once for the whole entry by `pages.texts` and handed in:
     the provision page shows the same block, and a diff computed twice is the one cost the
-    split of these pages could have introduced.
+    split of these pages could have introduced. It carries the size of the difference it shows,
+    which the heading prints beside the pill: a punctuation fix and a rewritten paragraph are
+    both `MODIFIED`, and the count is what tells them apart without opening either.
     """
     change = emitted.change
     title = (
@@ -130,6 +136,7 @@ def _change_block(
         Html(f'<div class="chg" id="{escape(anchor)}">'),
         Html(
             f"<h3>{pill(change.change_type, disputed=change.disputed)} "
+            f"{magnitude_html(text)} "
             f'<a class="loc" href="../{escape(location_slug(change.location.canonical))}/">'
             f"{escape(change.location.human)}</a>{title}{permalink(anchor)}</h3>"
         ),
@@ -279,7 +286,7 @@ def render_event(
         blocks.extend(_change_block(emitted, entry, anchor, text))
     if len(entry.changes) >= INDEX_ABOVE:
         lines.append(Html('<div class="layout event-layout">'))
-        lines.extend(touched(entry, anchors))
+        lines.extend(touched(entry, anchors, texts))
         lines.append(Html('<section class="changes">'))
         lines.extend(blocks)
         lines.append(
