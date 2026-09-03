@@ -209,4 +209,32 @@ convention of its year, else the key, and the CELEX stays beside it wherever a n
 `_LARGEST_PAGE` moves by 618 bytes and `_TOTAL_BYTES` by 4508, about 23 bytes on each of two
 hundred event pages whose titles and descriptions were reworded and which name no amending act
 at all. No measured figure moved with it.
+
+**2026-09-03, the amending instrument given a page.** Two files were added and fourteen moved.
+`amendments/index.html` is the roster of every instrument a committed event names, one row per
+instrument under the year of that instrument's newest event, and
+`amendments/32020R0561/index.html` is the one instrument the golden corpus names: its number as
+the heading, the recorded official title verbatim under it, its CELEX linked to EUR-Lex, and
+then the Medical Devices Regulation with the timeline card of the one event it produced there
+and, under the card, the nine coordinates that event's changes attribute to it, each linked to
+its own block on the event page. Its `ld+json` declares a three-rung breadcrumb and a
+`Legislation` whose `legislationChanges` names the act it moved; `legislationIdentifier`
+carries the CELEX, and `legislationAmends`, which the technical review suggested, is not a
+schema.org property and appears nowhere. Every page on the site gained the header bar's fifth
+link, `Amendments`, between `All acts` and `Methodology`, which is the whole of the diff on ten
+of the fourteen. The MDR event page gained 157 bytes: that link at three directories down, and
+a line under the act's facts pointing at everything `Regulation (EU) 2020/561` amended. It is
+the act's only event, so it carries no pager; an act with a history now closes each event page
+with the events either side of it, older as `rel="prev"` because the timeline runs newest
+first, each named by its own dated words. `sitemap.xml` gained the roster, dated by the newest
+event on the site like the home page, and the instrument's page, dated by its newest event.
+`search-index.json` gained two rows for that instrument, one of kind `amending` under the
+number it is shown by and one of kind `celex` under its key. `style.css` grew from 15 300 to
+16 201 bytes for the amended-act section, the event pager, their comments and one widened
+selector, the timeline's rail now being drawn on both pages that carry a timeline, and no hex
+value moved, so the contrast pairs are unchanged in both schemes. Both feeds,
+`robots.txt` and the three assets are byte-identical, `og.png` included, every feed `<id>` with
+them, and no anchor or relative path already published moved. `_LARGEST_PAGE` moves by 157
+bytes, `_HEAVIEST` by 43 and `_TOTAL_BYTES` by 43 917, three quarters of that last being the
+pager on two hundred generated event pages. No measured figure moved with it.
 """

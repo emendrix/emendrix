@@ -1,10 +1,12 @@
-"""The act page, the event page and the text they quote: layout, blocks, diffs, tables.
+"""The act, event and amendment pages and the text they quote: layout, blocks, diffs, tables.
 
 Last in the cascade, so a rule here may rely on everything before it. This is the half of the
 sheet that dresses evidence rather than navigation: the act page's header lines, its two-column
 layout and sticky index, the timeline, the change blocks and their headings, the in-page map of
-touched provisions, the dispute and applies lines, the unified diff, the verbatim blocks and the
-metrics table.
+touched provisions, the dispute and applies lines, the unified diff, the verbatim blocks, the
+metrics table, and the two rules an amending instrument's page and the event pager need. Both
+of those reuse the timeline rather than inventing a second one, an instrument's page being a
+timeline per watched act it moved.
 
 Three decisions carry the look of these two pages and are worth stating:
 
@@ -97,7 +99,8 @@ EVIDENCE: Final = """\
 /* The rail and its nodes: an act's history is a sequence, and the heading of each entry on
    it is a date. Drawn in the sheet so the markup stays one article per event. */
 .timeline { min-width: 0; }
-.layout > .timeline { padding-left: var(--space-4); border-left: 1px solid var(--rule); }
+.layout > .timeline, .amended > .timeline { padding-left: var(--space-4);
+                                            border-left: 1px solid var(--rule); }
 .timeline .event { position: relative; padding-bottom: var(--space-5); }
 .timeline .event::before {
   content: "";
@@ -144,6 +147,18 @@ EVIDENCE: Final = """\
               list-style: none; margin: 0; padding: 0; font-size: var(--step-sm); }
 .touched li { display: flex; align-items: baseline; gap: var(--space-1); }
 .applies { font-size: var(--step-sm); color: var(--muted); }
+/* One watched act on an amending instrument's page: its own heading, then the rail of events
+   that instrument produced there. The heading carries the act, so it is set as a page heading
+   rather than as a card's. */
+.amended { margin: var(--space-5) 0 0; }
+.amended > h2 a { text-decoration: none; }
+.amended > h2 a:hover { text-decoration: underline; }
+/* The events either side of this one, at the foot of an event page. Each link carries the date
+   it goes to, so the row is read rather than decoded; they sit at the two ends of the line so
+   the direction is visible before the words are. */
+.pager { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2);
+         margin: var(--space-5) 0 0; padding-top: var(--space-3);
+         border-top: 1px solid var(--rule); font-size: var(--step-sm); }
 /* The instrument that made the event, under the version pair it produced. Set small, like the
    other fact lines, and the declared short name italic beside the number so the label and the
    identifier read as two different kinds of name. */

@@ -6,6 +6,8 @@ import pytest
 
 from emendrix.site_.urls import (
     act_href,
+    amendment_href,
+    amendments_href,
     change_anchor,
     depth_of,
     entry_anchors,
@@ -87,3 +89,21 @@ def test_an_event_page_nests_under_its_act() -> None:
 def test_an_event_page_sits_three_directories_down() -> None:
     """The number `pages/event.py` holds as a literal, because its path needs an entry to exist."""
     assert depth_of(event_href("32024R1689", "02024R1689-20260727")) == 3
+
+
+def test_an_amending_instrument_is_addressed_by_its_own_key() -> None:
+    """The key, made path-safe by the function that names an act's directory, and nothing else.
+
+    A year-and-number path would need this module to read the identifier, which is the corpus
+    vocabulary the whole package is kept clear of; the human number lives in the page's title.
+    """
+    assert amendments_href() == "amendments/"
+    assert amendment_href("32026R1744") == "amendments/32026R1744/"
+    assert amendment_href("house-rules-amendment-1") == "amendments/house-rules-amendment-1/"
+    assert amendment_href("a/b").count("/") == 2
+
+
+def test_the_two_amendment_addresses_sit_one_and_two_directories_down() -> None:
+    """The literals `pages/amendments_index.py` and `pages/amendment.py` hold."""
+    assert depth_of(amendments_href()) == 1
+    assert depth_of(amendment_href("32026R1744")) == 2

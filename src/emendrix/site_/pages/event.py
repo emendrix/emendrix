@@ -20,12 +20,13 @@ from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
+from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.act_event import render_event
 from emendrix.site_.seo import event_json_ld
 from emendrix.site_.titles import event_title
 from emendrix.site_.untouched import UNTOUCHED_CARD, untouched
-from emendrix.site_.urls import act_href, entry_anchors, event_href, up
+from emendrix.site_.urls import act_href, amendment_href, entry_anchors, event_href, up
 
 __all__ = ["render_event_page"]
 
@@ -67,13 +68,99 @@ def _header(act: ActSite) -> list[Html]:
     ]
 
 
+def _instruments(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> list[Html]:
+    """Where each named instrument's own page is, and which other watched acts it also moved.
+
+    One line per instrument, under the facts about the act: an event of a consolidation that
+    folded several is several lines rather than one, because "also amended" is a different set
+    for each of them. The act this page belongs to is left out of that set, it being the page
+    the reader is already on.
+
+    The inversion is computed here rather than carried in the inputs, for the reason every
+    other derived list on this site is: `SiteInputs` holds what was read off disk, and a
+    renderer is a pure function of it.
+    """
+    found = amended_by(site)
+    lines: list[Html] = []
+    for instrument in amenders(site.amending, entry):
+        facts = [
+            Html(
+                f'<a href="{escape(up(_DEPTH) + amendment_href(instrument.key))}">'
+                f"Everything {escape(instrument.short)} amended</a>"
+            )
+        ]
+        others: dict[str, ActSite] = {
+            other.act.key: other
+            for other, _ in found.get(instrument.key, ())
+            if other.act != act.act
+        }
+        if others:
+            named = [
+                Html(
+                    f'<a href="{escape(up(_DEPTH) + act_href(other.slug))}">'
+                    f"{escape(other.label)}</a>"
+                )
+                for other in others.values()
+            ]
+            facts.append(Html(f"also amended {join(named, ', ')}"))
+        lines.append(Html(f'<p class="facts">{join(facts, " · ")}</p>'))
+    return lines
+
+
+def _pager(act: ActSite, entry: ChangelogEntry) -> list[Html]:
+    """The events either side of this one in the act's own history, each named by its date.
+
+    The act's timeline runs newest first, so the *previous* event in reading order is the
+    older one and `rel="next"` points at the newer. Nothing on the page says "previous" or
+    "next" in words for that reason: each link carries the date it goes to, with the clock
+    that date answers to, so the direction is read rather than deduced. An event at either end
+    of the history is simply missing that half.
+    """
+    keys = [other.key for other in act.entries]
+    if entry.key not in keys:
+        return []
+    at = keys.index(entry.key)
+    older = act.entries[at + 1] if at + 1 < len(act.entries) else None
+    newer = act.entries[at - 1] if at > 0 else None
+    links: list[Html] = []
+    if older is not None:
+        links.append(
+            Html(
+                f'<a rel="prev" href="../{escape(older.key)}/">'
+                f"← {escape(event_date(older).words)}</a>"
+            )
+        )
+    if newer is not None:
+        links.append(
+            Html(
+                f'<a rel="next" href="../{escape(newer.key)}/">'
+                f"{escape(event_date(newer).words)} →</a>"
+            )
+        )
+    if not links:
+        return []
+    return [
+        Html('<nav class="pager" aria-label="Events of this act">'),
+        *links,
+        Html("</nav>"),
+    ]
+
+
 def render_event_page(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> Html:
     """One event's complete page. Deterministic: same inputs, same bytes, no clock, no network."""
     anchors = entry_anchors(
         entry.key, [emitted.change.location.canonical for emitted in entry.changes]
     )
     acts = amenders(site.amending, entry)
-    body = join((*_header(act), *render_event(entry, anchors, acts)), "\n")
+    body = join(
+        (
+            *_header(act),
+            *_instruments(site, act, entry),
+            *render_event(entry, anchors, acts),
+            *_pager(act, entry),
+        ),
+        "\n",
+    )
     # The title says what a reader learns by opening the page: the count, the instrument that
     # made the change and the date with its clock. It is composed in `titles` because the feed
     # entry says the same thing and the two may not drift. The description says it again under

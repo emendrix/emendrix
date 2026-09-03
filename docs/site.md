@@ -20,13 +20,16 @@ index.html            search, the latest amendments, and the one-line measured c
 acts/index.html       every watched act, grouped by the domain the watchlist gives it
 acts/<celex>/         one page per act: the whole watched history, newest first, as cards
 acts/<celex>/<key>/   one page per event: the changes and the verbatim text
+amendments/           every instrument a committed event names, newest first, grouped by year
+amendments/<celex>/   one page per instrument: every watched act it amended, and what it moved
+about/                who runs the site, and what it does on the reader's machine
 methodology/          the metrics table with its caveats, the loop, the disclaimer in full
 feeds/                what the feeds are and where they are
 feeds/all.xml         every amendment event, as Atom
 feeds/<celex>.xml     one act's events, for a reader who watches only that act
 robots.txt            what crawlers may read, and where the sitemap is
 sitemap.xml           every page, with the date its content last moved
-search-index.json     act names, aliases, CELEX numbers and touched provisions
+search-index.json     act and instrument names, aliases, CELEX numbers and touched provisions
 search.js             the one script; style.css is the one stylesheet
 icon.svg              the favicon; og.png is the link-preview card
 ```
@@ -68,6 +71,21 @@ boundary, which is the one place in the site generator allowed to know what a CE
 committed document recorded the instrument's official title, the event's own page prints it
 verbatim under the line, which is the one surface with room for one. None of it is authored: a
 label is a label, a number is mechanical and reversible, and a title is the corpus's own words.
+
+Each named instrument also has a page of its own under `/amendments/<celex>/`, addressed by the
+key the corpus published and never by a year-and-number reading of it, and every event page
+links it. It gathers what the event pages already carry, under the instrument instead of under
+the act: every watched act the instrument amended, the timeline card of each event it produced
+there, and under each card the coordinates that event's changes attribute to that instrument
+and to no other, because one consolidation can fold several instruments and crediting each of
+them with all of the work would be a claim the corpus did not make. Where an instrument moved
+more than one watched act, the event page names the others beside the link. `/amendments/` is
+the roster of every instrument a committed event names, newest first by the newest event each
+produced and grouped under the year of that date; an instrument the watchlist names a short
+name for and no event names gets no row and no page, a declared label not being evidence that
+anything happened. Every event page also carries the events either side of it in its own act's
+history, older first as `rel="prev"`, each named by its dated words, the timeline running
+newest first.
 
 Some committed events name no amending act at all: their corroboration window turned up no
 modification annotations and no amending-act instructions, so only the text comparison observed

@@ -148,6 +148,51 @@ def test_provision_urls_are_the_anchors_the_event_page_publishes() -> None:
             assert f'id="{anchor}"' in pages[path]
 
 
+def test_an_amending_instrument_is_one_row_under_its_name_and_one_under_its_key() -> None:
+    """A reader who types the short name and one who types the identifier reach one page.
+
+    The toy instrument has neither a declared label nor a rendered number, so its name *is*
+    its key and the second row would say the same string twice; the branch that adds it is
+    exercised by giving the mapping a number, which is what a CELEX yields on the live site.
+    The rows come back in the index's own order, by folded label, so the identifier's row
+    precedes the number's here rather than following it.
+    """
+    from site_entries import attributed_entry
+
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(attributed_entry(),)
+    )
+    rows = [
+        item
+        for item in json.loads(search_index_json(site))["entries"]
+        if item["url"].startswith("amendments/")
+    ]
+    assert rows == [
+        {
+            "kind": "amending",
+            "label": "house-rules-amendment-1",
+            "url": "amendments/house-rules-amendment-1/",
+        }
+    ]
+    numbered = site.model_copy(
+        update={
+            "amending": {
+                key: act.model_copy(update={"number": "Regulation (EU) 2026/1"})
+                for key, act in site.amending.items()
+            }
+        }
+    )
+    rows = [
+        item
+        for item in json.loads(search_index_json(numbered))["entries"]
+        if item["url"].startswith("amendments/")
+    ]
+    assert [(item["kind"], item["label"]) for item in rows] == [
+        ("celex", "house-rules-amendment-1"),
+        ("amending", "Regulation (EU) 2026/1"),
+    ]
+
+
 def test_the_index_bytes_are_deterministic() -> None:
     site = collect_site(
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)

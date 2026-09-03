@@ -8,10 +8,19 @@ provenance marker, and a stated reason wherever prose is absent.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
-from emendrix.core import Delta, ProvisionLocation, ProvisionTree, Signal, SignalClaim, SignalReport
+from emendrix.core import (
+    ActId,
+    Delta,
+    ProvisionLocation,
+    ProvisionTree,
+    Signal,
+    SignalClaim,
+    SignalReport,
+    VersionId,
+)
 from emendrix.corroborate import corroborate
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
@@ -317,3 +326,73 @@ def test_an_event_naming_no_amending_act_says_so_and_gains_no_line() -> None:
     assert f"<title>{label}: 4 provisions changed, detected 2026-08-09 — emendrix</title>" in (
         rendered
     )
+
+
+def _timeline(count: int) -> SiteInputs:
+    """One act with `count` events, oldest to newest, each on its own version and detection day."""
+    delta = _delta()
+    entries = tuple(
+        diff_only_entry(
+            delta.model_copy(
+                update={"from_version": VersionId(f"v{n}"), "to_version": VersionId(f"v{n + 1}")}
+            ),
+            detected_on=OBSERVED + timedelta(days=n),
+        )
+        for n in range(1, count + 1)
+    )
+    return _site(*entries)
+
+
+def test_the_pager_links_the_events_either_side_and_names_each_by_its_date() -> None:
+    """Older is `prev`, the act's timeline running newest first; the dates say which is which."""
+    site = _timeline(3)
+    act = site.acts[0]
+    newest, middle, oldest = act.entries
+    rendered = render_event_page(site, act, middle)
+    assert '<nav class="pager" aria-label="Events of this act">' in rendered
+    assert f'<a rel="prev" href="../{oldest.key}/">← detected 2026-08-10</a>' in rendered
+    assert f'<a rel="next" href="../{newest.key}/">detected 2026-08-12 →</a>' in rendered
+
+
+def test_the_pager_is_half_missing_at_each_end_and_absent_for_a_lone_event() -> None:
+    site = _timeline(3)
+    act = site.acts[0]
+    newest, _, oldest = act.entries
+    assert 'rel="next"' not in render_event_page(site, act, newest)
+    assert 'rel="prev"' in render_event_page(site, act, newest)
+    assert 'rel="prev"' not in render_event_page(site, act, oldest)
+    assert 'rel="next"' in render_event_page(site, act, oldest)
+    lone = _timeline(1)
+    assert 'class="pager"' not in render_event_page(lone, lone.acts[0], lone.acts[0].entries[0])
+
+
+def test_the_event_links_the_page_of_every_instrument_it_names() -> None:
+    from site_entries import attributed_entry
+
+    rendered = _page(attributed_entry())
+    assert (
+        '<a href="../../../amendments/house-rules-amendment-1/">'
+        "Everything house-rules-amendment-1 amended</a>" in rendered
+    )
+
+
+def test_the_other_acts_an_instrument_amended_are_named_only_when_there_are_some() -> None:
+    """The act the reader is already on is never in that list, so one act alone says nothing."""
+    from site_entries import attributed_entry
+
+    entry = attributed_entry()
+    site = _site(entry)
+    assert "also amended" not in render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    second = ActId(corpus="toy", key="second-house")
+    shared = _site(entry, entry.model_copy(update={"act": second}))
+    here = next(act for act in shared.acts if act.act != second)
+    rendered = render_event_page(shared, here, here.entries[0])
+    assert f'also amended <a href="../../../acts/{second.key}/">{second.key}</a>' in rendered
+
+
+def test_an_event_naming_no_instrument_gains_no_link_line() -> None:
+    from site_entries import unattributed_entry
+
+    site = _site(unattributed_entry())
+    rendered = render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    assert "amendments/" not in rendered.split("<main")[1]

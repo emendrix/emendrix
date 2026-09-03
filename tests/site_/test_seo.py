@@ -87,6 +87,10 @@ def _event_pages(site: Path) -> list[Path]:
     return sorted((site / "acts").glob("*/*/index.html"))
 
 
+def _amendment_pages(site: Path) -> list[Path]:
+    return sorted((site / "amendments").glob("*/index.html"))
+
+
 def _payloads(page: Path) -> list[Any]:
     """Every JSON-LD block on one page, parsed, having first checked it cannot break out."""
     found: list[Any] = []
@@ -236,11 +240,17 @@ def test_an_event_page_offers_its_own_acts_feed_before_the_global_one(site: Path
 
 
 def test_the_pages_that_describe_nothing_a_type_names_declare_nothing(site: Path) -> None:
-    """A one-rung breadcrumb on `/acts/` restates the URL, and the other three have no type."""
+    """A one-rung breadcrumb on a roster restates the URL, and the rest have no type.
+
+    The two rosters, `/acts/` and `/amendments/`, and the three prose pages declare nothing.
+    An amending instrument's own page does declare, since `Legislation` names what it is and
+    `legislationChanges` names what it did; `test_amendment_page.py` reads that payload.
+    """
     described = {
         "index.html",
         *(str(page.relative_to(site)) for page in _act_pages(site)),
         *(str(page.relative_to(site)) for page in _event_pages(site)),
+        *(str(page.relative_to(site)) for page in _amendment_pages(site)),
     }
     for page in _pages(site):
         if str(page.relative_to(site)) in described:

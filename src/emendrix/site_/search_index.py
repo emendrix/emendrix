@@ -4,6 +4,7 @@ A static site cannot query anything, so the whole searchable surface is computed
 written once. What is in it is deliberately narrow:
 
 - **names, not text.** An act by its label, by every alias the watchlist gives it and by its
+  own identifier; an amending instrument by the name and number it is shown under and by its
   own identifier; a provision by its human coordinate. Full text is not indexed, because a
   substring index over the whole corpus is a different artifact with a different size and this
   one has to stay a file a browser downloads without noticing.
@@ -31,12 +32,14 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from emendrix.site_.amending import resolve
 from emendrix.site_.inputs import ActSite, SiteInputs
-from emendrix.site_.urls import act_href, entry_anchors, event_href
+from emendrix.site_.instruments import amended_by
+from emendrix.site_.urls import act_href, amendment_href, entry_anchors, event_href
 
 __all__ = ["IndexEntry", "IndexKind", "search_index_json"]
 
-IndexKind = Literal["act", "alias", "celex", "provision"]
+IndexKind = Literal["act", "alias", "amending", "celex", "provision"]
 """What a hit is, shown beside it so a reader can tell a name from a coordinate."""
 
 
@@ -94,9 +97,32 @@ def _provisions(act: ActSite) -> list[IndexEntry]:
     return entries
 
 
+def _instruments(site: SiteInputs) -> list[IndexEntry]:
+    """Every amending instrument with a page, under the name it is shown under and its key.
+
+    The row's label carries the number beside the short name where the two differ, so a
+    reader who types `2020/561` and a reader who types the declared short name both land on
+    the same page from one row. The key gets a row of its own on the same rule `_names` uses
+    for an act's: only when it is not already the label, one row saying one string twice
+    being noise in a result list.
+    """
+    entries: list[IndexEntry] = []
+    for key in amended_by(site):
+        instrument = resolve(site.amending, key)
+        short = instrument.short
+        number = instrument.number
+        label = f"{short} — {number}" if number and number != short else short
+        href = amendment_href(key)
+        entries.append(IndexEntry(label=label, kind="amending", url=href))
+        if key != label:
+            entries.append(IndexEntry(label=key, kind="celex", url=href))
+    return entries
+
+
 def search_index_json(site: SiteInputs) -> str:
     """The whole index as committed bytes, newline-terminated. No clock, no network."""
     entries = [item for act in site.acts for item in (*_names(act), *_provisions(act))]
+    entries.extend(_instruments(site))
     entries.sort(key=lambda item: (item.label.casefold(), item.kind, item.url))
     payload = {"entries": [item.model_dump() for item in entries]}
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + "\n"

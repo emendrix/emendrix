@@ -49,6 +49,7 @@ __all__ = [
     "by_words",
     "collect_amending",
     "mentioned_keys",
+    "resolve",
 ]
 
 
@@ -151,14 +152,20 @@ def amending_keys(entry: ChangelogEntry) -> tuple[str, ...]:
     return tuple(seen)
 
 
-def amenders(known: Mapping[str, AmendingAct], entry: ChangelogEntry) -> tuple[AmendingAct, ...]:
-    """`amending_keys` resolved through the collected mapping, in the entry's own order.
+def resolve(known: Mapping[str, AmendingAct], key: str) -> AmendingAct:
+    """One key through the collected mapping, or a bare `AmendingAct` carrying only the key.
 
-    A key the mapping does not hold resolves to a bare `AmendingAct`, which renders as its own
-    key: a name the site cannot improve on is still a name, and dropping the mention would be
-    the one thing worse than showing an identifier.
+    A name the site cannot improve on is still a name, and dropping the mention would be the
+    one thing worse than showing an identifier. One function rather than a fallback repeated
+    at each call site, so a page that resolves a key and a page that lists one cannot disagree
+    about what an unknown key is called.
     """
-    return tuple(known.get(key) or AmendingAct(key=key) for key in amending_keys(entry))
+    return known.get(key) or AmendingAct(key=key)
+
+
+def amenders(known: Mapping[str, AmendingAct], entry: ChangelogEntry) -> tuple[AmendingAct, ...]:
+    """`amending_keys` resolved through the collected mapping, in the entry's own order."""
+    return tuple(resolve(known, key) for key in amending_keys(entry))
 
 
 def by_words(acts: tuple[AmendingAct, ...]) -> str:

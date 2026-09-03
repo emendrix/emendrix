@@ -37,11 +37,19 @@ import json
 from typing import Final
 
 from emendrix.output import ChangelogEntry
+from emendrix.site_.amending import AmendingAct
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape
-from emendrix.site_.urls import act_href, event_href
+from emendrix.site_.urls import act_href, amendment_href, amendments_href, event_href
 
-__all__ = ["act_json_ld", "canonical_url", "event_json_ld", "head_metadata", "website_json_ld"]
+__all__ = [
+    "act_json_ld",
+    "amendment_json_ld",
+    "canonical_url",
+    "event_json_ld",
+    "head_metadata",
+    "website_json_ld",
+]
 
 _NAME: Final = "emendrix"
 """What the site calls itself, in Open Graph and in every JSON-LD payload alike."""
@@ -66,6 +74,9 @@ _ACTS_INDEX: Final = "acts/"
 Named here for the breadcrumb's middle rung; `test_seo.py` pins it to a file the build wrote,
 so the two cannot drift apart silently.
 """
+
+_INSTRUMENTS: Final = "Amending instruments"
+"""The middle rung of an amendment page's breadcrumb, and that index page's own heading."""
 
 
 def canonical_url(site_url: str, path: str) -> str:
@@ -184,7 +195,7 @@ def _breadcrumb(rungs: tuple[tuple[str, str], ...]) -> dict[str, object]:
     }
 
 
-def _legislation(act: ActSite) -> dict[str, str]:
+def _legislation(act: ActSite) -> dict[str, object]:
     """The `about` object every page describing this act shares.
 
     A `Legislation`, schema.org's ELI-derived type, and ELI is the vocabulary EU legislation
@@ -202,7 +213,7 @@ def _legislation(act: ActSite) -> dict[str, str]:
     breadcrumb rungs keep the short label on purpose: a breadcrumb is the trail printed under
     a search result, and the long form would not fit in it.
     """
-    about: dict[str, str] = {"@type": "Legislation", "name": act.headline}
+    about: dict[str, object] = {"@type": "Legislation", "name": act.headline}
     if act.headline != act.label:
         about["alternateName"] = act.label
     about["identifier"] = act.act.key
@@ -212,7 +223,7 @@ def _legislation(act: ActSite) -> dict[str, str]:
 
 
 def _webpage(
-    here: str, *, title: str, description: str, about: dict[str, str]
+    here: str, *, title: str, description: str, about: dict[str, object]
 ) -> dict[str, object]:
     """The `WebPage` object every described page carries, its `@id` its canonical address."""
     return {
@@ -264,5 +275,45 @@ def event_json_ld(
             ((_NAME, home), ("All watched acts", roster), (act.label, act_page), (event, here))
         ),
         _webpage(here, title=title, description=description, about=_legislation(act)),
+    ]
+    return _ld_block(payload)
+
+
+def amendment_json_ld(
+    site: SiteInputs,
+    instrument: AmendingAct,
+    amended: tuple[ActSite, ...],
+    *,
+    title: str,
+    description: str,
+) -> Html:
+    """One amending instrument's page: three rungs, and what it changed named as legislation.
+
+    `legislationChanges` is schema.org's own property for "another legislation that this
+    legislation changes", which is what an amending act does and the only machine-readable
+    claim this page has to make. Its members are the same `Legislation` objects the act pages
+    declare about themselves, so an act is described identically wherever it is named.
+
+    Nothing else is declared. The instrument has no date and no type in the site's inputs, and
+    a `legislationType` or a `datePublished` invented here would be a guess in the one place a
+    reader cannot see it. `alternateName` carries the official number only where it is not
+    already the name, the same omission `_legislation` makes for an act's short label.
+    """
+    home = canonical_url(site.site_url, "")
+    index = canonical_url(site.site_url, amendments_href())
+    here = canonical_url(site.site_url, amendment_href(instrument.key))
+    about: dict[str, object] = {
+        "@type": "Legislation",
+        "name": instrument.short,
+        "legislationIdentifier": instrument.key,
+    }
+    if instrument.number and instrument.number != instrument.short:
+        about["alternateName"] = instrument.number
+    if instrument.eurlex_url:
+        about["sameAs"] = instrument.eurlex_url
+    about["legislationChanges"] = [_legislation(act) for act in amended]
+    payload: list[dict[str, object]] = [
+        _breadcrumb(((_NAME, home), (_INSTRUMENTS, index), (instrument.short, here))),
+        _webpage(here, title=title, description=description, about=about),
     ]
     return _ld_block(payload)

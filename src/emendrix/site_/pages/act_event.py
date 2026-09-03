@@ -207,18 +207,28 @@ def _event_header(
 
 
 def render_event_summary(
-    entry: ChangelogEntry, href: str, acts: tuple[AmendingAct, ...] = ()
+    entry: ChangelogEntry,
+    href: str,
+    acts: tuple[AmendingAct, ...] = (),
+    extra: tuple[Html, ...] = (),
 ) -> list[Html]:
-    """One event as the act page's card: the facts, and where the evidence is.
+    """One event as a timeline card: the facts, and where the evidence is.
 
     `href` is the event's own page, already climbed to the site root and back down by the
     caller, the convention every cross-page link on the site follows. No verbatim text and no
     per-change block reaches the card: the act page stays a timeline a phone can hold, and the
     evidence sits one link away instead of one fold away.
+
+    `extra` is what a page has to add about this event that is true only on that page, closed
+    inside the same article so it is read as part of the event rather than after it. The
+    amending instrument's page is the one caller: on it, an event of a consolidation that
+    folded several instruments carries only the coordinates that name the instrument the page
+    is about, which is a fact about the pairing and not about the event.
     """
     return [
         *_event_header(entry, acts, full=False),
         Html(f'<p><a href="{escape(href)}">{escape(_SUMMARY_LINK)}</a></p>'),
+        *extra,
         Html("</article>"),
     ]
 

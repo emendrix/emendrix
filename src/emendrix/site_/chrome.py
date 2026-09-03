@@ -25,7 +25,7 @@ __all__ = ["disclaimer_html", "nav_links", "page", "repository_links"]
 
 
 def nav_links(depth: int) -> Html:
-    """The header bar: a skip link, the wordmark, the four destinations and the search mount.
+    """The header bar: a skip link, the wordmark, the five destinations and the search mount.
 
     The skip link comes first in the source because that is the only thing that makes it
     useful: it is the first stop of a keyboard tab and is off-screen until it takes focus.
@@ -39,6 +39,7 @@ def nav_links(depth: int) -> Html:
         f'<a class="skip" href="#content">Skip to content</a>'
         f'<header class="bar"><a class="wordmark" href="{root or "./"}">emendrix</a>'
         f'<nav aria-label="Site"><a href="{root}acts/">All acts</a> '
+        f'<a href="{root}amendments/">Amendments</a> '
         f'<a href="{root}methodology/">Methodology</a> '
         f'<a href="{root}about/">About</a> '
         f'<a href="{root}feeds/">Feeds</a></nav>'

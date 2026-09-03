@@ -60,7 +60,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 171773)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 171816)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -90,7 +90,7 @@ clock and its date, so the line under it no longer prints that clause a second t
 carries the clock the heading did not, and an event with no in-force date or with several says
 so there."""
 
-_TOTAL_BYTES: Final = 1008219
+_TOTAL_BYTES: Final = 1052136
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -133,6 +133,14 @@ and the description beside it. None of these events names an amending act, so no
 line of markup and the index did not move at all; what grew is the description, which now names
 the consolidated version the text was read from instead of repeating the version pair the page
 already carries under its heading.
+
+43 917 bytes heavier on 2026-09-03, later again, and 34 674 of that is the pager: every event
+page but the two at the ends of the history now closes with the two events either side of it,
+each named by its own dated words, which is about 58 bytes a link over some 398 links plus 56
+bytes of `<nav>` on each of the two hundred pages. The other 9 243 is the header bar's fifth
+link on all 201 pages, 43 bytes on the index and 46 on each event page, which sits one
+directory deeper. None of these generated events names an amending act, so no page gained a
+link to an instrument; on the live site an event that names one gains that line too.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

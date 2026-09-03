@@ -18,7 +18,8 @@ only its `Sitemap:` line, because a crawl policy is about paths. Every `<loc>` i
 `seo.canonical_url`, the same function that writes the page's canonical, so a sitemap entry and
 a canonical cannot name two addresses for one page.
 
-Pages only: the five fixed ones, one per act and one per amendment event. An event page's
+Pages only: the six fixed ones, one per act, one per amendment event and one per amending
+instrument a committed event names. An event page's
 `<lastmod>` is that event's own `event_dated`, the same clock its feed entry's `<updated>`
 reads, so the two records of one fact cannot disagree. Feeds are advertised by `rel="alternate"` in
 every head and a sitemap indexes pages rather than subscriptions; the stylesheet, the script,
@@ -44,9 +45,10 @@ from datetime import date
 
 from emendrix.site_.clocks import event_dated
 from emendrix.site_.inputs import SiteInputs
+from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.seo import canonical_url
-from emendrix.site_.urls import act_href, event_href
+from emendrix.site_.urls import act_href, amendment_href, amendments_href, event_href
 
 __all__ = ["ROBOTS", "SITEMAP", "robots_txt", "sitemap_xml"]
 
@@ -83,7 +85,7 @@ def robots_txt(site: SiteInputs) -> str:
 def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     """Every page a crawler should know about, with the date its content last moved.
 
-    The five fixed paths are literals, the same site-root-relative paths the page modules are
+    The six fixed paths are literals, the same site-root-relative paths the page modules are
     rendered under and the builder writes them to. Nothing derives one from the other, so
     `test_discovery.py` compares the sitemap against the built tree in both directions: a path
     that stops matching a file, and a page that gains no entry, both fail there rather than
@@ -109,6 +111,7 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         ("methodology/", site.run.run_date),
         ("about/", None),
         ("feeds/", newest),
+        (amendments_href(), newest),
     ]
     fixed.extend(
         (act_href(act.slug), event_dated(act.entries[0]) if act.entries else None)
@@ -118,6 +121,12 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         (event_href(act.slug, entry.key), event_dated(entry))
         for act in site.acts
         for entry in act.entries
+    )
+    # An instrument's page is dated by its newest event, the first pair the inversion holds:
+    # the page is a rendering of those events and moves exactly when one of them does.
+    fixed.extend(
+        (amendment_href(key), event_dated(amended[0][1]))
+        for key, amended in amended_by(site).items()
     )
     return tuple(fixed)
 

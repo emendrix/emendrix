@@ -13,6 +13,9 @@ The same key also names the event's own page as a directory segment under its ac
 event has one identifier however it is addressed: as a page, or as the fragment its card on
 the act page answers to.
 
+An amending instrument is addressed the same way, under `amendments/`: its own key, made
+safe by the same function, and never a year-and-number reading of it.
+
 Pages reference each other relatively (`up(depth)`), so the tree works from `file://`, from
 a subpath, and from the site root alike.
 """
@@ -23,8 +26,12 @@ import re
 from collections.abc import Iterable
 from typing import Final
 
+from emendrix.output.json_out import slug
+
 __all__ = [
     "act_href",
+    "amendment_href",
+    "amendments_href",
     "change_anchor",
     "depth_of",
     "entry_anchors",
@@ -111,6 +118,22 @@ def event_href(act_slug: str, entry_key: str) -> str:
     on the act page keeps for every address published before the page existed.
     """
     return f"{act_href(act_slug)}{entry_key}/"
+
+
+def amendments_href() -> str:
+    """The roster of amending instruments, relative to the site root."""
+    return "amendments/"
+
+
+def amendment_href(key: str) -> str:
+    """One amending instrument's page: every watched act it amended, under its own key.
+
+    The key is the identity and the whole path segment, made filesystem-safe by the same
+    function that names an act's directory, so an instrument is addressed by the string the
+    corpus published and never by a reading of it. A year-and-number path would need this
+    module to know what an identifier means, which is the one thing it may not know.
+    """
+    return f"{amendments_href()}{slug(key)}/"
 
 
 def depth_of(path: str) -> int:

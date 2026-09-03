@@ -13,6 +13,8 @@ sitemap.xml                     every page, with the date its content last moved
 acts/index.html                 the roster
 acts/<slug>/index.html          one page per watched act: its timeline and index
 acts/<slug>/<key>/index.html    one page per event: the changes and the verbatim text
+amendments/index.html           every instrument a committed event names, newest first
+amendments/<slug>/index.html    one page per instrument: every watched act it amended
 methodology/index.html          what the numbers mean
 about/index.html                who runs the site, and what it does on the reader's machine
 feeds/index.html                what feeds exist
@@ -48,20 +50,24 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from emendrix.site_.amending import resolve
 from emendrix.site_.assets import icon_svg, og_png, search_js
 from emendrix.site_.discovery import ROBOTS, SITEMAP, robots_txt, sitemap_xml
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
 from emendrix.site_.inputs import ActSite, SiteInputs
+from emendrix.site_.instruments import amended_by
 from emendrix.site_.pages.about import render_about
 from emendrix.site_.pages.act import render_act
 from emendrix.site_.pages.acts_index import render_acts_index
+from emendrix.site_.pages.amendment import render_amendment_page
+from emendrix.site_.pages.amendments_index import render_amendments_index
 from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.home import render_home
 from emendrix.site_.pages.methodology import render_methodology
 from emendrix.site_.pages.not_found import render_not_found
 from emendrix.site_.search_index import search_index_json
 from emendrix.site_.style import STYLE
-from emendrix.site_.urls import act_href, event_href
+from emendrix.site_.urls import act_href, amendment_href, amendments_href, event_href
 
 __all__ = ["act_pages", "write_site"]
 
@@ -103,12 +109,19 @@ def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
         ROBOTS: robots_txt(site),
         INDEX: search_index_json(site),
         "acts/index.html": render_acts_index(site),
+        f"{amendments_href()}index.html": render_amendments_index(site),
         "methodology/index.html": render_methodology(site),
         "about/index.html": render_about(site),
         "feeds/index.html": render_feeds_page(site),
     }
     for act in site.acts:
         files.update(act_pages(site, act))
+    # Only an instrument a committed event names gets a page: a declared short name for one
+    # nothing has been attributed to would be a page about work the corpus has not recorded.
+    for key, amended in amended_by(site).items():
+        files[f"{amendment_href(key)}index.html"] = render_amendment_page(
+            site, resolve(site.amending, key), amended
+        )
     if site.site_url:
         files[SITEMAP] = sitemap_xml(site)
         files[feed_path(None)] = render_feed(site, None)

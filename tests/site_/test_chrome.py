@@ -42,6 +42,22 @@ def test_the_disclaimer_says_not_legal_advice_once_with_its_lead_in_bold() -> No
     assert escape(DISCLAIMER) in text_of(paragraph)
 
 
+def test_the_header_carries_the_five_destinations_in_one_order() -> None:
+    """The roster of acts, the roster of instruments, the two prose pages and the feeds.
+
+    Pinned as one string because the order is the decision: `Amendments` sits beside `All
+    acts` because the two are the site's two rosters, and a reader who has just met an
+    instrument's name on an event page looks for it next to where the acts are.
+    """
+    assert (
+        '<nav aria-label="Site"><a href="acts/">All acts</a> '
+        '<a href="amendments/">Amendments</a> '
+        '<a href="methodology/">Methodology</a> '
+        '<a href="about/">About</a> '
+        '<a href="feeds/">Feeds</a></nav>' in nav_links(0)
+    )
+
+
 def test_the_footer_links_the_about_page_from_whatever_depth_the_page_sits_at() -> None:
     assert 'href="about/">About this site</a>' in _page()
     assert 'href="../../about/">About this site</a>' in _page(path="acts/x/")
