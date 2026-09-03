@@ -10,7 +10,7 @@ beside `act.py` rather than inside it because the page and the card are two jobs
 decides what an act's history looks like as a whole (header, index, order), this module decides
 how one event states what it did and what evidence it has.
 
-Four promises live here, each as a line of markup rather than a claim made elsewhere:
+The promises live here, each as a line of markup rather than a claim made elsewhere:
 
 - **The facts are the diff's, not a model's.** The change type, the coordinate, the counts and
   both dates are read off the committed document. The sentences inside a change block are the
@@ -20,6 +20,8 @@ Four promises live here, each as a line of markup rather than a claim made elsew
   claim.
 - **A disputed change is shown and says what disagreed.** Dropping it would make the card
   tidier and the counts wrong.
+- **An event names the instrument that made it**, where a document names one: the number, the
+  declared short name, the identifier, and on the event's own page the recorded official title.
 - **An event no amending act is named for says so**, once, above its changes: a label and a
   sentence about the corpus's records for the window, never a doubt about the text below.
 - **An event that touched nothing states the finding in words**: a sentence in place of the
@@ -30,6 +32,11 @@ Four promises live here, each as a line of markup rather than a claim made elsew
   the before/after text sits one `<details>` away, uncut and verbatim.
 - **Every provision is a heading**, and a long page opens with a list of them built from the
   same anchors the blocks carry, so the list cannot point where no block is.
+
+What a change block says in words, the pill and the shipped sentences with their citations,
+moved to `pages/prose.py` on 2026-09-03 when naming the amending act pushed this module past
+the size cap: one change's prose is a different job from one event's shape, and this module
+imports the four functions it still calls.
 
 Wording is imported rather than restated wherever the changelog says the same thing
 (`output.markdown`): two renderings of one fact that describe it differently are how a caveat
@@ -43,22 +50,19 @@ entries every time, so it can say it one way.
 
 from __future__ import annotations
 
-from emendrix.core import ChangeType, Citation
-from emendrix.graph.report import EmittedChange, EmittedSentence
+from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry
-from emendrix.output.markdown import (
-    FALLBACK_PREFIX,
-    applies_text,
-    short_label,
-)
+from emendrix.output.markdown import applies_text
+from emendrix.site_.amending import AmendingAct, amending_lines
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
 from emendrix.site_.clocks import event_date
 from emendrix.site_.diffview import render_texts
 from emendrix.site_.dispute import dispute_note
-from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.markup import Html, count, escape
+from emendrix.site_.pages.prose import pill, prose
 from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched, untouched_note
 
-__all__ = ["INDEX_ABOVE", "pill", "render_event", "render_event_summary"]
+__all__ = ["INDEX_ABOVE", "render_event", "render_event_summary"]
 
 _THREE_SOURCES = (
     "Emendrix checks every change against three independent sources. Where they disagree it "
@@ -83,60 +87,6 @@ reader can already see; the MDR postponement in the golden has nine, the AI Act'
 Omnibus event 45. Zero is under the line too, so an untouched event never opens with an
 empty list.
 """
-
-
-def pill(change_type: ChangeType, *, disputed: bool = False) -> Html:
-    """The change type as the diff reported it, marked when the signals disagree about it."""
-    classes = "pill"
-    if change_type is ChangeType.INSERTED:
-        classes += " ins"
-    if disputed:
-        classes += " disp"
-    return Html(f'<span class="{classes}">{escape(change_type.value)}</span>')
-
-
-def _links(citations: tuple[Citation, ...], entry: ChangelogEntry) -> Html:
-    """Citations as anchors. The URLs were rendered by the adapter; nothing here invents one."""
-    return join(
-        (
-            Html(f'<a href="{escape(item.url)}">{escape(short_label(item.label, entry))}</a>')
-            for item in citations
-        ),
-        " ",
-    )
-
-
-def _sentence(sentence: EmittedSentence, entry: ChangelogEntry) -> Html:
-    """One shipped sentence, in full, with its citations and its provenance marker.
-
-    Whitespace inside the sentence is folded, as the changelog folds it: this is prose, it is
-    one line by construction, and the fold is a rendering of prose rather than of stored legal
-    text. Nothing is dropped, so no cut has to be marked.
-    """
-    text = escape(" ".join(sentence.text.split()))
-    prefix = (
-        Html(f'<span class="quoted">{escape(FALLBACK_PREFIX)}</span> ')
-        if sentence.fallback
-        else Html("")
-    )
-    return Html(f"<p>{prefix}{text} {_links(sentence.citations, entry)}</p>")
-
-
-def _prose(emitted: EmittedChange, entry: ChangelogEntry) -> list[Html]:
-    """Whatever survived the gate, or the stated reason there is nothing.
-
-    In a diff-only entry the explain stage never ran, so nothing is missing and there is no
-    per-change reason to give: the event's own facts line says it once instead, exactly as the
-    changelog renderer does.
-    """
-    lines = [_sentence(sentence, entry) for sentence in emitted.sentences]
-    note = emitted.applicability_note
-    if note is not None:
-        lines.append(_sentence(note, entry))
-    if not emitted.sentences and not entry.diff_only:
-        reason = emitted.unexplained or "no explanation"
-        lines.append(Html(f'<p class="none">No explanation shipped — {escape(reason)}.</p>'))
-    return lines
 
 
 def _change_block(emitted: EmittedChange, entry: ChangelogEntry, anchor: str) -> list[Html]:
@@ -169,7 +119,7 @@ def _change_block(emitted: EmittedChange, entry: ChangelogEntry, anchor: str) ->
                 f"{escape(note.detail)}</p>"
             )
         )
-    lines.extend(_prose(emitted, entry))
+    lines.extend(prose(emitted, entry))
     lines.extend(
         (
             Html("<details><summary>text before / after</summary>"),
@@ -222,16 +172,20 @@ def _facts(entry: ChangelogEntry) -> list[Html]:
     ]
 
 
-def _event_header(entry: ChangelogEntry) -> list[Html]:
+def _event_header(
+    entry: ChangelogEntry, acts: tuple[AmendingAct, ...], *, full: bool
+) -> list[Html]:
     """The article's opening, shared by the card and the event page: id, date, versions, facts.
 
     The `id` is the fragment every feed entry's `<id>` was minted from, so both surfaces must
     keep answering to it forever. The heading is the date, because a reader arriving at a
     timeline is asking when; it names its clock through the one helper every dated line on the
     site reads, so a detection date can never be set as an in-force date. The version pair is
-    what the event *is* and sits directly below in the mono face, an identifier to check
-    against EUR-Lex rather than a name to scan a list by. The facts line still carries both
-    clocks, so the record of when this happened is whole whichever one the heading named.
+    what the event *is* and sits directly below in the mono face, an identifier to check against
+    EUR-Lex rather than a name to scan a list by. Then the instrument that made it, where one is
+    named, because that is what a reader knows the event by; `full` is the event's own page
+    rather than the card, and is what lets the official titles through. The facts line carries
+    both clocks, so the record of when this happened is whole whichever the heading named.
     """
     versions = f"<code>{escape(str(entry.from_version))} → {escape(str(entry.to_version))}</code>"
     # The bare pill, no colour modifier: the label is a fact about the corpus's records, and
@@ -242,6 +196,7 @@ def _event_header(entry: ChangelogEntry) -> list[Html]:
         Html(f'<article class="event" id="{escape(entry.key)}">'),
         Html(f"<h2>{escape(event_date(entry).words)}{marker}</h2>"),
         Html(f'<p class="ident">{versions}</p>'),
+        *amending_lines(acts, full=full),
         *_facts(entry),
     ]
     if unnamed:
@@ -251,7 +206,9 @@ def _event_header(entry: ChangelogEntry) -> list[Html]:
     return lines
 
 
-def render_event_summary(entry: ChangelogEntry, href: str) -> list[Html]:
+def render_event_summary(
+    entry: ChangelogEntry, href: str, acts: tuple[AmendingAct, ...] = ()
+) -> list[Html]:
     """One event as the act page's card: the facts, and where the evidence is.
 
     `href` is the event's own page, already climbed to the site root and back down by the
@@ -260,7 +217,7 @@ def render_event_summary(entry: ChangelogEntry, href: str) -> list[Html]:
     evidence sits one link away instead of one fold away.
     """
     return [
-        *_event_header(entry),
+        *_event_header(entry, acts, full=False),
         Html(f'<p><a href="{escape(href)}">{escape(_SUMMARY_LINK)}</a></p>'),
         Html("</article>"),
     ]
@@ -287,14 +244,17 @@ def _touched(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
     return lines
 
 
-def render_event(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
+def render_event(
+    entry: ChangelogEntry, anchors: tuple[str, ...], acts: tuple[AmendingAct, ...] = ()
+) -> list[Html]:
     """One event's full body. `anchors` is one fragment per change, in the entry's own order.
 
     The anchors are computed once for the whole page and handed down, so the index over the
-    changes and the blocks themselves point at the same fragments by construction rather than
-    by both sides running the same counter.
+    changes and the blocks themselves point at the same fragments by construction rather than by
+    both sides running the same counter; `acts`, the instruments the entry names, arrives
+    resolved for the same reason.
     """
-    lines = _event_header(entry)
+    lines = _event_header(entry, acts, full=True)
     if any(emitted.change.disputed for emitted in entry.changes):
         lines.append(Html(f'<p class="small muted">{escape(_THREE_SOURCES)}</p>'))
     if len(entry.changes) >= INDEX_ABOVE:

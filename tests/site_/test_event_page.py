@@ -80,7 +80,7 @@ def test_a_long_name_heads_the_page_and_the_label_opens_the_facts_line() -> None
     assert "<h1>House Rules of Flat 3B</h1>" in rendered
     assert f'<p class="facts">{act.label} · <code>{act.act.key}</code>' in rendered
     assert f"<title>{act.label}: " in rendered
-    assert 'content="House Rules of Flat 3B: 4 provisions changed between' in rendered
+    assert 'content="House Rules of Flat 3B: 4 provisions changed, detected' in rendered
 
 
 def test_the_title_names_the_count_and_the_clock_rather_than_the_version_pair() -> None:
@@ -96,9 +96,8 @@ def test_the_title_names_the_count_and_the_clock_rather_than_the_version_pair() 
     assert f"<title>{label}: 4 provisions changed, detected 2026-08-09 — emendrix</title>" in (
         rendered
     )
-    assert f"{label}: 4 provisions changed between v1 and v2, detected 2026-08-09, with" in (
-        rendered
-    )
+    assert "4 provisions changed, detected 2026-08-09. Every changed provision, with" in rendered
+    assert "from consolidated version v2." in rendered
     stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
     rendered = _page(stated)
     assert f"<title>{label}: 4 provisions changed, in force 2024-06-01 — emendrix</title>" in (
@@ -253,4 +252,68 @@ def test_the_event_page_names_the_act_and_the_version_pair_under_the_heading() -
     assert f"<h1>{site.acts[0].headline}</h1>" in rendered
     assert (
         f'<p class="ident"><code>{stated.from_version} → {stated.to_version}</code></p>' in rendered
+    )
+
+
+def test_the_title_and_the_description_name_the_instrument_that_made_the_event() -> None:
+    """The name a reader searched for, in the two strings a result is drawn from. It is the
+    short name the site knows: no watchlist label and no number for the toy act, so the key."""
+    from site_entries import attributed_entry
+
+    rendered = _page(attributed_entry())
+    assert "changed by house-rules-amendment-1, " in rendered
+    assert "— emendrix</title>" in rendered
+
+
+def test_the_event_says_which_instrument_amended_it_with_the_identifier_beside_the_name() -> None:
+    """No number and no address for a key that is not a CELEX, so the key is the whole name."""
+    from site_entries import attributed_entry
+
+    rendered = _page(attributed_entry())
+    assert '<p class="amending">Amended by house-rules-amendment-1</p>' in rendered
+
+
+def test_the_recorded_official_title_is_printed_on_the_page_and_only_when_known() -> None:
+    """The words a reader searched for are in the official title, and this is the one surface
+    with room for one. A mention carrying no title prints no empty line."""
+    from site_entries import attributed_entry
+
+    entry = attributed_entry()
+    assert '<p class="official">Rule change, June</p>' in _page(entry)
+    untitled = entry.model_copy(
+        update={
+            "changes": tuple(
+                emitted.model_copy(
+                    update={
+                        "change": emitted.change.model_copy(
+                            update={
+                                "amending_acts": tuple(
+                                    act.model_copy(update={"display_name": None})
+                                    for act in emitted.change.amending_acts
+                                )
+                            }
+                        )
+                    }
+                )
+                for emitted in entry.changes
+            ),
+            "corroboration": None,
+        }
+    )
+    rendered = _page(untitled)
+    assert '<p class="amending">' in rendered
+    assert '<p class="official">' not in rendered
+
+
+def test_an_event_naming_no_amending_act_says_so_and_gains_no_line() -> None:
+    """Unchanged from before this page could name an instrument: one answer, not two."""
+    from site_entries import unattributed_entry
+
+    site = _site(unattributed_entry())
+    rendered = render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    assert 'class="amending"' not in rendered
+    assert "no amending act named" in rendered
+    label = site.acts[0].label
+    assert f"<title>{label}: 4 provisions changed, detected 2026-08-09 — emendrix</title>" in (
+        rendered
     )

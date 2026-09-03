@@ -40,11 +40,13 @@ from datetime import date
 
 from emendrix import DISCLAIMER
 from emendrix.output import ChangelogEntry
+from emendrix.site_.amending import amenders
 from emendrix.site_.attribution import UNATTRIBUTED_FEED_LEAD, unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_dated
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.titles import event_words
 from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched
 from emendrix.site_.urls import act_href, depth_of, event_href, up
 
@@ -98,7 +100,7 @@ def _event_link(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
     return f"{site.site_url}/{event_href(act.slug, entry.key)}"
 
 
-def _summary(entry: ChangelogEntry) -> str:
+def _summary(site: SiteInputs, entry: ChangelogEntry) -> str:
     """The counts as the document records them, the in-force dates, and the disclaimer.
 
     Every number is read off `entry.counts`, which the emit stage computed; nothing here
@@ -109,6 +111,10 @@ def _summary(entry: ChangelogEntry) -> str:
     event, worded as what it is. An event that touched nothing states the finding as a
     sentence rather than a row of zeros: a subscriber told nothing changed has learned
     something, and the words say it was a finding rather than a failure.
+
+    The instruments are named by their numbers rather than by the short names the title
+    already used: a summary is where a subscriber checks which instrument this was, and a
+    number is what they check it against.
     """
     counts = entry.counts
     in_force = ", ".join(value.isoformat() for value in entry.in_force) or "not stated"
@@ -119,14 +125,22 @@ def _summary(entry: ChangelogEntry) -> str:
         else f"{count(counts.touched, 'provision')} touched: {counts.substantive} substantive, "
         f"{counts.date_only} date-only, {counts.disputed} disputed."
     )
-    return f"{lead}{counted} In force {in_force}. {DISCLAIMER}"
+    numbers = ", ".join(act.number or act.key for act in amenders(site.amending, entry))
+    made_by = f" Amended by {numbers}." if numbers else ""
+    return f"{lead}{counted}{made_by} In force {in_force}. {DISCLAIMER}"
 
 
 def _entry_xml(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
-    """One amendment event as one Atom entry. The id never moves; the link follows the content."""
+    """One amendment event as one Atom entry. The id never moves; the link follows the content.
+
+    The title is the event page's own, minus the site's name, composed in `titles` so a reader
+    who meets the event in a feed reader and one who meets it in a search result read the same
+    words. A reworded title is not a new event: the id stays what it always was, and only a
+    fresh id would renotify anyone.
+    """
     ident = escape(_permalink(site, act, entry))
     link = escape(_event_link(site, act, entry))
-    title = escape(f"{act.label}: {entry.from_version} → {entry.to_version}")
+    title = escape(event_words(site, act, entry))
     return join(
         (
             Html("<entry>"),
@@ -134,7 +148,7 @@ def _entry_xml(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
             Html(f"<id>{ident}</id>"),
             Html(f'<link rel="alternate" href="{link}"/>'),
             Html(f"<updated>{_stamp(event_dated(entry))}</updated>"),
-            Html(f"<summary>{escape(_summary(entry))}</summary>"),
+            Html(f"<summary>{escape(_summary(site, entry))}</summary>"),
             Html("</entry>"),
         ),
         "\n",

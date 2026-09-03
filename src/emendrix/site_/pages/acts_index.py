@@ -29,6 +29,7 @@ under "last amended", so a backfill's run day read as an amendment a reader had 
 from __future__ import annotations
 
 from emendrix.output.markdown import short_title
+from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
@@ -68,7 +69,7 @@ def _groups(site: SiteInputs) -> list[tuple[str, list[ActSite]]]:
     )
 
 
-def _row(act: ActSite) -> Html:
+def _row(site: SiteInputs, act: ActSite) -> Html:
     """One act on two lines: what it is called, then what it is and when it last moved.
 
     The link carries the headline, and the identifiers follow it on the same line: the short
@@ -84,15 +85,19 @@ def _row(act: ActSite) -> Html:
     reads as words rather than as one run.
 
     The official title stays cut here: this is a list, and a whole official title per row is a
-    wall of text.
+    wall of text. The instrument that made the newest amendment is named beside its date for
+    the opposite reason: it is the fact a reader scanning the roster for one act is looking
+    for, and one short name is a name rather than a wall.
     """
     identity: list[Html] = []
     if act.headline != act.label:
         identity.append(escape(act.label))
     identity.append(Html(f'<code class="id">{escape(act.act.key)}</code>'))
     dated = act.dated
-    if dated is not None:
-        last = dated.words
+    newest = act.newest_amendment
+    if dated is not None and newest is not None:
+        named = by_words(amenders(site.amending, newest))
+        last = f"{dated.words} {named}" if named else dated.words
     elif act.entries:
         last = _UNATTRIBUTED_ONLY
     else:
@@ -127,7 +132,7 @@ def render_acts_index(site: SiteInputs) -> Html:
     for domain, acts in _groups(site):
         lines.append(Html(f"<h2>{escape(domain)}</h2>"))
         lines.append(Html('<ul class="roster">'))
-        lines.extend(_row(act) for act in acts)
+        lines.extend(_row(site, act) for act in acts)
         lines.append(Html("</ul>"))
     return page(
         title="All watched acts — emendrix",

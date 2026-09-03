@@ -17,6 +17,12 @@
 # These four acts are the ones the labelled eval corpus is built from, so they are the four
 # with measured numbers behind them (`reports/`).
 #
+# One `[[amending_acts]]` block per *amending instrument*, naming an act that amended a watched
+# one. `name` is a label of the same rank again: the site prints it wherever an event says which
+# instrument made it, and prints the number it renders from the CELEX (`Regulation (EU)
+# 2026/1744`) where no block declares a name. This table never puts an act on the watchlist and
+# is never matched on, so a block for an instrument nothing amended costs nothing.
+#
 # `[output] repo_path` is where `emendrix run --once` commits the changelog: a git repository
 # of its own, created if it is absent, never pushed. It is yours. It must not be inside
 # another working tree, and emendrix refuses to write into one. Precedence is
@@ -54,3 +60,7 @@ celex     = "32006R1907"
 name      = "REACH"
 long_name = "Registration, Evaluation, Authorisation and Restriction of Chemicals"
 domain    = "Chemicals"
+
+[[amending_acts]]
+celex = "32026R1744"
+name  = "Digital Omnibus on AI"

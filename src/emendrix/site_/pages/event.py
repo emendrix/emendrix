@@ -15,6 +15,7 @@ up where it has always been.
 from __future__ import annotations
 
 from emendrix.output import ChangelogEntry
+from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date
 from emendrix.site_.feeds import feed_path, feed_title
@@ -22,6 +23,7 @@ from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.act_event import render_event
 from emendrix.site_.seo import event_json_ld
+from emendrix.site_.titles import event_title
 from emendrix.site_.untouched import UNTOUCHED_CARD, untouched
 from emendrix.site_.urls import act_href, entry_anchors, event_href, up
 
@@ -70,23 +72,25 @@ def render_event_page(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> 
     anchors = entry_anchors(
         entry.key, [emitted.change.location.canonical for emitted in entry.changes]
     )
-    body = join((*_header(act), *render_event(entry, anchors)), "\n")
-    # The title says what a reader learns by opening the page, the count and the date with
-    # its clock; the version pair sits under the H2 the body opens with. The short label
-    # leads rather than the headline, unlike the act page's title: here the count and the
-    # date are the news, and a long form in front of them would push both past where a
-    # result snippet cuts. The headline is in the H1 and the description. An event that
-    # touched nothing is said in words: "0 provisions changed" reads as a counter that failed.
+    acts = amenders(site.amending, entry)
+    body = join((*_header(act), *render_event(entry, anchors, acts)), "\n")
+    # The title says what a reader learns by opening the page: the count, the instrument that
+    # made the change and the date with its clock. It is composed in `titles` because the feed
+    # entry says the same thing and the two may not drift. The description says it again under
+    # the act's long form, which is what a snippet is read under, and names the version the
+    # text below was read from; the version pair itself is under the H2 the body opens with.
     dated = event_date(entry)
     counted = (
         UNTOUCHED_CARD
         if untouched(entry)
         else f"{count(entry.counts.touched, 'provision')} changed"
     )
-    title = f"{act.label}: {counted}, {dated.words} — emendrix"
+    named = by_words(acts)
+    title = event_title(site, act, entry)
     description = (
-        f"{act.headline}: {counted} between {entry.from_version} and {entry.to_version}, "
-        f"{dated.words}, with the provision text before and after each change."
+        f"{act.headline}: {counted}{' ' + named if named else ''}, {dated.words}. Every changed "
+        f"provision, with the verbatim text before and after, from consolidated version "
+        f"{entry.to_version}."
     )
     return page(
         title=title,

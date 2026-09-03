@@ -319,3 +319,42 @@ def test_a_home_page_with_nothing_disputed_carries_neither_the_gloss_nor_the_spa
     rendered = render_home(site)
     assert "disputed" not in rendered
     assert 'class="disp"' not in rendered
+
+
+def test_a_card_names_the_instrument_beside_the_count_it_is_a_count_of() -> None:
+    """The clause rides with the provision count, not in a segment of its own: it says what
+    the count is a count of. The toy act's key is not a CELEX, so the key is the name."""
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(attributed_entry(),)
+    )
+    rendered = render_home(site)
+    assert "4 provisions by house-rules-amendment-1 ·" in rendered
+
+
+def test_a_card_for_an_event_naming_no_instrument_reads_as_it_always_did() -> None:
+    """Nothing on the card grew a blank: an event with no name to print prints none. Such an
+    event never reaches this list at all, so the assertion is over the act page's card."""
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)
+    )
+    rendered = render_home(site)
+    assert "4 provisions ·" in rendered
+    assert "provisions by" not in rendered
+
+
+def test_the_roster_row_names_the_instrument_behind_the_newest_amendment() -> None:
+    """The date fact answers "when", and now also "by what": the fact a reader scanning the
+    roster for one act is looking for."""
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(attributed_entry(),)
+    )
+    rendered = render_acts_index(site)
+    assert "in force 2026-06-01 by house-rules-amendment-1</span>" in rendered
+
+
+def test_the_roster_row_for_an_act_with_no_named_instrument_keeps_its_bare_date() -> None:
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)
+    )
+    rendered = render_acts_index(site)
+    assert f"detected {OBSERVED.isoformat()}</span>" in rendered

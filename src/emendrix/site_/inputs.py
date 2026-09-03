@@ -25,13 +25,16 @@ same string in a container and in a checkout.
 
 `eurlex_url` is a plain string resolved at the CLI boundary. This module renders whatever
 corpus the loop ran on and holds no corpus knowledge; which URL, if any, an act has is the
-composition root's business.
+composition root's business, and an amending act's number and address arrive the same way into
+`amending`, whose model and harvest live in `site_.amending` so that the dependency between the
+two modules runs one way and this one stays inside the size cap.
 
 No clock: `generated_on` arrives from the CLI boundary like every other date in this project.
 """
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 
@@ -42,6 +45,7 @@ from emendrix.eval_.report import DEFAULT_REPORT_DIR
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import slug
+from emendrix.site_.amending import AmendingAct, collect_amending
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.clocks import EventDate, VersionDates, event_date, sort_date
 from emendrix.watch.config import Watchlist
@@ -81,24 +85,26 @@ class ActSite(BaseModel):
         return self.long_name or self.label
 
     @property
-    def dated(self) -> EventDate | None:
-        """The newest attributed event's date with its clock; None when there is no such event.
+    def newest_amendment(self) -> ChangelogEntry | None:
+        """The newest event an amending act is named for; None when there is no such event.
 
-        Newest means newest by `sort_date`, the order `entries` arrives in; the date printed
-        is still that entry's own in-force or detected clock, which is a true statement about
-        that entry even when another entry carries a later detection date.
-
-        An event no amending act is named for is never the answer here: this property backs
-        every "newest amendment" line the site prints, and dating one of those lines by such
-        an event would dress it as an amendment. So `None` has two readings, told apart by
-        `entries`: nothing was ever seen, or everything seen names no amending act, and each
-        caller says which in words. The sitemap's `<lastmod>` answers a different question,
-        when the page's content last moved, and reads the newest entry directly.
+        Newest by `sort_date`, the order `entries` arrives in. An event no amending act is
+        named for is never the answer: this backs every "newest amendment" line the site
+        prints, and one of those answered by such an event would dress it as an amendment. So
+        `None` has two readings, told apart by `entries`, and each caller says which in words:
+        nothing was ever seen, or everything seen names no amending act.
         """
         for entry in self.entries:
             if not unattributed(entry):
-                return event_date(entry)
+                return entry
         return None
+
+    @property
+    def dated(self) -> EventDate | None:
+        """That event's date with its clock, or None. The clock is that entry's own, a true
+        statement about it even when another entry carries a later detection date."""
+        entry = self.newest_amendment
+        return None if entry is None else event_date(entry)
 
 
 class PageChrome(BaseModel):
@@ -126,7 +132,7 @@ class PageChrome(BaseModel):
 
 
 class SiteInputs(BaseModel):
-    """Everything the site renders, resolved. Frozen, so rendering cannot change it."""
+    """Everything the site renders, resolved. Frozen, so no renderer can rebind a field."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -138,6 +144,12 @@ class SiteInputs(BaseModel):
         default=(),
         description="Every event with its act, newest first by `sort_date`. Resolved once "
         "in `collect_site`; nothing downstream recomputes an order.",
+    )
+    amending: Mapping[str, AmendingAct] = Field(
+        default_factory=dict,
+        description="Every amending act a committed change names, by key, sorted by key. The "
+        "one mapping here, so the one field a caller could write into and the reason these "
+        "inputs are not hashable; every renderer is a pure function of what it is handed.",
     )
     configured: bool = False
     repo_url: str = Field(default="", description="Public home of the source, or ''.")
@@ -212,6 +224,8 @@ def collect_site(
     operator_url: str = "",
     contact: str = "",
     eurlex_urls: dict[str, str] | None = None,
+    amending_numbers: Mapping[str, str] | None = None,
+    amending_urls: Mapping[str, str] | None = None,
     version_dates: VersionDates | None = None,
 ) -> SiteInputs:
     """Group the committed entries under their acts. Pure and total.
@@ -222,6 +236,10 @@ def collect_site(
 
     `version_dates` is consumed here, ordering `entries` and `recent`, and never stored:
     once the lists are resolved there is nothing left for a renderer to ask it.
+
+    `amending_numbers` and `amending_urls` are keyed by the amending act's own key and hold what
+    the composition root rendered from an identifier this module may not read; an act nothing
+    names never appears in `amending`, declared label or not.
     """
     urls = eurlex_urls or {}
     dates: VersionDates = version_dates or {}
@@ -268,12 +286,19 @@ def collect_site(
         ),
         reverse=True,
     )
+    named = watchlist.amending_acts if watchlist else ()
     return SiteInputs(
         generated_on=generated_on,
         run=run,
         report=report.name,
         acts=resolved,
         recent=tuple(pairs),
+        amending=collect_amending(
+            entries,
+            labels={item.celex: item.name for item in named},
+            numbers=amending_numbers,
+            urls=amending_urls,
+        ),
         configured=configured,
         repo_url=repo_url,
         changelogs_url=changelogs_url,

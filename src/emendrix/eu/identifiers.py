@@ -150,6 +150,42 @@ class Celex(BaseModel):
         """The `VersionId` of the act as published in the OJ, i.e. its own CELEX."""
         return VersionId(self.value)
 
+    @property
+    def official_number(self) -> str:
+        """`Regulation (EU) 2026/1744` — the number as the convention of its year writes it.
+
+        A mechanical reading of the identifier, kept beside the CELEX wherever it is shown; a
+        recorded official title, where a committed document carries one, is the authority.
+        Answers `""` for any descriptor other than `R` or `L`, so the caller shows the key.
+        Leading zeros of the number are dropped, as the convention writes it.
+
+        Three things it does not claim. The year boundaries below are where the convention
+        changed, the Lisbon Treaty on 1 December 2009 and the year-first form on 1 January 2015,
+        taken at year granularity because a CELEX carries no month. A Euratom act is not
+        distinguishable from a CELEX and would render as `(EU)`; none is among the acts the
+        committed changelogs name as amending a watched act (verified 2026-09-03). And this is a
+        number, not a title: a Commission act is titled `Commission Regulation …` or `Commission
+        Delegated Regulation …`, which no identifier says, so the number is a substring of such
+        a title rather than its opening (verified the same day, against the committed reports).
+        """
+        year = int(self.year)
+        number = int(self.number)
+        if self.descriptor == "R":
+            if year >= 2015:
+                return f"Regulation (EU) {year}/{number}"
+            if year >= 2010:
+                return f"Regulation (EU) No {number}/{year}"
+            if year >= 1993:
+                return f"Regulation (EC) No {number}/{year}"
+            return f"Regulation (EEC) No {number}/{self.year[2:]}"
+        if self.descriptor == "L":
+            if year >= 2015:
+                return f"Directive (EU) {year}/{number}"
+            if year >= 2010:
+                return f"Directive {year}/{number}/EU"
+            return f"Directive {year}/{number}/EC"
+        return ""
+
     def resource_refs(self, suffix: str = "") -> tuple[ResourceRef, ...]:
         """Resource candidates for this act, best guess first (see the module docstring)."""
         return (

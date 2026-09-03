@@ -189,6 +189,45 @@ def test_eurlex_urls_ride_in_by_act_slug() -> None:
     assert site.acts[0].eurlex_url.startswith("https://eur-lex.europa.eu/")
 
 
+def test_the_amending_acts_arrive_resolved_and_keyed_by_their_own_key() -> None:
+    """What the documents name, what the watchlist calls it and what the boundary rendered,
+    joined once. The watchlist's amending labels are read here and nowhere else, the same rule
+    every other label follows."""
+    from site_entries import attributed_entry
+
+    entry = attributed_entry()
+    key = "house-rules-amendment-1"
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(entry,),
+        amending_numbers={key: "Rule change no. 1"},
+        amending_urls={key: "https://example.invalid/amendment"},
+    )
+    resolved = site.amending[key]
+    assert resolved.title == "Rule change, June"
+    assert resolved.number == "Rule change no. 1"
+    assert resolved.eurlex_url == "https://example.invalid/amendment"
+    assert resolved.label == ""
+
+
+def test_an_act_nothing_names_never_reaches_the_amending_mapping() -> None:
+    """A label with no mention is a line in a config file, not a fact about the corpus. The
+    watchlist's amending labels are read in `collect_site` and nowhere else, the same rule
+    every other label follows; what one does to a name is `collect_amending`'s own test."""
+    watchlist = Watchlist.model_validate(
+        {
+            "acts": [{"celex": "32024R1689", "name": "AI Act"}],
+            "amending_acts": [{"celex": "32026R1744", "name": "Digital Omnibus on AI"}],
+        }
+    )
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), watchlist=watchlist
+    )
+    assert site.amending == {}
+
+
 def test_acts_sort_by_label_case_insensitively() -> None:
     watchlist = Watchlist.model_validate(
         {

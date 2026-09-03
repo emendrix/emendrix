@@ -184,7 +184,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 37405)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 38023)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -224,7 +224,15 @@ Nothing inside a `<details>` moved, and no anchor did.
 102 bytes heavier on 2026-09-03, later again: 82 of chrome that every page on the site gained,
 a skip link, the header navigation's name and the id it skips to, plus 43 for the class that
 keeps `EUR-Lex` off a line break at 390px, less 23 given back by a dates line that no longer
-restates the clock its own heading names."""
+restates the clock its own heading names.
+
+618 bytes heavier on 2026-09-03, later again, when the event started naming the instrument
+that made it. 233 of those are the `p.amending` line, the number linked to EUR-Lex with the
+CELEX beside it, and 224 the recorded official title of `32020R0561` printed verbatim under it,
+which is the one place on the site the words of that title appear. The rest is the head: the
+title and the description each name the instrument now, and each is written three times there
+(`<title>`, `og:title` and the JSON-LD `WebPage` name, with the description beside each). No
+change block moved and nothing inside a `<details>` did."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

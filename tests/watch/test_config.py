@@ -31,6 +31,35 @@ def test_the_shipped_example_loads_and_holds_the_four_corpus_acts() -> None:
     assert str(loaded.acts[0].act) == f"eu:{AI_ACT}"
 
 
+def test_the_shipped_example_names_the_digital_omnibus_as_an_amending_act() -> None:
+    """The one amending instrument the example labels, and it is not on the watchlist itself:
+    the two tables answer different questions and neither is read as the other."""
+    loaded = load_watchlist(EXAMPLE)
+    assert [(item.celex, item.name) for item in loaded.amending_acts] == [
+        ("32026R1744", "Digital Omnibus on AI")
+    ]
+    assert "32026R1744" not in [entry.celex for entry in loaded.acts]
+
+
+def test_an_amending_label_loads_and_stays_a_label(tmp_path: Path) -> None:
+    """A short name for an instrument, never identity and never matched on: the index is built
+    from the watched acts alone, so a labelled amending act is not thereby watched."""
+    path = tmp_path / "watchlist.toml"
+    path.write_text(
+        '[[acts]]\ncelex = "32024R1689"\n'
+        '[[amending_acts]]\ncelex = "32026R1744"\nname = "Digital Omnibus on AI"\n',
+        encoding="utf-8",
+    )
+    loaded = load_watchlist(path)
+    assert loaded.amending_acts[0].name == "Digital Omnibus on AI"
+    index = WatchIndex(loaded)
+    assert index.match(FeedIdentifier(value="celex:32026R1744")) is None
+
+
+def test_a_watchlist_with_no_amending_labels_is_the_normal_state() -> None:
+    assert watchlist(AI_ACT).amending_acts == ()
+
+
 def test_a_missing_file_says_what_to_do(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match=r"copy watchlist\.example\.toml"):
         load_watchlist(tmp_path / "nope.toml")
@@ -42,6 +71,13 @@ def test_a_missing_file_says_what_to_do(tmp_path: Path) -> None:
         ('[[acts]]\ncelex = "not-a-celex"\n', "not a CELEX"),
         ('[[acts]]\ncelex = "32024R1689"\n[[acts]]\ncelex = "32024R1689"\n', "same act twice"),
         ('[[acts]]\ncelexx = "32024R1689"\n', "Extra inputs"),
+        ('[[amending_acts]]\ncelex = "nope"\nname = "X"\n', "not a CELEX"),
+        (
+            '[[amending_acts]]\ncelex = "32026R1744"\nname = "A"\n'
+            '[[amending_acts]]\ncelex = "32026R1744"\nname = "B"\n',
+            "same amending act twice",
+        ),
+        ('[[amending_acts]]\ncelex = "32026R1744"\nname = ""\n', "at least 1 character"),
         ("[[acts]\n", "not valid TOML"),
     ],
 )

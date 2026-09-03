@@ -35,7 +35,9 @@ a corpus capability, not something the pages may know, so the URL is resolved he
 newest version each act has been consolidated to and handed down as a plain string, the same
 way the pipeline's root hands down an adapter. The date each consolidated version speaks as
 of is read here for the same reason: only this module may read a version tag, and that date
-is what every newest-first list on the site sorts by.
+is what every newest-first list on the site sorts by. So is the official number of an amending
+act, `Regulation (EU) 2026/1744`: it is a reading of a CELEX by the convention of its year, and
+the pages are handed the words and the address rather than the identifier grammar.
 """
 
 from __future__ import annotations
@@ -48,13 +50,14 @@ import typer
 
 from emendrix.core import ActId, VersionId
 from emendrix.eu.http import today_utc
-from emendrix.eu.identifiers import ConsolidatedId, parse_version_id
+from emendrix.eu.identifiers import Celex, ConsolidatedId, parse_version_id
 from emendrix.eu.links import document_url
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.report import DEFAULT_REPORT_DIR
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, resolve_repo_path
 from emendrix.output.json_out import slug
+from emendrix.site_.amending import mentioned_keys
 from emendrix.site_.build import write_site
 from emendrix.site_.clocks import VersionDates, sort_date
 from emendrix.site_.inputs import collect_site, read_entries
@@ -127,6 +130,31 @@ def _eurlex_urls(
         if key not in newest or ranked > newest[key][0]:
             newest[key] = (ranked, document_url(entry.to_version))
     return {key: url for key, (_, url) in newest.items()}
+
+
+def _amending(entries: tuple[ChangelogEntry, ...]) -> tuple[dict[str, str], dict[str, str]]:
+    """The official number and the EUR-Lex address of every amending act the entries name.
+
+    Both are readings of a CELEX, so both are rendered here and handed to `collect_site` as
+    plain strings: naming an act's number is corpus vocabulary, and no page may hold any. A key
+    that does not parse gets neither and is shown as itself, the same fallback `_version_dates`
+    follows for a version tag it cannot read; an entry outside this corpus is skipped whole,
+    since its keys are not CELEXes and would not be readable as one.
+
+    The number can be empty for a CELEX whose descriptor names neither a regulation nor a
+    directive. That is a stated answer rather than a gap: the address still resolves, and the
+    key is what the page shows.
+    """
+    numbers: dict[str, str] = {}
+    urls: dict[str, str] = {}
+    for key in mentioned_keys(entry for entry in entries if entry.act.corpus == _EU):
+        try:
+            celex = Celex.parse(key)
+        except ValueError:
+            continue
+        numbers[key] = celex.official_number
+        urls[key] = document_url(celex.version)
+    return numbers, urls
 
 
 @app.command("build")
@@ -223,6 +251,7 @@ def build(
         raise typer.Exit(code=2) from error
 
     version_dates = _version_dates(entries)
+    amending_numbers, amending_urls = _amending(entries)
     site = collect_site(
         generated_on=generated_on.date() if generated_on is not None else today_utc(),
         run=run,
@@ -239,6 +268,8 @@ def build(
         operator_url=operator_url,
         contact=contact,
         eurlex_urls=_eurlex_urls(entries, version_dates),
+        amending_numbers=amending_numbers,
+        amending_urls=amending_urls,
         version_dates=version_dates,
     )
     written = write_site(out, site, home_limit=home_limit)

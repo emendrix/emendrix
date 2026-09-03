@@ -31,6 +31,7 @@ subpath and it should be visible at every link rather than assumed here.
 from __future__ import annotations
 
 from emendrix.output import ChangelogEntry
+from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date
@@ -116,7 +117,7 @@ def _hero(site: SiteInputs) -> list[Html]:
     ]
 
 
-def _card(act: ActSite, entry: ChangelogEntry) -> Html:
+def _card(act: ActSite, entry: ChangelogEntry, named: str) -> Html:
     """One event, name first: which act moved, by how much, from when, and between which pair.
 
     The heading carries the act's name and nothing else. The version pair used to sit beside
@@ -134,6 +135,10 @@ def _card(act: ActSite, entry: ChangelogEntry) -> Html:
     A disputed count is its own segment carrying the gloss as a tooltip, never a clause
     appended to the provision count: `36 provisions, 36 disputed` reads as a failure rate,
     where two counts separated like the date are two facts about the same event.
+
+    `named` is the instrument clause, `by Digital Omnibus on AI`, and it rides with the count
+    rather than in a segment of its own: it says what the count is a count of. It is empty for
+    an event naming no amending act, which never reaches this list anyway.
     """
     counts = entry.counts
     touched = UNTOUCHED_CARD if untouched(entry) else count(counts.touched, "provision")
@@ -146,11 +151,12 @@ def _card(act: ActSite, entry: ChangelogEntry) -> Html:
         else Html("")
     )
     dated = event_date(entry).words
+    named_words = Html(f" {escape(named)}") if named else Html("")
     href = f"{up(_DEPTH)}{event_href(act.slug, entry.key)}"
     return Html(
         f'<article class="cardrow">'
         f'<h3><a href="{escape(href)}">{escape(act.label)}</a></h3>'
-        f'<p class="facts">{escape(touched)}{disputed} · {escape(dated)}</p>'
+        f'<p class="facts">{escape(touched)}{named_words}{disputed} · {escape(dated)}</p>'
         f'<p class="ident"><code class="id">{escape(str(entry.from_version))} → '
         f"{escape(str(entry.to_version))}</code></p>"
         f"</article>"
@@ -184,7 +190,9 @@ def _amendments(site: SiteInputs, limit: int) -> list[Html]:
     shown = amendments[:limit]
     if any(entry.counts.disputed for _, entry in shown):
         lines.append(Html(f'<p class="small muted">{escape(DISPUTED_GLOSS)}</p>'))
-    lines.extend(_card(act, entry) for act, entry in shown)
+    lines.extend(
+        _card(act, entry, by_words(amenders(site.amending, entry))) for act, entry in shown
+    )
     older = len(amendments) - len(shown)
     if older:
         verb = "is" if older == 1 else "are"

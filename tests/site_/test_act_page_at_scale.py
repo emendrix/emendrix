@@ -90,7 +90,7 @@ clock and its date, so the line under it no longer prints that clause a second t
 carries the clock the heading did not, and an event with no in-force date or with several says
 so there."""
 
-_TOTAL_BYTES: Final = 1003711
+_TOTAL_BYTES: Final = 1008219
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -125,6 +125,14 @@ hundred cards and the two hundred event pages, which no longer restate the clock
 heading names. The chrome is the intended cost: an event page carries hundreds of focusable
 provision links, and without a skip link every one of them sits between the top of the page
 and the first word a reader came for.
+
+4508 bytes heavier on 2026-09-03, later again, when an event page's title started naming the
+instrument that made it and its description started saying the same under the act's long form:
+about 23 bytes on each of the two hundred event pages, in the one `<title>` this build writes
+and the description beside it. None of these events names an amending act, so no page gained a
+line of markup and the index did not move at all; what grew is the description, which now names
+the consolidated version the text was read from instead of repeating the version pair the page
+already carries under its heading.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from datetime import date
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -148,3 +150,82 @@ def test_the_oj_identifier_is_constructed_the_way_the_notice_writes_it() -> None
     """Checked against the tree notice's own `oj` SAMEAS on 2026-08-06."""
     assert Celex.parse("32024R1689").oj_identifier == "L_202401689"
     assert Celex.parse("32026R1744").oj_identifier == "L_202601744"
+
+
+@pytest.mark.parametrize(
+    ("raw", "number"),
+    [
+        ("32026R1744", "Regulation (EU) 2026/1744"),
+        ("32015R2283", "Regulation (EU) 2015/2283"),
+        ("32013R0575", "Regulation (EU) No 575/2013"),
+        ("32010R0995", "Regulation (EU) No 995/2010"),
+        ("32006R1907", "Regulation (EC) No 1907/2006"),
+        ("31992R2913", "Regulation (EEC) No 2913/92"),
+        ("31993R2454", "Regulation (EC) No 2454/1993"),
+        ("32015L2366", "Directive (EU) 2015/2366"),
+        ("32011L0061", "Directive 2011/61/EU"),
+        ("32009L0065", "Directive 2009/65/EC"),
+        ("32014D0287", ""),
+        ("32019H1024", ""),
+    ],
+)
+def test_the_official_number_follows_the_convention_of_the_acts_own_year(
+    raw: str, number: str
+) -> None:
+    """The numbering convention changed twice and the CELEX carries the year, so the reading is
+    a lookup rather than a guess. A descriptor naming neither a regulation nor a directive
+    answers with nothing, which is what makes the caller fall back to the key.
+
+    `31993R2454` is here as the boundary case rather than as a claim: that act is titled
+    `(EEC) No 2454/93`, because the Maastricht Treaty renamed the Community on 1 November 1993
+    and it was adopted in July. A CELEX carries no month, so the year is the finest cut
+    available and 1993 is taken whole as the first `(EC)` year. Nothing in the corpus is
+    affected: the oldest act the committed reports name as amending a watched one is
+    `32008R0987` (checked 2026-09-03), and the two bands below 1999 are exercised here and by
+    nothing else.
+    """
+    assert Celex.parse(raw).official_number == number
+
+
+def _titled_amending_acts() -> dict[str, str]:
+    """Every amending act the committed reports record an official title for, by CELEX.
+
+    Read off `reports/eval/*.json` rather than a fixture, because those are the documents the
+    site actually renders from: an `ActId` under a change's `amending_acts` or a signal claim's
+    `amending_act`, with a `display_name` the corpus published.
+    """
+    found: dict[str, str] = {}
+
+    def walk(node: object, *, amending: bool) -> None:
+        if isinstance(node, dict):
+            title = node.get("display_name")
+            if amending and isinstance(title, str) and isinstance(node.get("key"), str):
+                found.setdefault(str(node["key"]), title)
+            for name, value in node.items():
+                walk(value, amending=name in ("amending_acts", "amending_act"))
+        elif isinstance(node, list):
+            for value in node:
+                walk(value, amending=amending)
+
+    for report in sorted((Path(__file__).resolve().parents[2] / "reports" / "eval").glob("*.json")):
+        walk(json.loads(report.read_text(encoding="utf-8")), amending=False)
+    return found
+
+
+def test_every_recorded_official_title_contains_the_number_rendered_from_its_celex() -> None:
+    """The honesty check on the rendering, over the titles the corpus itself published.
+
+    A substring rather than an opening: an act adopted by the Commission is titled `Commission
+    Regulation (EC) No 987/2008` or `Commission Delegated Regulation (EU) 2023/502`, and no
+    identifier says which. Non-breaking spaces are folded to ordinary ones for the comparison
+    only: `Regulation (EC) No\u00a01907/2006` is how the Publications Office wrote that title,
+    the stored text keeps it, and a check on the number should not fail over the width of a
+    space. Verified over the seven titled amending acts the committed reports carry on
+    2026-09-03; a wrong year boundary would fail here rather than on a page.
+    """
+    titled = _titled_amending_acts()
+    assert len(titled) >= 7
+    for key, title in sorted(titled.items()):
+        number = Celex.parse(key).official_number
+        assert number, key
+        assert number in title.replace("\u00a0", " "), f"{key}: {number!r} not in {title!r}"

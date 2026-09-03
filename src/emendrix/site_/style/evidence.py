@@ -144,6 +144,11 @@ EVIDENCE: Final = """\
               list-style: none; margin: 0; padding: 0; font-size: var(--step-sm); }
 .touched li { display: flex; align-items: baseline; gap: var(--space-1); }
 .applies { font-size: var(--step-sm); color: var(--muted); }
+/* The instrument that made the event, under the version pair it produced. Set small, like the
+   other fact lines, and the declared short name italic beside the number so the label and the
+   identifier read as two different kinds of name. */
+.amending { font-size: var(--step-sm); }
+.amending .ttl { font-style: italic; }
 .disputed { font-size: var(--step-sm); color: var(--warn); }
 details { margin: var(--space-3) 0 0; }
 summary { cursor: pointer; font-size: var(--step-sm); color: var(--accent); }

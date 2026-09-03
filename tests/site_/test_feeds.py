@@ -23,6 +23,7 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.output import diff_only_entry
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
 from emendrix.site_.inputs import SiteInputs, collect_site
+from emendrix.site_.titles import SUFFIX, event_title, event_words
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -131,3 +132,47 @@ def test_without_a_site_url_the_feeds_page_says_so_and_no_feed_is_rendered() -> 
     assert ".xml" not in rendered
     with pytest.raises(ValueError, match="site URL"):
         render_feed(site, None)
+
+
+def _attributed_site() -> SiteInputs:
+    from site_entries import attributed_entry
+
+    return collect_site(
+        generated_on=OBSERVED,
+        run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
+        report=Path("r.json"),
+        entries=(attributed_entry(),),
+        site_url="https://example.invalid/site",
+    )
+
+
+def test_an_entry_is_titled_exactly_as_the_event_page_is_minus_the_sites_own_name() -> None:
+    """One reader meets the event in a feed reader and one in a search result; they read the
+    same words. Inside a feed already titled `emendrix — <act>`, the site's name on every
+    entry is the one word nobody needs."""
+    site = _attributed_site()
+    act = site.acts[0]
+    entry = act.entries[0]
+    root = ElementTree.fromstring(render_feed(site, None))
+    title = root.findtext(f"{ATOM}entry/{ATOM}title")
+    assert title == event_words(site, act, entry)
+    assert title == event_title(site, act, entry).removesuffix(SUFFIX)
+    assert "house-rules-amendment-1" in (title or "")
+
+
+def test_a_summary_names_the_instrument_by_its_number_after_the_counts() -> None:
+    """A summary is where a subscriber checks which instrument this was, so it is named by the
+    number; with no number to render, by the key it is identified as."""
+    root = ElementTree.fromstring(render_feed(_attributed_site(), None))
+    summary = root.findtext(f"{ATOM}entry/{ATOM}summary")
+    assert summary is not None
+    assert " Amended by house-rules-amendment-1. In force " in summary
+
+
+def test_a_reworded_title_is_not_a_new_event() -> None:
+    """The id is the promise and it did not move when the title started naming the act."""
+    site = _attributed_site()
+    act = site.acts[0]
+    entry = act.entries[0]
+    rendered = render_feed(site, None)
+    assert f"<id>https://example.invalid/site/acts/{act.slug}/#{entry.key}</id>" in rendered

@@ -185,4 +185,28 @@ markers to wrap. Both feeds, `sitemap.xml`, `search-index.json`, `robots.txt` an
 assets are byte-identical, `og.png` included, none of the four hexes it copies having moved,
 and no pinned size moved: the two at-scale pins and `_LARGEST_PAGE` count pages, and this pass
 changed one asset. No measured figure moved with it.
+
+**2026-09-03, the amending act named on every surface.** Seven files moved and every one of
+them says which instrument made an event. The MDR event page gained 618 bytes: a
+`p.amending` line under the version pair, the number `Regulation (EU) 2020/561` linked to
+EUR-Lex with `32020R0561` beside it, and under that the recorded official title of that
+regulation, printed verbatim from the instruction signal's own claim, which is the one place
+those words appear on the site. Its title and description name the instrument too, and each is
+written three times in the head, so most of the rest of the growth is there; the description
+also stopped repeating the version pair the page carries under its own heading and now names
+the consolidated version the text was read from. The act page's timeline card gained the same
+`p.amending` line and not the official title, thirty events being thirty titles. The front
+page's card reads `9 provisions by Regulation (EU) 2020/561 · in force 2020-04-24`, the clause
+riding with the count it is a count of, and the roster row's date fact gained the same clause.
+Both feeds gained 63 bytes: the entry title is now the event page's own minus the site's name,
+and the summary names the instrument by its number after the counts. Every feed `<id>` is
+byte-identical, which is the promise that may never move; `sitemap.xml`, `search-index.json`,
+`robots.txt` and the three assets are byte-identical too, `og.png` included, and no anchor or
+relative path moved. `style.css` grew from 14 976 to 15 300 bytes for two rules and their
+comment, and no hex value moved, so the contrast pairs are unchanged in both schemes. The name
+shown is a label the watchlist declares, else the number rendered from the CELEX by the
+convention of its year, else the key, and the CELEX stays beside it wherever a number is shown.
+`_LARGEST_PAGE` moves by 618 bytes and `_TOTAL_BYTES` by 4508, about 23 bytes on each of two
+hundred event pages whose titles and descriptions were reworded and which name no amending act
+at all. No measured figure moved with it.
 """

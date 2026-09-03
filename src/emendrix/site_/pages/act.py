@@ -28,12 +28,14 @@ from __future__ import annotations
 
 from emendrix.core import ChangeType, ProvisionLocation
 from emendrix.output import ChangelogEntry
+from emendrix.site_.amending import amenders
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_dated
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape, join
-from emendrix.site_.pages.act_event import pill, render_event_summary
+from emendrix.site_.pages.act_event import render_event_summary
+from emendrix.site_.pages.prose import pill
 from emendrix.site_.seo import act_json_ld
 from emendrix.site_.urls import act_href, entry_anchors, event_href, up
 
@@ -187,7 +189,9 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     )
     timeline: list[Html] = [Html('<section class="timeline">')]
     for entry in act.entries:
-        timeline.extend(render_event_summary(entry, _event_link(act, entry)))
+        timeline.extend(
+            render_event_summary(entry, _event_link(act, entry), amenders(site.amending, entry))
+        )
     if not act.entries:
         timeline.append(Html(f'<p class="none">{escape(_QUIET)}</p>'))
     timeline.append(Html("</section>"))

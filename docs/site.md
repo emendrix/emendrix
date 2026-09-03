@@ -56,6 +56,19 @@ to diff inline, because an inline rendering of a rewrite is noise wearing the cl
 comparison. The stored text is never touched: the diff is a comparison-time rendering, the same
 category as the whitespace handling inside the comparison functions.
 
+Every event that does name an amending act says which one, on every surface it appears on: the
+event page's `<title>`, its description and a line under its heading, the act page's timeline
+card, the front page's card, the acts index row's date fact and the Atom entry's title and
+summary. The name is, in order, the short name the watchlist declares under `[[amending_acts]]`,
+the official number rendered from the CELEX by the numbering convention in force for its year
+(`Regulation (EU) 2020/561`, `Directive (EU) 2015/2366`), and the key itself. The CELEX stays
+beside the number wherever the number is shown, linked to the act on EUR-Lex, because the number
+is a reading of the identifier and the identifier is the fact; the reading happens at the CLI
+boundary, which is the one place in the site generator allowed to know what a CELEX is. Where a
+committed document recorded the instrument's official title, the event's own page prints it
+verbatim under the line, which is the one surface with room for one. None of it is authored: a
+label is a label, a number is mechanical and reversible, and a title is the corpus's own words.
+
 Some committed events name no amending act at all: their corroboration window turned up no
 modification annotations and no amending-act instructions, so only the text comparison observed
 them. The commonest shape is the act as published set against its own first consolidation, where

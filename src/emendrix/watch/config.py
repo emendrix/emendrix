@@ -9,6 +9,10 @@ long_name = "Artificial Intelligence Act"   # what the site's headings call it
 domain    = "Digital"                       # groups the act on the published site
 aliases   = ["Artificial Intelligence Act"] # other names a search should find it under
 
+[[amending_acts]]
+celex = "32026R1744"                        # the instrument, not a watched act
+name  = "Digital Omnibus on AI"             # what the site calls it where an event names it
+
 [output]
 repo_path = "~/regulatory-changelog"        # where the committed changelog lives
 ```
@@ -22,6 +26,13 @@ title, where the count and the date are the news. The published site groups and 
 A file naming an act twice, or naming something that is not a CELEX, is refused at load time
 with the line's own value in the message: this is the one input a person writes by hand, so it
 is the one place worth being strict.
+
+`[[amending_acts]]` names instruments rather than watched acts, and its `name` is a label of the
+same rank again: an act that amends a watched act is shown by that short name wherever the site
+says which instrument made an event, and by its number rendered from the CELEX where no block
+declares one. Watching an act and naming an amending instrument are separate lists because they
+answer separate questions, so neither table is ever read as the other and a block here never
+puts an act on the watchlist.
 
 ## Why the index is a separate object
 
@@ -54,6 +65,7 @@ from emendrix.eu.identifiers import Celex, ConsolidatedId, act_id, parse_identif
 
 __all__ = [
     "EXAMPLE_PATH",
+    "AmendingLabel",
     "OutputConfig",
     "WatchIndex",
     "WatchMatch",
@@ -99,6 +111,28 @@ class WatchedAct(BaseModel):
         return Celex.parse(self.celex).act_code
 
 
+class AmendingLabel(BaseModel):
+    """One amending instrument's short name, for output only.
+
+    A label of the same rank as `WatchedAct.name`, and for the same reason: an instrument that
+    a reader knows as the Digital Omnibus on AI is `32026R1744` to every part of the system
+    that resolves anything. Nothing here is ever matched on, so an act with no block, or a
+    block naming an act nothing amended, costs a heading and never a match. Blocks are read
+    only by the published site, which shows the name wherever an event says which instrument
+    made it.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    celex: str = Field(description="CELEX of the amending act as published, e.g. 32026R1744.")
+    name: str = Field(min_length=1, description="Short name for output; never identity.")
+
+    @field_validator("celex")
+    @classmethod
+    def _valid_celex(cls, value: str) -> str:
+        return Celex.parse(value).value
+
+
 class OutputConfig(BaseModel):
     """The `[output]` table: where the changelog git repository lives.
 
@@ -122,14 +156,20 @@ class Watchlist(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     acts: tuple[WatchedAct, ...] = ()
+    amending_acts: tuple[AmendingLabel, ...] = Field(
+        default=(), description="Short names for the instruments that amend the watched acts."
+    )
     output: OutputConfig = OutputConfig()
 
     @model_validator(mode="after")
     def _no_duplicates(self) -> Self:
-        seen = [entry.celex for entry in self.acts]
-        repeated = sorted({value for value in seen if seen.count(value) > 1})
-        if repeated:
-            raise ValueError(f"watchlist names the same act twice: {', '.join(repeated)}")
+        for what, seen in (
+            ("act", [entry.celex for entry in self.acts]),
+            ("amending act", [entry.celex for entry in self.amending_acts]),
+        ):
+            repeated = sorted({value for value in seen if seen.count(value) > 1})
+            if repeated:
+                raise ValueError(f"watchlist names the same {what} twice: {', '.join(repeated)}")
         return self
 
 
