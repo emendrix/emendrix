@@ -35,11 +35,19 @@ The promises live here, each as a line of markup rather than a claim made elsewh
 - **Every coordinate leads to its own history.** The heading's coordinate is a link to the
   provision's page, which is the same act's directory one level up from this event's, so a
   reader who arrived asking what this event did can ask what has ever been done to Annex XVII.
+- **Every change block is addressable from itself**, by the permalink at the end of its
+  heading, and a page long enough to open with an index closes with the way back to the top.
+- **The index is beside the changes where there is room for it.** A page listing its
+  provisions puts the list in a column at the same width the act page's index becomes one, so
+  a reader forty blocks down can still see the map; below that width it stays the wrapping row
+  it has always been, which costs a few lines rather than a screen.
 
-What a change block says in words, the pill and the shipped sentences with their citations,
-moved to `pages/prose.py` on 2026-09-03 when naming the amending act pushed this module past
-the size cap: one change's prose is a different job from one event's shape, and this module
-imports the four functions it still calls.
+What a change block carries wherever it appears, the pill, the permalink, the sentences and
+the row of their citations, lives in `pages/prose.py`, and the index a long page opens with
+lives in `pages/event_index.py`. Both were split off on 2026-09-03, the first when naming the
+amending act pushed this module past the size cap and the second when the index gained a label
+and a column to stand in. What is left is one event's shape: its opening, its facts, the block
+each change sits in and the order all of it comes in.
 
 Wording is imported rather than restated wherever the changelog says the same thing
 (`output.markdown`): two renderings of one fact that describe it differently are how a caveat
@@ -61,12 +69,13 @@ from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, un
 from emendrix.site_.clocks import event_date
 from emendrix.site_.dispute import dispute_note
 from emendrix.site_.markup import Html, count, escape
-from emendrix.site_.pages.prose import pill, prose
+from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
+from emendrix.site_.pages.prose import permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched, untouched_note
 from emendrix.site_.urls import location_slug
 
-__all__ = ["INDEX_ABOVE", "render_event", "render_event_summary"]
+__all__ = ["render_event", "render_event_summary"]
 
 _THREE_SOURCES = (
     "Emendrix checks every change against three independent sources. Where they disagree it "
@@ -83,13 +92,11 @@ it, since an explanation of something not present reads as a warning about it.
 _SUMMARY_LINK = "Every change in this event, with the text before and after →"
 """The card's one link. The words promise exactly what the event page holds and no more."""
 
-INDEX_ABOVE = 6
-"""How many changes an event needs before its page opens with a list of them.
+_BACK_TO_TOP = "Back to top ↑"
+"""The foot of a page that opened with an index, aimed at the id the skip link already targets.
 
-Below six the headings are on one screen and a list of them is a second copy of what the
-reader can already see; the MDR postponement in the golden has nine, the AI Act's Digital
-Omnibus event 45. Zero is under the line too, so an untouched event never opens with an
-empty list.
+Only on such a page: below the index threshold the top of the page is still on the screen when
+the last block ends, and a link back to what a reader can see is furniture rather than help.
 """
 
 
@@ -108,7 +115,8 @@ def _change_block(
     The coordinate is a link to that provision's own page, a sibling of this event's page under
     the act, so `../` climbs to the act's directory and the slug names the provision. It keeps
     the weight it had as a span, because the coordinate is still the heading of the block and
-    not an invitation to leave it.
+    not an invitation to leave it. The permalink closes the heading and points at this block's
+    own `id`, so a reader can hand one change to somebody without knowing the anchor scheme.
 
     `text` is the evidence, rendered once for the whole entry by `pages.texts` and handed in:
     the provision page shows the same block, and a diff computed twice is the one cost the
@@ -123,7 +131,7 @@ def _change_block(
         Html(
             f"<h3>{pill(change.change_type, disputed=change.disputed)} "
             f'<a class="loc" href="../{escape(location_slug(change.location.canonical))}/">'
-            f"{escape(change.location.human)}</a>{title}</h3>"
+            f"{escape(change.location.human)}</a>{title}{permalink(anchor)}</h3>"
         ),
         Html(f'<p class="applies">applies from {escape(applies_text(change.applies_from))}</p>'),
     ]
@@ -249,27 +257,6 @@ def render_event_summary(
     ]
 
 
-def _touched(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
-    """The in-page index: one link per change block, in the order the page carries them.
-
-    A table of contents for the page below rather than a sorted list of coordinates, so a
-    coordinate touched twice in one event appears twice, once per block, and each link lands
-    on its own anchor. The pill is the same call the heading makes, so the two can never
-    disagree about a change's kind.
-    """
-    lines = [Html('<nav class="touched" aria-label="Provisions in this event">'), Html("<ol>")]
-    for emitted, anchor in zip(entry.changes, anchors, strict=True):
-        change = emitted.change
-        lines.append(
-            Html(
-                f'<li><a href="#{escape(anchor)}">{escape(change.location.human)}</a> '
-                f"{pill(change.change_type, disputed=change.disputed)}</li>"
-            )
-        )
-    lines.extend((Html("</ol>"), Html("</nav>")))
-    return lines
-
-
 def render_event(
     entry: ChangelogEntry,
     anchors: tuple[str, ...],
@@ -287,10 +274,20 @@ def render_event(
     lines = _event_header(entry, acts, full=True)
     if any(emitted.change.disputed for emitted in entry.changes):
         lines.append(Html(f'<p class="small muted">{escape(_THREE_SOURCES)}</p>'))
-    if len(entry.changes) >= INDEX_ABOVE:
-        lines.extend(_touched(entry, anchors))
+    blocks: list[Html] = []
     for emitted, anchor, text in zip(entry.changes, anchors, texts, strict=True):
-        lines.extend(_change_block(emitted, entry, anchor, text))
+        blocks.extend(_change_block(emitted, entry, anchor, text))
+    if len(entry.changes) >= INDEX_ABOVE:
+        lines.append(Html('<div class="layout event-layout">'))
+        lines.extend(touched(entry, anchors))
+        lines.append(Html('<section class="changes">'))
+        lines.extend(blocks)
+        lines.append(
+            Html(f'<p class="small backtop"><a href="#content">{escape(_BACK_TO_TOP)}</a></p>')
+        )
+        lines.extend((Html("</section>"), Html("</div>")))
+    else:
+        lines.extend(blocks)
     lines.extend(
         (
             Html(

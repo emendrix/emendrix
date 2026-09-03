@@ -8,6 +8,7 @@ provenance marker, and a stated reason wherever prose is absent.
 
 from __future__ import annotations
 
+import re
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -29,6 +30,7 @@ from emendrix.gate import GateOutcome
 from emendrix.graph.report import EmittedChange, EmittedDelta, EmittedSentence
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
+from emendrix.site_.markup import escape
 from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.texts import text_blocks
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
@@ -402,3 +404,88 @@ def test_an_event_naming_no_instrument_gains_no_link_line() -> None:
     site = _site(unattributed_entry())
     rendered = _rendered(site, site.acts[0], site.acts[0].entries[0])
     assert "amendments/" not in rendered.split("<main")[1]
+
+
+def _explained(count: int, *, note: bool = False) -> ChangelogEntry:
+    """The toy entry with `count` sentences on every change, each citing both versions.
+
+    The citation pair is the same on every sentence of a change, which is the shape the
+    committed corpus produces and the one a row per change exists for: a model writing two
+    sentences about one provision cites the before and the after in both of them.
+    """
+    delta = _delta()
+    adapter = ToyCorpusAdapter(observed_on=OBSERVED)
+
+    def explained(emitted: EmittedChange) -> EmittedChange:
+        ref = emitted.change.provision
+        cited = tuple(
+            adapter.render_citation(ref.model_copy(update={"version": version}))
+            for version in (delta.from_version, delta.to_version)
+        )
+        shipped = tuple(
+            EmittedSentence(text=f"Sentence {index} about this provision.", citations=cited)
+            for index in range(1, count + 1)
+        )
+        return emitted.model_copy(
+            update={
+                "outcome": GateOutcome.PASSED,
+                "sentences": shipped,
+                "applicability_note": (
+                    EmittedSentence(text="It applies from the date stated.", citations=cited[-1:])
+                    if note
+                    else None
+                ),
+            }
+        )
+
+    entry = diff_only_entry(delta, detected_on=OBSERVED)
+    return entry.model_copy(
+        update={"changes": tuple(explained(emitted) for emitted in entry.changes)}
+    )
+
+
+def test_a_change_cites_its_provisions_once_however_many_sentences_named_them() -> None:
+    """The distinct citations of a change, in first-mention order, in one row under its prose.
+
+    Two sentences about one provision cite the same before-and-after pair, and printing that
+    pair under each of them put the same two links on the page as many times as the model had
+    sentences. What the reader needs is the pair, once. Nothing below the page moves: the
+    committed JSON and Markdown keep every citation on the sentence that carried it, which is
+    the form the citation gate resolves.
+    """
+    rendered = _page(_explained(2))
+    entry = _explained(2)
+    assert rendered.count('<p class="cites">Cited: ') == len(entry.changes)
+    assert rendered.count("Sentence 2 about this provision.") == len(entry.changes)
+    for emitted in entry.changes:
+        for item in emitted.sentences[0].citations:
+            assert rendered.count(f'href="{escape(item.url)}"') == 1
+    row = re.search(r'<p class="cites">.*?</p>', rendered)
+    assert row is not None
+    assert row.group().count("<a ") == 2
+    assert row.group().count('class="nowrap"') == 2
+
+
+def test_no_citation_link_sits_inside_a_sentence_any_more() -> None:
+    """The row is the only place a citation is linked on the page, so a sentence reads as one.
+
+    Asserted as the whole paragraph, character for character: a sentence that still carried
+    its links would be a longer element than this and the equality would say so.
+    """
+    rendered = _page(_explained(2))
+    for index in (1, 2):
+        assert f"<p>Sentence {index} about this provision.</p>" in rendered
+
+
+def test_the_applicability_note_s_citation_is_in_the_row_with_the_sentences() -> None:
+    """The note is prose the gate resolved like any other, so its citation is the change's."""
+    rendered = _page(_explained(1, note=True))
+    assert "It applies from the date stated." in rendered
+    row = re.search(r'<p class="cites">.*?</p>', rendered)
+    assert row is not None
+    assert row.group().count("<a ") == 2
+
+
+def test_a_change_with_nothing_cited_carries_no_citation_row() -> None:
+    """An empty row would be a label with nothing under it; a diff-only entry cites nothing."""
+    assert 'class="cites"' not in _page(diff_only_entry(_delta(), detected_on=OBSERVED))

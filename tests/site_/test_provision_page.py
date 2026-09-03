@@ -25,9 +25,12 @@ from emendrix.core import Delta, ProvisionTree, VersionId
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
+from emendrix.gate import GateOutcome
+from emendrix.graph.report import EmittedChange, EmittedSentence
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.history import ProvisionHistory, histories
 from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
+from emendrix.site_.markup import escape
 from emendrix.site_.pages.provision import render_provision_page
 from emendrix.site_.pages.texts import text_blocks
 from emendrix.site_.urls import entry_anchors
@@ -99,6 +102,10 @@ def test_the_newest_step_carries_its_verbatim_text_and_older_steps_carry_a_link(
     coordinate has been touched by 47 events, so quoting every step would multiply the
     heaviest page on the site by its own history. The reader who arrives from a search wants
     the current text, so the newest step is open and the rest are one link away.
+
+    An older step names its own anchor twice and the two are different things: the permalink
+    every step carries to itself, and the one link out to the block on the event page that
+    holds this step's text.
     """
     rendered, _, history = _page(_entry(3), _entry(2), _entry(1))
     steps = _STEPS.findall(rendered)
@@ -109,7 +116,8 @@ def test_the_newest_step_carries_its_verbatim_text_and_older_steps_carry_a_link(
     for anchor, older in steps[1:]:
         assert "<details" not in older
         assert '<p class="diff">' not in older and 'class="verbatim' not in older
-        assert older.count(f'#{anchor}"') == 1
+        assert older.count(f'/#{anchor}"') == 1
+        assert older.count(f'href="#{anchor}"') == 1
 
 
 def test_every_older_step_links_the_block_on_its_own_event_page() -> None:
@@ -233,3 +241,55 @@ def test_two_renderings_of_one_history_are_byte_identical() -> None:
     act = site.acts[0]
     history = _first(act)
     assert _render(site, act, history) == _render(site, act, history)
+
+
+def test_every_step_heading_ends_with_a_permalink_to_that_step() -> None:
+    """A history of many steps is a page where a reader wants to hand somebody one of them.
+
+    It is the same link and the same anchor a change block carries on its event page, so one
+    change can be linked from either view of it.
+    """
+    rendered, _, history = _page(_entry(2), _entry(1))
+    for step in history.steps:
+        assert (
+            f'<a class="permalink" href="#{step.anchor}" '
+            'aria-label="Link to this change">§</a></h2>' in rendered
+        )
+
+
+def _explained(entry: ChangelogEntry) -> ChangelogEntry:
+    """The entry with two sentences on every change, both citing the same before-and-after."""
+    adapter = ToyCorpusAdapter(observed_on=OBSERVED)
+
+    def explained(emitted: EmittedChange) -> EmittedChange:
+        ref = emitted.change.provision
+        cited = tuple(
+            adapter.render_citation(ref.model_copy(update={"version": version}))
+            for version in (entry.from_version, entry.to_version)
+        )
+        return emitted.model_copy(
+            update={
+                "outcome": GateOutcome.PASSED,
+                "sentences": tuple(
+                    EmittedSentence(text=f"Sentence {index}.", citations=cited) for index in (1, 2)
+                ),
+            }
+        )
+
+    return entry.model_copy(
+        update={"changes": tuple(explained(emitted) for emitted in entry.changes)}
+    )
+
+
+def test_a_step_carries_the_change_s_citations_as_one_row() -> None:
+    """The step states a change through the same renderer an event page does, so the row a
+    change gained there is here for the same reason and in the same words."""
+    entry = _explained(_entry(1))
+    cited = entry.changes[0].sentences[0].citations
+    assert len(cited) == 2
+    rendered, _, history = _page(entry)
+    assert len(history.steps) == 1
+    assert rendered.count('<p class="cites">Cited: ') == 1
+    for item in cited:
+        assert rendered.count(f'href="{escape(item.url)}"') == 1
+    assert "<p>Sentence 2.</p>" in rendered

@@ -102,7 +102,7 @@ this tree is not a provision page: the annex every one of the two hundred events
 53 782 bytes over two hundred steps, a third of the index, because 199 of those steps carry a
 link where the newest carries the diff."""
 
-_TOTAL_BYTES: Final = 2088276
+_TOTAL_BYTES: Final = 2221580
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -153,6 +153,15 @@ bytes of `<nav>` on each of the two hundred pages. The other 9 243 is the header
 link on all 201 pages, 43 bytes on the index and 46 on each event page, which sits one
 directory deeper. None of these generated events names an amending act, so no page gained a
 link to an instrument; on the live site an event that names one gains that line too.
+
+133 304 bytes heavier on 2026-09-03, later again, when every change heading gained a permalink
+to its own block: 800 of them on the two hundred event pages and 800 more on the steps of the
+four hundred and one provision pages, at 69 bytes plus the anchor each one repeats. It is the
+whole of the move here. These events are diff-only, so no change carries a sentence and none
+gained the citation row that pays part of this cost back on a page with prose, and four
+changes is under the six an index starts at, so no page here carries the column wrapper, the
+count line or the link back to the top. `_HEAVIEST` does not move at all: the index is a
+timeline of cards and holds no change block.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

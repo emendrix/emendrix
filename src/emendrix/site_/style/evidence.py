@@ -8,9 +8,10 @@ metrics table, and the two rules an amending instrument's page and the event pag
 of those reuse the timeline rather than inventing a second one, an instrument's page being a
 timeline per watched act it moved. A provision page's steps reuse the change block for the same
 reason: a step is one change, stated the way every other change on the site is stated, and the
-three rules it adds only undo the block's horizontal bleed and set its heading level.
+three rules it adds only undo the block's horizontal bleed and set its heading level. The
+permalink and the citation row are shared the same way, by both pages that show a change.
 
-Three decisions carry the look of these two pages and are worth stating:
+Four decisions carry the look of these two pages and are worth stating:
 
 - **The timeline is drawn as one.** A rail with a node per event, because an act's history is
   genuinely a sequence and the heading of each entry is now its date. The events lost the
@@ -23,6 +24,10 @@ Three decisions carry the look of these two pages and are worth stating:
   caps only direct children, and every sentence on an event page is nested two levels down.
   The diff is the one thing deliberately let out to the full column: it is prose to read but
   it is also the artifact, and stored text carries its own line structure.
+- **An index is bounded by what it is at that width.** The act page's index is a `<details>`
+  of hundreds of links and is capped everywhere; an event page's is a row of a few dozen that
+  costs a few lines, so it is capped only at the width where it becomes a sticky column beside
+  the changes. Two indexes, two caps, and neither rule is written for the other's shape.
 
 Two rules carry a constraint rather than a preference and are commented where they sit: the
 diff preserves the line breaks the stored text already has, and the print block must name any
@@ -155,9 +160,39 @@ a.loc { color: inherit; font-weight: 600; }
    cost a few lines of height and a reader can see the whole event at once. */
 .touched { margin: var(--space-3) 0 var(--space-4); padding: var(--space-2) 0;
            border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.touched p { margin: 0 0 var(--space-1); }
 .touched ol { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3);
               list-style: none; margin: 0; padding: 0; font-size: var(--step-sm); }
 .touched li { display: flex; align-items: baseline; gap: var(--space-1); }
+/* The same grid the act page draws, with the event's index as the left column, at the one
+   width the act page becomes two columns. The `.sidebar` cap above is deliberately not reused:
+   that one bounds a `<details>` of hundreds of links at every width, where this is a row of
+   forty coordinates that costs a few lines while it is a row and needs the cap only once it
+   stands as a column. Below the query nothing here applies and the row is untouched. */
+@media (min-width: 60rem) {
+  .event-layout .touched {
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .event-layout .touched ol { display: block; }
+  .event-layout .touched li { padding: .15rem 0; }
+  .changes { min-width: 0; }
+}
+/* One change's own address, at the end of the heading that names it. Set in the muted colour
+   because it is furniture beside a coordinate that is not, and pushed to the end of the row by
+   the heading's own flex. */
+.permalink { margin-left: auto; color: var(--muted); text-decoration: none; }
+.permalink:hover, .permalink:focus { color: var(--accent); }
+/* The citations of one change, once, under its sentences. The lead word is muted and the
+   anchors keep the sheet's link colour, so the row reads as links with a label rather than as
+   a sentence. */
+.cites { font-size: var(--step-sm); color: var(--muted); }
 .applies { font-size: var(--step-sm); color: var(--muted); }
 /* One watched act on an amending instrument's page: its own heading, then the rail of events
    that instrument produced there. The heading carries the act, so it is set as a page heading
@@ -234,8 +269,12 @@ th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color:
   #search, header.bar nav, .skip { display: none; }
   body { padding: 0; }
   main, header.bar, footer { max-width: none; }
-  /* A scroll box cannot be scrolled on paper, so the index prints whole. */
+  /* A scroll box cannot be scrolled on paper, so both indexes print whole. */
   .sidebar { max-height: none; overflow: visible; }
+  .event-layout .touched { position: static; max-height: none; overflow: visible; }
+  /* Navigation, like the header's: a permalink and a way back to the top of a sheet of paper
+     are both instructions a printed page cannot carry out. */
+  .permalink, .backtop { display: none; }
   .strip, .disclaimer, .sidebar, .diff, .verbatim, .loop li, .pill, .tag
     { background: transparent; }
   /* Named again because a two-class or pseudo-class selector outranks a one-class one

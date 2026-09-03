@@ -39,7 +39,7 @@ from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.history import ProvisionHistory, ProvisionStep
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
-from emendrix.site_.pages.prose import pill, prose
+from emendrix.site_.pages.prose import permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import provision_json_ld
 from emendrix.site_.titles import SUFFIX
@@ -110,6 +110,9 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     `text` is the evidence for the newest step and `None` for every other one. The newest opens
     its `<details>`, because a reader arriving from a search for this provision wants the
     current text visible; an older step links the block on the event page that holds its own.
+
+    The heading closes with the same permalink a change block carries on its event page, and
+    on the same anchor, so one change can be handed to somebody from either view of it.
     """
     entry = step.entry
     change = step.change
@@ -117,7 +120,8 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
         Html(f'<article class="chg step" id="{escape(step.anchor)}">'),
         Html(
             f"<h2>{escape(event_date(entry).words)} "
-            f"{pill(change.change_type, disputed=change.disputed)}</h2>"
+            f"{pill(change.change_type, disputed=change.disputed)}"
+            f"{permalink(step.anchor)}</h2>"
         ),
     ]
     acts = amenders(site.amending, entry)

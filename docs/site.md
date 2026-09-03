@@ -60,6 +60,19 @@ to diff inline, because an inline rendering of a rewrite is noise wearing the cl
 comparison. The stored text is never touched: the diff is a comparison-time rendering, the same
 category as the whitespace handling inside the comparison functions.
 
+An event of six changes or more opens with an index of the provisions it touched, and from
+60rem wide that index is a sticky column beside the changes rather than a row above them, so a
+reader forty blocks down can still see the map; narrower than that it stays the wrapping row,
+which costs a few lines where a column would cost a screen. The same threshold puts the link
+back to the top at the foot of the page. Every change heading, on an event page and on a
+provision page alike, ends with a `§` permalink to that change's own anchor, which is the
+anchor both pages already publish. The citations a change's sentences carry are printed once
+for the change, in first-mention order and deduplicated by the pair of address and label,
+rather than after every sentence: a change whose sentences all cite the same before-and-after
+pair used to print that pair once per sentence. **This is a rendering decision and nothing
+below the page moves**: the committed Markdown and JSON keep every citation on the sentence
+that carried it, which is the form the citation gate resolves and the eval harness counts.
+
 The same changes are published a second way, under the provision. `acts/<celex>/<prov>/` is one
 coordinate's whole history, newest first: a step per event that touched it, each with the date
 and its clock, the change type, the instrument that made it, the applies-from line and the

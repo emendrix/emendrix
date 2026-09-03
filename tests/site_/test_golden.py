@@ -184,7 +184,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 38282)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 38773)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -246,7 +246,17 @@ heading became a link to that provision's own page: about 11 bytes a block, a sp
 an anchor and a relative path one directory up. This page is still the largest in the golden
 and by a wide margin, which is the shape the provision pages were designed to keep: the nine
 new pages weigh 6124 to 11 225 bytes each, because a provision page carries the verbatim text
-of its newest step only. Nothing inside a `<details>` moved and no anchor did."""
+of its newest step only. Nothing inside a `<details>` moved and no anchor did.
+
+491 bytes heavier on 2026-09-03, later again, and it is two changes pulling against each
+other. The page gained about 1050 bytes of wayfinding: a permalink on each of the nine change
+headings (69 bytes plus the anchor it repeats), the grid wrapper and the section that holds
+the blocks, the count line above the index, and the link back to the top. It gave back about
+559, because the citations moved out of the sentences and into one row per change: eighteen
+inline pairs became nine rows of the distinct citations, and Art. 59, whose three sentences
+each cited the same single anchor, now prints that anchor once. The saving grows with the
+prose, so the pages this pin exists to watch, the ones carrying hundreds of explained
+changes, pay proportionally less of the 1053 than this one does."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

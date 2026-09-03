@@ -22,8 +22,8 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import SiteInputs, collect_site
-from emendrix.site_.pages.act_event import INDEX_ABOVE
 from emendrix.site_.pages.event import render_event_page
+from emendrix.site_.pages.event_index import INDEX_ABOVE
 from emendrix.site_.pages.texts import text_blocks
 from emendrix.site_.urls import location_slug
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
@@ -154,3 +154,70 @@ def test_the_index_lists_a_repeated_coordinate_once_per_block() -> None:
     assert index.count(f">{human}</a>") == 2
     links = re.findall(r'href="#([^"]+)"', index)
     assert links[-1] == links[0] + "-2"
+
+
+def test_every_change_heading_ends_with_a_permalink_to_its_own_block() -> None:
+    """A page can carry hundreds of blocks and every one of them has always been addressable.
+
+    The link makes that reachable without knowing the anchor scheme, and it can only point at
+    the block it sits in: the href is read back off the block's own `id` here, so a heading
+    borrowing another block's anchor would fail rather than merely look right.
+    """
+    rendered = _page(_entry())
+    blocks = re.findall(r'<div class="chg" id="([^"]+)">(.*?)</h3>', rendered, re.DOTALL)
+    assert len(blocks) == len(_entry().changes)
+    for anchor, opening in blocks:
+        assert opening.endswith(
+            f'<a class="permalink" href="#{anchor}" aria-label="Link to this change">§</a>'
+        )
+
+
+def test_a_long_page_puts_its_index_in_the_layout_beside_the_changes() -> None:
+    """The wrapper is the act page's own two-column grid, so one stylesheet rule serves both.
+
+    Order matters and is asserted: the index is the first child, the changes the second, which
+    is what puts the map in the left column and is also the reading order with no stylesheet
+    at all.
+    """
+    rendered = _page(_many(_entry(), INDEX_ABOVE))
+    assert rendered.count('<div class="layout event-layout">') == 1
+    assert rendered.count('<section class="changes">') == 1
+    opening = rendered.index('<div class="layout event-layout">')
+    assert opening < rendered.index('<nav class="touched"')
+    assert rendered.index('<nav class="touched"') < rendered.index('<section class="changes">')
+    assert rendered.index('<section class="changes">') < rendered.index('<div class="chg"')
+
+
+def test_a_short_page_carries_no_wrapper_and_no_way_back_to_a_top_it_can_see() -> None:
+    """The index threshold is the only one: below it there is no column and no back link."""
+    rendered = _page(_entry())
+    assert "event-layout" not in rendered
+    assert '<section class="changes">' not in rendered
+    assert "Back to top" not in rendered
+
+
+def test_a_long_page_ends_with_the_way_back_to_the_top() -> None:
+    """Aimed at the id the skip link already targets, so nothing addressable is minted."""
+    rendered = _page(_many(_entry(), INDEX_ABOVE))
+    back = '<p class="small backtop"><a href="#content">Back to top ↑</a></p>'
+    assert rendered.count(back) == 1
+    assert rendered.rindex('<div class="chg"') < rendered.index(back)
+    assert rendered.index(back) < rendered.index("</section>")
+    assert 'id="content"' in rendered
+
+
+def test_the_index_says_how_many_blocks_it_lists_rather_than_how_many_provisions() -> None:
+    """The column needs a label of its own, and the number has to be the list's own length.
+
+    This entry touches one coordinate twice, so six blocks stand over five provisions and the
+    event's own facts line counts provisions. A label reading `6 provisions` beside a line
+    saying five would be read as one of the two being wrong, so the label counts the blocks it
+    is a list of and names them as what they are.
+    """
+    entry = _many(_entry(), INDEX_ABOVE)
+    coordinates = {emitted.change.location.canonical for emitted in entry.changes}
+    assert len(entry.changes) == INDEX_ABOVE
+    assert len(coordinates) == INDEX_ABOVE - 1
+    (index,) = _INDEX.findall(_page(entry))
+    assert f'<p class="small muted">{INDEX_ABOVE} changes in this event</p>' in index
+    assert index.count("<li>") == INDEX_ABOVE

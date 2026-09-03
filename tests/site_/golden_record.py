@@ -270,4 +270,37 @@ them, and no anchor or relative path already published moved. `_LARGEST_PAGE` mo
 bytes and stays the MDR event page; the largest of the nine new pages is 11 225 bytes.
 `_HEAVIEST` moves down by 3586, the at-scale act index having 401 shorter sidebar links, and
 `_TOTAL_BYTES` by 1 036 140 over 401 new pages. No measured figure moved with it.
+
+**2026-09-03, wayfinding on the pages that show a change.** Eleven files moved and none was
+added. The MDR event page, which carries nine changes and so renders the index, now wraps that
+index and the blocks in the act page's own two-column grid: at 60rem and wider the index is a
+sticky column beside the changes, and below it the wrapping row is untouched, uncapped and
+exactly as it was. The index opens with `9 changes in this event`, the label a column needs when it
+stands on its own, counting the blocks it lists rather than the provisions those blocks touch,
+because a coordinate one event touched twice is two blocks and the facts line above already
+counts provisions; every change heading ends with a `§` permalink to its own block,
+named for a screen reader because the mark is a symbol; and the page closes, inside the
+section holding the blocks, with a link back to `#content`, the id the skip link already
+targets. All three key off the one threshold the index does, so a short page gained none of
+them. The nine provision pages gained the same permalink on each step heading, on the same
+anchor, so one change is linkable from either view of it. The citations moved out of the
+sentences: a change now ends with one `<p class="cites">Cited: ...</p>` of its distinct
+citations in first-mention order, deduplicated by the rendered pair of address and label
+rather than by address alone, each label held on one line. Eighteen inline pairs on the event
+page became nine rows, and Art. 59, whose three sentences each cited the same single anchor,
+prints it once. Nothing below the page moved: the committed Markdown and JSON keep every
+citation on the sentence that carried it, which is the form the citation gate resolves and the
+eval harness counts, and neither file in the changelog repository differs by a byte.
+`style.css` grew from 16 926 to 18 701 bytes for the grid at one media query, the permalink,
+the citation row, one margin on the index's new label, and their comments, plus three print
+rules that un-cap the column and take the permalink and the back link off paper; no hex value
+moved, so the contrast pairs are unchanged in both schemes and every colour used here is a
+token already measured. Both feeds, `sitemap.xml`, `search-index.json`, `robots.txt` and the
+three assets are byte-identical, `og.png` included, every feed `<id>` with them, and no anchor
+or relative path already published moved. `_LARGEST_PAGE` moves by 491 bytes and stays the MDR
+event page, about 1050 of wayfinding less about 559 the citation row gave back; `_HEAVIEST`
+does not move, its page being a timeline of cards with no change block on it; `_TOTAL_BYTES`
+moves by 133 304, which is 1600 permalinks over two hundred event pages and four hundred and
+one provision pages of diff-only changes, where no citation row exists to pay any of it back.
+No measured figure moved with it.
 """
