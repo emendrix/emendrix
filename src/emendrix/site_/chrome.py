@@ -16,9 +16,9 @@ index remain the whole navigation. `generated_on` is a parameter, never a clock 
 from __future__ import annotations
 
 from emendrix import DISCLAIMER
+from emendrix.site_.head import head_metadata
 from emendrix.site_.inputs import PageChrome
 from emendrix.site_.markup import Html, escape, join
-from emendrix.site_.seo import head_metadata
 from emendrix.site_.urls import depth_of, up
 
 __all__ = ["disclaimer_html", "nav_links", "page", "repository_links"]
@@ -135,7 +135,7 @@ def page(
     Everything site-wide, the build date, the public repository URLs and the site's one
     absolute address, arrives gathered in `chrome`: the signature once carried each as its own
     keyword argument, reached ten, and was folded into the frozen model rather than grow an
-    eleventh. `seo.head_metadata` contributes no line at all without a base address, so a
+    eleventh. `head.head_metadata` contributes no line at all without a base address, so a
     build given no site URL writes a head with nothing in it from here rather than one
     carrying a blank line.
     """

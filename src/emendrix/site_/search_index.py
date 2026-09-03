@@ -8,17 +8,16 @@ written once. What is in it is deliberately narrow:
   own identifier; a provision by its human coordinate. Full text is not indexed, because a
   substring index over the whole corpus is a different artifact with a different size and this
   one has to stay a file a browser downloads without noticing.
-- **touched provisions only.** The site has a page fragment for a provision an amendment
-  moved and nothing at all for one it did not, so indexing an untouched coordinate would
-  promise a destination that does not exist.
+- **touched provisions only.** The site has a page for a provision an amendment moved and
+  nothing at all for one it did not, so indexing an untouched coordinate would promise a
+  destination that does not exist.
 
-The anchors are not recomputed here. A provision's url is the fragment the event page publishes
-for the newest change at that coordinate, on that event's own page, and it comes from
-`urls.entry_anchors`, the one place the occurrence counter lives. An index running its own
-counter would drift from the page the moment one entry touched one coordinate twice, and the
-symptom would be a search result landing at the top of a page instead of at the change: the
-sort of defect nobody reports. Newest first is the entry order `collect_site` guarantees, so
-the first anchor seen for a coordinate is the newest one and later events do not overwrite it.
+A provision's url is its own page, one row per coordinate per act. It pointed at the newest
+change's fragment on an event page until those pages existed, which meant a search for a
+provision landed in one arbitrary version transition with nothing to say which; the row now
+lands on the coordinate's whole history, which is the question the row was always answering.
+The dedupe by canonical string is unchanged and is what that means: one coordinate, one page,
+one row.
 
 Deterministic bytes: entries are sorted by label, kind and url before serialisation, object
 keys are sorted by the serialiser, and the separators are pinned, so two builds of one
@@ -35,7 +34,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from emendrix.site_.amending import resolve
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
-from emendrix.site_.urls import act_href, amendment_href, entry_anchors, event_href
+from emendrix.site_.urls import act_href, amendment_href, provision_href
 
 __all__ = ["IndexEntry", "IndexKind", "search_index_json"]
 
@@ -74,15 +73,11 @@ def _names(act: ActSite) -> list[IndexEntry]:
 
 
 def _provisions(act: ActSite) -> list[IndexEntry]:
-    """Every coordinate this act's watched history touched, at its newest change."""
+    """Every coordinate this act's watched history touched, each pointing at its own page."""
     entries: list[IndexEntry] = []
     seen: set[str] = set()
     for entry in act.entries:
-        href = event_href(act.slug, entry.key)
-        anchors = entry_anchors(
-            entry.key, [emitted.change.location.canonical for emitted in entry.changes]
-        )
-        for emitted, anchor in zip(entry.changes, anchors, strict=True):
+        for emitted in entry.changes:
             location = emitted.change.location
             if location.canonical in seen:
                 continue
@@ -91,7 +86,7 @@ def _provisions(act: ActSite) -> list[IndexEntry]:
                 IndexEntry(
                     label=f"{location.human} — {act.label}",
                     kind="provision",
-                    url=f"{href}#{anchor}",
+                    url=provision_href(act.slug, location.canonical),
                 )
             )
     return entries

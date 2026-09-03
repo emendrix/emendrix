@@ -237,4 +237,37 @@ value moved, so the contrast pairs are unchanged in both schemes. Both feeds,
 them, and no anchor or relative path already published moved. `_LARGEST_PAGE` moves by 157
 bytes, `_HEAVIEST` by 43 and `_TOTAL_BYTES` by 43 917, three quarters of that last being the
 pager on two hundred generated event pages. No measured figure moved with it.
+
+**2026-09-03, one page per provision.** Nine files were added and four moved. Each of the nine
+is one coordinate the golden's single event touched, at `acts/32017R0745/<slug>/`, where the
+slug is `location_slug` of the canonical string (`ar-113`, `an-ix`) and never a human reading
+of it. A page carries the coordinate as its H1 in human form, the act and its identifier, the
+provision's own title from the consolidated text where that says more than the H1 already does
+(`Penalties` under `Art. 113`; `ANNEX IX` under `Annex IX` is skipped, case and whitespace
+folded for the comparison and nothing stored rewritten), a count of the history, and then one
+step per event that touched it. This act has one event, so each of the nine has one step: the
+date with its clock, the change type, the instrument linked to its own page with the CELEX
+beside it, the applies-from line, the sentences that survived the gate, and the verbatim text
+open in a `<details>`. An older step would carry a link to the block on its event page instead
+of the text, which is the weight rule these pages exist under and which no page in this golden
+exercises. The step id is the anchor the event page already publishes, so nothing addressable
+was minted. Each page's `ld+json` declares four breadcrumb rungs and a `WebPage` whose `about`
+is the act's `Legislation` extended by one `hasPart` carrying the coordinate's name and nothing
+else: a provision has no address at EUR-Lex that resolves and no identifier outside this
+corpus's location vocabulary. The MDR event page gained 102 bytes, the nine coordinates in its
+change headings now being links to those pages. The act page lost 360 bytes: each entry in its
+touched-provisions index linked the newest change's fragment on the event page and now links
+the coordinate's own history, which is the question that index has always been asking.
+`sitemap.xml` gained the nine pages, each dated by the newest event that touched it, which for
+this act is the only one. `search-index.json` lost 360 bytes for the same reason, its nine
+provision rows moving off the event anchors and onto the pages; the labels are unchanged, and
+the dedupe by canonical string now means one page rather than one arbitrary event.
+`style.css` grew from 16 201 to 16 926 bytes for three
+rules and their comments, the coordinate link and the two that set a step's margins and heading
+level, and no hex value moved, so the contrast pairs are unchanged in both schemes. Both feeds,
+`robots.txt` and the three assets are byte-identical, `og.png` included, every feed `<id>` with
+them, and no anchor or relative path already published moved. `_LARGEST_PAGE` moves by 102
+bytes and stays the MDR event page; the largest of the nine new pages is 11 225 bytes.
+`_HEAVIEST` moves down by 3586, the at-scale act index having 401 shorter sidebar links, and
+`_TOTAL_BYTES` by 1 036 140 over 401 new pages. No measured figure moved with it.
 """

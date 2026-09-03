@@ -6,7 +6,9 @@ layout and sticky index, the timeline, the change blocks and their headings, the
 touched provisions, the dispute and applies lines, the unified diff, the verbatim blocks, the
 metrics table, and the two rules an amending instrument's page and the event pager need. Both
 of those reuse the timeline rather than inventing a second one, an instrument's page being a
-timeline per watched act it moved.
+timeline per watched act it moved. A provision page's steps reuse the change block for the same
+reason: a step is one change, stated the way every other change on the site is stated, and the
+three rules it adds only undo the block's horizontal bleed and set its heading level.
 
 Three decisions carry the look of these two pages and are worth stating:
 
@@ -136,9 +138,19 @@ EVIDENCE: Final = """\
 .chg h3 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline;
           gap: var(--space-1) var(--space-2); }
 .chg .loc { font-weight: 600; }
+/* The coordinate in a change heading leads to that provision's own history. It keeps the
+   weight and the colour it had as a span: it is still the heading of the block, not an
+   invitation to leave it. */
+a.loc { color: inherit; font-weight: 600; }
 .chg .ttl { font-family: var(--sans); font-weight: 400; font-size: var(--step-sm); }
 .chg > p { max-width: var(--measure); }
 .chg .applies { margin: var(--space-1) 0 var(--space-2); }
+/* One step of a provision's history. It is a change block, so it inherits the hairline, the
+   heading baseline and the target tint; what it does not want is the block's bleed into the
+   gutters, the steps here being a list down the page rather than rows under one event. */
+.step { margin: var(--space-4) 0; }
+.step h2 { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: baseline;
+           margin: 0; padding: 0; border: 0; font-size: var(--step-1); }
 /* A map of the page, not a second copy of it: one wrapping row, so forty-five provisions
    cost a few lines of height and a reader can see the whole event at once. */
 .touched { margin: var(--space-3) 0 var(--space-4); padding: var(--space-2) 0;

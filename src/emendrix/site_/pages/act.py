@@ -5,7 +5,7 @@ renders one summary card per event through `act_event`:
 
 - the header, which identifies the act well enough to check it against the official source;
 - the index, which is the answer to "has anything ever touched Article 13?" and links each
-  coordinate straight into the event page holding its newest change, so it works with
+  coordinate to that provision's own page, its whole history in one place, so it works with
   JavaScript switched off;
 - the timeline, newest first, because the question a reader arrives with is what changed
   recently. A card states the event's facts and links to the event's own page, which is where
@@ -15,10 +15,6 @@ renders one summary card per event through `act_event`:
 
 Every card still carries `id="{entry.key}"`, because that fragment is the permalink every
 feed entry was published under and an address published once never stops resolving.
-
-Anchors are computed once here, in `render_act`, and handed to the index, so a link in the
-sidebar and the block it lands on cannot disagree with the event page, which computes the
-same tuple through the same one function.
 
 A watched act with no amendments gets a page that says so. Silence and "nothing happened" are
 different claims, and only one of them is true here.
@@ -37,7 +33,7 @@ from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.pages.act_event import render_event_summary
 from emendrix.site_.pages.prose import pill
 from emendrix.site_.seo import act_json_ld
-from emendrix.site_.urls import act_href, entry_anchors, event_href, up
+from emendrix.site_.urls import act_href, event_href, provision_href, up
 
 __all__ = ["render_act"]
 
@@ -64,24 +60,21 @@ def _event_link(act: ActSite, entry: ChangelogEntry) -> str:
     return up(_DEPTH) + event_href(act.slug, entry.key)
 
 
-def _provisions(act: ActSite, anchors: tuple[tuple[str, ...], ...]) -> list[Html]:
+def _provisions(act: ActSite) -> list[Html]:
     """Every provision this act's watched history touched, in document order.
 
     Sorted by `ProvisionLocation.sort_key` rather than by the canonical string, so `AR 10`
-    follows `AR 9` and `AN II` follows `AN I`. The link goes to the newest change of that
-    location, on the event page holding it: entries arrive newest first, so the first target
-    seen is the one to keep.
+    follows `AR 9` and `AN II` follows `AN I`. The link goes to that coordinate's own page,
+    which is its whole history newest first; it pointed at the newest change on the event page
+    holding it until those pages existed, and the anchor was standing in for the history the
+    index has always been asking about.
     """
     locations: dict[str, ProvisionLocation] = {}
-    href_of: dict[str, str] = {}
     kinds: dict[str, list[ChangeType]] = {}
-    for entry, row in zip(act.entries, anchors, strict=True):
-        target = _event_link(act, entry)
-        for emitted, anchor in zip(entry.changes, row, strict=True):
+    for entry in act.entries:
+        for emitted in entry.changes:
             key = emitted.change.location.canonical
-            if key not in locations:
-                locations[key] = emitted.change.location
-                href_of[key] = f"{target}#{anchor}"
+            locations.setdefault(key, emitted.change.location)
             seen = kinds.setdefault(key, [])
             if emitted.change.change_type not in seen:
                 seen.append(emitted.change.change_type)
@@ -89,14 +82,13 @@ def _provisions(act: ActSite, anchors: tuple[tuple[str, ...], ...]) -> list[Html
     for location in sorted(locations.values(), key=lambda item: item.sort_key):
         key = location.canonical
         pills = join((pill(kind) for kind in kinds[key]), " ")
-        lines.append(
-            Html(f'<li><a href="{escape(href_of[key])}">{escape(location.human)}</a> {pills}</li>')
-        )
+        href = escape(up(_DEPTH) + provision_href(act.slug, key))
+        lines.append(Html(f'<li><a href="{href}">{escape(location.human)}</a> {pills}</li>'))
     lines.append(Html("</ul>"))
     return lines
 
 
-def _sidebar(act: ActSite, anchors: tuple[tuple[str, ...], ...]) -> Html:
+def _sidebar(act: ActSite) -> Html:
     """The index: provisions and events, each a plain link into an event page. No script.
 
     The lists sit inside a `<details open>` so a narrow screen can fold the whole index away
@@ -106,7 +98,7 @@ def _sidebar(act: ActSite, anchors: tuple[tuple[str, ...], ...]) -> Html:
     lines = [
         Html('<aside class="sidebar">'),
         Html("<details open><summary>Index of this act</summary>"),
-        *_provisions(act, anchors),
+        *_provisions(act),
         Html("<h2>Amendments</h2>"),
         Html("<ul>"),
     ]
@@ -183,10 +175,6 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
 
 def render_act(site: SiteInputs, act: ActSite) -> Html:
     """One act's complete page. Deterministic: same inputs, same bytes, no clock, no network."""
-    anchors = tuple(
-        entry_anchors(entry.key, [emitted.change.location.canonical for emitted in entry.changes])
-        for entry in act.entries
-    )
     timeline: list[Html] = [Html('<section class="timeline">')]
     for entry in act.entries:
         timeline.extend(
@@ -198,7 +186,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     # A quiet act gets no index and no two-column layout: the index would be two headings
     # over two empty lists, and the grid reserves its first column for exactly that index.
     columns = (
-        (Html('<div class="layout">'), _sidebar(act, anchors), *timeline, Html("</div>"))
+        (Html('<div class="layout">'), _sidebar(act), *timeline, Html("</div>"))
         if act.entries
         else tuple(timeline)
     )

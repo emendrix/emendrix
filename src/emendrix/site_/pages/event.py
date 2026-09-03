@@ -4,7 +4,9 @@ The act page decided this event belongs in the history and gave it a summary car
 where a reader who followed that card, a search result or a feed's `<link rel="alternate">`
 actually lands. `act_event.render_event` renders the whole body, so this module supplies only
 what a page needs beyond its body: enough of the act's identity to know where the reader is,
-the shell, and the breadcrumb.
+the shell, and the breadcrumb. The evidence blocks arrive from the builder rather than being
+rendered here, because this act's provision pages show the same blocks and a diff is expensive
+enough to be worth computing once.
 
 The header names the act and links back to its timeline rather than repeating the act page's
 own header: the event's own date is this page's second-level heading, with the version pair
@@ -23,6 +25,7 @@ from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.act_event import render_event
+from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import event_json_ld
 from emendrix.site_.titles import event_title
 from emendrix.site_.untouched import UNTOUCHED_CARD, untouched
@@ -146,8 +149,14 @@ def _pager(act: ActSite, entry: ChangelogEntry) -> list[Html]:
     ]
 
 
-def render_event_page(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> Html:
-    """One event's complete page. Deterministic: same inputs, same bytes, no clock, no network."""
+def render_event_page(
+    site: SiteInputs, act: ActSite, entry: ChangelogEntry, texts: tuple[RenderedText, ...]
+) -> Html:
+    """One event's complete page. Deterministic: same inputs, same bytes, no clock, no network.
+
+    `texts` is the entry's evidence blocks, one per change in the entry's own order, computed
+    once by the builder because the provision pages of this act show the same blocks.
+    """
     anchors = entry_anchors(
         entry.key, [emitted.change.location.canonical for emitted in entry.changes]
     )
@@ -156,7 +165,7 @@ def render_event_page(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> 
         (
             *_header(act),
             *_instruments(site, act, entry),
-            *render_event(entry, anchors, acts),
+            *render_event(entry, anchors, texts, acts),
             *_pager(act, entry),
         ),
         "\n",

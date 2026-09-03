@@ -123,14 +123,23 @@ def test_every_watched_act_gets_a_page_and_a_feed_including_the_quiet_ones(
 
 
 def test_every_committed_event_gets_its_own_page(tmp_path: Path, changelog_repo: Path) -> None:
-    """One page per changelog document, nested under its act: where the evidence now lives."""
+    """One page per changelog document, nested under its act: where the evidence now lives.
+
+    Two kinds of page sit at that depth, an event's and a provision's, and they are told apart
+    by the entry key rather than by counting: the second is the same act's directory addressed
+    by a location slug, and a set membership check is what makes the two namespaces visibly
+    disjoint here as well as refused in `collect_site`.
+    """
     out = build(tmp_path / "site", changelog_repo)
     tree = _tree(out)
-    event_pages = {name for name in tree if name.startswith("acts/") and name.count("/") == 3}
     committed = sorted(changelog_repo.glob("*/*/changes/*.json"))
     assert committed
+    keys = {path.stem for path in committed}
+    nested = {name for name in tree if name.startswith("acts/") and name.count("/") == 3}
+    event_pages = {name for name in nested if name.split("/")[2] in keys}
     assert len(event_pages) == len(committed)
-    for name in event_pages:
+    assert nested - event_pages, "the provision pages share that depth and are not events"
+    for name in nested:
         assert name.endswith("/index.html"), name
 
 

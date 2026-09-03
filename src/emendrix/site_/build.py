@@ -13,6 +13,7 @@ sitemap.xml                     every page, with the date its content last moved
 acts/index.html                 the roster
 acts/<slug>/index.html          one page per watched act: its timeline and index
 acts/<slug>/<key>/index.html    one page per event: the changes and the verbatim text
+acts/<slug>/<prov>/index.html   one page per touched provision: its history, newest first
 amendments/index.html           every instrument a committed event names, newest first
 amendments/<slug>/index.html    one page per instrument: every watched act it amended
 methodology/index.html          what the numbers mean
@@ -54,6 +55,7 @@ from emendrix.site_.amending import resolve
 from emendrix.site_.assets import icon_svg, og_png, search_js
 from emendrix.site_.discovery import ROBOTS, SITEMAP, robots_txt, sitemap_xml
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
+from emendrix.site_.history import histories
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.pages.about import render_about
@@ -65,9 +67,17 @@ from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.home import render_home
 from emendrix.site_.pages.methodology import render_methodology
 from emendrix.site_.pages.not_found import render_not_found
+from emendrix.site_.pages.provision import render_provision_page
+from emendrix.site_.pages.texts import text_blocks
 from emendrix.site_.search_index import search_index_json
 from emendrix.site_.style import STYLE
-from emendrix.site_.urls import act_href, amendment_href, amendments_href, event_href
+from emendrix.site_.urls import (
+    act_href,
+    amendment_href,
+    amendments_href,
+    event_href,
+    provision_href,
+)
 
 __all__ = ["act_pages", "write_site"]
 
@@ -84,16 +94,30 @@ CARD = "og.png"
 
 
 def act_pages(site: SiteInputs, act: ActSite) -> dict[str, str]:
-    """One act's whole page tree, path -> contents: its timeline and every one of its events.
+    """One act's whole page tree, path -> contents: its timeline, its events, its provisions.
 
     Factored out of `_files` because the scale suite needs exactly this slice, one act's index
-    beside the event pages it links into, without assembling the rest of the site around it,
-    for the reason `entry_anchors` is one function rather than one counter per caller: the
-    pages that must agree are built by the one code path the builder itself runs.
+    beside the pages it links into, without assembling the rest of the site around it, for the
+    reason `entry_anchors` is one function rather than one counter per caller: the pages that
+    must agree are built by the one code path the builder itself runs.
+
+    The evidence blocks are computed here, once per entry, and handed to both kinds of page.
+    An event page shows every one of its entry's blocks and a provision page shows the one
+    belonging to its newest step, so a diff that would otherwise be built twice is built once
+    however many pages carry it. That is the whole reason the cache exists: the texts are the
+    expensive part of this tree by orders of magnitude.
     """
+    blocks = {entry.key: text_blocks(entry) for entry in act.entries}
     files: dict[str, str] = {f"{act_href(act.slug)}index.html": render_act(site, act)}
     for entry in act.entries:
-        files[f"{event_href(act.slug, entry.key)}index.html"] = render_event_page(site, act, entry)
+        files[f"{event_href(act.slug, entry.key)}index.html"] = render_event_page(
+            site, act, entry, blocks[entry.key]
+        )
+    for history in histories(act):
+        path = provision_href(act.slug, history.location.canonical)
+        files[f"{path}index.html"] = render_provision_page(
+            site, act, history, blocks[history.steps[0].entry.key]
+        )
     return files
 
 

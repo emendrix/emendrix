@@ -40,12 +40,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix.output import ChangelogEntry
 from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.urls import amendment_href
 
 __all__ = [
     "AmendingAct",
     "amenders",
     "amending_keys",
     "amending_lines",
+    "amending_links",
     "by_words",
     "collect_amending",
     "mentioned_keys",
@@ -222,3 +224,27 @@ def amending_lines(acts: tuple[AmendingAct, ...], *, full: bool) -> list[Html]:
             Html(f'<p class="official">{escape(act.title)}</p>') for act in acts if act.title
         )
     return lines
+
+
+def amending_links(acts: tuple[AmendingAct, ...], root: str) -> list[Html]:
+    """The instrument line with each name linking the instrument's own page under `root`.
+
+    A provision page's form of `amending_lines`. A step there is one row of one coordinate's
+    history and the question it answers is which instrument moved it, so the name goes to that
+    instrument's page, where the rest of its work is; the official address is on the event page
+    one link away and is not printed again per step. The name and the identifier are the pair
+    `_one_line` prints, in that order, so no surface names one instrument two ways.
+
+    `root` is the prefix that climbs from the page to the site root, computed by the caller,
+    which is the convention every cross-page link on the site follows.
+    """
+    if not acts:
+        return []
+    named = [
+        Html(
+            f'<a href="{escape(root + amendment_href(act.key))}">{escape(act.short)}</a>'
+            + (f" <code>{escape(act.key)}</code>" if act.short != act.key else "")
+        )
+        for act in acts
+    ]
+    return [Html(f'<p class="amending">Amended by {join(named, " · ")}</p>')]

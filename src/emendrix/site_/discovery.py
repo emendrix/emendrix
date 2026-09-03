@@ -15,11 +15,11 @@ refused anything that does not begin `https://`.
 A `<loc>` is absolute by definition, so `sitemap_xml` refuses without a site URL rather than
 inventing a base, exactly as `render_feed` does. `robots.txt` is written either way and loses
 only its `Sitemap:` line, because a crawl policy is about paths. Every `<loc>` is built with
-`seo.canonical_url`, the same function that writes the page's canonical, so a sitemap entry and
+`head.canonical_url`, the same function that writes the page's canonical, so a sitemap entry and
 a canonical cannot name two addresses for one page.
 
-Pages only: the six fixed ones, one per act, one per amendment event and one per amending
-instrument a committed event names. An event page's
+Pages only: the six fixed ones, one per act, one per amendment event, one per provision any
+event touched and one per amending instrument a committed event names. An event page's
 `<lastmod>` is that event's own `event_dated`, the same clock its feed entry's `<updated>`
 reads, so the two records of one fact cannot disagree. Feeds are advertised by `rel="alternate"` in
 every head and a sitemap indexes pages rather than subscriptions; the stylesheet, the script,
@@ -44,11 +44,18 @@ from __future__ import annotations
 from datetime import date
 
 from emendrix.site_.clocks import event_dated
+from emendrix.site_.head import canonical_url
+from emendrix.site_.history import histories
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, escape, join
-from emendrix.site_.seo import canonical_url
-from emendrix.site_.urls import act_href, amendment_href, amendments_href, event_href
+from emendrix.site_.urls import (
+    act_href,
+    amendment_href,
+    amendments_href,
+    event_href,
+    provision_href,
+)
 
 __all__ = ["ROBOTS", "SITEMAP", "robots_txt", "sitemap_xml"]
 
@@ -121,6 +128,16 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         (event_href(act.slug, entry.key), event_dated(entry))
         for act in site.acts
         for entry in act.entries
+    )
+    # A provision's page is dated by its newest step, which is the newest event that touched
+    # it: the page is a rendering of those events and moves exactly when one of them does.
+    fixed.extend(
+        (
+            provision_href(act.slug, history.location.canonical),
+            event_dated(history.steps[0].entry),
+        )
+        for act in site.acts
+        for history in histories(act)
     )
     # An instrument's page is dated by its newest event, the first pair the inversion holds:
     # the page is a rendering of those events and moves exactly when one of them does.

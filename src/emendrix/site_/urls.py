@@ -16,6 +16,10 @@ the act page answers to.
 An amending instrument is addressed the same way, under `amendments/`: its own key, made
 safe by the same function, and never a year-and-number reading of it.
 
+A provision is addressed under its own act, by the slug of its canonical location string. Its
+pages and the act's event pages are siblings in one directory, so the two vocabularies must
+never mint one path twice; `shared_path` is what a caller asks before writing either.
+
 Pages reference each other relatively (`up(depth)`), so the tree works from `file://`, from
 a subpath, and from the site root alike.
 """
@@ -37,6 +41,8 @@ __all__ = [
     "entry_anchors",
     "event_href",
     "location_slug",
+    "provision_href",
+    "shared_path",
     "up",
 ]
 
@@ -118,6 +124,40 @@ def event_href(act_slug: str, entry_key: str) -> str:
     on the act page keeps for every address published before the page existed.
     """
     return f"{act_href(act_slug)}{entry_key}/"
+
+
+def provision_href(act_slug: str, canonical: str) -> str:
+    """One provision's history, under its act, by its own slug: `acts/32024R1689/ar-6/`.
+
+    The slug of the canonical location string, never a human reading of it. `Annex XVII` and
+    `Article 6` are what the page's title says and what a reader searches for, but a second
+    vocabulary for one coordinate is a second thing to keep in step, and it collides: the
+    corpus writes both `AN 4` and `AN IV` for annexes of different acts, and a human-form path
+    would have to decide which numeral an act's annex answers to. The canonical string decides
+    nothing, which is the property a published address needs.
+
+    Built on `act_href` for the reason `event_href` is: a provision page always sits under its
+    act's own directory, beside that act's event pages, and the two must not drift apart.
+    """
+    return f"{act_href(act_slug)}{location_slug(canonical)}/"
+
+
+def shared_path(entry_keys: Iterable[str], canonicals: Iterable[str]) -> tuple[str, str] | None:
+    """The first entry key and canonical location of one act that would name one directory.
+
+    Under an act sit two kinds of page addressed by two vocabularies: an event by its entry
+    key (`02024R1689-20260727`) and a provision by its location slug (`ar-6`, `an-xvii`, `an`).
+    Nothing makes the two disjoint by construction, and a collision would write one page where
+    the tree lists two, so the caller that assembles an act asks here first and refuses.
+
+    Returns the shared path segment with the canonical string that produced it, or `None`.
+    """
+    keys = set(entry_keys)
+    for canonical in canonicals:
+        found = location_slug(canonical)
+        if found in keys:
+            return found, canonical
+    return None
 
 
 def amendments_href() -> str:

@@ -20,6 +20,7 @@ index.html            search, the latest amendments, and the one-line measured c
 acts/index.html       every watched act, grouped by the domain the watchlist gives it
 acts/<celex>/         one page per act: the whole watched history, newest first, as cards
 acts/<celex>/<key>/   one page per event: the changes and the verbatim text
+acts/<celex>/<prov>/  one page per touched provision: its history, newest first
 amendments/           every instrument a committed event names, newest first, grouped by year
 amendments/<celex>/   one page per instrument: every watched act it amended, and what it moved
 about/                who runs the site, and what it does on the reader's machine
@@ -58,6 +59,19 @@ place. Below a similarity of 0.5 the texts are shown stacked instead, labelled a
 to diff inline, because an inline rendering of a rewrite is noise wearing the clothes of a
 comparison. The stored text is never touched: the diff is a comparison-time rendering, the same
 category as the whitespace handling inside the comparison functions.
+
+The same changes are published a second way, under the provision. `acts/<celex>/<prov>/` is one
+coordinate's whole history, newest first: a step per event that touched it, each with the date
+and its clock, the change type, the instrument that made it, the applies-from line and the
+sentences that survived the gate. The path segment is the slug of the canonical location string
+(`ar-6`, `an-xvii`, and `an` or `tit` for a change keyed to a whole annex or title), never a
+human reading of it, because a second numbering for one coordinate is a second thing to keep in
+step and the corpus writes both `AN 4` and `AN IV`. **The newest step carries its verbatim text
+in full and every older step links the block on the event page that holds its own**: one
+committed change carries 4.1 million characters of before-and-after text and one coordinate has
+been touched by 47 events, so a page repeating the evidence per step would multiply the heaviest
+page on the site by its own history. The step ids are the anchors the event pages already
+publish, so nothing addressable moved when these pages arrived.
 
 Every event that does name an amending act says which one, on every surface it appears on: the
 event page's `<title>`, its description and a line under its heading, the act page's timeline

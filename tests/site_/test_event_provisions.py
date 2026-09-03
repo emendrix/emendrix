@@ -24,6 +24,8 @@ from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.pages.act_event import INDEX_ABOVE
 from emendrix.site_.pages.event import render_event_page
+from emendrix.site_.pages.texts import text_blocks
+from emendrix.site_.urls import location_slug
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -51,7 +53,8 @@ def _site(*entries: ChangelogEntry) -> SiteInputs:
 
 def _page(entry: ChangelogEntry) -> str:
     site = _site(entry)
-    return render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    entry = site.acts[0].entries[0]
+    return render_event_page(site, site.acts[0], entry, text_blocks(entry))
 
 
 def _entry() -> ChangelogEntry:
@@ -81,7 +84,11 @@ def _many(entry: ChangelogEntry, n: int) -> ChangelogEntry:
 def test_every_change_opens_with_a_heading_and_the_applies_line_stays_outside_it() -> None:
     """The provision is the unit a crawler ranks a passage under and a screen reader jumps to,
     so each block opens with an `<h3>` of pill, coordinate and title. The applies line is a
-    fact about the change, not part of its name, and sits in its own paragraph after it."""
+    fact about the change, not part of its name, and sits in its own paragraph after it.
+
+    The coordinate is a link to that provision's own page, a sibling directory of this event's
+    under the act: an event page answers what one consolidation did, and the reader who wants
+    what has ever been done to that coordinate follows the heading."""
     entry = _entry()
     rendered = _page(entry)
     assert rendered.count("<h3>") == len(entry.changes)
@@ -89,7 +96,8 @@ def test_every_change_opens_with_a_heading_and_the_applies_line_stays_outside_it
     assert rendered.count('<p class="applies">applies from ') == len(entry.changes)
     for emitted in entry.changes:
         change = emitted.change
-        assert f'<span class="loc">{change.location.human}</span>' in rendered
+        slug = location_slug(change.location.canonical)
+        assert f'<a class="loc" href="../{slug}/">{change.location.human}</a>' in rendered
         if change.heading:
             assert f'<span class="ttl">{change.heading}</span>' in rendered
     for heading in re.findall(r"<h3>.*?</h3>", rendered):

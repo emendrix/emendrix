@@ -13,6 +13,8 @@ from emendrix.site_.urls import (
     entry_anchors,
     event_href,
     location_slug,
+    provision_href,
+    shared_path,
     up,
 )
 
@@ -89,6 +91,36 @@ def test_an_event_page_nests_under_its_act() -> None:
 def test_an_event_page_sits_three_directories_down() -> None:
     """The number `pages/event.py` holds as a literal, because its path needs an entry to exist."""
     assert depth_of(event_href("32024R1689", "02024R1689-20260727")) == 3
+
+
+def test_a_provision_is_addressed_under_its_act_by_its_location_slug() -> None:
+    """The canonical string's slug, never a human reading of it: `Annex XVII` is what the
+    page's title says and `an-xvii` is what its address says, and a second numbering for one
+    coordinate would be a second thing to keep in step."""
+    assert provision_href("32024R1689", "AR 6") == "acts/32024R1689/ar-6/"
+    assert provision_href("32006R1907", "AN XVII") == "acts/32006R1907/an-xvii/"
+    assert provision_href("32019R0881", "AN") == "acts/32019R0881/an/"
+    assert provision_href("32013R0575", "TIT") == "acts/32013R0575/tit/"
+    assert provision_href("32024R1689", "AR 6").startswith(act_href("32024R1689"))
+
+
+def test_a_provision_page_sits_three_directories_down() -> None:
+    """The number `pages/provision.py` holds as a literal, and the same depth as an event
+    page: the two are siblings under the act, which is why one links the other with `../`."""
+    assert depth_of(provision_href("32024R1689", "AR 6")) == 3
+    assert depth_of(provision_href("32024R1689", "AR 6")) == depth_of(
+        event_href("32024R1689", "02024R1689-20260727")
+    )
+
+
+def test_an_event_key_and_a_provision_slug_that_would_share_a_path_are_found() -> None:
+    """The two vocabularies under one act are not disjoint by construction, so the collision
+    is looked for rather than assumed away. Real keys and real slugs never meet: a key is a
+    version identifier and a slug is a location code."""
+    keys = ["02024R1689-20260727", "32024R1689"]
+    assert shared_path(keys, ["AR 6", "AN XVII"]) is None
+    assert shared_path(keys, []) is None
+    assert shared_path(["ar-6"], ["AN I", "AR 6"]) == ("ar-6", "AR 6")
 
 
 def test_an_amending_instrument_is_addressed_by_its_own_key() -> None:

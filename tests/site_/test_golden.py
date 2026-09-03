@@ -184,7 +184,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 38180)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 38282)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -239,7 +239,14 @@ page of its own. 111 of those are the line under the act's facts, one link per n
 instrument to everything that instrument amended, and 46 are the header bar's fifth link, to
 the roster of those instruments, which every page on the site gained at whatever its own depth
 costs. This event is the act's only one, so it carries no pager; an act with a history gains
-two dated links at the foot of each of its event pages."""
+two dated links at the foot of each of its event pages.
+
+102 bytes heavier on 2026-09-03, later again, when each of the nine coordinates in a change
+heading became a link to that provision's own page: about 11 bytes a block, a span traded for
+an anchor and a relative path one directory up. This page is still the largest in the golden
+and by a wide margin, which is the shape the provision pages were designed to keep: the nine
+new pages weigh 6124 to 11 225 bytes each, because a provision page carries the verbatim text
+of its newest step only. Nothing inside a `<details>` moved and no anchor did."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

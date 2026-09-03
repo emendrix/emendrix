@@ -14,7 +14,7 @@ could not be honoured on the production side in any case: no module under `site_
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from xml.etree import ElementTree
 
@@ -26,7 +26,9 @@ from emendrix.cli import app
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.site_.discovery import robots_txt, sitemap_xml
+from emendrix.site_.history import histories
 from emendrix.site_.inputs import SiteInputs, collect_site
+from emendrix.site_.urls import provision_href
 from eu_pins import OBSERVED_ON
 
 SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
@@ -177,6 +179,38 @@ def test_an_act_is_dated_by_its_newest_event_and_a_quiet_one_is_not_dated_at_all
             assert lastmod == newest[:10], feed
             busy += 1
     assert quiet and busy, f"{quiet} quiet and {busy} amended acts; both cases must be covered"
+
+
+def test_a_provision_page_is_listed_and_dated_by_the_newest_event_that_touched_it() -> None:
+    """A provision page is a rendering of the events that touched it, so it moves when the
+    newest of them does, the same rule an act page and an instrument page are dated under.
+
+    Two events one day apart, so the older one cannot supply the date by accident, and the
+    build date is a third date again, which is the value this module refuses to stamp a URL
+    with. The paths come from `histories`, the same function the builder writes the pages
+    from, so a listed location and a written page cannot name two different things.
+    """
+    entry = unattributed_entry()
+    older = entry.model_copy(update={"detected_on": entry.detected_on - timedelta(days=1)})
+    inputs = collect_site(
+        generated_on=UNUSED_DATE,
+        run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
+        report=Path("r.json"),
+        entries=(entry, older),
+        site_url=SITE_URL,
+    )
+    act = inputs.acts[0]
+    listed = {
+        block.split("<loc>")[1].split("</loc>")[0]: block
+        for block in sitemap_xml(inputs).split("<url>")[1:]
+    }
+    found = 0
+    for history in histories(act):
+        location = f"{SITE_URL}/{provision_href(act.slug, history.location.canonical)}"
+        assert location in listed, location
+        assert f"<lastmod>{entry.detected_on.isoformat()}</lastmod>" in listed[location]
+        found += 1
+    assert found
 
 
 def test_an_act_with_only_unnamed_events_still_dates_its_page() -> None:

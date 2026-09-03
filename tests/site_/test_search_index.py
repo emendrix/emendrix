@@ -12,8 +12,8 @@ from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.assets import search_js
+from emendrix.site_.build import act_pages
 from emendrix.site_.inputs import collect_site
-from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.search_index import search_index_json
 from emendrix.watch.config import Watchlist
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
@@ -44,7 +44,7 @@ def test_acts_aliases_and_touched_provisions_are_in_the_index() -> None:
     provisions = [item for item in payload["entries"] if item["kind"] == "provision"]
     touched = {emitted.change.location.canonical for emitted in entry.changes}
     assert len(provisions) == len(touched)
-    assert all("#" in item["url"] for item in provisions)
+    assert all(item["url"].startswith(f"acts/{site.acts[0].slug}/") for item in provisions)
 
 
 def test_a_provision_with_no_number_is_labelled_by_its_word() -> None:
@@ -129,23 +129,27 @@ def test_a_long_name_already_among_the_aliases_is_indexed_once() -> None:
     assert sum(item["label"] == "Artificial Intelligence Act" for item in entries) == 1
 
 
-def test_provision_urls_are_the_anchors_the_event_page_publishes() -> None:
-    """The index may not recount occurrences: it reads the event page's own anchor scheme,
-    and it points at the page that holds the change rather than at the act's timeline."""
+def test_provision_urls_are_the_provision_pages_the_tree_writes() -> None:
+    """A provision row lands on that coordinate's own page, not on one arbitrary event.
+
+    Checked against the builder's own slice rather than against a reconstruction of the path,
+    which is what makes the row and the file agree by construction: a search hit that names a
+    page nothing wrote is the sort of defect nobody reports, and it was the shape of the URLs
+    these rows carried until the provision pages existed.
+    """
     site = collect_site(
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)
     )
     act = site.acts[0]
-    pages = {
-        f"acts/{act.slug}/{entry.key}/": render_event_page(site, act, entry)
-        for entry in act.entries
-    }
+    pages = act_pages(site, act)
     payload = json.loads(search_index_json(site))
+    found = 0
     for item in payload["entries"]:
         if item["kind"] == "provision":
-            path, _, anchor = item["url"].partition("#")
-            assert path in pages, item["url"]
-            assert f'id="{anchor}"' in pages[path]
+            assert "#" not in item["url"], item["url"]
+            assert f"{item['url']}index.html" in pages, item["url"]
+            found += 1
+    assert found
 
 
 def test_an_amending_instrument_is_one_row_under_its_name_and_one_under_its_key() -> None:

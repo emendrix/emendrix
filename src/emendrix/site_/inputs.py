@@ -48,6 +48,7 @@ from emendrix.output.json_out import slug
 from emendrix.site_.amending import AmendingAct, collect_amending
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.clocks import EventDate, VersionDates, event_date, sort_date
+from emendrix.site_.urls import shared_path
 from emendrix.watch.config import Watchlist
 
 __all__ = [
@@ -273,6 +274,18 @@ def collect_site(
                 f"acts {seen[item.slug]} and {item.act} share the URL slug {item.slug!r}"
             )
         seen[item.slug] = item.act
+    for item in acts:
+        # An act's events and its provisions are pages in one directory, addressed by two
+        # vocabularies; two of them naming one path would write one page where the tree lists
+        # both, the same refusal two acts sharing a slug get above.
+        clash = shared_path(
+            (entry.key for entry in item.entries),
+            (e.change.location.canonical for entry in item.entries for e in entry.changes),
+        )
+        if clash is not None:
+            raise ValueError(
+                f"act {item.act} addresses an event and the provision {clash[1]!r} as {clash[0]!r}"
+            )
     resolved = tuple(
         item.model_copy(update={"eurlex_url": urls[item.slug]}) if item.slug in urls else item
         for item in acts

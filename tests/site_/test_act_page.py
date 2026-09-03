@@ -20,7 +20,7 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.pages.act import render_act
-from emendrix.site_.urls import event_href
+from emendrix.site_.urls import event_href, provision_href
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -160,16 +160,24 @@ def test_the_official_title_is_rendered_whole_however_long_it_is() -> None:
 
 
 def test_the_sidebar_lists_touched_provisions_and_amendments() -> None:
-    """Both lists now link into event pages, since that is where the evidence lives."""
+    """The amendments list links event pages; a provision links its own history.
+
+    The provision index pointed at the newest change's fragment on an event page until those
+    pages existed. It asks "has anything ever touched Article 13?", and the answer to that is
+    now a page rather than one arbitrary version transition, so no link in that list carries a
+    fragment at all any more.
+    """
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
-    rendered = render_act(site, site.acts[0])
+    act = site.acts[0]
+    rendered = render_act(site, act)
     sidebar = rendered.split('<aside class="sidebar">')[1].split("</aside>")[0]
-    target = f"../../{event_href(site.acts[0].slug, entry.key)}"
-    assert f'href="{target}"' in sidebar
-    assert f'href="{target}#' in sidebar
+    assert f'href="../../{event_href(act.slug, entry.key)}"' in sidebar
     first = entry.changes[0].change
+    assert f'href="../../{provision_href(act.slug, first.location.canonical)}"' in sidebar
     assert first.location.human in sidebar
+    provisions = sidebar.split("Touched provisions")[1].split("<h2>Amendments</h2>")[0]
+    assert "#" not in provisions
 
 
 def test_an_event_naming_no_amending_act_is_labelled_and_explained_once() -> None:

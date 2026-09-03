@@ -1,34 +1,26 @@
-"""What one page declares about itself: its address, its preview, its feeds, its JSON-LD.
+"""What one page publishes as machine-readable data: its breadcrumb trail and what it is about.
 
-Everything assembled here needs an absolute base. A canonical address, an `og:url` and an
-`og:image` are absolute by definition, and a JSON-LD `@id` that does not resolve identifies
-nothing. So the whole block is written only when the build was given a site URL, and without
-one it is absent in its entirety rather than in part: a page carrying `og:title` with no
-`og:url` renders a preview that is wrong, which is worse than a page with no preview. That is
-the rule `render_feed` keeps, extended rather than reinvented. The feed `rel="alternate"` links
-join it for a second reason of their own: they are relative and would survive without a base,
-but no `.xml` file is written without a site URL, so a build without one would advertise feeds
-the tree does not hold. The favicon link is the one head element that needs no base at all,
-which is why `chrome.page` writes it unconditionally and this module does not know about it.
+The JSON-LD half of a page's head. What that head states in meta tags, the canonical address,
+the Open Graph preview and the feed links, moved to `head.py` on 2026-09-03, when a provision
+page's structured data pushed this module past the size cap; the seam is the one this docstring
+already drew. The blocks here follow that module's rule rather than restating it: they are
+written only under an absolute base, because a JSON-LD `@id` that does not resolve identifies
+nothing.
 
-**`markup.escape` is wrong inside `<script type="application/ld+json">` and must not be used
-there.** A browser decodes no HTML entities inside that element, so an escaped `&amp;` reaches a
-consumer as those five characters and corrupts the JSON, while a literal `</script>` in any
-value ends the element early, which is the injection escaping exists to stop. `_ld_block` is the
-one correct path and the only place in the package that mints such an element: it rewrites `<`,
-`>` and `&` as JSON string escapes, which keeps the document valid JSON and cannot break out of
-the element. `indent=2` rather than compact separators, because the published tree is diffed in
-git and reviewed as a golden; Python dicts are insertion-ordered, so the bytes are deterministic
-without sorting keys.
+**`markup.escape` is wrong inside a JSON-LD element and must not be used there.** A browser
+decodes no HTML entities inside it, so an escaped `&amp;` reaches a consumer as those five
+characters and corrupts the JSON, while a literal end tag in any value ends the element early,
+which is the injection escaping exists to stop. `_ld_block` is the one correct path and the only
+place in the package that mints such an element: it rewrites `<`, `>` and `&` as JSON string
+escapes, which keeps the document valid JSON and cannot break out of the element. `indent=2`
+rather than compact separators, because the published tree is diffed in git and reviewed as a
+golden; Python dicts are insertion-ordered, so the bytes are deterministic without sorting keys.
 
-Three things are deliberately not declared. **No `SearchAction` on the `WebSite`**, because the
-search runs in the reader's browser over a prebuilt index and there is no `?q=` route to hand
-anyone; a search endpoint that does not exist would be a false claim in a machine-readable
-field. **No `og:type: article` on an act page**, because an article wants an author and a
-published time and these pages render a corpus whose explanations are partly model-written.
-**No `twitter:title`, `twitter:description` or `keywords`**: X falls back to the Open Graph
-values, so a second prefix would be one sentence in two places and one of them would get edited
-alone, and keywords have been ignored by every major engine since 2009.
+Nothing is declared that the inputs do not hold. **No `SearchAction` on the `WebSite`**, because
+the search runs in the reader's browser over a prebuilt index and there is no `?q=` route to
+hand anyone; a search endpoint that does not exist would be a false claim in a machine-readable
+field. Every breadcrumb is derived from the URL trail itself, so no page invents a rung its own
+address does not carry, and no type is claimed for a thing schema.org has no honest type for.
 """
 
 from __future__ import annotations
@@ -36,37 +28,30 @@ from __future__ import annotations
 import json
 from typing import Final
 
+from emendrix.core import ProvisionLocation
 from emendrix.output import ChangelogEntry
 from emendrix.site_.amending import AmendingAct
+from emendrix.site_.head import SITE_NAME, canonical_url
 from emendrix.site_.inputs import ActSite, SiteInputs
-from emendrix.site_.markup import Html, escape
-from emendrix.site_.urls import act_href, amendment_href, amendments_href, event_href
+from emendrix.site_.markup import Html
+from emendrix.site_.urls import (
+    act_href,
+    amendment_href,
+    amendments_href,
+    event_href,
+    provision_href,
+)
 
 __all__ = [
     "act_json_ld",
     "amendment_json_ld",
-    "canonical_url",
     "event_json_ld",
-    "head_metadata",
+    "provision_json_ld",
     "website_json_ld",
 ]
 
-_NAME: Final = "emendrix"
-"""What the site calls itself, in Open Graph and in every JSON-LD payload alike."""
-
 _SCHEMA: Final = "https://schema.org"
 """The `https` spelling, never `http`: the site publishes no `http://` string anywhere."""
-
-_CARD: Final = "og.png"
-_CARD_WIDTH: Final = 1200
-_CARD_HEIGHT: Final = 630
-_CARD_ALT: Final = "emendrix: provision-level changelogs for EU legislation"
-"""The link-preview card as `build.py` writes it, at the site root and at that size.
-
-Its address is built with `canonical_url` like a page's, because a scraper resolves neither a
-relative `og:image` nor a page-relative one, and because the card is written on every build
-whether or not anything yet points at it.
-"""
 
 _ACTS_INDEX: Final = "acts/"
 """The roster's own path, which is also the directory `act_href` puts every act page under.
@@ -77,68 +62,6 @@ so the two cannot drift apart silently.
 
 _INSTRUMENTS: Final = "Amending instruments"
 """The middle rung of an amendment page's breadcrumb, and that index page's own heading."""
-
-
-def canonical_url(site_url: str, path: str) -> str:
-    """The page's one absolute address.
-
-    `site_url` reaches this package with its trailing slash already stripped, and every page
-    path is site-root-relative with no leading slash, so exactly one separator joins them and
-    no caller strips anything a second time. The home page's path is `""`, which gives
-    `https://host/` with the trailing slash, the form a static host serves and redirects to.
-    """
-    return f"{site_url}/{path}"
-
-
-def head_metadata(
-    *,
-    title: str,
-    description: str,
-    path: str,
-    site_url: str,
-    root: str,
-    feeds: tuple[tuple[str, str], ...] = (),
-    structured: Html | None = None,
-) -> tuple[Html, ...]:
-    """Everything one head declares about the page, or nothing at all without a base address.
-
-    Returned as separate fragments rather than as one joined block, so that a build with no
-    site URL contributes no line at all to the head. An empty string joined into the head would
-    show up as a blank line on every page, which is a formatting change nobody asked for.
-
-    `feeds` arrives as `(site-root-relative path, title)` pairs and is prefixed with `root`
-    here, so a feed link resolves from a page at any depth. The pairs are passed in rather than
-    looked up because `feeds.py` imports `chrome.page`, and a lookup from here would close that
-    cycle.
-
-    `og:url` is the canonical address, computed once and used twice: the one way those two can
-    disagree is by being built separately.
-    """
-    if not site_url:
-        return ()
-    canonical = escape(canonical_url(site_url, path))
-    alternates = tuple(
-        Html(
-            f'<link rel="alternate" type="application/atom+xml" '
-            f'title="{escape(name)}" href="{escape(root + where)}">'
-        )
-        for where, name in feeds
-    )
-    block = (
-        Html(f'<link rel="canonical" href="{canonical}">'),
-        *alternates,
-        Html('<meta property="og:type" content="website">'),
-        Html(f'<meta property="og:site_name" content="{escape(_NAME)}">'),
-        Html(f'<meta property="og:title" content="{escape(title)}">'),
-        Html(f'<meta property="og:description" content="{escape(description)}">'),
-        Html(f'<meta property="og:url" content="{canonical}">'),
-        Html(f'<meta property="og:image" content="{escape(canonical_url(site_url, _CARD))}">'),
-        Html(f'<meta property="og:image:width" content="{_CARD_WIDTH}">'),
-        Html(f'<meta property="og:image:height" content="{_CARD_HEIGHT}">'),
-        Html(f'<meta property="og:image:alt" content="{escape(_CARD_ALT)}">'),
-        Html('<meta name="twitter:card" content="summary_large_image">'),
-    )
-    return block if structured is None else (*block, structured)
 
 
 def _ld_block(payload: object) -> Html:
@@ -170,10 +93,10 @@ def website_json_ld(site: SiteInputs, *, description: str) -> Html:
     payload: dict[str, object] = {
         "@context": _SCHEMA,
         "@type": "WebSite",
-        "name": _NAME,
+        "name": SITE_NAME,
         "url": home,
         "description": description,
-        "publisher": {"@type": "Organization", "name": _NAME, "url": home},
+        "publisher": {"@type": "Organization", "name": SITE_NAME, "url": home},
     }
     return _ld_block(payload)
 
@@ -247,7 +170,7 @@ def act_json_ld(site: SiteInputs, act: ActSite, *, title: str, description: str)
     roster = canonical_url(site.site_url, _ACTS_INDEX)
     here = canonical_url(site.site_url, act_href(act.slug))
     payload: list[dict[str, object]] = [
-        _breadcrumb(((_NAME, home), ("All watched acts", roster), (act.label, here))),
+        _breadcrumb(((SITE_NAME, home), ("All watched acts", roster), (act.label, here))),
         _webpage(here, title=title, description=description, about=_legislation(act)),
     ]
     return _ld_block(payload)
@@ -272,7 +195,7 @@ def event_json_ld(
     event = f"{entry.from_version} → {entry.to_version}"
     payload: list[dict[str, object]] = [
         _breadcrumb(
-            ((_NAME, home), ("All watched acts", roster), (act.label, act_page), (event, here))
+            ((SITE_NAME, home), ("All watched acts", roster), (act.label, act_page), (event, here))
         ),
         _webpage(here, title=title, description=description, about=_legislation(act)),
     ]
@@ -313,7 +236,46 @@ def amendment_json_ld(
         about["sameAs"] = instrument.eurlex_url
     about["legislationChanges"] = [_legislation(act) for act in amended]
     payload: list[dict[str, object]] = [
-        _breadcrumb(((_NAME, home), (_INSTRUMENTS, index), (instrument.short, here))),
+        _breadcrumb(((SITE_NAME, home), (_INSTRUMENTS, index), (instrument.short, here))),
+        _webpage(here, title=title, description=description, about=about),
+    ]
+    return _ld_block(payload)
+
+
+def provision_json_ld(
+    site: SiteInputs,
+    act: ActSite,
+    location: ProvisionLocation,
+    *,
+    title: str,
+    description: str,
+) -> Html:
+    """One provision page's breadcrumb trail and the page itself. Four rungs, like an event's.
+
+    The site is four deep here too, and the fourth rung is the provision in its human form,
+    which is what the page's own H1 says. `about` is the act this provision belongs to, the
+    same `Legislation` every other page describing that act declares, extended by one
+    `hasPart`: schema.org's own property for a component of a work, and a provision is one.
+    That part carries a name and nothing else, because a name is all the site has for it. It
+    has no address of its own at EUR-Lex that resolves (provision-level ELI 404s, verified
+    2026-08-05), no date, and no identifier outside this corpus's location vocabulary, so
+    nothing else is claimed for it.
+    """
+    home = canonical_url(site.site_url, "")
+    roster = canonical_url(site.site_url, _ACTS_INDEX)
+    act_page = canonical_url(site.site_url, act_href(act.slug))
+    here = canonical_url(site.site_url, provision_href(act.slug, location.canonical))
+    about = _legislation(act)
+    about["hasPart"] = {"@type": "Legislation", "name": location.human}
+    payload: list[dict[str, object]] = [
+        _breadcrumb(
+            (
+                (SITE_NAME, home),
+                ("All watched acts", roster),
+                (act.label, act_page),
+                (location.human, here),
+            )
+        ),
         _webpage(here, title=title, description=description, about=about),
     ]
     return _ld_block(payload)

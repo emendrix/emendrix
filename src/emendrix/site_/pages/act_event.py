@@ -32,6 +32,9 @@ The promises live here, each as a line of markup rather than a claim made elsewh
   the before/after text sits one `<details>` away, uncut and verbatim.
 - **Every provision is a heading**, and a long page opens with a list of them built from the
   same anchors the blocks carry, so the list cannot point where no block is.
+- **Every coordinate leads to its own history.** The heading's coordinate is a link to the
+  provision's page, which is the same act's directory one level up from this event's, so a
+  reader who arrived asking what this event did can ask what has ever been done to Annex XVII.
 
 What a change block says in words, the pill and the shipped sentences with their citations,
 moved to `pages/prose.py` on 2026-09-03 when naming the amending act pushed this module past
@@ -56,11 +59,12 @@ from emendrix.output.markdown import applies_text
 from emendrix.site_.amending import AmendingAct, amending_lines
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
 from emendrix.site_.clocks import event_date
-from emendrix.site_.diffview import render_texts
 from emendrix.site_.dispute import dispute_note
 from emendrix.site_.markup import Html, count, escape
 from emendrix.site_.pages.prose import pill, prose
+from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched, untouched_note
+from emendrix.site_.urls import location_slug
 
 __all__ = ["INDEX_ABOVE", "render_event", "render_event_summary"]
 
@@ -89,15 +93,26 @@ empty list.
 """
 
 
-def _change_block(emitted: EmittedChange, entry: ChangelogEntry, anchor: str) -> list[Html]:
+def _change_block(
+    emitted: EmittedChange, entry: ChangelogEntry, anchor: str, text: RenderedText
+) -> list[Html]:
     """One change: what it is, what is disputed about it, what was said, and the text itself.
 
     The block opens with a heading because the provision is the unit a reader and a crawler
     both look for: a passage is ranked, and a screen reader jumps, under `Art. 6` and its
-    title. The heading holds the pill, the coordinate and the title, each its own span so the
-    stylesheet sets the spacing; the applies line is a fact about the change rather than part
-    of its name, so it is a paragraph of its own. The `id` stays on the wrapping `div`, which
-    is what the anchors were minted for and what `.chg:target` highlights.
+    title. The heading holds the pill, the coordinate and the title, each its own element so
+    the stylesheet sets the spacing; the applies line is a fact about the change rather than
+    part of its name, so it is a paragraph of its own. The `id` stays on the wrapping `div`,
+    which is what the anchors were minted for and what `.chg:target` highlights.
+
+    The coordinate is a link to that provision's own page, a sibling of this event's page under
+    the act, so `../` climbs to the act's directory and the slug names the provision. It keeps
+    the weight it had as a span, because the coordinate is still the heading of the block and
+    not an invitation to leave it.
+
+    `text` is the evidence, rendered once for the whole entry by `pages.texts` and handed in:
+    the provision page shows the same block, and a diff computed twice is the one cost the
+    split of these pages could have introduced.
     """
     change = emitted.change
     title = (
@@ -107,7 +122,8 @@ def _change_block(emitted: EmittedChange, entry: ChangelogEntry, anchor: str) ->
         Html(f'<div class="chg" id="{escape(anchor)}">'),
         Html(
             f"<h3>{pill(change.change_type, disputed=change.disputed)} "
-            f'<span class="loc">{escape(change.location.human)}</span>{title}</h3>'
+            f'<a class="loc" href="../{escape(location_slug(change.location.canonical))}/">'
+            f"{escape(change.location.human)}</a>{title}</h3>"
         ),
         Html(f'<p class="applies">applies from {escape(applies_text(change.applies_from))}</p>'),
     ]
@@ -123,7 +139,7 @@ def _change_block(emitted: EmittedChange, entry: ChangelogEntry, anchor: str) ->
     lines.extend(
         (
             Html("<details><summary>text before / after</summary>"),
-            render_texts(change, entry),
+            text.html,
             Html("</details>"),
             Html("</div>"),
         )
@@ -255,22 +271,26 @@ def _touched(entry: ChangelogEntry, anchors: tuple[str, ...]) -> list[Html]:
 
 
 def render_event(
-    entry: ChangelogEntry, anchors: tuple[str, ...], acts: tuple[AmendingAct, ...] = ()
+    entry: ChangelogEntry,
+    anchors: tuple[str, ...],
+    texts: tuple[RenderedText, ...],
+    acts: tuple[AmendingAct, ...] = (),
 ) -> list[Html]:
     """One event's full body. `anchors` is one fragment per change, in the entry's own order.
 
     The anchors are computed once for the whole page and handed down, so the index over the
     changes and the blocks themselves point at the same fragments by construction rather than by
-    both sides running the same counter; `acts`, the instruments the entry names, arrives
-    resolved for the same reason.
+    both sides running the same counter; `acts`, the instruments the entry names, and `texts`,
+    the evidence blocks, arrive resolved for the same reason. `texts` is positional too, one
+    block per change, and is built once per entry however many pages show one of its changes.
     """
     lines = _event_header(entry, acts, full=True)
     if any(emitted.change.disputed for emitted in entry.changes):
         lines.append(Html(f'<p class="small muted">{escape(_THREE_SOURCES)}</p>'))
     if len(entry.changes) >= INDEX_ABOVE:
         lines.extend(_touched(entry, anchors))
-    for emitted, anchor in zip(entry.changes, anchors, strict=True):
-        lines.extend(_change_block(emitted, entry, anchor))
+    for emitted, anchor, text in zip(entry.changes, anchors, texts, strict=True):
+        lines.extend(_change_block(emitted, entry, anchor, text))
     lines.extend(
         (
             Html(

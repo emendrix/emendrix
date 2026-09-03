@@ -28,8 +28,9 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.gate import GateOutcome
 from emendrix.graph.report import EmittedChange, EmittedDelta, EmittedSentence
 from emendrix.output import ChangelogEntry, diff_only_entry
-from emendrix.site_.inputs import SiteInputs, collect_site
+from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
 from emendrix.site_.pages.event import render_event_page
+from emendrix.site_.pages.texts import text_blocks
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -53,9 +54,14 @@ def _site(*entries: ChangelogEntry) -> SiteInputs:
     return collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries)
 
 
+def _rendered(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
+    """One event page through the builder's own signature: the evidence blocks arrive with it."""
+    return render_event_page(site, act, entry, text_blocks(entry))
+
+
 def _page(entry: ChangelogEntry) -> str:
     site = _site(entry)
-    return render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    return _rendered(site, site.acts[0], site.acts[0].entries[0])
 
 
 def test_the_page_shows_every_change_with_a_stable_anchor() -> None:
@@ -85,7 +91,7 @@ def test_a_long_name_heads_the_page_and_the_label_opens_the_facts_line() -> None
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     act = site.acts[0].model_copy(update={"long_name": "House Rules of Flat 3B"})
-    rendered = render_event_page(site, act, act.entries[0])
+    rendered = _rendered(site, act, act.entries[0])
     assert "<h1>House Rules of Flat 3B</h1>" in rendered
     assert f'<p class="facts">{act.label} · <code>{act.act.key}</code>' in rendered
     assert f"<title>{act.label}: " in rendered
@@ -222,7 +228,7 @@ def _headed(**update: object) -> str:
     """One event page, its entry patched, for reading the heading and the dates line off."""
     entry = diff_only_entry(_delta(), detected_on=OBSERVED).model_copy(update=update)
     site = _site(entry)
-    return render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    return _rendered(site, site.acts[0], site.acts[0].entries[0])
 
 
 def test_the_event_is_headed_by_its_date_and_the_dates_line_carries_the_other_clock() -> None:
@@ -257,7 +263,7 @@ def test_the_event_page_names_the_act_and_the_version_pair_under_the_heading() -
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
     site = _site(stated)
-    rendered = render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    rendered = _rendered(site, site.acts[0], site.acts[0].entries[0])
     assert f"<h1>{site.acts[0].headline}</h1>" in rendered
     assert (
         f'<p class="ident"><code>{stated.from_version} → {stated.to_version}</code></p>' in rendered
@@ -319,7 +325,7 @@ def test_an_event_naming_no_amending_act_says_so_and_gains_no_line() -> None:
     from site_entries import unattributed_entry
 
     site = _site(unattributed_entry())
-    rendered = render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    rendered = _rendered(site, site.acts[0], site.acts[0].entries[0])
     assert 'class="amending"' not in rendered
     assert "no amending act named" in rendered
     label = site.acts[0].label
@@ -348,7 +354,7 @@ def test_the_pager_links_the_events_either_side_and_names_each_by_its_date() -> 
     site = _timeline(3)
     act = site.acts[0]
     newest, middle, oldest = act.entries
-    rendered = render_event_page(site, act, middle)
+    rendered = _rendered(site, act, middle)
     assert '<nav class="pager" aria-label="Events of this act">' in rendered
     assert f'<a rel="prev" href="../{oldest.key}/">← detected 2026-08-10</a>' in rendered
     assert f'<a rel="next" href="../{newest.key}/">detected 2026-08-12 →</a>' in rendered
@@ -358,12 +364,12 @@ def test_the_pager_is_half_missing_at_each_end_and_absent_for_a_lone_event() -> 
     site = _timeline(3)
     act = site.acts[0]
     newest, _, oldest = act.entries
-    assert 'rel="next"' not in render_event_page(site, act, newest)
-    assert 'rel="prev"' in render_event_page(site, act, newest)
-    assert 'rel="prev"' not in render_event_page(site, act, oldest)
-    assert 'rel="next"' in render_event_page(site, act, oldest)
+    assert 'rel="next"' not in _rendered(site, act, newest)
+    assert 'rel="prev"' in _rendered(site, act, newest)
+    assert 'rel="prev"' not in _rendered(site, act, oldest)
+    assert 'rel="next"' in _rendered(site, act, oldest)
     lone = _timeline(1)
-    assert 'class="pager"' not in render_event_page(lone, lone.acts[0], lone.acts[0].entries[0])
+    assert 'class="pager"' not in _rendered(lone, lone.acts[0], lone.acts[0].entries[0])
 
 
 def test_the_event_links_the_page_of_every_instrument_it_names() -> None:
@@ -382,11 +388,11 @@ def test_the_other_acts_an_instrument_amended_are_named_only_when_there_are_some
 
     entry = attributed_entry()
     site = _site(entry)
-    assert "also amended" not in render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    assert "also amended" not in _rendered(site, site.acts[0], site.acts[0].entries[0])
     second = ActId(corpus="toy", key="second-house")
     shared = _site(entry, entry.model_copy(update={"act": second}))
     here = next(act for act in shared.acts if act.act != second)
-    rendered = render_event_page(shared, here, here.entries[0])
+    rendered = _rendered(shared, here, here.entries[0])
     assert f'also amended <a href="../../../acts/{second.key}/">{second.key}</a>' in rendered
 
 
@@ -394,5 +400,5 @@ def test_an_event_naming_no_instrument_gains_no_link_line() -> None:
     from site_entries import unattributed_entry
 
     site = _site(unattributed_entry())
-    rendered = render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    rendered = _rendered(site, site.acts[0], site.acts[0].entries[0])
     assert "amendments/" not in rendered.split("<main")[1]

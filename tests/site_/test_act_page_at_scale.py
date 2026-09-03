@@ -7,15 +7,17 @@ backfilled history served 6.1 MB carrying 2,170 collapsed evidence blocks in one
 tree split on 2026-08-31, one page per event with the act page as its timeline, which bounds a
 page by one consolidation instead of by an act's whole history.
 
-So this builds one act's whole tree, the index and two hundred event pages, through
-`build.act_pages`, the slice the builder itself writes, and asserts the properties that only
-have teeth at scale:
+So this builds one act's whole tree, the index, two hundred event pages and four hundred and
+one provision pages, through `build.act_pages`, the slice the builder itself writes, and
+asserts the properties that only have teeth at scale:
 
 - every `id` is unique within its page, and the tree still mints its thousands of them;
 - every link that carries a fragment resolves to a page in the tree that holds that `id`,
   which is where a depth or prefix mistake between the index and its event pages would land;
 - one location appearing twice inside one event still mints the `-2` suffix, on the page that
   owns it, which is the only input the occurrence counter exists for;
+- every coordinate link on an event page lands on a provision page the same tree wrote, which
+  is the second cross-page edge and the one with no fragment to check it by;
 - newest first survives two hundred events on the index;
 - two renderings of one input are byte-identical, page for page.
 
@@ -60,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 171816)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 168230)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -88,9 +90,19 @@ page gained 82 bytes of chrome, a skip link, the header navigation's name and th
 to, and gave back 23 on each of the two hundred cards: the heading of a card already names one
 clock and its date, so the line under it no longer prints that clause a second time. It still
 carries the clock the heading did not, and an event with no in-force date or with several says
-so there."""
+so there.
 
-_TOTAL_BYTES: Final = 1052136
+3586 bytes lighter on 2026-09-03, later again, the second downward move and the only page in
+this tree that got smaller when the provisions gained pages of their own. The index still
+weighs most, and it is the sidebar that did it: each of the 401 coordinates in the touched-
+provisions list linked `../../acts/house-rules/<entry key>/#<anchor>`, the newest change of
+that coordinate on the event page holding it, and now links `../../acts/house-rules/<slug>/`,
+that coordinate's whole history. About 9 bytes a link over 401 links. The heaviest page in
+this tree is not a provision page: the annex every one of the two hundred events touches is
+53 782 bytes over two hundred steps, a third of the index, because 199 of those steps carry a
+link where the newest carries the diff."""
+
+_TOTAL_BYTES: Final = 2088276
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -205,7 +217,12 @@ def _entries() -> tuple[ChangelogEntry, ...]:
 
 
 def _pages(entries: tuple[ChangelogEntry, ...]) -> dict[str, str]:
-    """The act's whole tree as the builder writes it: one index, one page per event."""
+    """The act's whole tree as the builder writes it: the index, the events, the provisions.
+
+    Four hundred and one provision pages over these two hundred events: one per article, one
+    per sub-coordinate, and the toy's own annex, which every event touches and which is
+    therefore a two-hundred-step history.
+    """
     site: SiteInputs = collect_site(
         generated_on=_FIRST_DETECTED, run=_run(), report=Path("r.json"), entries=entries
     )
@@ -258,7 +275,26 @@ def test_every_fragment_link_across_the_act_tree_resolves() -> None:
             assert landing in pages, f"{path}: {href}"
             assert f'id="{fragment}"' in pages[landing], f"{path}: {href}"
             checked += 1
-    assert checked > _EVENTS, "the sidebar's provision links alone outnumber the events"
+    assert checked > _EVENTS, "the older steps of the provision histories outnumber the events"
+
+
+def test_every_coordinate_link_on_an_event_page_lands_on_a_provision_page() -> None:
+    """The one cross-page edge with no fragment to check it by, so it is checked by itself.
+
+    A change heading's coordinate links `../<slug>/`, a sibling directory of the event page
+    under the act. It is the same climb the older steps of a provision page make in the other
+    direction, and a depth or slug mistake in either would be a link into nothing that no
+    fragment check would see.
+    """
+    pages = _pages(_entries())
+    checked = 0
+    for path, rendered in pages.items():
+        base = posixpath.dirname(path)
+        for href in re.findall(r'<a class="loc" href="([^"]*)"', rendered):
+            landing = f"{posixpath.normpath(posixpath.join(base, href))}/index.html"
+            assert landing in pages, f"{path}: {href}"
+            checked += 1
+    assert checked == _EVENTS * 4, "one link per change block over two hundred event pages"
 
 
 def test_the_repeated_coordinate_is_what_makes_the_suffix_appear() -> None:
