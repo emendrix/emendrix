@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — emendrix</title>
+<meta name="description" content="Who runs emendrix, what it is and is not, and what it does on your machine.">
+<link rel="canonical" href="https://example.invalid/site/about/">
+<link rel="alternate" type="application/atom+xml" title="emendrix — all watched acts" href="../feeds/all.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="emendrix">
+<meta property="og:title" content="About — emendrix">
+<meta property="og:description" content="Who runs emendrix, what it is and is not, and what it does on your machine.">
+<meta property="og:url" content="https://example.invalid/site/about/">
+<meta property="og:image" content="https://example.invalid/site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="emendrix: provision-level changelogs for EU legislation">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script defer src="../search.js"></script>
+</head>
+<body>
+<header class="bar"><a class="wordmark" href="../">emendrix</a><nav><a href="../acts/">All acts</a> <a href="../methodology/">Methodology</a> <a href="../about/">About</a> <a href="../feeds/">Feeds</a></nav><div id="search" data-root="../"></div></header>
+<main>
+<h1>About emendrix</h1>
+<p class="lede">Your regulatory dependencies, with a changelog. emendrix watches EU legislation, computes provision-level diffs when it is amended, and explains what changed in plain English where every sentence cites a provision you can click.</p>
+<h2>What it is</h2>
+<p>emendrix watches the Publications Office notification feed for the acts on its watchlist. When one of them is amended it fetches both consolidated versions as structured XML, computes which articles and annexes differ, checks that finding against two independent signals, the publisher&#x27;s own amendment metadata and a parse of the amending act&#x27;s instructions, and has a model phrase the difference between the two verbatim texts. Anything the three sources disagree about ships marked disputed rather than dropped.</p>
+<p>The model never decides whether something changed, which provisions were involved, or what kind of change it is. Every other stage is deterministic Python, and each result is committed to a git repository as Markdown and JSON before any of it reaches a page.</p>
+<p>How each of those claims is measured, over what, and what none of the figures means is on the <a href="../methodology/">methodology page</a>.</p>
+<h2>What it is not</h2>
+<p class="disclaimer"><strong>Not legal advice:</strong> this output is machine-computed from published texts, carries no lawyer&#x27;s review, and is engineering assistance only. Read the official consolidated text on <a href="https://eur-lex.europa.eu/">EUR-Lex</a>.</p>
+<p>Nothing here is selected to flatter the tool. Every figure the project measures is published with the sentence saying what it does not mean, the cases it fails included.</p>
+<h2>The code and the data</h2>
+<p>The generator is open source in the emendrix repository, and the changelog documents it writes are public in the changelog repository. Every page here is a rendering of files committed to those two places, so anything the site shows can be traced back to something a reader can open.</p>
+<h2>On your machine</h2>
+<p>This site sets no cookies, counts no readers and asks nothing of any other host. The one script it loads is served from here and fetches this site&#x27;s own search index, so a search runs in the browser and reaches nobody. Nothing about a reader is stored anywhere.</p>
+</main>
+<footer>
+<p class="disclaimer"><strong>Not legal advice:</strong> this output is machine-computed from published texts, carries no lawyer&#x27;s review, and is engineering assistance only. Read the official consolidated text on <a href="https://eur-lex.europa.eu/">EUR-Lex</a>.</p>
+<p>Generated on 2026-08-06 from artifacts committed in the emendrix repository; the changelog data it renders is public in the changelog repository. One small script for search; no cookies, no analytics, no third-party requests. <a href="../about/">About this site</a>.</p>
+</footer>
+</body>
+</html>

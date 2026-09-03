@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import date
 
+from helpers import text_of
+
 from emendrix import DISCLAIMER
 from emendrix.site_.chrome import nav_links, page
 from emendrix.site_.inputs import PageChrome
@@ -24,9 +26,26 @@ def _page(path: str = "", repo_url: str = "", changelogs_url: str = "") -> str:
 
 def test_every_page_carries_the_disclaimer_and_the_generated_date() -> None:
     rendered = _page()
-    assert escape(DISCLAIMER) in rendered
+    assert escape(DISCLAIMER) in text_of(rendered)
     assert "Not legal advice" in rendered
     assert "2026-08-09" in rendered
+
+
+def test_the_disclaimer_says_not_legal_advice_once_with_its_lead_in_bold() -> None:
+    """The paragraph led with a bolded `Not legal advice.` and then printed the constant,
+    which itself opens `Not legal advice:`, so a reader met the phrase twice in one line.
+    Only the emphasis moved: the words are the constant's own, in its own order.
+    """
+    paragraph = _page().split('<p class="disclaimer">')[1].split("</p>")[0]
+    assert paragraph.count("Not legal advice") == 1
+    assert "<strong>Not legal advice:</strong>" in paragraph
+    assert escape(DISCLAIMER) in text_of(paragraph)
+
+
+def test_the_footer_links_the_about_page_from_whatever_depth_the_page_sits_at() -> None:
+    assert 'href="about/">About this site</a>' in _page()
+    assert 'href="../../about/">About this site</a>' in _page(path="acts/x/")
+    assert 'href="../about/">About</a>' in nav_links(1)
 
 
 def test_the_path_prefixes_every_internal_link_and_asset() -> None:

@@ -12,6 +12,7 @@ the assertions below untestable rather than lenient.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from typer.testing import CliRunner
@@ -51,6 +52,21 @@ def build(out: Path, repo: Path | None, *extra: str) -> Path:
     result = runner.invoke(app, arguments, env={"EMENDRIX_OUTPUT_REPO": ""})
     assert result.exit_code == 0, result.output
     return out
+
+
+_TAG = re.compile(r"<[^>]+>")
+
+
+def text_of(rendered: str) -> str:
+    """A page's words with its tags removed, and its character references left alone.
+
+    For assertions about a sentence the markup emphasises part of. The disclaimer's lead is
+    bold, so the constant it is built from is no longer one substring of the HTML while still
+    being one substring of what a reader sees. Escaping is deliberately not undone: the escaped
+    form is what the page must carry, and `escape(DISCLAIMER)` is what the assertions compare
+    against.
+    """
+    return _TAG.sub("", rendered)
 
 
 def _tree(out: Path) -> dict[str, bytes]:

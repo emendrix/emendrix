@@ -59,7 +59,7 @@ Not legal advice: this output is machine-computed from published texts, carries 
 | `emendrix run --once` | The cron-able command: poll, fetch, diff, corroborate, explain, gate, emit. `--summary json` puts the counts on stderr as one JSON object, for a log collector. |
 | `emendrix backfill` | The same loop over every historical transition of every watched act; an output repository is required. Start with `--dry-run`, which lists what would run and spends nothing. `--since`, `--act`, `--limit`, `--polite-delay`, `--ledger`, `--retry-limit`. |
 | `emendrix eval <subcommand>` | `run`, `publish-readme`, `sample-digest`, `judge-benchmark`, and the pair `build-corpus` then `build-subset` **in that order**: the first writes `explain_subset: null` and only the second fills it in, so stopping after it leaves the model layer with no pinned subset to measure over. `build-corpus` also defaults to `--fetch` and stamps `built_on` from the clock, so reproducing the committed `corpus.json` byte for byte takes `--no-fetch --built-on 2026-08-06`, the date already in the file. |
-| `emendrix site build --out site/` | Write the static site from the committed changelogs and the newest committed eval report. `--changelogs`, `--site-url`, `--repo-url`, `--watchlist`. |
+| `emendrix site build --out site/` | Write the static site from the committed changelogs and the newest committed eval report. `--changelogs`, `--site-url`, `--repo-url`, `--watchlist`. `--operator`, `--operator-url` and `--contact` are the deployment's own: they fill the about page's "Who runs it" section, none has a default, and a build given none of them renders that page without it. |
 
 ## Configuration
 

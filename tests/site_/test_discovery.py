@@ -290,9 +290,10 @@ def test_the_crawl_policy_carries_no_comment_of_its_own(site: Path) -> None:
 def test_a_site_with_no_events_at_all_still_has_a_sitemap() -> None:
     """A checkout with a watchlist and an empty changelog repository is a real state.
 
-    The four fixed pages are still published, so they are still listed, and the only date
-    anything has is the report's. Two renderings of one input agree, which is the module's half
-    of the byte-stability the whole tree is held to.
+    The five fixed pages are still published, so they are still listed, and the only date
+    anything has is the report's: the about page's content moves with the build rather than
+    with the corpus, so it carries no `<lastmod>` on any site. Two renderings of one input
+    agree, which is the module's half of the byte-stability the whole tree is held to.
     """
     inputs = _empty_site()
     document = sitemap_xml(inputs)
@@ -304,6 +305,7 @@ def test_a_site_with_no_events_at_all_still_has_a_sitemap() -> None:
         f"{SITE_URL}/",
         f"{SITE_URL}/acts/",
         f"{SITE_URL}/methodology/",
+        f"{SITE_URL}/about/",
         f"{SITE_URL}/feeds/",
     ]
     assert document.count("<lastmod>") == 1

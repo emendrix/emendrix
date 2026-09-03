@@ -27,7 +27,14 @@ from toy_corpus import AMENDMENT, HOUSE_RULES, V1, V2, ToyCorpusAdapter
 OBSERVED_ON = date(2026, 8, 9)
 IN_FORCE = date(2026, 6, 1)
 
-__all__ = ["IN_FORCE", "OBSERVED_ON", "attributed_entry", "unattributed_entry", "untouched_entry"]
+__all__ = [
+    "IN_FORCE",
+    "OBSERVED_ON",
+    "attributed_entry",
+    "disputed_entry",
+    "unattributed_entry",
+    "untouched_entry",
+]
 
 
 def _toy_delta() -> Delta:
@@ -94,6 +101,30 @@ def attributed_entry() -> ChangelogEntry:
                 amending_act=AMENDMENT,
             )
             for change in delta.changes
+        ),
+    )
+    return _entry_of(delta, metadata)
+
+
+def disputed_entry() -> ChangelogEntry:
+    """The same transition with metadata that lists every change but the first.
+
+    An available signal that did not see one of the units is the disagreement `disputed`
+    names, so the entry ships one. Handing `corroborate()` an empty claim list would not do
+    it: a signal given no annotations at all is unavailable, not silent, which is the
+    distinction corrected on 2026-08-12 and the reason the report here names three units.
+    """
+    delta = _toy_delta()
+    metadata = SignalReport(
+        signal=Signal.CORPUS_METADATA,
+        claims=tuple(
+            SignalClaim(
+                location=change.unit,
+                change_type=change.change_type,
+                in_force=IN_FORCE,
+                amending_act=AMENDMENT,
+            )
+            for change in delta.changes[1:]
         ),
     )
     return _entry_of(delta, metadata)

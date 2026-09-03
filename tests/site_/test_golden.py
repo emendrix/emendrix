@@ -38,7 +38,7 @@ import re
 from pathlib import Path
 
 import pytest
-from helpers import REPO, _tree, build
+from helpers import REPO, _tree, build, text_of
 
 from emendrix import DISCLAIMER
 from emendrix.site_.markup import escape
@@ -88,9 +88,15 @@ def test_the_committed_golden_tree_is_what_the_command_writes(site: Path) -> Non
 
 
 def test_every_page_carries_the_disclaimer(site: Path) -> None:
+    """The words, not the markup: the lead is bold, so the constant spans two nodes.
+
+    Read over the tag-stripped page for that reason and no other. What is asserted is still
+    the escaped constant, character for character, which is what stops the sentence being
+    reworded on a page while the source of truth stays where every other output reads it.
+    """
     for page in _pages(site):
         text = page.read_text(encoding="utf-8")
-        assert escape(DISCLAIMER) in text, page
+        assert escape(DISCLAIMER) in text_of(text), page
         assert "Not legal advice" in text, page
 
 
@@ -178,7 +184,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 37238)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 37303)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -200,7 +206,12 @@ beside each), which is where all 75 bytes went; nothing below the head moved.
 1120 bytes heavier on 2026-09-02, later the same day, when each of the nine change blocks
 opened with an `<h3>` of three spans and its own applies paragraph, and the page gained the
 `nav.touched` list above them: nine items of a fragment link and a pill, which is most of the
-growth. Nothing inside a `<details>` moved."""
+growth. Nothing inside a `<details>` moved.
+
+65 bytes heavier on 2026-09-03, when the site gained an about page. The header bar's fourth
+link costs 36 bytes at this depth and the footer's closing one 47, and the disclaimer gave 18
+back by no longer printing `Not legal advice` twice. Every page on the site moved by those
+same three edits; only the relative paths differ, and this page is three directories down."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

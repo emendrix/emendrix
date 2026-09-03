@@ -6,7 +6,7 @@ for it without JavaScript), and the second is the list of what actually moved. T
 trusting any of it lives on the methodology page instead, where a reader who wants it finds all
 of it at once rather than scrolling past it to get to the facts.
 
-Three things this page will not do:
+Four things this page will not do:
 
 - **No explanation prose.** A card carries the act, the version pair, the counts and the date,
   all of them read off the committed document. Sentences a model wrote live on the event
@@ -15,6 +15,10 @@ Three things this page will not do:
   figure and links straight to the row that says what it does not mean.
 - **No silence.** An empty changelog repository, or none at all, is a sentence saying which,
   not a page that renders nothing.
+- **No disputed count without the sentence saying what disputed means.** The word is the
+  project's own vocabulary and reads on a card as a defect rate, so the gloss is printed once
+  above the list whenever any card shown carries one, and each count carries it again as its
+  own tooltip.
 
 Depth 0: this page sits at the site root, so its internal links need no prefix. `up(0)` is
 still written where a link is built, because the prefix is what makes the tree work from a
@@ -27,6 +31,7 @@ from emendrix.output import ChangelogEntry
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date
+from emendrix.site_.dispute import DISPUTED_GLOSS
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
@@ -115,18 +120,28 @@ def _card(act: ActSite, entry: ChangelogEntry) -> Html:
     absent on plenty of events, and a detection date printed as an in-force date would be a
     quiet lie about a fact this project treats as first class, which is why the words come
     from `clocks.event_date` rather than being built here.
+
+    A disputed count is its own segment carrying the gloss as a tooltip, never a clause
+    appended to the provision count: `36 provisions, 36 disputed` reads as a failure rate,
+    where two counts separated like the date are two facts about the same event.
     """
     counts = entry.counts
     touched = UNTOUCHED_CARD if untouched(entry) else count(counts.touched, "provision")
-    if counts.disputed:
-        touched += f", {counts.disputed} disputed"
+    disputed = (
+        Html(
+            f' · <span class="disp" title="{escape(DISPUTED_GLOSS)}">'
+            f"{escape(count(counts.disputed, 'disputed change'))}</span>"
+        )
+        if counts.disputed
+        else Html("")
+    )
     dated = event_date(entry).words
     href = f"{up(_DEPTH)}{event_href(act.slug, entry.key)}"
     return Html(
         f'<div class="cardrow">'
         f'<h3><a href="{escape(href)}">{escape(act.label)}</a> '
         f"<code>{escape(str(entry.from_version))} → {escape(str(entry.to_version))}</code></h3>"
-        f"<p>{escape(touched)} · {escape(dated)}</p>"
+        f"<p>{escape(touched)}{disputed} · {escape(dated)}</p>"
         f"</div>"
     )
 
@@ -138,6 +153,9 @@ def _amendments(site: SiteInputs, limit: int) -> list[Html]:
     ones no amending act is named for, which do not belong in a list titled "Latest
     amendments" at all. Both exclusions are stated with a count, because a silent one would
     make this window read as the whole record.
+
+    The gloss is printed when a card in this window carries a disputed count and not otherwise:
+    a sentence explaining a mark that is nowhere on the page reads as a warning about it.
     """
     recent = site.recent
     lines = [Html("<h2>Latest amendments</h2>")]
@@ -153,6 +171,8 @@ def _amendments(site: SiteInputs, limit: int) -> list[Html]:
         )
         return lines
     shown = amendments[:limit]
+    if any(entry.counts.disputed for _, entry in shown):
+        lines.append(Html(f'<p class="small muted">{escape(DISPUTED_GLOSS)}</p>'))
     lines.extend(_card(act, entry) for act, entry in shown)
     older = len(amendments) - len(shown)
     if older:

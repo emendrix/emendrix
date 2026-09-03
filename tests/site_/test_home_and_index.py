@@ -5,14 +5,16 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from site_entries import unattributed_entry
+from site_entries import attributed_entry, disputed_entry, unattributed_entry
 
 from emendrix.core import Delta, ProvisionTree, VersionId
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
+from emendrix.site_.dispute import DISPUTED_GLOSS
 from emendrix.site_.inputs import collect_site
+from emendrix.site_.markup import escape
 from emendrix.site_.pages.acts_index import render_acts_index
 from emendrix.site_.pages.home import render_home
 from emendrix.site_.urls import event_href
@@ -235,3 +237,37 @@ def test_every_act_on_the_index_links_its_page() -> None:
     )
     rendered = render_acts_index(site)
     assert f'href="../acts/{site.acts[0].slug}/"' in rendered
+
+
+def test_a_disputed_count_never_stands_without_the_sentence_saying_what_it_means() -> None:
+    """`36 provisions, 36 disputed` reads as a failure rate to a reader who has met no other
+    page. The count stays, because the mark is the project's own promise not to drop the
+    change; what travels with it is the sentence saying the disagreement is between the
+    sources and not about the law.
+    """
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(disputed_entry(),),
+        configured=True,
+    )
+    rendered = render_home(site)
+    assert rendered.count(escape(DISPUTED_GLOSS)) == 2
+    assert f'<span class="disp" title="{escape(DISPUTED_GLOSS)}">1 disputed change</span>' in (
+        rendered
+    )
+
+
+def test_a_home_page_with_nothing_disputed_carries_neither_the_gloss_nor_the_span() -> None:
+    """A sentence explaining a mark that is nowhere on the page reads as a warning about it."""
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(attributed_entry(),),
+        configured=True,
+    )
+    rendered = render_home(site)
+    assert "disputed" not in rendered
+    assert 'class="disp"' not in rendered

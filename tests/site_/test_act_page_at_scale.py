@@ -60,7 +60,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 170632)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 170691)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -69,9 +69,14 @@ provisions, the heaviest page is an event's. Either way the number moves only on
 17 bytes heavier on 2026-09-02, when the act page's title started saying what the page holds:
 `: every amendment` between the act's name and the site's, in the one `<title>` this build
 writes, since it passes no site URL and so carries no Open Graph copy of it. Unmoved later
-that day, when every change block grew a heading: the index carries cards, not blocks."""
+that day, when every change block grew a heading: the index carries cards, not blocks.
 
-_TOTAL_BYTES: Final = 972170
+59 bytes heavier on 2026-09-03, when the site gained an about page: the header bar gained a
+fourth link to it (33 bytes at this depth) and the footer a closing one (44), and the
+disclaimer paragraph stopped printing `Not legal advice` twice, which gave 18 back. Every
+page on the site moved by the same three edits, at whatever its own depth costs."""
+
+_TOTAL_BYTES: Final = 985229
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -86,7 +91,12 @@ gained markup below the head.
 an `<h3>` of three spans, pill, coordinate and title, and moved its applies line into a
 paragraph of its own: 22 bytes a block, 88 an event page, over two hundred pages. That is the
 cost of a heading a crawler can rank a passage under. No page here carries the in-page
-provision index, since four changes is under the six it starts at."""
+provision index, since four changes is under the six it starts at.
+
+13 059 bytes heavier on 2026-09-03, the about page's two new links less the eighteen bytes the
+disclaimer stopped repeating: 59 on the index and 65 on each of the two hundred event pages,
+which sit a directory deeper and so pay three bytes more for each of the two relative paths.
+That is the whole cost of giving a reader somewhere to learn who runs the site."""
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
 _LINKS: Final = re.compile(r'href="([^"]*)"')

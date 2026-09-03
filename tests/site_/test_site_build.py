@@ -87,6 +87,7 @@ def test_the_command_writes_every_surface(tmp_path: Path, changelog_repo: Path) 
         "sitemap.xml",
         "acts/index.html",
         "methodology/index.html",
+        "about/index.html",
         "feeds/index.html",
         "feeds/all.xml",
     ):
@@ -288,6 +289,77 @@ def test_the_command_refuses_a_changelogs_url_that_is_not_https(tmp_path: Path) 
     )
     assert result.exit_code == 2
     assert "must be an https:// URL" in result.output
+
+
+def test_the_command_refuses_an_operator_url_that_is_not_https(tmp_path: Path) -> None:
+    """The operator's own page is a link on a public page, so it is held to the same rule."""
+    result = runner.invoke(
+        app,
+        [
+            "site",
+            "build",
+            "--out",
+            str(tmp_path / "s"),
+            "--report-dir",
+            str(REPORTS),
+            "--operator-url",
+            "http://example.invalid/who",
+        ],
+        env={"EMENDRIX_OUTPUT_REPO": ""},
+    )
+    assert result.exit_code == 2
+    assert "must be an https:// URL" in result.output
+
+
+def test_the_command_refuses_a_contact_that_is_not_shaped_like_an_address(
+    tmp_path: Path,
+) -> None:
+    """A shape check and nothing more: one `@`, no whitespace.
+
+    What a generator can usefully refuse is a value that would render a broken `mailto:`.
+    Whether the address receives mail is a question only a message can answer, so nothing
+    here pretends to validate one.
+    """
+    for bad in ("not-an-address", "two@at@example.invalid", "spaced out@example.invalid"):
+        result = runner.invoke(
+            app,
+            [
+                "site",
+                "build",
+                "--out",
+                str(tmp_path / "s"),
+                "--report-dir",
+                str(REPORTS),
+                "--contact",
+                bad,
+            ],
+            env={"EMENDRIX_OUTPUT_REPO": ""},
+        )
+        assert result.exit_code == 2, bad
+        assert "must be an address with one @ and no spaces" in result.output
+
+
+def test_the_operator_flags_reach_the_about_page_and_nowhere_else(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """They are deployment facts, so exactly one page may name them and none may be committed."""
+    out = build(
+        tmp_path / "site",
+        changelog_repo,
+        "--operator",
+        "A. Person",
+        "--operator-url",
+        "https://example.invalid/who",
+        "--contact",
+        "hello@example.invalid",
+    )
+    named = [
+        path.relative_to(out).as_posix()
+        for path in sorted(out.rglob("*"))
+        if path.is_file() and b"hello@example.invalid" in path.read_bytes()
+    ]
+    assert named == ["about/index.html"]
+    assert "A. Person" in (out / "about/index.html").read_text(encoding="utf-8")
 
 
 def test_the_environment_variable_is_the_second_source_of_the_changelog_repository(

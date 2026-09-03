@@ -108,6 +108,10 @@ class PageChrome(BaseModel):
     and its own docstring named an eleventh as the signal to gather rather than grow. It lives
     here rather than in `chrome` because `seo` reads this module and `chrome` reads `seo`, so
     this is the one place both can import it from without a cycle.
+
+    `operator`, `operator_url` and `contact` are deployment facts like `site_url`: they arrive
+    on the command line and nothing about them is committed, so a build that names nobody is
+    the normal state and every page that reads them says nothing rather than something blank.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -116,6 +120,9 @@ class PageChrome(BaseModel):
     repo_url: str = Field(default="", description="Public home of the source, or ''.")
     changelogs_url: str = Field(default="", description="Public home of the changelog data, or ''.")
     site_url: str = Field(default="", description="Absolute base for feeds, or '' for none.")
+    operator: str = Field(default="", description="Who runs this instance, or '' for nobody named.")
+    operator_url: str = Field(default="", description="Public page of the operator, or ''.")
+    contact: str = Field(default="", description="Address readers may write to, or ''.")
 
 
 class SiteInputs(BaseModel):
@@ -136,6 +143,9 @@ class SiteInputs(BaseModel):
     repo_url: str = Field(default="", description="Public home of the source, or ''.")
     changelogs_url: str = Field(default="", description="Public home of the changelog data, or ''.")
     site_url: str = Field(default="", description="Absolute base for feeds, or '' for none.")
+    operator: str = Field(default="", description="Who runs this instance, or '' for nobody named.")
+    operator_url: str = Field(default="", description="Public page of the operator, or ''.")
+    contact: str = Field(default="", description="Address readers may write to, or ''.")
 
     @property
     def chrome(self) -> PageChrome:
@@ -145,6 +155,9 @@ class SiteInputs(BaseModel):
             repo_url=self.repo_url,
             changelogs_url=self.changelogs_url,
             site_url=self.site_url,
+            operator=self.operator,
+            operator_url=self.operator_url,
+            contact=self.contact,
         )
 
     @property
@@ -195,6 +208,9 @@ def collect_site(
     repo_url: str = "",
     changelogs_url: str = "",
     site_url: str = "",
+    operator: str = "",
+    operator_url: str = "",
+    contact: str = "",
     eurlex_urls: dict[str, str] | None = None,
     version_dates: VersionDates | None = None,
 ) -> SiteInputs:
@@ -262,4 +278,7 @@ def collect_site(
         repo_url=repo_url,
         changelogs_url=changelogs_url,
         site_url=site_url,
+        operator=operator,
+        operator_url=operator_url,
+        contact=contact,
     )

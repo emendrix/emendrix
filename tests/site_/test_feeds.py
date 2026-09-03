@@ -121,7 +121,7 @@ def test_the_feeds_page_lists_the_global_feed_and_every_watched_act() -> None:
     rendered = render_feeds_page(site)
     assert 'href="../feeds/all.xml"' in rendered
     assert f'href="../feeds/{site.acts[0].slug}.xml"' in rendered
-    assert "Not legal advice." in rendered
+    assert "Not legal advice:" in rendered
 
 
 def test_without_a_site_url_the_feeds_page_says_so_and_no_feed_is_rendered() -> None:

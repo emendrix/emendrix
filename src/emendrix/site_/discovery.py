@@ -18,7 +18,7 @@ only its `Sitemap:` line, because a crawl policy is about paths. Every `<loc>` i
 `seo.canonical_url`, the same function that writes the page's canonical, so a sitemap entry and
 a canonical cannot name two addresses for one page.
 
-Pages only: the four fixed ones, one per act and one per amendment event. An event page's
+Pages only: the five fixed ones, one per act and one per amendment event. An event page's
 `<lastmod>` is that event's own `event_dated`, the same clock its feed entry's `<updated>`
 reads, so the two records of one fact cannot disagree. Feeds are advertised by `rel="alternate"` in
 every head and a sitemap indexes pages rather than subscriptions; the stylesheet, the script,
@@ -83,11 +83,15 @@ def robots_txt(site: SiteInputs) -> str:
 def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     """Every page a crawler should know about, with the date its content last moved.
 
-    The four fixed paths are literals, the same site-root-relative paths the page modules are
+    The five fixed paths are literals, the same site-root-relative paths the page modules are
     rendered under and the builder writes them to. Nothing derives one from the other, so
     `test_discovery.py` compares the sitemap against the built tree in both directions: a path
     that stops matching a file, and a page that gains no entry, both fail there rather than
     reaching a crawler.
+
+    The about page carries no date at all: its content moves with the build rather than with
+    the corpus, and `generated_on` is exactly the value this module refuses to stamp a URL
+    with. That is the same rule an act nothing has happened to yet is under.
 
     `max` needs its default: a checkout with a watchlist and an empty changelog repository is a
     real state, and every date here is then `None` except the methodology page's.
@@ -103,6 +107,7 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         ("", newest),
         ("acts/", newest),
         ("methodology/", site.run.run_date),
+        ("about/", None),
         ("feeds/", newest),
     ]
     fixed.extend(

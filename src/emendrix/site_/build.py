@@ -14,6 +14,7 @@ acts/index.html                 the roster
 acts/<slug>/index.html          one page per watched act: its timeline and index
 acts/<slug>/<key>/index.html    one page per event: the changes and the verbatim text
 methodology/index.html          what the numbers mean
+about/index.html                who runs the site, and what it does on the reader's machine
 feeds/index.html                what feeds exist
 feeds/all.xml                   every event, newest first
 feeds/<slug>.xml                one feed per act, quiet acts included
@@ -51,6 +52,7 @@ from emendrix.site_.assets import icon_svg, og_png, search_js
 from emendrix.site_.discovery import ROBOTS, SITEMAP, robots_txt, sitemap_xml
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
 from emendrix.site_.inputs import ActSite, SiteInputs
+from emendrix.site_.pages.about import render_about
 from emendrix.site_.pages.act import render_act
 from emendrix.site_.pages.acts_index import render_acts_index
 from emendrix.site_.pages.event import render_event_page
@@ -102,6 +104,7 @@ def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
         INDEX: search_index_json(site),
         "acts/index.html": render_acts_index(site),
         "methodology/index.html": render_methodology(site),
+        "about/index.html": render_about(site),
         "feeds/index.html": render_feeds_page(site),
     }
     for act in site.acts:

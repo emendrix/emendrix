@@ -36,7 +36,22 @@ from pydantic import BaseModel, ConfigDict
 
 from emendrix.core import Signal, SignalObservation, SignalSet, SignalStatus
 
-__all__ = ["DisputeNote", "dispute_note"]
+__all__ = ["DISPUTED_GLOSS", "DisputeNote", "dispute_note"]
+
+DISPUTED_GLOSS: Final = (
+    "A change marked disputed is one the three sources emendrix checks disagree about. It is "
+    "shown rather than dropped, and it says nothing about the law: it is a fact about the "
+    "sources."
+)
+"""What the word means, for a page that prints a count of them rather than one of them.
+
+The event page primes a reader with the sentence naming the three sources and then gives each
+disagreement its own note through `dispute_note`, and the methodology page explains the same
+thing where the loop is described. A count on a card has room for neither, and `36 disputed`
+beside `36 provisions` reads as a defect rate to somebody who has met no other page, so this
+is the one sentence that travels with a count. It restates the same claim those two make and
+adds nothing to it: the stored vocabulary still does not move.
+"""
 
 _SOURCE: Final[dict[Signal, str]] = {
     Signal.STRUCTURAL_DIFF: "the text comparison",

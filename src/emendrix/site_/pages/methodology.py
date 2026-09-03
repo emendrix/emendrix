@@ -30,17 +30,12 @@ from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, count, escape, inline, join
+from emendrix.site_.pitch import PITCH
 
 __all__ = ["render_methodology"]
 
 _PATH = "methodology/"
 """Where this page lives, relative to the site root. The shell derives the climb back from it."""
-
-_PITCH = (
-    "Your regulatory dependencies, with a changelog. emendrix watches EU legislation, computes "
-    "provision-level diffs when it is amended, and explains what changed in plain English where "
-    "every sentence cites a provision you can click."
-)
 
 _LOOP: tuple[tuple[str, str], ...] = (
     (
@@ -213,7 +208,7 @@ def render_methodology(site: SiteInputs) -> Html:
     body = join(
         (
             Html("<h1>Methodology</h1>"),
-            Html(f'<p class="lede">{escape(_PITCH)}</p>'),
+            Html(f'<p class="lede">{escape(PITCH)}</p>'),
             Html(f'<p class="lede muted">{_headline_sentence(site)}</p>'),
             *_metrics(site),
             *_how_it_works(),

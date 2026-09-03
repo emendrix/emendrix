@@ -89,4 +89,18 @@ six at which a list stops being a second copy of what is on screen. Every `id` o
 byte-identical and stays on the `div`, so the search index, both feeds and `sitemap.xml` did
 not move. `style.css` gained seven lines, the minimum for the heading and the list to keep
 the page's current look. No measured figure moved with it.
+
+Read again on 2026-09-03, when the site gained a page saying who runs it. Twelve files moved.
+`about/index.html` is new: what emendrix is in one paragraph, what it is not in the
+disclaimer's own words, the two repositories in the footer's linked-or-plain form, and what
+the site does on a reader's machine. It carries no "Who runs it" section, because that
+section renders only from the three command-line values a deployment supplies and the golden
+build passes none of them; the configured shapes are asserted on a rendered string in
+`test_about.py` instead, since nothing personal is committed here. The ten pages that carry
+the shell each moved by three edits and no others: the header bar gained a fourth link, the
+footer gained a closing one, and the disclaimer paragraph stopped printing `Not legal advice`
+twice, its lead now bolded inside the constant rather than prefixed to it. `sitemap.xml`
+gained one `<url>` with no `<lastmod>`, the about page's content moving with the build rather
+than with the corpus. Both feeds, `search-index.json`, `robots.txt`, `style.css` and the three
+assets are byte-identical. No measured figure moved with it.
 """

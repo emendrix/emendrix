@@ -21,27 +21,29 @@ from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.seo import head_metadata
 from emendrix.site_.urls import depth_of, up
 
-__all__ = ["nav_links", "page"]
+__all__ = ["disclaimer_html", "nav_links", "page", "repository_links"]
 
 
 def nav_links(depth: int) -> Html:
-    """The header bar: wordmark, the three fixed destinations, and the search mount point."""
+    """The header bar: wordmark, the four fixed destinations, and the search mount point."""
     root = up(depth)
     return Html(
         f'<header class="bar"><a class="wordmark" href="{root or "./"}">emendrix</a>'
         f'<nav><a href="{root}acts/">All acts</a> '
         f'<a href="{root}methodology/">Methodology</a> '
+        f'<a href="{root}about/">About</a> '
         f'<a href="{root}feeds/">Feeds</a></nav>'
         f'<div id="search" data-root="{root}"></div></header>'
     )
 
 
-def _footer(chrome: PageChrome) -> Html:
-    """The disclaimer, the build date and what the site does on the reader's machine.
+def repository_links(chrome: PageChrome) -> tuple[Html, Html]:
+    """The source and the changelog data, each a link when configured and words when not.
 
     An unset repository URL renders as plain words rather than a dead link: a link that goes
-    nowhere is worse than a sentence naming the repository. The same rule holds for the
-    changelog-data repository, so either sentence half reads correctly with its URL missing.
+    nowhere is worse than a sentence naming the repository. Both halves are minted here rather
+    than at each call site, so the footer and the about page cannot name the two repositories
+    in two different shapes.
     """
     source = (
         Html(f'<a href="{escape(chrome.repo_url)}">the emendrix repository</a>')
@@ -53,18 +55,42 @@ def _footer(chrome: PageChrome) -> Html:
         if chrome.changelogs_url
         else Html("the changelog repository")
     )
+    return source, changelogs
+
+
+def disclaimer_html() -> Html:
+    """The disclaimer paragraph, its lead emphasised and its words untouched.
+
+    `DISCLAIMER` is one sentence whose first clause is the part a reader scans for, so the
+    paragraph splits it at its own colon and bolds the lead rather than prefixing a second
+    heading of the same words. The constant itself never moves: the feed, the CLI and the
+    changelog print it whole, and the split is a rendering decision belonging to the page.
+    """
+    lead, rest = DISCLAIMER.split(": ", 1)
+    return Html(
+        f'<p class="disclaimer"><strong>{escape(lead)}:</strong> {escape(rest)} '
+        'Read the official consolidated text on <a href="https://eur-lex.europa.eu/">'
+        "EUR-Lex</a>.</p>"
+    )
+
+
+def _footer(chrome: PageChrome, root: str) -> Html:
+    """The disclaimer, the build date and what the site does on the reader's machine.
+
+    `root` is the page's own climb back to the site root, passed in rather than read off the
+    chrome model: which directory a page sits in is a fact about the page, and the footer's
+    one internal link has to resolve from wherever the file was written.
+    """
+    source, changelogs = repository_links(chrome)
     return join(
         (
             Html("<footer>"),
-            Html(
-                f'<p class="disclaimer"><strong>Not legal advice.</strong> {escape(DISCLAIMER)} '
-                'Read the official consolidated text on <a href="https://eur-lex.europa.eu/">'
-                "EUR-Lex</a>.</p>"
-            ),
+            disclaimer_html(),
             Html(
                 f"<p>Generated on {chrome.generated_on.isoformat()} from artifacts committed in "
                 f"{source}; the changelog data it renders is public in {changelogs}. One small "
-                f"script for search; no cookies, no analytics, no third-party requests.</p>"
+                f"script for search; no cookies, no analytics, no third-party requests. "
+                f'<a href="{root}about/">About this site</a>.</p>'
             ),
             Html("</footer>"),
         ),
@@ -134,7 +160,7 @@ def page(
             Html("<main>"),
             body,
             Html("</main>"),
-            _footer(chrome),
+            _footer(chrome, root),
             Html("</body>"),
             Html("</html>"),
             Html(""),

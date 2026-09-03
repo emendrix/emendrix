@@ -21,8 +21,14 @@ than one that admits what it was given.
 
 `--site-url` is the one address the generator cannot infer. Pages link relative to themselves
 and need none, but a feed's links are absolute by definition, so without it no feed file is
-written and the feeds page says why. It is also the only place a deployment fact enters: the
-site is otherwise a pure function of committed artifacts.
+written and the feeds page says why.
+
+`--operator`, `--operator-url` and `--contact` are deployment facts of the same kind: who runs
+this instance, where to read about them, and where a reader may write. They are the only other
+place such a fact enters, the site being otherwise a pure function of committed artifacts, and
+they arrive on the command line because a name and an address belong to a deployment and not
+to an open-source tree. None of them has a default, because an about page that names nobody is
+honest where one that names a placeholder is not.
 
 This module is where the EU corpus is allowed to be named. Which act has an EUR-Lex address is
 a corpus capability, not something the pages may know, so the URL is resolved here from the
@@ -158,6 +164,19 @@ def build(
         str,
         typer.Option("--site-url", help="Public https:// base of the site. Without it, no feeds."),
     ] = "",
+    operator: Annotated[
+        str, typer.Option("--operator", help="Who runs this instance, for the about page.")
+    ] = "",
+    operator_url: Annotated[
+        str,
+        typer.Option(
+            "--operator-url", help="Public https:// page of the operator, for the about page."
+        ),
+    ] = "",
+    contact: Annotated[
+        str,
+        typer.Option("--contact", help="Address readers may write to, for the about page."),
+    ] = "",
     generated_on: Annotated[
         datetime | None,
         typer.Option(
@@ -171,15 +190,26 @@ def build(
 
     Deterministic: the same artifacts and the same date produce the same bytes, which is what
     lets a golden test assert the tree rather than assert around it.
+
+    `--contact` is checked for shape and nothing more: one `@` and no whitespace. That is not
+    RFC 5322 and is not meant to be, since the only thing a generator can usefully refuse is
+    a value that would render a broken `mailto:`; whether the address receives mail is a
+    question only a message can answer.
     """
     for name, value in (
         ("--repo-url", repo_url),
         ("--changelogs-url", changelogs_url),
         ("--site-url", site_url),
+        ("--operator-url", operator_url),
     ):
         if value and not value.startswith("https://"):
             typer.echo(f"{name} must be an https:// URL; got {value!r}", err=True)
             raise typer.Exit(code=2)
+    if contact and (contact.count("@") != 1 or any(c.isspace() for c in contact)):
+        typer.echo(
+            f"--contact must be an address with one @ and no spaces; got {contact!r}", err=True
+        )
+        raise typer.Exit(code=2)
     try:
         watchlist = _watchlist(watchlist_path)
         chosen = report if report is not None else latest_report(report_dir)
@@ -205,6 +235,9 @@ def build(
         # Joined with a single separator wherever a feed builds an absolute link, so the base
         # carries none of its own.
         site_url=site_url.rstrip("/"),
+        operator=operator,
+        operator_url=operator_url,
+        contact=contact,
         eurlex_urls=_eurlex_urls(entries, version_dates),
         version_dates=version_dates,
     )
