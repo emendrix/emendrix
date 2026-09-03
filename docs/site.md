@@ -122,6 +122,32 @@ anything happened. Every event page also carries the events either side of it in
 history, older first as `rel="prev"`, each named by its dated words, the timeline running
 newest first.
 
+The roster page says what it covers before it lists anything. The lede counts the acts and
+then says what kinds they are, in words the composition root chose from each CELEX's descriptor
+(`Regulation`, `Directive`, `Decision`, and any other descriptor as its own letter), because
+"67 acts" says nothing about whether the act a reader came for could be here at all. Under it
+sits one fixed paragraph: every act is watched in its English text, no Directive is on the
+watchlist, and a consolidated version with no English text is recorded as such rather than
+translated. It is printed **only while the roster's own kinds make it true**, so the day a
+Directive is watched the sentence goes rather than becoming the site being wrong about itself,
+and the about page prints the same constant in "What it is not" so the two cannot drift. Each
+domain heading carries an id, which is what an act page's neighbours line links to.
+
+An act with no recorded event gets a page of facts rather than a page of apology. It carries the
+act's identifiers and its domain, its own Atom feed, a link to the act **as published** on
+EUR-Lex, the other watched acts the watchlist puts in its group, and one sentence saying what an
+empty timeline means: no transition between two versions of it is in the changelog this site is
+built from. **There is no date in it, because the site has none**: when an act was last checked
+lives in the poller's own state file and reaches no committed artifact, and `emendrix backfill`
+can still write an older transition tomorrow, so an empty timeline is a fact about the record and
+never about time. The two EUR-Lex links are labelled apart, "on EUR-Lex" for the newest
+consolidated version and "as published, on EUR-Lex" for the act as the Official Journal published
+it, because they are two different documents: a page shows the consolidated one where an event
+resolved one and the published one otherwise, which is the only one an act nothing has happened
+to can have. Every act page with at least one neighbour in its domain closes its header with
+them, up to six by name and then a link to the group on the roster; a domain is the watchlist's
+label, so nothing there is inferred.
+
 Some committed events name no amending act at all: their corroboration window turned up no
 modification annotations and no amending-act instructions, so only the text comparison observed
 them. The commonest shape is the act as published set against its own first consolidation, where

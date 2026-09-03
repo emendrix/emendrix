@@ -10,6 +10,7 @@ from emendrix.site_.urls import (
     amendments_href,
     change_anchor,
     depth_of,
+    domain_anchor,
     entry_anchors,
     event_href,
     location_slug,
@@ -139,3 +140,13 @@ def test_the_two_amendment_addresses_sit_one_and_two_directories_down() -> None:
     """The literals `pages/amendments_index.py` and `pages/amendment.py` hold."""
     assert depth_of(amendments_href()) == 1
     assert depth_of(amendment_href("32026R1744")) == 2
+
+
+def test_a_domain_becomes_the_id_the_roster_and_the_act_pages_share() -> None:
+    """One function, so the heading and the link that reaches it cannot drift apart. Two
+    labels that differ only in the characters the slug drops share an id, which costs a
+    repeated heading id and never a link that goes somewhere wrong; it is pinned rather than
+    engineered away, as the same case in `location_slug` is."""
+    assert domain_anchor("Digital") == "Digital"
+    assert domain_anchor("Data & privacy") == domain_anchor("Data privacy") == "Data_privacy"
+    assert domain_anchor("Chemicals") != domain_anchor("Health")

@@ -17,7 +17,11 @@ Every card still carries `id="{entry.key}"`, because that fragment is the permal
 feed entry was published under and an address published once never stops resolving.
 
 A watched act with no amendments gets a page that says so. Silence and "nothing happened" are
-different claims, and only one of them is true here.
+different claims, and only one of them is true here. Such a page is not empty of facts: it
+carries the act's identifiers, the address of its text as published, its feed, and the other
+acts the watchlist puts in its group, which is everything the record holds about an act nothing
+has yet happened to. What it never carries is a date, because the site has none: when an act
+was last checked lives in the poller's own state file and reaches no committed artifact.
 """
 
 from __future__ import annotations
@@ -33,13 +37,32 @@ from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.pages.act_event import render_event_summary
 from emendrix.site_.pages.prose import pill
 from emendrix.site_.seo import act_json_ld
-from emendrix.site_.urls import act_href, event_href, provision_href, up
+from emendrix.site_.urls import act_href, domain_anchor, event_href, provision_href, up
 
 __all__ = ["render_act"]
 
 _QUIET = (
-    "No amendments to this act have been seen since watching began. A quiet act is a real answer."
+    "No amendment event is recorded for this act: the changelog this site is built from holds "
+    "no transition between two versions of it."
 )
+"""What an empty timeline means, said as a fact about the record rather than about time.
+
+It carries no date, because the site has none to carry: the day an act was last checked lives
+in the poller's own state file, never in the changelog repository, and nothing under `site_/`
+reads a clock. "Since watching began" went with it on 2026-09-03, for a second reason:
+`emendrix backfill` writes historical transitions, so an empty timeline is a statement about
+what has been recorded and not about when watching started.
+"""
+
+_QUIET_PUBLISHED = "Its text as published is on EUR-Lex"
+_QUIET_FEED = "the feed above will carry the first event the day one is recorded"
+"""The two things a reader can still do here, each said only where it can be done: a build with
+no site URL mints no feed, and an act outside a corpus with published documents has no link."""
+
+_QUIET_TAIL = "A quiet act is a real answer."
+
+_RELATED = 6
+"""How many neighbours the related line names before it stops and links the group instead."""
 
 _DEPTH = 2
 """`acts/<slug>/index.html`: every internal link on this page climbs two directories first.
@@ -115,6 +138,53 @@ def _sidebar(act: ActSite) -> Html:
     return join(lines, "\n")
 
 
+def _quiet_words(act: ActSite, site: SiteInputs) -> str:
+    """What a page with an empty timeline says, built from the facts this build actually has.
+
+    Three sentences at most: what the record holds, what a reader can do about it, and the
+    site's own answer to the question. The middle one is assembled from parts because each of
+    its halves depends on something the build may not have been given, and a sentence naming a
+    feed that was never written or a document that has no address would be the page making up
+    an offer, which is the one thing a page about silence must not do.
+    """
+    offers = [_QUIET_PUBLISHED] if act.published_url else []
+    if site.site_url:
+        offers.append(_QUIET_FEED)
+    middle = f"{', and '.join(offers)}. " if offers else ""
+    return f"{_QUIET} {middle[:1].upper() + middle[1:]}{_QUIET_TAIL}"
+
+
+def _related(site: SiteInputs, act: ActSite) -> list[Html]:
+    """The other watched acts in this act's domain, and the roster group they all sit in.
+
+    A domain is the watchlist's own label, so this line infers nothing: it says which other
+    acts an operator put in the same group, which is the question a reader who came here for
+    one act asks next. An act alone in its domain gets no line, because a list of no
+    neighbours introduced by "also watched" is a heading over nothing.
+
+    The order is `collect_site`'s, which is the acts index's order too, so the two agree
+    without a second sort. Past `_RELATED` names the line stops and links the group's own
+    heading on the roster instead: a domain of forty acts is a page of its own, and this is a
+    line at the foot of a header.
+    """
+    if not act.domain:
+        return []
+    group = [item for item in site.acts if item.domain == act.domain]
+    others = [item for item in group if item.act != act.act]
+    if not others:
+        return []
+    links = [
+        Html(f'<a href="{escape(up(_DEPTH) + act_href(item.slug))}">{escape(item.label)}</a>')
+        for item in others[:_RELATED]
+    ]
+    if len(others) > _RELATED:
+        href = escape(f"{up(_DEPTH)}acts/#{domain_anchor(act.domain)}")
+        links.append(Html(f'<a href="{href}">all {escape(str(len(group)))} →</a>'))
+    return [
+        Html(f'<p class="related">Also watched in {escape(act.domain)}: {join(links, " · ")}</p>')
+    ]
+
+
 def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     """The act's name, its official title, the facts that identify it, and where to go next.
 
@@ -122,6 +192,12 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     under a configured site URL, and only the composition root knows whether this corpus has
     an official page. A dead link is worse than a missing one, and a line holding no link at
     all is not rendered, so an act with neither keeps a header of three elements.
+
+    The official document is named under one of two labels, never both, because the newest
+    consolidated version and the act as it was published are two documents. The consolidated
+    one leads where an event resolved it, and the act as published stands in where none did,
+    which is the only one an act nothing has happened to can have. The neighbours line closes
+    the header, after the links, because it is about the roster rather than about this act.
 
     The feed's own module says where a feed lives, rather than this page spelling the path a
     second time: the two agreeing today is not the same as their being unable to disagree.
@@ -164,12 +240,20 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
         links.append(Html(f'<a href="{href}">Atom feed</a>'))
     if act.eurlex_url:
         links.append(Html(f'<a class="nowrap" href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
+    elif act.published_url:
+        links.append(
+            Html(
+                f'<a href="{escape(act.published_url)}">as published, '
+                f'<span class="nowrap">on EUR-Lex</span></a>'
+            )
+        )
     header = [Html(f"<h1>{escape(act.headline)}</h1>")]
     if title != act.headline and title != act.label:
         header.append(Html(f'<p class="official">{escape(title)}</p>'))
     header.append(Html(f'<p class="facts">{join(facts, " · ")}</p>'))
     if links:
         header.append(Html(f'<p class="links">{join(links, " · ")}</p>'))
+    header.extend(_related(site, act))
     return header
 
 
@@ -181,7 +265,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
             render_event_summary(entry, _event_link(act, entry), amenders(site.amending, entry))
         )
     if not act.entries:
-        timeline.append(Html(f'<p class="none">{escape(_QUIET)}</p>'))
+        timeline.append(Html(f'<p class="none">{escape(_quiet_words(act, site))}</p>'))
     timeline.append(Html("</section>"))
     # A quiet act gets no index and no two-column layout: the index would be two headings
     # over two empty lists, and the grid reserves its first column for exactly that index.

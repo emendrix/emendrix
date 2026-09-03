@@ -15,6 +15,9 @@ needing all of them.
 "What it is not" says so in the page's own words rather than reprinting the disclaimer. The
 footer carries that constant on this page as on every other, and a reader who met the same
 sentence twice on one screen would read the second as a different claim they had to compare.
+The section also states what the roster does not cover, from the same constant the acts index
+prints and under the same condition: `pitch.SCOPE` claims no Directive is watched, so both
+pages render it from `SiteInputs.kinds` and drop it the day one is.
 
 No JSON-LD: there is no schema.org type that describes a page about a tool honestly, and the
 rule in `seo.py` is that a page declares a type or declares nothing.
@@ -28,7 +31,7 @@ from emendrix.site_.chrome import page, repository_links
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import PageChrome, SiteInputs
 from emendrix.site_.markup import Html, escape, join
-from emendrix.site_.pitch import PITCH
+from emendrix.site_.pitch import PITCH, SCOPE, scope_holds
 from emendrix.site_.urls import depth_of, up
 
 __all__ = ["render_about"]
@@ -130,6 +133,7 @@ def render_about(site: SiteInputs) -> Html:
             ),
             Html("<h2>What it is not</h2>"),
             Html(f"<p>{escape(_NOT_A_SUBSTITUTE)}</p>"),
+            *([Html(f"<p>{escape(SCOPE)}</p>")] if scope_holds(site.kinds) else []),
             Html(f"<p>{escape(_NOT_CURATED)}</p>"),
             *_who_runs_it(chrome),
             Html("<h2>The code and the data</h2>"),

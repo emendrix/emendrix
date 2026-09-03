@@ -347,4 +347,33 @@ served on `127.0.0.1` on 2026-09-03: eight tabs reach the input, typing `art` an
 `9 results`, two `ArrowDown` presses highlight the second row with the caret left at the end of
 the query, `Enter` opens `acts/32017R0745/ar-113/`, and Lighthouse scores the home page 100 for
 accessibility both at rest and with the list open. No measured figure moved with it.
+
+**2026-09-03, the scope is stated, a quiet act is given its facts, and two lines are rewritten
+for a reader.** Ten files moved and none was added. `acts/index.html` gained the clause saying
+what the roster is made of, "4 acts watched, all of them Regulations", and under the lede the
+paragraph saying every act is watched in its English text and no Directive is on the watchlist,
+which is printed from `pitch.SCOPE` only while the roster's own kinds make it true; each domain
+`<h2>` gained the id the act pages link to, and the row fact for an act with no events reads
+"no amendment recorded" rather than "no amendments seen", a statement about the record instead
+of about what anyone has looked for. `about/index.html` prints the same constant once, in "What
+it is not", and the disclaimer still reaches that page exactly once. The three quiet act pages
+say what an empty timeline means in three sentences with no date in them, because the site has
+none: when an act was last checked lives in the poller's state file and reaches no committed
+artifact. They also gained the act as published on EUR-Lex, under its own label because the
+newest consolidation and the act as published are two documents, and their `Legislation`
+payload names the same address in `sameAs`, so the page and the payload name one document or
+neither does. The two Digital acts gained the neighbours line; the MDR act page did not, being
+alone in Health, and an act alone in its domain gets no line rather than a heading over nothing.
+The MDR act page, the MDR event page and `amendments/32020R0561/index.html` moved by the facts
+line, which now reads "every change carries an explanation that passed its citation check" where
+it read two zeros under the gate's own names: the same two fields, said as what they mean, and
+the committed Markdown keeps the gate's names unchanged. `index.html` moved by its `<title>`,
+which carries the category words once. `style.css` grew from 20 584 to 20 760 bytes for the
+`.related` rule; no hex value moved, so both contrast tables are unchanged and the line uses
+`--muted`, already measured on every surface it sits on. Both feeds, `sitemap.xml`,
+`search-index.json`, `robots.txt`, `search.js`, `icon.svg` and `og.png` are byte-identical,
+every feed `<id>` with them, and no anchor or relative path already published moved.
+`_LARGEST_PAGE` falls 15 bytes on the facts line and stays the MDR event page; `_HEAVIEST` and
+`_TOTAL_BYTES` do not move at all, that tree being built with no watchlist, so it has no
+domains, no kinds and no published addresses. No measured figure moved with any of it.
 """

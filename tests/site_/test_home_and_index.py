@@ -17,7 +17,8 @@ from emendrix.site_.inputs import collect_site
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.acts_index import render_acts_index
 from emendrix.site_.pages.home import render_home
-from emendrix.site_.urls import event_href
+from emendrix.site_.pitch import SCOPE
+from emendrix.site_.urls import domain_anchor, event_href
 from emendrix.watch.config import Watchlist
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -96,6 +97,15 @@ def test_a_card_leads_with_the_act_and_carries_the_version_pair_below_it() -> No
         f'<p class="ident"><code class="id">{entry.from_version} → {entry.to_version}</code></p>'
         in rendered
     )
+
+
+def test_the_home_title_names_the_category_a_reader_searches_for() -> None:
+    """The one place the category words are spelled out. The headline and the pitch keep
+    their own voice: a title is what a search result shows, and the page is what it opens."""
+    site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"))
+    rendered = render_home(site)
+    assert "<title>emendrix — provision-level changelogs for EU regulations</title>" in rendered
+    assert "What changed in your regulations?" in rendered
 
 
 def test_home_without_events_says_so_instead_of_going_dark() -> None:
@@ -185,7 +195,72 @@ def test_the_index_groups_by_domain_with_other_last() -> None:
     )
     rendered = render_acts_index(site)
     assert rendered.index("Data &amp; privacy") < rendered.index("Other")
-    assert "no amendments seen" in rendered
+    assert "no amendment recorded" in rendered
+
+
+def test_the_lede_says_what_kinds_of_act_the_roster_holds() -> None:
+    """ "67 acts" says nothing about whether the act a reader came for could be here at all.
+    The words and the counts are the composition root's; this page prints them."""
+    watchlist = Watchlist.model_validate(
+        {"acts": [{"celex": f"32016R{700 + index:04d}"} for index in range(4)]}
+    )
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        watchlist=watchlist,
+        kinds=(("Regulation", 4),),
+    )
+    assert "4 acts watched, all of them Regulations." in render_acts_index(site)
+    one = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), kinds=(("Decision", 1),)
+    )
+    assert "watched, a Decision." in render_acts_index(one)
+    two = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        kinds=(("Regulation", 60), ("Directive", 7)),
+    )
+    assert "watched, 60 Regulations and 7 Directives." in render_acts_index(two)
+    bare = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"))
+    assert "0 acts watched. " in render_acts_index(bare)
+
+
+def test_the_scope_paragraph_is_printed_only_while_the_roster_makes_it_true() -> None:
+    """It claims no Directive is watched. The day one is, the sentence would be the site being
+    wrong about itself, so it is rendered from the roster's own kinds rather than standing."""
+    regulations = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), kinds=(("Regulation", 4),)
+    )
+    assert escape(SCOPE) in render_acts_index(regulations)
+    mixed = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        kinds=(("Regulation", 60), ("Directive", 7)),
+    )
+    assert escape(SCOPE) not in render_acts_index(mixed)
+    bare = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"))
+    assert escape(SCOPE) not in render_acts_index(bare)
+
+
+def test_every_domain_heading_carries_the_id_an_act_page_links_to() -> None:
+    """The act pages link `acts/#<domain>`; without the id that link lands at the top."""
+    watchlist = Watchlist.model_validate(
+        {
+            "acts": [
+                {"celex": "32016R0679", "name": "GDPR", "domain": "Data & privacy"},
+                {"celex": "32024R1689", "name": "AI Act"},
+            ]
+        }
+    )
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), watchlist=watchlist
+    )
+    rendered = render_acts_index(site)
+    assert f'<h2 id="{domain_anchor("Data & privacy")}">Data &amp; privacy</h2>' in rendered
+    assert f'<h2 id="{domain_anchor("Other")}">Other</h2>' in rendered
 
 
 def test_the_index_row_links_the_long_form_and_keeps_the_label_beside_it() -> None:
@@ -268,14 +343,14 @@ def test_the_index_counts_events_naming_no_amending_act_apart() -> None:
 
 
 def test_the_index_row_for_an_act_with_only_unnamed_events_says_so() -> None:
-    """Neither a date (nothing was amended) nor "no amendments seen" (events exist and the
+    """Neither a date (nothing was amended) nor "no amendment recorded" (events exist and the
     act's page shows them): the third state gets its own words."""
     site = collect_site(
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(unattributed_entry(),)
     )
     rendered = render_acts_index(site)
     assert "events recorded, none names an amending act" in rendered
-    assert "no amendments seen" not in rendered
+    assert "no amendment recorded" not in rendered
     assert "in force 2" not in rendered and "detected 2" not in rendered
 
 

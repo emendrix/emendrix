@@ -10,6 +10,7 @@ their own modules, because a page is chosen by the builder and by nobody else.
 """
 
 from emendrix.site_.build import write_site
-from emendrix.site_.inputs import SiteInputs, collect_site, read_entries
+from emendrix.site_.entries import read_entries
+from emendrix.site_.inputs import SiteInputs, collect_site
 
 __all__ = ["SiteInputs", "collect_site", "read_entries", "write_site"]

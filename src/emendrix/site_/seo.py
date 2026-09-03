@@ -123,10 +123,11 @@ def _legislation(act: ActSite) -> dict[str, object]:
 
     A `Legislation`, schema.org's ELI-derived type, and ELI is the vocabulary EU legislation
     is actually published under, so it is the honest label even though no engine renders
-    anything from it. `sameAs` points at the official document and is omitted rather than
-    emitted empty for an act with no resolved address; that is the same omission the act page
-    already makes visibly. The act's own key is a corpus identifier and belongs here: it is
-    core vocabulary rather than the vocabulary of any one corpus, and it is what identifies
+    anything from it. `sameAs` points at the official document the act page links, which is
+    the newest consolidated version where an event resolved one and otherwise the act as
+    published, and is omitted rather than emitted empty when the page links neither; the page
+    and the payload name the same document or neither does. The act's own key belongs here: it
+    is core vocabulary rather than the vocabulary of any one corpus, and it is what identifies
     the act everywhere else.
 
     `name` is the headline, the long form where the watchlist gives one, because that is what
@@ -140,8 +141,8 @@ def _legislation(act: ActSite) -> dict[str, object]:
     if act.headline != act.label:
         about["alternateName"] = act.label
     about["identifier"] = act.act.key
-    if act.eurlex_url:
-        about["sameAs"] = act.eurlex_url
+    if act.eurlex_url or act.published_url:
+        about["sameAs"] = act.eurlex_url or act.published_url
     return about
 
 

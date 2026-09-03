@@ -23,11 +23,16 @@ directory and a public site is the last place it belongs, so `configured` record
 there was one; the report is named by its file name and the committed convention, which is the
 same string in a container and in a checkout.
 
-`eurlex_url` is a plain string resolved at the CLI boundary. This module renders whatever
-corpus the loop ran on and holds no corpus knowledge; which URL, if any, an act has is the
-composition root's business, and an amending act's number and address arrive the same way into
-`amending`, whose model and harvest live in `site_.amending` so that the dependency between the
-two modules runs one way and this one stays inside the size cap.
+`eurlex_url` and `published_url` are plain strings resolved at the CLI boundary, and they are
+two different documents: the newest version an act has been consolidated to, which only a
+recorded event can name, and the act as it was published, which is a reading of the act's own
+identifier and is therefore known for an act nothing has happened to. `kinds` arrives the same
+way, as words and counts rather than as the descriptors they were read off. This module renders
+whatever corpus the loop ran on and holds no corpus knowledge; which URL, if any, an act has is
+the composition root's business, and an amending act's number and address arrive the same way
+into `amending`, whose model and harvest live in `site_.amending` so that the dependency
+between the two modules runs one way and this one stays inside the size cap. Reading the
+repository and ordering what it holds is `site_.entries`, split off for the same reason.
 
 No clock: `generated_on` arrives from the CLI boundary like every other date in this project.
 """
@@ -48,6 +53,7 @@ from emendrix.output.json_out import slug
 from emendrix.site_.amending import AmendingAct, collect_amending
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.clocks import EventDate, VersionDates, event_date, sort_date
+from emendrix.site_.entries import sorted_entries
 from emendrix.site_.urls import shared_path
 from emendrix.watch.config import Watchlist
 
@@ -56,7 +62,6 @@ __all__ = [
     "PageChrome",
     "SiteInputs",
     "collect_site",
-    "read_entries",
 ]
 
 
@@ -71,6 +76,7 @@ class ActSite(BaseModel):
     domain: str = Field(default="", description="Index grouping; empty lands under 'Other'.")
     aliases: tuple[str, ...] = ()
     eurlex_url: str = Field(default="", description="Resolved at the CLI boundary; '' = none.")
+    published_url: str = Field(default="", description="The act as published; '' = none.")
     entries: tuple[ChangelogEntry, ...] = Field(
         default=(), description="Newest first by `sort_date`."
     )
@@ -152,6 +158,11 @@ class SiteInputs(BaseModel):
         "one mapping here, so the one field a caller could write into and the reason these "
         "inputs are not hashable; every renderer is a pure function of what it is handed.",
     )
+    kinds: tuple[tuple[str, int], ...] = Field(
+        default=(),
+        description="What kinds of act the roster holds and how many of each, biggest group "
+        "first, named at the CLI boundary. Empty when no watchlist declared a roster.",
+    )
     configured: bool = False
     repo_url: str = Field(default="", description="Public home of the source, or ''.")
     changelogs_url: str = Field(default="", description="Public home of the changelog data, or ''.")
@@ -179,37 +190,6 @@ class SiteInputs(BaseModel):
         return f"{DEFAULT_REPORT_DIR.as_posix()}/{self.report.removesuffix('.json')}.md"
 
 
-def read_entries(root: Path) -> tuple[ChangelogEntry, ...]:
-    """Every committed event in one output repository, in sorted path order.
-
-    The layout and the documents are the output repository writer's own, so a file that does
-    not validate means the repository was edited by hand or written by a different version of
-    the schema: loud, named, and not something to skip quietly.
-    """
-    entries: list[ChangelogEntry] = []
-    for path in sorted(root.glob("*/*/changes/*.json")):
-        try:
-            entries.append(ChangelogEntry.model_validate_json(path.read_bytes()))
-        except ValueError as error:
-            raise ValueError(f"{path} is not a changelog document emendrix wrote: {error}") from (
-                error
-            )
-    return tuple(entries)
-
-
-def _sorted_entries(
-    entries: list[ChangelogEntry], version_dates: VersionDates
-) -> tuple[ChangelogEntry, ...]:
-    """One act's events, newest first by `sort_date`, the version tag breaking a shared date."""
-    return tuple(
-        sorted(
-            entries,
-            key=lambda e: (sort_date(e, version_dates).isoformat(), e.key),
-            reverse=True,
-        )
-    )
-
-
 def collect_site(
     *,
     generated_on: date,
@@ -225,6 +205,8 @@ def collect_site(
     operator_url: str = "",
     contact: str = "",
     eurlex_urls: dict[str, str] | None = None,
+    published_urls: Mapping[str, str] | None = None,
+    kinds: tuple[tuple[str, int], ...] = (),
     amending_numbers: Mapping[str, str] | None = None,
     amending_urls: Mapping[str, str] | None = None,
     version_dates: VersionDates | None = None,
@@ -240,9 +222,12 @@ def collect_site(
 
     `amending_numbers` and `amending_urls` are keyed by the amending act's own key and hold what
     the composition root rendered from an identifier this module may not read; an act nothing
-    names never appears in `amending`, declared label or not.
+    names never appears in `amending`, declared label or not. `published_urls` is keyed by the
+    act's own slug, like `eurlex_urls`, and `kinds` is stored exactly as it is given: this module
+    counts nothing and never learns what a kind is.
     """
     urls = eurlex_urls or {}
+    published = published_urls or {}
     dates: VersionDates = version_dates or {}
     by_act: dict[ActId, list[ChangelogEntry]] = {}
     for entry in entries:
@@ -250,7 +235,7 @@ def collect_site(
     acts: list[ActSite] = []
     if watchlist is None:
         for act, found in by_act.items():
-            acts.append(ActSite(act=act, label=act.key, entries=_sorted_entries(found, dates)))
+            acts.append(ActSite(act=act, label=act.key, entries=sorted_entries(found, dates)))
     else:
         for watched in watchlist.acts:
             act = watched.act
@@ -263,7 +248,7 @@ def collect_site(
                     long_name=watched.long_name or "",
                     domain=watched.domain or "",
                     aliases=watched.aliases,
-                    entries=_sorted_entries(by_act.get(act, []), dates),
+                    entries=sorted_entries(by_act.get(act, []), dates),
                 )
             )
     acts.sort(key=lambda item: (item.label.casefold(), item.act.key))
@@ -287,7 +272,12 @@ def collect_site(
                 f"act {item.act} addresses an event and the provision {clash[1]!r} as {clash[0]!r}"
             )
     resolved = tuple(
-        item.model_copy(update={"eurlex_url": urls[item.slug]}) if item.slug in urls else item
+        item.model_copy(
+            update={
+                "eurlex_url": urls.get(item.slug, ""),
+                "published_url": published.get(item.slug, ""),
+            }
+        )
         for item in acts
     )
     pairs = [(item, entry) for item in resolved for entry in item.entries]
@@ -306,6 +296,7 @@ def collect_site(
         report=report.name,
         acts=resolved,
         recent=tuple(pairs),
+        kinds=kinds,
         amending=collect_amending(
             entries,
             labels={item.celex: item.name for item in named},

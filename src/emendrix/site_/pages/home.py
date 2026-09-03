@@ -256,7 +256,7 @@ def render_home(site: SiteInputs, *, limit: int = 20) -> Html:
     )
     description = _pitch(site)
     return page(
-        title="emendrix — what changed in your regulations",
+        title="emendrix — provision-level changelogs for EU regulations",
         description=description,
         body=body,
         path=_PATH,

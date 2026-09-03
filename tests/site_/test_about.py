@@ -18,6 +18,7 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.site_.inputs import collect_site
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.about import render_about
+from emendrix.site_.pitch import SCOPE
 
 OBSERVED = date(2026, 8, 9)
 
@@ -26,7 +27,13 @@ OPERATOR_URL = "https://example.invalid/who"
 CONTACT = "hello@example.invalid"
 
 
-def _about(*, operator: str = "", operator_url: str = "", contact: str = "") -> str:
+def _about(
+    *,
+    operator: str = "",
+    operator_url: str = "",
+    contact: str = "",
+    kinds: tuple[tuple[str, int], ...] = (),
+) -> str:
     site = collect_site(
         generated_on=OBSERVED,
         run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
@@ -34,8 +41,27 @@ def _about(*, operator: str = "", operator_url: str = "", contact: str = "") -> 
         operator=operator,
         operator_url=operator_url,
         contact=contact,
+        kinds=kinds,
     )
     return render_about(site)
+
+
+def test_what_it_is_not_states_the_roster_scope_once_and_under_the_same_condition() -> None:
+    """The acts index prints the same constant, so the two pages cannot say it differently,
+    and both drop it the day a Directive is watched rather than carrying a false sentence."""
+    rendered = _about(kinds=(("Regulation", 4),))
+    assert text_of(rendered).count(escape(SCOPE)) == 1
+    assert rendered.index("it is not the official text") < rendered.index(escape(SCOPE)[:40])
+    assert escape(SCOPE) not in _about(kinds=(("Regulation", 60), ("Directive", 7)))
+    assert escape(SCOPE) not in _about()
+
+
+def test_the_scope_paragraph_leaves_the_disclaimer_alone() -> None:
+    """The footer carries the disclaimer here as everywhere, exactly once, and the new
+    paragraph is about the roster rather than about advice."""
+    rendered = _about(kinds=(("Regulation", 4),))
+    assert text_of(rendered).count(escape(DISCLAIMER)) == 1
+    assert "advice" not in escape(SCOPE)
 
 
 def test_the_page_says_what_the_tool_is_and_points_at_the_measurements() -> None:

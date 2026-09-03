@@ -233,6 +233,40 @@ def _headed(**update: object) -> str:
     return _rendered(site, site.acts[0], site.acts[0].entries[0])
 
 
+def _gate_clause(**counts: int) -> str:
+    """The facts line of an explained event whose gate counts are patched to order."""
+    from emendrix.output.json_out import EntryCounts
+    from emendrix.site_.pages.facts import event_facts
+
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED).model_copy(
+        update={
+            "diff_only": False,
+            "counts": EntryCounts(touched=4, substantive=4, **counts),
+        }
+    )
+    return event_facts(entry)[-1].split(" · ")[-1].removesuffix("</p>")
+
+
+def test_the_facts_line_says_what_the_citation_check_found_in_the_readers_words() -> None:
+    """The same two fields the line has always carried, said as what they mean. A reader
+    arriving at an event page has never heard of a gate, and "shipped" is a pipeline's word."""
+    assert _gate_clause() == "every change carries an explanation that passed its citation check"
+    assert _gate_clause(unexplained=2) == "2 changes without an explanation"
+    assert _gate_clause(quoted=1) == (
+        "1 sentence quoting the provision verbatim where an explanation failed its citation check"
+    )
+    both = _gate_clause(unexplained=2, quoted=1)
+    assert both.startswith("2 changes without an explanation; 1 sentence quoting")
+
+
+def test_an_event_the_explain_stage_never_ran_for_keeps_its_own_sentence() -> None:
+    """A diff-only event has no explanations to have checked, which is a different answer
+    from every explanation passing."""
+    rendered = _headed(in_force=(date(2024, 6, 1),))
+    assert "the explain stage did not run for this event" in rendered
+    assert "passed its citation check" not in rendered
+
+
 def test_the_event_is_headed_by_its_date_and_the_dates_line_carries_the_other_clock() -> None:
     """The H1 names the act, the H2 the date the event's own clock answers with, and the line
     below states the clock the heading did not, never the one it did."""

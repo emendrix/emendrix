@@ -189,6 +189,34 @@ def test_eurlex_urls_ride_in_by_act_slug() -> None:
     assert site.acts[0].eurlex_url.startswith("https://eur-lex.europa.eu/")
 
 
+def test_the_published_url_rides_in_by_act_slug_and_is_not_the_consolidated_one() -> None:
+    """Two documents, two fields. The act as published is known for an act with no event at
+    all, which is the whole reason it is resolved from the watchlist rather than the entries."""
+    watchlist = Watchlist.model_validate({"acts": [{"celex": "32016R0679", "name": "GDPR"}]})
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        watchlist=watchlist,
+        published_urls={"32016R0679": "https://eur-lex.europa.eu/x?uri=CELEX:32016R0679"},
+    )
+    assert site.acts[0].published_url == "https://eur-lex.europa.eu/x?uri=CELEX:32016R0679"
+    assert site.acts[0].eurlex_url == ""
+
+
+def test_the_roster_kinds_are_stored_exactly_as_the_boundary_counted_them() -> None:
+    """Words and counts, never re-derived: this module cannot read an identifier and so has no
+    way of checking them, which is exactly why it stores them and prints nothing itself."""
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        kinds=(("Regulation", 60), ("Directive", 7)),
+    )
+    assert site.kinds == (("Regulation", 60), ("Directive", 7))
+    assert collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json")).kinds == ()
+
+
 def test_the_amending_acts_arrive_resolved_and_keyed_by_their_own_key() -> None:
     """What the documents name, what the watchlist calls it and what the boundary rendered,
     joined once. The watchlist's amending labels are read here and nowhere else, the same rule

@@ -8,12 +8,22 @@ Grouping comes from the watchlist's `domain` field and nowhere else. Nothing her
 subject area from an act's title or its identifier: an operator who has not said which group an
 act belongs in gets `Other`, which is honest, while a guess would be a claim this project has
 no evidence for. `Other` sorts last for the same reason it exists, that it is the absence of an
-answer rather than a group.
+answer rather than a group. Each group's heading carries the id an act page's neighbours line
+links to, so a reader following "all 12" from one act lands on the group rather than at the
+top of the roster.
+
+The page also says what the roster covers, in two places for two reasons. The lede says what
+kinds of act are on it, counted from words the composition root chose, because "67 acts" says
+nothing about whether the one a reader came for could be here at all. The paragraph under it
+is `pitch.SCOPE`, and it is printed only while the kinds say it is true: it claims no Directive
+is watched, and the day one is, the sentence would be the site being wrong about itself.
 
 An act with no events says so in words. A row that simply had no date would read as a rendering
-bug; "no amendments seen" is the actual state, and it is a real answer. An act whose every
-recorded event names no amending act is a third state and gets its own words, because "no
-amendments seen" would deny events the act's own page shows.
+bug; "no amendment recorded" is the actual state, and it is a real answer. It says what the
+record holds rather than what anyone has looked for: the site has no "last checked" date and
+`emendrix backfill` writes historical transitions, so nothing here is a claim about time. An
+act whose every recorded event names no amending act is a third state and gets its own words,
+because "no amendment recorded" would deny events the act's own page shows.
 
 A row is two lines: the name a reader knows the act by, with the label and the key beside it,
 then the official title and the dated words. The key joined the row on 2026-09-03, one step
@@ -35,7 +45,8 @@ from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
-from emendrix.site_.urls import act_href, depth_of, up
+from emendrix.site_.pitch import SCOPE, scope_holds
+from emendrix.site_.urls import act_href, depth_of, domain_anchor, up
 
 __all__ = ["render_acts_index"]
 
@@ -46,12 +57,30 @@ _DEPTH = depth_of(_PATH)
 _UNGROUPED = "Other"
 """Where an act with no declared domain lands, and the group that always sorts last."""
 
-_QUIET = "no amendments seen"
+_QUIET = "no amendment recorded"
 
 _UNATTRIBUTED_ONLY = "events recorded, none names an amending act"
 """The row's date fact when every recorded event names no amending act. Not `_QUIET`, because
 events were seen; not a date, because dating an "amended" fact by one of them would claim an
 amendment the pipeline did not find."""
+
+
+def _kinds_clause(kinds: tuple[tuple[str, int], ...]) -> str:
+    """What the roster is made of, as a clause hanging off the count of acts.
+
+    The words and the counts are the composition root's; this page prints them and never
+    learns what a kind is. One kind is stated as a property of the whole roster rather than as
+    a count repeating the one before it, and a roster of one act is stated as the one act it
+    is. With no kinds at all, which is a build with no watchlist, there is nothing to say and
+    the clause is empty rather than a guess.
+    """
+    if not kinds:
+        return ""
+    if len(kinds) == 1:
+        name, number = kinds[0]
+        return f", all of them {name}s" if number > 1 else f", a {name}"
+    parts = [count(number, name) for name, number in kinds]
+    return ", " + " and ".join((", ".join(parts[:-1]), parts[-1]))
 
 
 def _groups(site: SiteInputs) -> list[tuple[str, list[ActSite]]]:
@@ -123,14 +152,17 @@ def render_acts_index(site: SiteInputs) -> Html:
     lines = [
         Html("<h1>All watched acts</h1>"),
         Html(
-            f'<p class="lede muted">{escape(count(len(site.acts), "act"))} watched, '
+            f'<p class="lede muted">{escape(count(len(site.acts), "act"))} watched'
+            f"{escape(_kinds_clause(site.kinds))}. "
             f"{escape(count(events - unnamed, 'amendment event'))} recorded, plus "
             f"{escape(count(unnamed, 'event'))} naming no amending act. Grouping comes from "
             f"the watchlist; nothing here is inferred.</p>"
         ),
     ]
+    if scope_holds(site.kinds):
+        lines.append(Html(f"<p>{escape(SCOPE)}</p>"))
     for domain, acts in _groups(site):
-        lines.append(Html(f"<h2>{escape(domain)}</h2>"))
+        lines.append(Html(f'<h2 id="{escape(domain_anchor(domain))}">{escape(domain)}</h2>'))
         lines.append(Html('<ul class="roster">'))
         lines.extend(_row(site, act) for act in acts)
         lines.append(Html("</ul>"))

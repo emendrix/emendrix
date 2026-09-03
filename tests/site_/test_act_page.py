@@ -78,18 +78,116 @@ def test_the_timeline_keeps_the_event_anchor_and_links_the_evidence() -> None:
     assert rendered.count("<details") == 1
 
 
-def _quiet() -> str:
+def _quiet(*, published: str = "", site_url: str = "") -> str:
+    """One watched act with nothing recorded for it, under the two facts a build may have."""
     from emendrix.watch.config import Watchlist
 
     watchlist = Watchlist.model_validate({"acts": [{"celex": "32016R0679", "name": "GDPR"}]})
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        watchlist=watchlist,
+        published_urls={"32016R0679": published} if published else None,
+        site_url=site_url,
+    )
+    return render_act(site, site.acts[0])
+
+
+def test_a_quiet_act_gets_a_page_that_says_so() -> None:
+    """The sentence is about the record, not about time: the site has no "last checked" date
+    and never invents one, and a backfill can still write an older transition tomorrow."""
+    rendered = _quiet()
+    assert "No amendment event is recorded for this act" in rendered
+    assert "A quiet act is a real answer" in rendered
+    assert "since watching began" not in rendered
+    assert "checked" not in rendered
+
+
+def test_a_quiet_act_offers_only_what_this_build_actually_has() -> None:
+    """Each half of the middle sentence is guarded by the thing it points at, so a page never
+    promises a feed a build did not write or a document that has no address."""
+    bare = _quiet()
+    assert "as published" not in bare
+    assert "the feed above" not in bare
+    published = _quiet(published="https://eur-lex.europa.eu/x")
+    assert "Its text as published is on EUR-Lex." in published
+    assert "the feed above" not in published
+    both = _quiet(published="https://eur-lex.europa.eu/x", site_url="https://example.invalid/site")
+    assert (
+        "Its text as published is on EUR-Lex, and the feed above will carry the first event "
+        "the day one is recorded." in both
+    )
+    feed_only = _quiet(site_url="https://example.invalid/site")
+    assert "The feed above will carry the first event the day one is recorded." in feed_only
+
+
+def test_a_quiet_act_links_the_act_as_published_and_says_which_document_it_is() -> None:
+    """Two labels, because the newest consolidation and the act as published are two
+    documents; an act with events shows the first and never offers the second."""
+    published = _quiet(published="https://eur-lex.europa.eu/x")
+    assert '<a href="https://eur-lex.europa.eu/x">as published, ' in published
+    assert ">on EUR-Lex</span></a>" in published
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(entry,),
+        eurlex_urls={"house-rules": "https://eur-lex.europa.eu/consolidated"},
+        published_urls={"house-rules": "https://eur-lex.europa.eu/x"},
+    )
+    rendered = render_act(site, site.acts[0])
+    assert '<a class="nowrap" href="https://eur-lex.europa.eu/consolidated">on EUR-Lex</a>' in (
+        rendered
+    )
+    assert "as published" not in rendered
+
+
+def _grouped(count: int, domain: str = "Digital") -> str:
+    """One act page from a watchlist of `count` acts, all in one domain. The first is rendered."""
+    from emendrix.watch.config import Watchlist
+
+    watchlist = Watchlist.model_validate(
+        {
+            "acts": [
+                {"celex": f"32016R{700 + index:04d}", "name": f"Act {index}", "domain": domain}
+                for index in range(count)
+            ]
+        }
+    )
     site = collect_site(
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), watchlist=watchlist
     )
     return render_act(site, site.acts[0])
 
 
-def test_a_quiet_act_gets_a_page_that_says_so() -> None:
-    assert "A quiet act is a real answer" in _quiet()
+def test_an_act_links_the_others_the_watchlist_puts_in_its_group() -> None:
+    """The domain is the watchlist's own label, so the line infers nothing; the order is
+    `collect_site`'s, which is the acts index's, so the two agree without a second sort."""
+    rendered = _grouped(3)
+    line = rendered.split('<p class="related">')[1].split("</p>")[0]
+    assert line.startswith("Also watched in Digital: ")
+    assert '<a href="../../acts/32016R0701/">Act 1</a>' in line
+    assert '<a href="../../acts/32016R0702/">Act 2</a>' in line
+    assert "Act 0" not in line
+
+
+def test_the_related_line_stops_at_six_and_links_the_group_instead() -> None:
+    """A domain of forty acts is a page of its own, and this is a line under a header."""
+    six = _grouped(7)
+    assert six.count('<a href="../../acts/32016R0') == 6
+    assert "all 7 →" not in six
+    seven = _grouped(8)
+    assert seven.count('<a href="../../acts/32016R0') == 6
+    assert '<a href="../../acts/#Digital">all 8 →</a>' in seven
+
+
+def test_an_act_alone_or_ungrouped_gets_no_related_line() -> None:
+    """ "Also watched in Health" over no names is a heading with nothing under it, and an act
+    the watchlist put in no group has no group to point at."""
+    assert 'class="related"' not in _grouped(1)
+    assert 'class="related"' not in _quiet()
 
 
 def test_a_quiet_act_gets_no_index_of_nothing() -> None:

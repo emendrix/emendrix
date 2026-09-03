@@ -64,6 +64,8 @@ EVIDENCE: Final = """\
   color: var(--muted);
 }
 .links { margin: var(--space-1) 0 var(--space-4); font-size: var(--step-sm); }
+/* The neighbours line closes the header, so its gap above is the links line's own. */
+.related { margin: 0 0 var(--space-4); font-size: var(--step-sm); color: var(--muted); }
 .layout { display: block; }
 /* The index is bounded at every width. An act with hundreds of provisions renders hundreds
    of links, and `<details open>` opens them all: unbounded, the CRR index stands 20510px tall

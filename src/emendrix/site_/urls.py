@@ -38,6 +38,7 @@ __all__ = [
     "amendments_href",
     "change_anchor",
     "depth_of",
+    "domain_anchor",
     "entry_anchors",
     "event_href",
     "location_slug",
@@ -67,6 +68,23 @@ def location_slug(canonical: str) -> str:
     is written down here rather than engineered away, and `test_urls.py` pins the behaviour.
     """
     return _DROPPED.sub("", _SEPARATORS.sub("-", canonical.strip())).lower()
+
+
+def domain_anchor(domain: str) -> str:
+    """The id the acts index gives one domain's group, and the fragment an act page links to.
+
+    The same function that names every path segment, so the roster and the act pages cannot
+    disagree about what a group is called. A domain is a label the watchlist declares and this
+    is the one place it becomes an address.
+
+    Two domains can slug alike where their labels differ only in the characters the slug drops:
+    `Data & privacy` and `Data privacy` both give `Data_privacy`. It is written down rather
+    than engineered away, as the same case is for `location_slug`, because the cost is a
+    repeated id on one page and never a link that goes somewhere wrong: both headings answer to
+    the fragment, and a browser lands on the first. An operator who wants them apart renames
+    one, which is a label they already own.
+    """
+    return slug(domain)
 
 
 def change_anchor(entry_key: str, canonical: str, occurrence: int = 1) -> str:

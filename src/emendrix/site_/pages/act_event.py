@@ -46,11 +46,13 @@ The promises live here, each as a line of markup rather than a claim made elsewh
   it has always been, which costs a few lines rather than a screen.
 
 What a change block carries wherever it appears, the pill, the permalink, the sentences and
-the row of their citations, lives in `pages/prose.py`, and the index a long page opens with
-lives in `pages/event_index.py`. Both were split off on 2026-09-03, the first when naming the
-amending act pushed this module past the size cap and the second when the index gained a label
-and a column to stand in. What is left is one event's shape: its opening, its facts, the block
-each change sits in and the order all of it comes in.
+the row of their citations, lives in `pages/prose.py`; the index a long page opens with lives
+in `pages/event_index.py`; and the dates-and-counts line under the heading lives in
+`pages/facts.py`. All three were split off on 2026-09-03, the first when naming the amending
+act pushed this module past the size cap, the second when the index gained a label and a column
+to stand in, and the third when the gate clause was rewritten for a reader and the cap was
+reached again. Each is a statement this module places rather than composes. What is left is
+one event's shape: its opening, the block each change sits in and the order all of it comes in.
 
 Wording is imported rather than restated wherever the changelog says the same thing
 (`output.markdown`): two renderings of one fact that describe it differently are how a caveat
@@ -72,11 +74,12 @@ from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, un
 from emendrix.site_.clocks import event_date
 from emendrix.site_.dispute import dispute_note
 from emendrix.site_.magnitude import magnitude_html
-from emendrix.site_.markup import Html, count, escape
+from emendrix.site_.markup import Html, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
+from emendrix.site_.pages.facts import event_facts
 from emendrix.site_.pages.prose import permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
-from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched, untouched_note
+from emendrix.site_.untouched import untouched, untouched_note
 from emendrix.site_.urls import location_slug
 
 __all__ = ["render_event", "render_event_summary"]
@@ -162,47 +165,6 @@ def _change_block(
     return lines
 
 
-def _facts(entry: ChangelogEntry) -> list[Html]:
-    """The dates and the counts, all of them read off the document, none of them recomputed.
-
-    An event that touched nothing states the finding as a sentence instead of the count line:
-    "0 provisions touched" with three more zeros and a gate clause reads like a counter that
-    failed, where the sentence says what the comparison found.
-
-    The dates line carries what the heading above it did not. The heading names one clock and
-    one date, so repeating that clause here would print the same fact twice on one screen and
-    invite a reader to look for the difference between them. Nothing is dropped: an event with
-    no in-force date says so, an event carrying several lists them all, and the clock the
-    heading did not name is always here.
-    """
-    counts = entry.counts
-    headed = event_date(entry)
-    rest = []
-    if not entry.in_force:
-        rest.append("in force not stated")
-    elif len(entry.in_force) > 1:
-        rest.append("in force " + ", ".join(value.isoformat() for value in entry.in_force))
-    if headed.in_force:
-        rest.append(f"detected {entry.detected_on.isoformat()}")
-    dates = Html(f'<p class="facts">{escape(" · ".join(rest))}</p>')
-    if untouched(entry):
-        return [dates, Html(f'<p class="facts">{escape(UNTOUCHED_SENTENCE)}</p>')]
-    gate = (
-        "the explain stage did not run for this event, so it carries the structural facts only"
-        if entry.diff_only
-        else f"{count(counts.quoted, 'sentence')} quoted verbatim by the gate, "
-        f"{count(counts.unexplained, 'change')} shipped without an explanation"
-    )
-    return [
-        dates,
-        Html(
-            f'<p class="facts">{escape(count(counts.touched, "provision"))} touched — '
-            f"{counts.substantive} substantive, {counts.date_only} date-only, "
-            f"<strong>{counts.disputed} disputed</strong> · {escape(gate)}</p>"
-        ),
-    ]
-
-
 def _event_header(
     entry: ChangelogEntry, acts: tuple[AmendingAct, ...], *, full: bool
 ) -> list[Html]:
@@ -228,7 +190,7 @@ def _event_header(
         Html(f"<h2>{escape(event_date(entry).words)}{marker}</h2>"),
         Html(f'<p class="ident">{versions}</p>'),
         *amending_lines(acts, full=full),
-        *_facts(entry),
+        *event_facts(entry),
     ]
     if unnamed:
         lines.append(Html(f'<p class="small muted">{escape(UNATTRIBUTED_NOTE)}</p>'))
