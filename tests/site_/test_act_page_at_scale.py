@@ -60,7 +60,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 176291)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 171773)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -81,9 +81,16 @@ over two hundred cards. The heading was the version pair inside two `<code>` ele
 now the dated words, which is what a reader scanning a timeline is looking for; the pair moved
 to a paragraph of its own below it, in one `<code>` rather than two, so a card pays a new
 paragraph and saves a tag pair. The header itself did not move here, this build passing no
-site URL and this corpus resolving no official page, so it renders no line of links."""
+site URL and this corpus resolving no official page, so it renders no line of links.
 
-_TOTAL_BYTES: Final = 996429
+4518 bytes lighter on 2026-09-03, the first move of this pin that has ever been downward. The
+page gained 82 bytes of chrome, a skip link, the header navigation's name and the id it skips
+to, and gave back 23 on each of the two hundred cards: the heading of a card already names one
+clock and its date, so the line under it no longer prints that clause a second time. It still
+carries the clock the heading did not, and an event with no in-force date or with several says
+so there."""
+
+_TOTAL_BYTES: Final = 1003711
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -109,7 +116,16 @@ That is the whole cost of giving a reader somewhere to learn who runs the site.
 date: 28 bytes for each of the two hundred cards on the index and 28 for the same header on
 each of the two hundred event pages. It is the one markup change of that pass, and it is paid
 once per event rather than once per change, which is why a page carrying hundreds of blocks
-pays it no more than this one does."""
+pays it no more than this one does.
+
+7282 bytes heavier on 2026-09-03, later again: 82 bytes of chrome on each of 201 pages, a
+skip link, the header navigation's name and the id it skips to, less 23 bytes on each of the
+400 dates lines, the two
+hundred cards and the two hundred event pages, which no longer restate the clock their own
+heading names. The chrome is the intended cost: an event page carries hundreds of focusable
+provision links, and without a skip link every one of them sits between the top of the page
+and the first word a reader came for.
+"""
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
 _LINKS: Final = re.compile(r'href="([^"]*)"')

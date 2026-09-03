@@ -58,7 +58,7 @@ def _header(act: ActSite) -> list[Html]:
         )
     )
     if act.eurlex_url:
-        facts.append(Html(f'<a href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
+        facts.append(Html(f'<a class="nowrap" href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
     return [
         Html(f"<h1>{escape(act.headline)}</h1>"),
         Html(f'<p class="facts">{join(facts, " · ")}</p>'),

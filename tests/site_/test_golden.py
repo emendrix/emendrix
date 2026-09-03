@@ -184,7 +184,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 37331)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 37405)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -219,7 +219,12 @@ the pair below it in `<p class="ident">` inside one `<code>`: 78 bytes of headin
 and the new paragraph costs 78 including the line break. It is the whole markup change of that
 pass on this page, paid once for the event rather than once for each of its nine blocks, which
 is why the page grew by less than the heading of a single change block cost it the day before.
-Nothing inside a `<details>` moved, and no anchor did."""
+Nothing inside a `<details>` moved, and no anchor did.
+
+102 bytes heavier on 2026-09-03, later again: 82 of chrome that every page on the site gained,
+a skip link, the header navigation's name and the id it skips to, plus 43 for the class that
+keeps `EUR-Lex` off a line break at 390px, less 23 given back by a dates line that no longer
+restates the clock its own heading names."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

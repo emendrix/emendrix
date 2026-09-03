@@ -145,4 +145,27 @@ line whatever the order. No hex value moved, so the fourteen contrast pairs are 
 both schemes and `og.png` is byte-identical. `_LARGEST_PAGE` moves by the 28 bytes above and
 both at-scale pins by the same change over two hundred events. No measured figure moved with
 it.
+
+**2026-09-03, four fixes read off a measured build.** Every one of the twelve pages moved by
+the same 82 bytes of chrome: a skip link, off-screen until it takes focus, as the first
+focusable element on the page; `aria-label="Site"` on the header navigation, because an event
+page whose provision index is also a `<nav>` announced two landmarks with one name between
+them; and the `id` the skip link points at, on `<main>`. Three pages moved by more. The about
+page no longer reprints the disclaimer under "What it is not", the footer carrying that
+constant here as on every other page, and says what the tool is not in its own words instead;
+a reader who met the same sentence twice on one screen read the second as a further claim to
+compare against the first. The MDR act and event pages each gave back 23 bytes: the heading of
+an event names one clock and its date, so the line under it carries only the clock the heading
+did not, while an event with no in-force date says so and one carrying several lists them all.
+Those two pages also gained 43 bytes for the class that keeps `EUR-Lex` off the line break it
+took at 390px. Both feeds, `sitemap.xml`, `search-index.json`, `robots.txt` and the three
+assets are byte-identical, and no `id`, fragment link or relative path moved. `style.css` grew
+from 13 330 to 14 424 bytes, paid once per reader: the skip link's own rules, and a bound on
+the act page's index, which `<details open>` had left unbounded below 60rem, where an act with
+hundreds of provisions stood 20 510px tall on a 390px screen and pushed the timeline below all
+of it. The index prints whole, a scroll box being unscrollable on paper. No hex value moved, so
+the fourteen contrast pairs are unchanged in both schemes and `og.png` is byte-identical.
+`_LARGEST_PAGE` moves by 102 bytes; `_HEAVIEST` falls 4518, the first downward move that pin
+has made, and `_TOTAL_BYTES` rises 7282, 201 pages of chrome less 400 dates lines. No measured
+figure moved with it.
 """

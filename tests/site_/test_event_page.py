@@ -210,16 +210,47 @@ def test_a_change_with_no_prose_says_why_rather_than_showing_nothing() -> None:
     assert "the model returned no sentence for this change" in rendered
 
 
-def test_the_event_is_headed_by_its_date_and_keeps_both_clocks_below() -> None:
-    """The H1 names the act, the H2 the date the event's own clock answers with, and the facts
-    line still carries both clocks, so the heading naming one hides neither."""
+def _headed(**update: object) -> str:
+    """One event page, its entry patched, for reading the heading and the dates line off."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED).model_copy(update=update)
+    site = _site(entry)
+    return render_event_page(site, site.acts[0], site.acts[0].entries[0])
+
+
+def test_the_event_is_headed_by_its_date_and_the_dates_line_carries_the_other_clock() -> None:
+    """The H1 names the act, the H2 the date the event's own clock answers with, and the line
+    below states the clock the heading did not, never the one it did."""
+    rendered = _headed(in_force=(date(2024, 6, 1),))
+    assert "<h2>in force 2024-06-01</h2>" in rendered
+    assert '<p class="facts">detected 2026-08-09</p>' in rendered
+    # The title and the meta description name the dated words too, and should. What must not
+    # happen is the line under the heading restating the heading.
+    assert '<p class="facts">in force' not in rendered
+
+
+def test_an_event_with_no_in_force_date_is_headed_by_detection_and_says_so_below() -> None:
+    """The heading names the only clock there is, so the line below is what is missing rather
+    than the detection date a second time."""
+    rendered = _headed(in_force=())
+    assert "<h2>detected 2026-08-09</h2>" in rendered
+    assert '<p class="facts">in force not stated</p>' in rendered
+    assert '<p class="facts">detected' not in rendered
+
+
+def test_an_event_with_several_in_force_dates_lists_them_all_below_its_heading() -> None:
+    """The heading can name only one date. Where the corpus states more, the line below is the
+    whole set, which is more than the heading said and so is not a repetition of it."""
+    rendered = _headed(in_force=(date(2024, 6, 1), date(2025, 1, 2)))
+    assert "<h2>in force 2025-01-02</h2>" in rendered
+    assert '<p class="facts">in force 2024-06-01, 2025-01-02 · detected 2026-08-09</p>' in rendered
+
+
+def test_the_event_page_names_the_act_and_the_version_pair_under_the_heading() -> None:
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
     site = _site(stated)
     rendered = render_event_page(site, site.acts[0], site.acts[0].entries[0])
     assert f"<h1>{site.acts[0].headline}</h1>" in rendered
-    assert "<h2>in force 2024-06-01</h2>" in rendered
     assert (
         f'<p class="ident"><code>{stated.from_version} → {stated.to_version}</code></p>' in rendered
     )
-    assert '<p class="facts">in force 2024-06-01 · detected 2026-08-09</p>' in rendered

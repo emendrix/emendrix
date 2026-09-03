@@ -12,6 +12,10 @@ where a person should be. The section appears when any one is set and says only 
 given, which is why each of the three is rendered on its own rather than as one sentence
 needing all of them.
 
+"What it is not" says so in the page's own words rather than reprinting the disclaimer. The
+footer carries that constant on this page as on every other, and a reader who met the same
+sentence twice on one screen would read the second as a different claim they had to compare.
+
 No JSON-LD: there is no schema.org type that describes a page about a tool honestly, and the
 rule in `seo.py` is that a page declares a type or declares nothing.
 
@@ -20,7 +24,7 @@ No clock, no network, no model call, like every other page here.
 
 from __future__ import annotations
 
-from emendrix.site_.chrome import disclaimer_html, page, repository_links
+from emendrix.site_.chrome import page, repository_links
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import PageChrome, SiteInputs
 from emendrix.site_.markup import Html, escape, join
@@ -46,6 +50,12 @@ _NOT_THE_MODEL = (
     "The model never decides whether something changed, which provisions were involved, or what "
     "kind of change it is. Every other stage is deterministic Python, and each result is "
     "committed to a git repository as Markdown and JSON before any of it reaches a page."
+)
+
+_NOT_A_SUBSTITUTE = (
+    "It is not a lawyer's review, and it is not the official text. Every act and every event "
+    "here links the consolidated version the comparison was computed from, and that document, "
+    "not this page, is the one to read when an answer has to be right."
 )
 
 _NOT_CURATED = (
@@ -112,7 +122,7 @@ def render_about(site: SiteInputs) -> Html:
                 f'figures means is on the <a href="{root}methodology/">methodology page</a>.</p>'
             ),
             Html("<h2>What it is not</h2>"),
-            disclaimer_html(),
+            Html(f"<p>{escape(_NOT_A_SUBSTITUTE)}</p>"),
             Html(f"<p>{escape(_NOT_CURATED)}</p>"),
             *_who_runs_it(chrome),
             Html("<h2>The code and the data</h2>"),

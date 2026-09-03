@@ -169,7 +169,7 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
         href = escape(up(_DEPTH) + feed_path(act))
         links.append(Html(f'<a href="{href}">Atom feed</a>'))
     if act.eurlex_url:
-        links.append(Html(f'<a href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
+        links.append(Html(f'<a class="nowrap" href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
     header = [Html(f"<h1>{escape(act.headline)}</h1>")]
     if title != act.headline and title != act.label:
         header.append(Html(f'<p class="official">{escape(title)}</p>'))

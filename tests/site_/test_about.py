@@ -46,9 +46,19 @@ def test_the_page_says_what_the_tool_is_and_points_at_the_measurements() -> None
     assert 'href="../methodology/">methodology page</a>' in rendered
 
 
-def test_the_disclaimer_is_the_same_sentence_the_footer_carries() -> None:
-    """One helper mints it, so the box on this page cannot be a second wording of the promise."""
-    assert escape(DISCLAIMER) in text_of(_about())
+def test_the_disclaimer_reaches_this_page_once_like_every_other_page() -> None:
+    """The footer carries it here as everywhere, and the body does not carry it again.
+
+    "What it is not" is the one section on the site where the disclaimer would sit naturally,
+    which is exactly why it printed twice on one screen: a reader meeting the same sentence
+    in a section and again in the footer reads the second as a further claim to compare
+    against the first. The section says what the tool is not in its own words instead.
+    """
+    rendered = _about()
+    assert escape(DISCLAIMER) in text_of(rendered)
+    assert text_of(rendered).count(escape(DISCLAIMER)) == 1
+    assert "<h2>What it is not</h2>" in rendered
+    assert "it is not the official text" in rendered
 
 
 def test_a_build_that_names_nobody_has_no_who_runs_it_section() -> None:

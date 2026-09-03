@@ -25,11 +25,20 @@ __all__ = ["disclaimer_html", "nav_links", "page", "repository_links"]
 
 
 def nav_links(depth: int) -> Html:
-    """The header bar: wordmark, the four fixed destinations, and the search mount point."""
+    """The header bar: a skip link, the wordmark, the four destinations and the search mount.
+
+    The skip link comes first in the source because that is the only thing that makes it
+    useful: it is the first stop of a keyboard tab and is off-screen until it takes focus.
+    An event page carries hundreds of focusable provision links, and without it every one of
+    them sits between the top of the page and the first word a reader came for. The `<nav>`
+    is named, because a page whose provision index is also a `<nav>` would otherwise announce
+    two landmarks of the same name and leave a screen reader to guess which is which.
+    """
     root = up(depth)
     return Html(
+        f'<a class="skip" href="#content">Skip to content</a>'
         f'<header class="bar"><a class="wordmark" href="{root or "./"}">emendrix</a>'
-        f'<nav><a href="{root}acts/">All acts</a> '
+        f'<nav aria-label="Site"><a href="{root}acts/">All acts</a> '
         f'<a href="{root}methodology/">Methodology</a> '
         f'<a href="{root}about/">About</a> '
         f'<a href="{root}feeds/">Feeds</a></nav>'
@@ -157,7 +166,7 @@ def page(
             Html("</head>"),
             Html("<body>"),
             nav_links(depth),
-            Html("<main>"),
+            Html('<main id="content">'),
             body,
             Html("</main>"),
             _footer(chrome, root),

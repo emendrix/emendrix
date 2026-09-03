@@ -22,8 +22,8 @@
 <script defer src="../search.js"></script>
 </head>
 <body>
-<header class="bar"><a class="wordmark" href="../">emendrix</a><nav><a href="../acts/">All acts</a> <a href="../methodology/">Methodology</a> <a href="../about/">About</a> <a href="../feeds/">Feeds</a></nav><div id="search" data-root="../"></div></header>
-<main>
+<a class="skip" href="#content">Skip to content</a><header class="bar"><a class="wordmark" href="../">emendrix</a><nav aria-label="Site"><a href="../acts/">All acts</a> <a href="../methodology/">Methodology</a> <a href="../about/">About</a> <a href="../feeds/">Feeds</a></nav><div id="search" data-root="../"></div></header>
+<main id="content">
 <h1>About emendrix</h1>
 <p class="lede">Your regulatory dependencies, with a changelog. emendrix watches EU legislation, computes provision-level diffs when it is amended, and explains what changed in plain English where every sentence cites a provision you can click.</p>
 <h2>What it is</h2>
@@ -31,7 +31,7 @@
 <p>The model never decides whether something changed, which provisions were involved, or what kind of change it is. Every other stage is deterministic Python, and each result is committed to a git repository as Markdown and JSON before any of it reaches a page.</p>
 <p>How each of those claims is measured, over what, and what none of the figures means is on the <a href="../methodology/">methodology page</a>.</p>
 <h2>What it is not</h2>
-<p class="disclaimer"><strong>Not legal advice:</strong> this output is machine-computed from published texts, carries no lawyer&#x27;s review, and is engineering assistance only. Read the official consolidated text on <a href="https://eur-lex.europa.eu/">EUR-Lex</a>.</p>
+<p>It is not a lawyer&#x27;s review, and it is not the official text. Every act and every event here links the consolidated version the comparison was computed from, and that document, not this page, is the one to read when an answer has to be right.</p>
 <p>Nothing here is selected to flatter the tool. Every figure the project measures is published with the sentence saying what it does not mean, the cases it fails included.</p>
 <h2>The code and the data</h2>
 <p>The generator is open source in the emendrix repository, and the changelog documents it writes are public in the changelog repository. Every page here is a rendering of files committed to those two places, so anything the site shows can be traced back to something a reader can open.</p>

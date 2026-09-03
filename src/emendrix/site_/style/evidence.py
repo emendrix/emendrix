@@ -56,6 +56,9 @@ EVIDENCE: Final = """\
 }
 .links { margin: var(--space-1) 0 var(--space-4); font-size: var(--step-sm); }
 .layout { display: block; }
+/* The index is bounded at every width. An act with hundreds of provisions renders hundreds
+   of links, and `<details open>` opens them all: unbounded, the CRR index stands 20510px tall
+   on a 390px screen and the timeline it sits above starts below all of it. */
 .sidebar {
   margin: var(--space-4) 0;
   padding: .2rem 1rem .8rem;
@@ -63,6 +66,9 @@ EVIDENCE: Final = """\
   border: 1px solid var(--rule);
   border-radius: 6px;
   font-size: var(--step-sm);
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .sidebar summary { padding: var(--space-2) 0; font-family: var(--display);
                    font-size: var(--step-0); }
@@ -190,9 +196,11 @@ th, td { text-align: left; vertical-align: top; padding: .5rem .6rem;
          border-bottom: 1px solid var(--rule); }
 th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 @media print {
-  #search, header.bar nav { display: none; }
+  #search, header.bar nav, .skip { display: none; }
   body { padding: 0; }
   main, header.bar, footer { max-width: none; }
+  /* A scroll box cannot be scrolled on paper, so the index prints whole. */
+  .sidebar { max-height: none; overflow: visible; }
   .strip, .disclaimer, .sidebar, .diff, .verbatim, .loop li, .pill, .tag
     { background: transparent; }
   /* Named again because a two-class or pseudo-class selector outranks a one-class one

@@ -187,13 +187,23 @@ def _facts(entry: ChangelogEntry) -> list[Html]:
     An event that touched nothing states the finding as a sentence instead of the count line:
     "0 provisions touched" with three more zeros and a gate clause reads like a counter that
     failed, where the sentence says what the comparison found.
+
+    The dates line carries what the heading above it did not. The heading names one clock and
+    one date, so repeating that clause here would print the same fact twice on one screen and
+    invite a reader to look for the difference between them. Nothing is dropped: an event with
+    no in-force date says so, an event carrying several lists them all, and the clock the
+    heading did not name is always here.
     """
     counts = entry.counts
-    in_force = ", ".join(value.isoformat() for value in entry.in_force) or "not stated"
-    dates = Html(
-        f'<p class="facts">in force {escape(in_force)} · '
-        f"detected {entry.detected_on.isoformat()}</p>"
-    )
+    headed = event_date(entry)
+    rest = []
+    if not entry.in_force:
+        rest.append("in force not stated")
+    elif len(entry.in_force) > 1:
+        rest.append("in force " + ", ".join(value.isoformat() for value in entry.in_force))
+    if headed.in_force:
+        rest.append(f"detected {entry.detected_on.isoformat()}")
+    dates = Html(f'<p class="facts">{escape(" · ".join(rest))}</p>')
     if untouched(entry):
         return [dates, Html(f'<p class="facts">{escape(UNTOUCHED_SENTENCE)}</p>')]
     gate = (

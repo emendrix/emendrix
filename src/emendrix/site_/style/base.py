@@ -60,6 +60,8 @@ code.id { color: var(--muted); }
 .lede { max-width: var(--measure); font-size: 1.05rem; }
 .muted { color: var(--muted); }
 .small { font-size: var(--step-sm); }
+/* A proper noun carrying a hyphen, kept off the line break that would read as two words. */
+.nowrap { white-space: nowrap; }
 .scroll { overflow-x: auto; }
 .facts { margin: var(--space-1) 0 var(--space-3); font-size: var(--step-sm); color: var(--muted); }
 .ident { font-size: var(--step-sm); color: var(--muted); }
@@ -82,6 +84,21 @@ code.id { color: var(--muted); }
 .tag { display: inline-block; padding: .05rem .45rem; border: 1px solid var(--rule);
        border-radius: 3px; background: var(--mark); font-size: var(--step-xs);
        letter-spacing: .06em; }
+/* Off-screen until it takes focus, then placed over the header rather than moving it, so
+   arriving at the page shifts nothing. It is the first focusable element on every page. */
+.skip {
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  z-index: 2;
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  font-size: var(--step-sm);
+  transform: translateY(-200%);
+}
+.skip:focus { transform: none; }
 header.bar {
   display: flex;
   flex-wrap: wrap;
