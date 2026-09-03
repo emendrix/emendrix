@@ -326,4 +326,25 @@ every feed `<id>` with them, and no anchor or relative path already published mo
 `_LARGEST_PAGE` moves by 2310 bytes and stays the MDR event page, eighteen figures at about
 128 bytes; `_HEAVIEST` does not move, its page being a timeline of cards; `_TOTAL_BYTES`
 moves by 142 719 over 1201 figures. No measured figure moved with it.
+
+**2026-09-03, the search box gets a keyboard and stops taking half the header.** Two files
+moved and none was added: `search.js` and `style.css`. Every page is byte-identical, both
+feeds, `sitemap.xml`, `search-index.json`, `robots.txt`, `icon.svg` and `og.png` with them,
+every feed `<id>` included, because the control is built by the script and no page carries a
+byte of it. The script now builds the combobox and listbox of the WAI-ARIA Authoring
+Practices: `ArrowDown`, `ArrowUp`, `Home` and `End` move a highlight the input names through
+`aria-activedescendant`, `Enter` opens the highlighted row, `Escape` empties the box, and an
+off-screen `role="status"` region announces the count, which is what makes `Enter` on nothing
+highlighted honest rather than a jump to a row nobody has seen. Each row stays a plain link,
+so the pointer path is unchanged. `style.css` grew from 19 587 to 20 584 bytes for the
+`.visually-hidden` class, the highlighted row sharing one declaration with the hovered one, and
+the two width rules: `#search` is `flex: 0 1 20rem` instead of `flex: 1 1 14rem`, so it
+measured 320 px at a 1440 px viewport where the old rule let it grow into whatever the header
+had left, and under 40rem it takes its own row rather than the sliver beside the navigation. No
+hex value moved, so both contrast tables are unchanged. None of the three pinned sizes moves:
+they are computed over pages, and no page did. Measured in Chrome against the golden tree
+served on `127.0.0.1` on 2026-09-03: eight tabs reach the input, typing `art` announces
+`9 results`, two `ArrowDown` presses highlight the second row with the caret left at the end of
+the query, `Enter` opens `acts/32017R0745/ar-113/`, and Lighthouse scores the home page 100 for
+accessibility both at rest and with the list open. No measured figure moved with it.
 """

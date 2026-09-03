@@ -221,3 +221,38 @@ def test_the_script_reaches_no_third_party() -> None:
     script = search_js()
     assert "https://" not in script and "http://" not in script
     assert "localStorage" not in script and "XMLHttpRequest" not in script
+
+
+def test_the_script_builds_a_combobox_over_a_listbox() -> None:
+    """The roles and relationships the control needs, asserted over the committed file.
+
+    There is no JavaScript runtime in this suite and none is added, so this is a presence
+    check over the source: the roles that make the input a combobox owning a list of options,
+    the property that names the highlighted one, and the live region that counts them. It
+    catches the one way this rots, an edit that drops an attribute while the visual behaviour
+    keeps working, which is invisible to every other test here and to a sighted reviewer.
+    """
+    script = search_js()
+    for call in (
+        'setAttribute("role", "combobox")',
+        'setAttribute("aria-autocomplete", "list")',
+        'setAttribute("aria-controls", "search-results")',
+        'setAttribute("aria-expanded"',
+        'setAttribute("role", "listbox")',
+        'setAttribute("role", "option")',
+        'setAttribute("aria-selected"',
+        'setAttribute("aria-activedescendant", option.id)',
+        'setAttribute("aria-live", "polite")',
+    ):
+        assert call in script, call
+
+
+def test_the_script_moves_the_highlight_by_key() -> None:
+    """Arrow keys, the two ends of the list, and the two keys that were already handled.
+
+    `event.key` values, which is what the file reads; `keyCode` is deprecated and absent.
+    """
+    script = search_js()
+    for key in ("ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"):
+        assert f'event.key === "{key}"' in script, key
+    assert "keyCode" not in script

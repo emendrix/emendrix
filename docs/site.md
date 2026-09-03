@@ -143,7 +143,14 @@ cost (a volume and a web server that serves files). The one
 concession is search: `search-index.json` is built at build time and read by a hand-written,
 dependency-free script that renders the search box itself, so a reader without JavaScript meets
 no dead control and still has `acts/` and the feeds. An architecture test holds the generator to
-loading that one committed file and writing no markup of its own.
+loading that one committed file and writing no markup of its own. The box is a combobox owning a
+listbox of options: focus stays in the input, `ArrowDown` and `ArrowUp` move the highlight and
+wrap at both ends, `Home` and `End` jump to them, `Enter` opens the highlighted result and
+`Escape` empties the box and closes the list. An off-screen live region says how many results a
+query found, politely, which is also what makes `Enter` on nothing highlighted honest: it opens
+the first result, and the count of results has already been announced. Each result is a plain
+link before it is an option, so the pointer, the middle click and copy-address never depended on
+any of that.
 
 **The site loads that one script and no analytics of any kind, and that is a decision rather than
 an omission.** Every page footer says "no cookies, no analytics, no third-party requests", and
