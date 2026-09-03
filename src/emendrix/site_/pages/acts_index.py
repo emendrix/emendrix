@@ -15,6 +15,11 @@ bug; "no amendments seen" is the actual state, and it is a real answer. An act w
 recorded event names no amending act is a third state and gets its own words, because "no
 amendments seen" would deny events the act's own page shows.
 
+A row is two lines: the name a reader knows the act by, with the label and the key beside it,
+then the official title and the dated words. The key joined the row on 2026-09-03, one step
+down in size and colour, because an identifier a reader pastes into EUR-Lex should be on the
+page that lists the acts and not only on each act's own.
+
 A row's date names its clock, in the words the event cards already use: "in force" is the
 corpus's own answer, "detected" is the day emendrix first saw the event. The rule is the one
 `home.py` states for its cards; this page once broke it by printing whichever date existed
@@ -64,19 +69,27 @@ def _groups(site: SiteInputs) -> list[tuple[str, list[ActSite]]]:
 
 
 def _row(act: ActSite) -> Html:
-    """One act: the link, what the official text calls it, and when it last moved.
+    """One act on two lines: what it is called, then what it is and when it last moved.
 
-    The link carries the headline and the short label follows it as a fact when the two
-    differ, so a reader scanning for an initialism still finds the row. The official title
-    stays cut here: this is a list, and a whole official title per row is a wall of text.
+    The link carries the headline, and the identifiers follow it on the same line: the short
+    label when it differs, so a reader scanning for an initialism still finds the row, and the
+    key, which was not on this page at all before 2026-09-03. The key is what a reader checks
+    a row against and what they paste into EUR-Lex, so it belongs on every row, set one step
+    down rather than left to the act's own page.
+
+    The second line carries what the official text calls the act and when it last moved. A
+    chain of five facts on one line reads as a column of separators; two lines let the eye run
+    down the names. Which of the three parts sit on which line is the stylesheet's decision,
+    so the markup keeps a literal space between them: with no stylesheet at all the row still
+    reads as words rather than as one run.
+
+    The official title stays cut here: this is a list, and a whole official title per row is a
+    wall of text.
     """
-    facts = [
-        Html(f'<a href="{escape(up(_DEPTH) + act_href(act.slug))}">{escape(act.headline)}</a>')
-    ]
+    identity: list[Html] = []
     if act.headline != act.label:
-        facts.append(escape(act.label))
-    if act.entries:
-        facts.append(escape(short_title(act.entries[0].title)))
+        identity.append(escape(act.label))
+    identity.append(Html(f'<code class="id">{escape(act.act.key)}</code>'))
     dated = act.dated
     if dated is not None:
         last = dated.words
@@ -84,8 +97,13 @@ def _row(act: ActSite) -> Html:
         last = _UNATTRIBUTED_ONLY
     else:
         last = _QUIET
-    facts.append(Html(f'<span class="muted">{escape(last)}</span>'))
-    return Html(f"<li>{join(facts, ' · ')}</li>")
+    sub = [escape(short_title(act.entries[0].title))] if act.entries else []
+    sub.append(escape(last))
+    return Html(
+        f'<li><a href="{escape(up(_DEPTH) + act_href(act.slug))}">{escape(act.headline)}</a> '
+        f'<span class="ident">{join(identity, " · ")}</span> '
+        f'<span class="sub">{join(sub, " · ")}</span></li>'
+    )
 
 
 def render_acts_index(site: SiteInputs) -> Html:
@@ -108,7 +126,7 @@ def render_acts_index(site: SiteInputs) -> Html:
     ]
     for domain, acts in _groups(site):
         lines.append(Html(f"<h2>{escape(domain)}</h2>"))
-        lines.append(Html("<ul>"))
+        lines.append(Html('<ul class="roster">'))
         lines.extend(_row(act) for act in acts)
         lines.append(Html("</ul>"))
     return page(

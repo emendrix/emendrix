@@ -36,7 +36,7 @@ BACKGROUND = "#fcfcfa"
 INK = "#1c1c1a"
 MUTED = "#5d5d58"
 ACCENT = "#7a4b1e"
-"""The stylesheet's light palette, `src/emendrix/site_/style.py`. The card cannot follow a theme."""
+"""The light palette of `src/emendrix/site_/style/tokens.py`. A card cannot follow a theme."""
 
 BAR_WIDTH = 12
 LEFT = 96

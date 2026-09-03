@@ -2,9 +2,12 @@
 
 A reader arrives with an act in mind, so the first thing under the headline is a way to reach an
 act (the search control the script mounts in the header, and the recent-act links that stand in
-for it without JavaScript), and the second is the list of what actually moved. The argument for
-trusting any of it lives on the methodology page instead, where a reader who wants it finds all
-of it at once rather than scrolling past it to get to the facts.
+for it without JavaScript), and the last is the list of what actually moved. Between them, one
+line: the measured claim and what it does not mean. It sits there rather than at the foot of the
+page because a stranger decides whether to believe a machine-computed legal tool before reading
+its output, not after, and one sentence is the whole of what belongs above the facts. The
+argument itself lives on the methodology page, where a reader who wants it finds all of it at
+once rather than scrolling past it to get to the facts.
 
 Four things this page will not do:
 
@@ -114,7 +117,14 @@ def _hero(site: SiteInputs) -> list[Html]:
 
 
 def _card(act: ActSite, entry: ChangelogEntry) -> Html:
-    """One event, in two lines: which act moved, by how much, and from when.
+    """One event, name first: which act moved, by how much, from when, and between which pair.
+
+    The heading carries the act's name and nothing else. The version pair used to sit beside
+    it inside the same heading, which put an identifier at the rank of the thing it
+    identifies; it is now the card's last line, in the mono face at reduced contrast, present
+    on every card and one step down. The name is the short label rather than the long form,
+    because a card is a row in a list and the long form belongs to the headings of the pages
+    that are about the act.
 
     The date says which clock it came from. `in_force` is the corpus's own answer and is
     absent on plenty of events, and a detection date printed as an in-force date would be a
@@ -138,11 +148,12 @@ def _card(act: ActSite, entry: ChangelogEntry) -> Html:
     dated = event_date(entry).words
     href = f"{up(_DEPTH)}{event_href(act.slug, entry.key)}"
     return Html(
-        f'<div class="cardrow">'
-        f'<h3><a href="{escape(href)}">{escape(act.label)}</a> '
-        f"<code>{escape(str(entry.from_version))} → {escape(str(entry.to_version))}</code></h3>"
-        f"<p>{escape(touched)}{disputed} · {escape(dated)}</p>"
-        f"</div>"
+        f'<article class="cardrow">'
+        f'<h3><a href="{escape(href)}">{escape(act.label)}</a></h3>'
+        f'<p class="facts">{escape(touched)}{disputed} · {escape(dated)}</p>'
+        f'<p class="ident"><code class="id">{escape(str(entry.from_version))} → '
+        f"{escape(str(entry.to_version))}</code></p>"
+        f"</article>"
     )
 
 
@@ -230,8 +241,8 @@ def render_home(site: SiteInputs, *, limit: int = 20) -> Html:
     body = join(
         (
             *_hero(site),
-            *_amendments(site, limit),
             _strip(site),
+            *_amendments(site, limit),
         ),
         "\n",
     )

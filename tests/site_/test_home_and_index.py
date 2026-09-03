@@ -66,6 +66,38 @@ def test_home_credibility_strip_reads_from_the_report_and_links_methodology() ->
     assert 'href="methodology/"' in rendered
 
 
+def test_the_measured_claim_is_read_before_the_list_it_qualifies() -> None:
+    """One line between the hero and the amendments, not a footnote under them.
+
+    A stranger decides whether to believe a machine-computed legal tool before reading its
+    output. The strip moved above the list on 2026-09-03 for that reason, and the order is
+    asserted rather than left to the sequence of calls in `render_home`.
+    """
+    site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"))
+    rendered = render_home(site)
+    assert rendered.index('<p class="strip">') < rendered.index("<h2>Latest amendments</h2>")
+
+
+def test_a_card_leads_with_the_act_and_carries_the_version_pair_below_it() -> None:
+    """The heading is the name and the link; the identifier is a line of its own, one step down."""
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(_entry(),),
+        configured=True,
+    )
+    act = site.acts[0]
+    entry = act.entries[0]
+    href = event_href(act.slug, entry.key)
+    rendered = render_home(site)
+    assert f'<h3><a href="{href}">{escape(act.label)}</a></h3>' in rendered
+    assert (
+        f'<p class="ident"><code class="id">{entry.from_version} → {entry.to_version}</code></p>'
+        in rendered
+    )
+
+
 def test_home_without_events_says_so_instead_of_going_dark() -> None:
     site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"))
     rendered = render_home(site)
@@ -86,7 +118,7 @@ def test_more_events_than_the_limit_are_counted_rather_than_hidden() -> None:
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries, configured=True
     )
     rendered = render_home(site, limit=2)
-    assert rendered.count('<div class="cardrow">') == 2
+    assert rendered.count('<article class="cardrow">') == 2
     assert "1 older event is on the act pages" in rendered
 
 
@@ -121,7 +153,7 @@ def test_home_excludes_events_naming_no_amending_act_and_says_how_many() -> None
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries, configured=True
     )
     rendered = render_home(site)
-    assert rendered.count('<div class="cardrow">') == 1
+    assert rendered.count('<article class="cardrow">') == 1
     assert "1 event naming no amending act is on the act pages, not in this list." in rendered
     assert f"/{unnamed.key}/" not in rendered
 
@@ -135,7 +167,7 @@ def test_home_with_only_events_naming_no_amending_act_says_so() -> None:
         configured=True,
     )
     rendered = render_home(site)
-    assert '<div class="cardrow">' not in rendered
+    assert '<article class="cardrow">' not in rendered
     assert "1 event recorded so far named no amending act" in rendered
 
 
@@ -157,7 +189,11 @@ def test_the_index_groups_by_domain_with_other_last() -> None:
 
 
 def test_the_index_row_links_the_long_form_and_keeps_the_label_beside_it() -> None:
-    """A reader scanning the roster for an initialism still finds the row."""
+    """A reader scanning the roster for an initialism still finds the row.
+
+    The label rides in the identity span with the key, and is absent when it would only
+    repeat the link: a row reading `AI Act · AI Act` says nothing twice.
+    """
     watchlist = Watchlist.model_validate(
         {
             "acts": [
@@ -175,9 +211,21 @@ def test_the_index_row_links_the_long_form_and_keeps_the_label_beside_it() -> No
     )
     rendered = render_acts_index(site)
     assert (
-        '<a href="../acts/32016R0679/">General Data Protection Regulation</a> · GDPR · ' in rendered
+        '<a href="../acts/32016R0679/">General Data Protection Regulation</a> '
+        '<span class="ident">GDPR · <code class="id">32016R0679</code></span>' in rendered
     )
-    assert '<a href="../acts/32024R1689/">AI Act</a> · <span' in rendered
+    assert (
+        '<a href="../acts/32024R1689/">AI Act</a> '
+        '<span class="ident"><code class="id">32024R1689</code></span>' in rendered
+    )
+
+
+def test_every_index_row_carries_the_act_key() -> None:
+    """The identifier is on every row, one step down: it is what a reader pastes elsewhere."""
+    site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"))
+    rendered = render_acts_index(site)
+    for act in site.acts:
+        assert f'<code class="id">{act.act.key}</code>' in rendered
 
 
 def test_the_index_dates_a_row_by_the_clock_that_produced_the_date() -> None:

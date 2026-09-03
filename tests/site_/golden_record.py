@@ -103,4 +103,23 @@ twice, its lead now bolded inside the constant rather than prefixed to it. `site
 gained one `<url>` with no `<lastmod>`, the about page's content moving with the build rather
 than with the corpus. Both feeds, `search-index.json`, `robots.txt`, `style.css` and the three
 assets are byte-identical. No measured figure moved with it.
+
+Read again on 2026-09-03, later the same day, when the stylesheet became a package and the
+front door and the roster were rebuilt around it. Three files moved. `style.css` grew from
+8111 to 11 504 bytes: a type scale and a spacing scale the rules now read instead of writing
+their own sizes, a reading measure on prose, a visible focus ring on every interactive
+element, a print block, and the rules for the two reshaped lists. It is one file the whole
+tree shares, so those 3393 bytes are paid once per reader and never per page. `index.html`
+gained 53 bytes: the credibility strip moved above the list it qualifies, and the card became
+name first, its heading now the act and the link alone, with the counts on their own line and
+the version pair below them in the mono face at reduced contrast. `acts/index.html` gained
+273: 15 bytes for each of three lists that named themselves `roster`, and 57 for each of four
+rows that gained the act's key beside its label, spans and the two literal spaces that keep
+the row readable with no stylesheet at all. No palette value moved, which is why `og.png`
+and the other two assets are byte-identical, and the fourteen contrast pairs the new
+`test_style.py` measures pass in both schemes over the palette as it already stood. The nine
+other pages, both feeds, `sitemap.xml`, `search-index.json` and `robots.txt` are
+byte-identical, and no pinned size moved: the chrome markup did not change, and the heaviest
+page in the tree is the MDR event page, which this pass did not touch. No measured figure
+moved with it.
 """

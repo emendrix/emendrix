@@ -224,7 +224,7 @@ def _event_header(entry: ChangelogEntry) -> list[Html]:
         f"<code>{escape(str(entry.to_version))}</code>"
     )
     # The bare pill, no colour modifier: the label is a fact about the corpus's records, and
-    # the palette spends colour on diffs, disputes and links only (`style.py`).
+    # the palette spends colour on diffs, disputes and links only (`style/tokens.py`).
     unnamed = unattributed(entry)
     marker = f' <span class="pill">{escape(UNATTRIBUTED_LABEL)}</span>' if unnamed else ""
     lines = [
