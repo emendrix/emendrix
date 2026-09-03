@@ -208,3 +208,18 @@ def test_a_change_with_no_prose_says_why_rather_than_showing_nothing() -> None:
     )
     rendered = _page(entry)
     assert "the model returned no sentence for this change" in rendered
+
+
+def test_the_event_is_headed_by_its_date_and_keeps_both_clocks_below() -> None:
+    """The H1 names the act, the H2 the date the event's own clock answers with, and the facts
+    line still carries both clocks, so the heading naming one hides neither."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
+    site = _site(stated)
+    rendered = render_event_page(site, site.acts[0], site.acts[0].entries[0])
+    assert f"<h1>{site.acts[0].headline}</h1>" in rendered
+    assert "<h2>in force 2024-06-01</h2>" in rendered
+    assert (
+        f'<p class="ident"><code>{stated.from_version} → {stated.to_version}</code></p>' in rendered
+    )
+    assert '<p class="facts">in force 2024-06-01 · detected 2026-08-09</p>' in rendered

@@ -60,7 +60,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 170691)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 176291)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -74,9 +74,16 @@ that day, when every change block grew a heading: the index carries cards, not b
 59 bytes heavier on 2026-09-03, when the site gained an about page: the header bar gained a
 fourth link to it (33 bytes at this depth) and the footer a closing one (44), and the
 disclaimer paragraph stopped printing `Not legal advice` twice, which gave 18 back. Every
-page on the site moved by the same three edits, at whatever its own depth costs."""
+page on the site moved by the same three edits, at whatever its own depth costs.
 
-_TOTAL_BYTES: Final = 985229
+5600 bytes heavier on 2026-09-03, when each event's opening became its date: 28 bytes a card
+over two hundred cards. The heading was the version pair inside two `<code>` elements and is
+now the dated words, which is what a reader scanning a timeline is looking for; the pair moved
+to a paragraph of its own below it, in one `<code>` rather than two, so a card pays a new
+paragraph and saves a tag pair. The header itself did not move here, this build passing no
+site URL and this corpus resolving no official page, so it renders no line of links."""
+
+_TOTAL_BYTES: Final = 996429
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -96,7 +103,13 @@ provision index, since four changes is under the six it starts at.
 13 059 bytes heavier on 2026-09-03, the about page's two new links less the eighteen bytes the
 disclaimer stopped repeating: 59 on the index and 65 on each of the two hundred event pages,
 which sit a directory deeper and so pay three bytes more for each of the two relative paths.
-That is the whole cost of giving a reader somewhere to learn who runs the site."""
+That is the whole cost of giving a reader somewhere to learn who runs the site.
+
+11 200 bytes heavier on 2026-09-03, later the same day, when an event's opening became its
+date: 28 bytes for each of the two hundred cards on the index and 28 for the same header on
+each of the two hundred event pages. It is the one markup change of that pass, and it is paid
+once per event rather than once per change, which is why a page carrying hundreds of blocks
+pays it no more than this one does."""
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
 _LINKS: Final = re.compile(r'href="([^"]*)"')

@@ -184,7 +184,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 37303)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 37331)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -211,7 +211,15 @@ growth. Nothing inside a `<details>` moved.
 65 bytes heavier on 2026-09-03, when the site gained an about page. The header bar's fourth
 link costs 36 bytes at this depth and the footer's closing one 47, and the disclaimer gave 18
 back by no longer printing `Not legal advice` twice. Every page on the site moved by those
-same three edits; only the relative paths differ, and this page is three directories down."""
+same three edits; only the relative paths differ, and this page is three directories down.
+
+28 bytes heavier on 2026-09-03, later the same day, when the event's opening became its date.
+The `<h2>` held the version pair in two `<code>` elements and now holds the dated words, with
+the pair below it in `<p class="ident">` inside one `<code>`: 78 bytes of heading became 28,
+and the new paragraph costs 78 including the line break. It is the whole markup change of that
+pass on this page, paid once for the event rather than once for each of its nine blocks, which
+is why the page grew by less than the heading of a single change block cost it the day before.
+Nothing inside a `<details>` moved, and no anchor did."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

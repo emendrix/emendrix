@@ -7,8 +7,9 @@ what a page needs beyond its body: enough of the act's identity to know where th
 the shell, and the breadcrumb.
 
 The header names the act and links back to its timeline rather than repeating the act page's
-own header: the version pair is this page's heading, rendered by the shared card opening, and
-the act's full identity lives one link up where it has always been.
+own header: the event's own date is this page's second-level heading, with the version pair
+below it, both rendered by the shared card opening, and the act's full identity lives one link
+up where it has always been.
 """
 
 from __future__ import annotations
@@ -71,7 +72,7 @@ def render_event_page(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> 
     )
     body = join((*_header(act), *render_event(entry, anchors)), "\n")
     # The title says what a reader learns by opening the page, the count and the date with
-    # its clock, and the version pair stays in the H2 the body opens with. The short label
+    # its clock; the version pair sits under the H2 the body opens with. The short label
     # leads rather than the headline, unlike the act page's title: here the count and the
     # date are the news, and a long form in front of them would push both past where a
     # result snippet cuts. The headline is in the H1 and the description. An event that

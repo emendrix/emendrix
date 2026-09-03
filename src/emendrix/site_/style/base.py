@@ -2,9 +2,10 @@
 
 Second in the cascade. What lives here is what a rule further down is allowed to assume: the
 box model, the body face, the heading scale, the shared small-print classes (`.muted`,
-`.small`, `.facts`, `.official`, `.ident`, `.none`, `.quoted`, `.lbl`) and the pills, each of
-which is minted by two or more of the page renderers. A class one page owns lives with that
-page instead, in `pages` or `evidence`.
+`.small`, `.facts`, `.ident`, `.none`, `.quoted`, `.lbl`) and the pills, each of which is
+minted by two or more of the page renderers. A class one page owns lives with that page
+instead, in `pages` or `evidence`; `.official` left for `evidence` on 2026-09-03, the act
+page's header being the only place that mints it.
 
 Three rules are about being usable rather than about looking a way, and one of the three is
 not here:
@@ -61,7 +62,6 @@ code.id { color: var(--muted); }
 .small { font-size: var(--step-sm); }
 .scroll { overflow-x: auto; }
 .facts { margin: var(--space-1) 0 var(--space-3); font-size: var(--step-sm); color: var(--muted); }
-.official { margin: var(--space-1) 0 var(--space-2); font-size: .86rem; color: var(--muted); }
 .ident { font-size: var(--step-sm); color: var(--muted); }
 .lbl { margin: var(--space-3) 0 var(--space-1); font-size: .75rem; letter-spacing: .06em;
        text-transform: uppercase; color: var(--muted); }

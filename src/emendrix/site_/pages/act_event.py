@@ -52,6 +52,7 @@ from emendrix.output.markdown import (
     short_label,
 )
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
+from emendrix.site_.clocks import event_date
 from emendrix.site_.diffview import render_texts
 from emendrix.site_.dispute import dispute_note
 from emendrix.site_.markup import Html, count, escape, join
@@ -212,24 +213,25 @@ def _facts(entry: ChangelogEntry) -> list[Html]:
 
 
 def _event_header(entry: ChangelogEntry) -> list[Html]:
-    """The article's opening, shared by the card and the event page: id, versions, facts.
+    """The article's opening, shared by the card and the event page: id, date, versions, facts.
 
-    The `id` is the fragment every feed entry's `<id>` was minted from, so the card on the act
-    page must keep answering to it forever; the event page carries the same id so a link built
-    against either surface lands on this event. Two surfaces opening through one function is
-    what keeps them stating one event the same way.
+    The `id` is the fragment every feed entry's `<id>` was minted from, so both surfaces must
+    keep answering to it forever. The heading is the date, because a reader arriving at a
+    timeline is asking when; it names its clock through the one helper every dated line on the
+    site reads, so a detection date can never be set as an in-force date. The version pair is
+    what the event *is* and sits directly below in the mono face, an identifier to check
+    against EUR-Lex rather than a name to scan a list by. The facts line still carries both
+    clocks, so the record of when this happened is whole whichever one the heading named.
     """
-    versions = (
-        f"<code>{escape(str(entry.from_version))}</code> → "
-        f"<code>{escape(str(entry.to_version))}</code>"
-    )
+    versions = f"<code>{escape(str(entry.from_version))} → {escape(str(entry.to_version))}</code>"
     # The bare pill, no colour modifier: the label is a fact about the corpus's records, and
     # the palette spends colour on diffs, disputes and links only (`style/tokens.py`).
     unnamed = unattributed(entry)
     marker = f' <span class="pill">{escape(UNATTRIBUTED_LABEL)}</span>' if unnamed else ""
     lines = [
         Html(f'<article class="event" id="{escape(entry.key)}">'),
-        Html(f"<h2>{versions}{marker}</h2>"),
+        Html(f"<h2>{escape(event_date(entry).words)}{marker}</h2>"),
+        Html(f'<p class="ident">{versions}</p>'),
         *_facts(entry),
     ]
     if unnamed:

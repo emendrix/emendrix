@@ -209,3 +209,52 @@ def test_a_diff_only_entry_says_the_stage_never_ran_once() -> None:
     rendered = render_act(site, site.acts[0])
     assert "No explanation shipped" not in rendered
     assert rendered.count("the explain stage did not run for this event") == 1
+
+
+def test_the_header_states_the_act_before_it_offers_anything_to_do() -> None:
+    """Four lines in one order: the name, the title the legislation publishes for itself, the
+    facts that identify it elsewhere, and the two things a reader can do about it.
+
+    The feed and the EUR-Lex link used to sit inside the facts chain, between a domain and a
+    date, where an action read as another fact about the legislation.
+    """
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    long_title = "House Rules of Flat 3B, as agreed by every tenant of the building"
+    renamed = entry.model_copy(
+        update={"act": entry.act.model_copy(update={"display_name": long_title})}
+    )
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(renamed,),
+        site_url="https://example.invalid/site",
+    )
+    rendered = render_act(site, site.acts[0])
+    assert rendered.index("<h1>") < rendered.index('<p class="official">')
+    assert rendered.index('<p class="official">') < rendered.index('<p class="facts">')
+    assert rendered.index('<p class="facts">') < rendered.index('<p class="links">')
+    links = rendered.split('<p class="links">')[1].split("</p>")[0]
+    assert "Atom feed" in links
+    facts = rendered.split('<p class="facts">')[1].split("</p>")[0]
+    assert "Atom feed" not in facts
+    assert "newest amendment" in facts
+
+
+def test_an_act_with_nothing_to_link_gets_no_empty_line_of_links() -> None:
+    """A build with no site URL mints no feed, and the toy corpus renders no official page."""
+    rendered = _quiet()
+    assert 'class="links"' not in rendered
+
+
+def test_a_timeline_card_is_headed_by_its_date_with_the_version_pair_below() -> None:
+    """A reader arriving at a timeline is asking when, so the date is the heading and the
+    version pair sits one step down, where an identifier belongs. The `id` does not move."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = _site(entry)
+    rendered = render_act(site, site.acts[0])
+    assert f'<article class="event" id="{entry.key}">' in rendered
+    assert f"<h2>detected {OBSERVED.isoformat()}</h2>" in rendered
+    assert (
+        f'<p class="ident"><code>{entry.from_version} → {entry.to_version}</code></p>' in rendered
+    )

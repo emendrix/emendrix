@@ -122,11 +122,12 @@ def _sidebar(act: ActSite, anchors: tuple[tuple[str, ...], ...]) -> Html:
 
 
 def _header(act: ActSite, site: SiteInputs) -> list[Html]:
-    """The act's name, its official title, and the facts that identify it elsewhere.
+    """The act's name, its official title, the facts that identify it, and where to go next.
 
     Each link renders only when there is something for it to point at: a feed exists only
     under a configured site URL, and only the composition root knows whether this corpus has
-    an official page. A dead link is worse than a missing one.
+    an official page. A dead link is worse than a missing one, and a line holding no link at
+    all is not rendered, so an act with neither keeps a header of three elements.
 
     The feed's own module says where a feed lives, rather than this page spelling the path a
     second time: the two agreeing today is not the same as their being unable to disagree.
@@ -139,6 +140,11 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     characters are the ones a reader searched for. It is rendered only when a recorded event
     carried one that says more than either name already does: repeating a label under itself
     would dress a name somebody chose as the title the legislation publishes for itself.
+
+    The identifying facts and the two things a reader can do are separate lines, because they
+    are answers to different questions: what this act is called elsewhere, and where to read
+    it or subscribe to it. Joined into one chain of separators, the feed sat between a domain
+    and a date and read like another fact about the legislation.
 
     The dated fact names its clock, like every dated line on the site. The header once said
     "reflects the consolidated version of" over whichever date the newest event carried,
@@ -153,20 +159,23 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     facts.append(Html(f"<code>{escape(act.act.key)}</code>"))
     if act.domain:
         facts.append(escape(act.domain))
-    if site.site_url:
-        href = escape(up(_DEPTH) + feed_path(act))
-        facts.append(Html(f'<a href="{href}">Atom feed</a>'))
-    if act.eurlex_url:
-        facts.append(Html(f'<a href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
     dated = act.dated
     if dated is not None:
         facts.append(escape(f"newest amendment {dated.words}"))
     elif act.entries:
         facts.append(escape("recorded events name no amending act"))
+    links: list[Html] = []
+    if site.site_url:
+        href = escape(up(_DEPTH) + feed_path(act))
+        links.append(Html(f'<a href="{href}">Atom feed</a>'))
+    if act.eurlex_url:
+        links.append(Html(f'<a href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
     header = [Html(f"<h1>{escape(act.headline)}</h1>")]
     if title != act.headline and title != act.label:
         header.append(Html(f'<p class="official">{escape(title)}</p>'))
     header.append(Html(f'<p class="facts">{join(facts, " · ")}</p>'))
+    if links:
+        header.append(Html(f'<p class="links">{join(links, " · ")}</p>'))
     return header
 
 

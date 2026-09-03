@@ -122,4 +122,27 @@ other pages, both feeds, `sitemap.xml`, `search-index.json` and `robots.txt` are
 byte-identical, and no pinned size moved: the chrome markup did not change, and the heaviest
 page in the tree is the MDR event page, which this pass did not touch. No measured figure
 moved with it.
+
+Read again on 2026-09-03, later again, when the act page and the event page were rebuilt around
+what a reader arrives asking. Six files moved. Each of the four act pages split its header in
+two: the identifying facts stay in `p.facts`, and the Atom feed and the EUR-Lex link move to a
+`p.links` of their own, 18 bytes a page, because an action sitting in a chain between a domain
+and a date read as another fact about the legislation. The MDR act page and the MDR event page
+share the other change, 28 bytes each: an event now opens with its date as the `<h2>` and
+carries the version pair below it in `p.ident`, one `<code>` where the heading had two, so the
+heading answers when and the identifier stays on the page one step down. Every `id`, every
+fragment link and every relative path is byte-identical, which is why both feeds, `sitemap.xml`
+and `search-index.json` did not move, and neither did the home page, the roster, the about,
+methodology, feeds and 404 pages or the three assets. `style.css` grew from 11 504 to 13 330
+bytes, paid once per reader for the whole tree: the timeline is drawn as one, a rail with a node
+per event in place of four rounded cards; a change block gained horizontal padding so the tint
+on `.chg:target` has room and its title reads in the sans beside the coordinate; the touched
+index became one wrapping row instead of two columns, so forty-five provisions cost a few lines
+of height; the diff and the verbatim blocks gained line height, both tints state `--fg` rather
+than inheriting it, and an elided run is a bordered chip that says what it stands for.
+`.chg:target` is named again in the print block, a pseudo-class selector outranking the blanket
+line whatever the order. No hex value moved, so the fourteen contrast pairs are unchanged in
+both schemes and `og.png` is byte-identical. `_LARGEST_PAGE` moves by the 28 bytes above and
+both at-scale pins by the same change over two hundred events. No measured figure moved with
+it.
 """

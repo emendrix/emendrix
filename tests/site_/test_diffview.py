@@ -107,3 +107,15 @@ def test_a_word_diff_is_never_elided() -> None:
     html = str(render_texts(*_texts("pay within one month", "pay within two weeks")))
     assert "unchanged lines" not in html
     assert "compared line by line" not in html
+
+
+def test_the_unified_block_is_labelled_with_both_version_tags_above_it() -> None:
+    """The label is a row of its own above the block, so a reader knows which direction the
+    marked text runs in without reading the surrounding page."""
+    change, entry = _change("MODIFIED")
+    rendered = str(render_texts(change, entry))
+    label = (
+        f'<p class="lbl"><code>{entry.from_version}</code> → <code>{entry.to_version}</code></p>'
+    )
+    assert label in rendered
+    assert rendered.index(label) < rendered.index('<p class="diff">')
