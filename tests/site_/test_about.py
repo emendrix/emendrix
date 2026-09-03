@@ -93,6 +93,17 @@ def test_a_contact_alone_renders_the_contact_line_alone() -> None:
     assert f'<a href="mailto:{CONTACT}">{CONTACT}</a>' in rendered
 
 
+def test_the_contact_address_is_marked_so_the_edge_leaves_it_alone() -> None:
+    """The footer promises one script and this is the page that would have loaded two.
+
+    The edge rewrites a `mailto:` into a placeholder its own script decodes, and did so here
+    until 2026-09-03, on the one page whose subject is what the site does on a reader's
+    machine. The comment pair is the documented opt-out, so it is markup with a job and a test.
+    """
+    rendered = _about(contact=CONTACT)
+    assert f'<!--email_off--><a href="mailto:{CONTACT}">{CONTACT}</a><!--/email_off-->' in rendered
+
+
 def test_every_operator_value_is_escaped_in_the_href_and_in_the_text() -> None:
     """All three arrive from a command line and none of them is trusted."""
     rendered = _about(

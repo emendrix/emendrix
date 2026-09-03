@@ -85,6 +85,55 @@ def test_no_absolute_path_of_this_machine_reaches_the_page() -> None:
     assert f"reports/eval/{latest_report(REPORTS).stem}.md" in rendered
 
 
+def _report_path() -> str:
+    return f"reports/eval/{latest_report(REPORTS).stem}.md"
+
+
+def _linked(path: str) -> str:
+    """The one shape a linked path is rendered in, so the assertions below can be exact."""
+    return f'"><code>{path}</code></a>'
+
+
+def test_a_github_home_links_the_report_that_proves_every_figure() -> None:
+    """The page's whole argument is that no figure on it lacks provenance, so the link resolves.
+
+    A bare join of the repository URL and the path answered 404 until 2026-09-03, which is that
+    argument failing on the first click. GitHub serves a committed file under `blob/<ref>/`.
+    """
+    path = _report_path()
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=latest_report(REPORTS),
+        repo_url="https://github.com/o/r",
+    )
+    rendered = render_methodology(site)
+    assert f'<a href="https://github.com/o/r/blob/main/{path}"><code>{path}</code></a>' in rendered
+
+
+def test_a_public_home_of_unknown_shape_shows_the_path_as_text() -> None:
+    """A forge whose file layout nobody has checked gets no guessed link, only the path."""
+    path = _report_path()
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=latest_report(REPORTS),
+        repo_url="https://example.invalid/emendrix",
+    )
+    rendered = render_methodology(site)
+    assert f"<code>{path}</code>" in rendered
+    assert _linked(path) not in rendered
+    assert f"https://example.invalid/emendrix/{path}" not in rendered
+
+
+def test_a_build_with_no_public_home_shows_the_path_as_text() -> None:
+    """The committed build passes no `--repo-url`, and the path is the honest answer for it."""
+    path = _report_path()
+    rendered = render_methodology(_site())
+    assert f"<code>{path}</code>" in rendered
+    assert _linked(path) not in rendered
+
+
 def test_a_configured_build_links_both_repositories_in_how_built() -> None:
     """With both URLs set, the how-built section links each repository by name.
 

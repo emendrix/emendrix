@@ -109,6 +109,13 @@ are the stable ones inside that repository. `--repo-url` turns those into links 
 exists, `--changelogs-url` names the changelog repository's own public home in the footer and on
 the methodology page, and all three URL flags are refused unless they are `https://`.
 
+A `--repo-url` on `github.com` yields file links, at `<repo>/blob/main/<path>`, because that is
+where that host serves a committed file. Any other home yields the paths as text: the layout of a
+forge nobody has checked is a guess, and a link that 404s under the sentence establishing where
+every figure on the methodology page came from is worse than no link at all. The ref is `main`
+rather than the evaluation report's own revision, since `eval run` records the revision of the
+tree it scored and the report is committed after it.
+
 ## The honesty rule, made structural
 
 What all of this makes structural rather than aspirational is the honesty rule. Every page is a

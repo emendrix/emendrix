@@ -69,10 +69,12 @@ code.id { color: var(--muted); }
        text-transform: uppercase; color: var(--muted); }
 .quoted { font-style: italic; color: var(--muted); }
 .none { font-style: italic; color: var(--muted); }
+/* The pill and the tag are the two components whose whole content is a boundary and a word,
+   so their border is `--edge` and not the hairline the rest of the sheet draws with. */
 .pill {
   display: inline-block;
   padding: .05rem .45rem;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--edge);
   border-radius: 3px;
   background: var(--mark);
   font-size: var(--step-xs);
@@ -81,7 +83,7 @@ code.id { color: var(--muted); }
 }
 .pill.ins { background: var(--ins); }
 .pill.disp { background: transparent; border-color: var(--warn); color: var(--warn); }
-.tag { display: inline-block; padding: .05rem .45rem; border: 1px solid var(--rule);
+.tag { display: inline-block; padding: .05rem .45rem; border: 1px solid var(--edge);
        border-radius: 3px; background: var(--mark); font-size: var(--step-xs);
        letter-spacing: .06em; }
 /* Off-screen until it takes focus, then placed over the header rather than moving it, so

@@ -163,9 +163,12 @@ summary:hover { text-decoration: underline; }
   overflow-wrap: anywhere;
 }
 /* Both tints carry foreground text, so what is readable never depends on a coloured
-   foreground surviving a theme swap. */
+   foreground surviving a theme swap, and both marks also say which they are without their
+   tint: an insertion is underlined and a deletion struck through, on screen as on paper. A
+   diff block holds no links, so an underline inside one can mean only the one thing. */
 .diff ins, .diff del { padding: .05rem .2rem; border-radius: 2px; color: var(--fg); }
-.diff ins { background: var(--ins); text-decoration: none; }
+.diff ins { background: var(--ins); text-decoration: underline;
+            text-decoration-thickness: from-font; }
 .diff del { background: var(--del); text-decoration: line-through; }
 .elided {
   display: inline-block;
@@ -209,8 +212,8 @@ th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color:
      the fragment that brought a reader to one block. */
   .verbatim.ins, .verbatim.del, .pill.ins, .chg:target { background: transparent; }
   /* The tints inside a diff are the only ones that say something no word beside them does,
-     so they stay, and inserted text is underlined as well for a printer with no colour. */
-  .diff ins { text-decoration: underline; }
+     so they stay, and nothing is redeclared for them: the screen rules already underline an
+     insertion and strike a deletion, which is what a printer with no colour reads. */
   a { color: inherit; }
 }
 """

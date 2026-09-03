@@ -102,11 +102,23 @@ _HUMAN_LABELS: Final[dict[LocationCode, str]] = {
 
 
 def _render_head(segment: LocationSegment) -> str:
-    if segment.code is LocationCode.AR and segment.value is not None:
+    """`Art. 5`, `Annex III`, `Annex`, `Title II`; a code with no reading stays as written.
+
+    A head carrying no value is a real form: a change can be keyed to a whole annex or a whole
+    title rather than to a numbered one, and eight committed changes carry one (counted
+    2026-09-03). Those rendered as the raw metadata code until then, so a reader met `AN` where
+    every neighbour said `Annex III`. A code with no entry in `_HUMAN_LABELS`, known or not,
+    has no word this module can spell for it and keeps the spelling the corpus used:
+    capitalising a code is a guess at a reading, and the vocabulary is empirical.
+    """
+    code = segment.code
+    if code is LocationCode.AR and segment.value is not None:
         return f"Art. {segment.value}"
-    if segment.code is LocationCode.AN and segment.value is not None:
-        return f"Annex {segment.value}"
-    return str(segment)
+    reading = None if isinstance(code, UnknownCode) else _HUMAN_LABELS.get(code)
+    if reading is None:
+        return str(segment)
+    label = reading.capitalize()
+    return label if segment.value is None else f"{label} {segment.value}"
 
 
 def _render_tail(segment: LocationSegment) -> str:
@@ -184,6 +196,10 @@ class ProvisionLocation(BaseModel):
 
         Lossless but not authoritative: every segment is rendered, including structural ones a
         lawyer would leave implicit. The canonical string, not this, is the identity.
+
+        A head segment with no value reads as its word alone, `Annex` or `Title`, because a
+        change keyed to a whole annex is a real form and its code is not a word a reader knows.
+        A code the vocabulary has no reading for keeps the spelling the corpus used.
         """
         head, *tail = self.segments
         return _render_head(head) + "".join(_render_tail(segment) for segment in tail)

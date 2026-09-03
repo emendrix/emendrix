@@ -6,7 +6,7 @@ import json
 from datetime import date
 from pathlib import Path
 
-from emendrix.core import ProvisionTree
+from emendrix.core import ProvisionLocation, ProvisionTree
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
@@ -45,6 +45,31 @@ def test_acts_aliases_and_touched_provisions_are_in_the_index() -> None:
     touched = {emitted.change.location.canonical for emitted in entry.changes}
     assert len(provisions) == len(touched)
     assert all("#" in item["url"] for item in provisions)
+
+
+def test_a_provision_with_no_number_is_labelled_by_its_word() -> None:
+    """A change keyed to a whole annex is `Annex — <act>` in the index, never `AN — <act>`.
+
+    The label is the only place a location's display form reaches a reader with no surrounding
+    page to explain it, and the live index carried two rows reading `AN — …` until 2026-09-03.
+    The change is relocated rather than authored, so the toy's own text and anchors still hold.
+    """
+    entry = _entry()
+    emitted = entry.changes[0]
+    change = emitted.change
+    provision = change.provision.model_copy(update={"location": ProvisionLocation.parse("AN")})
+    relocated = emitted.model_copy(
+        update={"change": change.model_copy(update={"provision": provision})}
+    )
+    moved = entry.model_copy(update={"changes": (relocated, *entry.changes[1:])})
+    site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(moved,))
+    labels = [
+        item["label"]
+        for item in json.loads(search_index_json(site))["entries"]
+        if item["kind"] == "provision"
+    ]
+    assert any(label.startswith("Annex — ") for label in labels), labels
+    assert not any(label.startswith("AN — ") for label in labels), labels
 
 
 def test_an_alias_finds_the_same_page_as_the_name() -> None:

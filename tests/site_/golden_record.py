@@ -168,4 +168,21 @@ the fourteen contrast pairs are unchanged in both schemes and `og.png` is byte-i
 `_LARGEST_PAGE` moves by 102 bytes; `_HEAVIEST` falls 4518, the first downward move that pin
 has made, and `_TOTAL_BYTES` rises 7282, 201 pages of chrome less 400 dates lines. No measured
 figure moved with it.
+
+**2026-09-03, five places where the site's own claim about itself was false.** One file moved,
+`style.css`, from 14 424 to 14 976 bytes, paid once per reader for the whole tree. The palette
+gained `--edge` in both schemes, the colour of a component boundary as distinct from the
+hairline `--rule` draws: the pill and the tag border in it, at 3.20 to 3.75 light and 3.44 to
+4.42 dark over the three surfaces they sit on, where `--rule` had drawn them at 1.31 and 1.46,
+under the 3:1 WCAG 2.1 SC 1.4.11 asks of a boundary carrying no text. Inserted text inside a
+diff is now underlined on screen as well as tinted, so neither mark depends on colour, and the
+print block's `.diff ins` line is gone, having been compensating for exactly the gap the screen
+rule now closes. `test_style.py` measures the three new pairs against a second, separate
+minimum. Nothing else in the tree moved: no page carries a bare head code, the golden build
+passes no `--repo-url`, so the methodology page's provenance line still prints its path as
+text, and it passes no `--contact`, so the about page renders no address for the new opt-out
+markers to wrap. Both feeds, `sitemap.xml`, `search-index.json`, `robots.txt` and the three
+assets are byte-identical, `og.png` included, none of the four hexes it copies having moved,
+and no pinned size moved: the two at-scale pins and `_LARGEST_PAGE` count pages, and this pass
+changed one asset. No measured figure moved with it.
 """

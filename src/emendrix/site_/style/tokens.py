@@ -3,15 +3,26 @@
 First in the cascade, and the only module that may name a colour by its hex value: every rule
 downstream reaches a colour through a custom property, so a palette is one block to read and
 one block to check. `tests/site_/test_style.py` computes WCAG 2.1 contrast over these pairs in
-both schemes and fails the build under 4.5:1, and it also asserts that no `#rrggbb` appears
-outside a custom-property declaration here, which is what keeps that check total.
+both schemes and fails the build under 4.5:1 for anything carrying text and under 3:1 for a
+component boundary, and it also asserts that no `#rrggbb` appears outside a custom-property
+declaration here, which is what keeps that check total.
+
+There are two line colours because a line does two different jobs. `--rule` is a hairline that
+separates things a reader can already see apart, a table row from the next, the header bar from
+the page, and it is held to no ratio because nothing depends on finding its edge. `--edge` is
+the boundary of a small component whose extent is the information, the change-type pill and the
+tag, and it was added on 2026-09-03 because `--rule` drew those at 1.31:1 light and 1.46:1 dark,
+under the 3:1 that WCAG 2.1 SC 1.4.11 asks of a non-text boundary. Measured the same day over
+the three surfaces those components sit on: light 3.20 to 3.75, dark 3.44 to 4.42.
 
 `:root` is the light palette and `color-scheme: light dark` tells the browser so; the dark
 block is a `prefers-color-scheme` override of the same names. No toggle, no script, nothing
-stored about the reader. Both schemes were measured on 2026-09-03 and no value moved: the
-lowest of the fourteen checked pairs is muted on mark, at 5.66 light and 5.32 dark. The four
-light values are copied by hand into `scripts/make_og_image.py`, which draws the link-preview
-card and cannot follow a theme, so a hex that moves here moves there in the same commit.
+stored about the reader. The lowest of the fourteen text pairs is muted on mark, at 5.66 light
+and 5.32 dark, measured on 2026-09-03 and unmoved by the token added that day. Four light
+values, the background, the foreground, the muted grey and the accent, are copied by hand into
+`scripts/make_og_image.py`, which draws the link-preview card and cannot follow a theme, so one
+of those four moving here moves there in the same commit; `--edge` is not among them, the card
+drawing no component boundary.
 
 The scale exists so no rule writes an ad-hoc size. `--step-2` and `--step-3` are `clamp()`ed
 against the viewport: the H1 lands at 1.6rem on a 390px phone, where the old fixed 2rem was
@@ -35,6 +46,7 @@ TOKENS: Final = """\
   --fg: #1c1c1a;
   --muted: #5d5d58;
   --rule: #e0ded6;
+  --edge: #86847c;
   --panel: #ffffff;
   --accent: #7a4b1e;
   --mark: #f1ede3;
@@ -63,6 +75,7 @@ TOKENS: Final = """\
     --fg: #e6e5e1;
     --muted: #a0a09a;
     --rule: #33353a;
+    --edge: #7c7e84;
     --panel: #1e2024;
     --accent: #d9a066;
     --mark: #2a2c31;

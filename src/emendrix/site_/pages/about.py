@@ -80,6 +80,12 @@ def _who_runs_it(chrome: PageChrome) -> list[Html]:
     A name with a URL is a linked name; a URL with no name is a link whose text is the URL,
     which is the honest rendering of a deployment that published an address and no person. The
     contact line is separate, because a build may pass an address and nothing else.
+
+    The address is wrapped in the `email_off` comment pair, which is the documented opt-out
+    from the edge rewriting a `mailto:` into a placeholder a script decodes. Left alone, that
+    rewrite loaded a second script on this one page while the footer beneath it promised one
+    (verified against the live site on 2026-09-03), and on a site whose product is the
+    precision of its own claims that is the worst class of defect there is.
     """
     if not (chrome.operator or chrome.operator_url or chrome.contact):
         return []
@@ -98,8 +104,9 @@ def _who_runs_it(chrome: PageChrome) -> list[Html]:
         address = escape(chrome.contact)
         lines.append(
             Html(
-                f'<p>Write to <a href="{escape("mailto:" + chrome.contact)}">{address}</a>. '
-                f"{escape(_MAILBOX)}</p>"
+                f"<p>Write to <!--email_off-->"
+                f'<a href="{escape("mailto:" + chrome.contact)}">{address}</a>'
+                f"<!--/email_off-->. {escape(_MAILBOX)}</p>"
             )
         )
     return lines

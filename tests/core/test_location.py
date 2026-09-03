@@ -207,6 +207,23 @@ def test_human_rendering() -> None:
     assert ProvisionLocation.parse("TIS IV").human == "TIS IV"
 
 
+def test_a_head_with_no_number_reads_as_its_word() -> None:
+    """A change keyed to a whole annex or title is a real form, and its code is not a word.
+
+    Eight committed changes carry such a head (counted 2026-09-03), and until then they
+    rendered as the raw metadata code, which reached readers as a search label. A code the
+    vocabulary has no reading for keeps the spelling the corpus used, because capitalising it
+    would be a guess at a reading and the vocabulary is empirical.
+    """
+    assert ProvisionLocation.parse("AN").human == "Annex"
+    assert ProvisionLocation.parse("TIT").human == "Title"
+    assert ProvisionLocation.parse("TIT XI").human == "Title XI"
+    assert ProvisionLocation.parse("PRT I").human == "Part I"
+    assert ProvisionLocation.parse("AR").human == "Article"
+    assert ProvisionLocation.parse("CHA 1").human == "CHA 1"
+    assert ProvisionLocation.parse("PA 1").human == "PA 1"
+
+
 def test_locations_are_hashable_and_live_in_sets() -> None:
     first = ProvisionLocation.parse("AR 5 PA 1")
     second = ProvisionLocation.parse("AR 5 PA 1")
