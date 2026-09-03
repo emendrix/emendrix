@@ -82,7 +82,7 @@ def citation_links(citations: tuple[Citation, ...], entry: ChangelogEntry) -> Ht
     )
 
 
-def sentence(emitted: EmittedSentence, entry: ChangelogEntry) -> Html:
+def sentence(emitted: EmittedSentence) -> Html:
     """One shipped sentence, in full, with its provenance marker.
 
     Whitespace inside the sentence is folded, as the changelog folds it: this is prose, it is
@@ -135,10 +135,10 @@ def prose(emitted: EmittedChange, entry: ChangelogEntry) -> list[Html]:
     the block rather than one per sentence; the module docstring says what that does and does
     not change.
     """
-    lines = [sentence(shipped, entry) for shipped in emitted.sentences]
+    lines = [sentence(shipped) for shipped in emitted.sentences]
     note = emitted.applicability_note
     if note is not None:
-        lines.append(sentence(note, entry))
+        lines.append(sentence(note))
     if not emitted.sentences and not entry.diff_only:
         reason = emitted.unexplained or "no explanation"
         lines.append(Html(f'<p class="none">No explanation shipped — {escape(reason)}.</p>'))
