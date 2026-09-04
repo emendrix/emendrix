@@ -243,6 +243,30 @@ Named rather than discovered later; the eval report's disagreement list is the l
   `emendrix repair explanations` is what replaces the change instead of the transition, so those
   1 889 keep their bytes; the 90 stay in the published record until a pass is run against it, and
   the failure being stochastic means a pass is expected to leave a few of them still unexplained.
+- **Fifteen of those ninety were asked again on 2026-09-04, and seventy-five are out of reach.**
+  A change-scoped repair ran against the published changelog repository: 14 changes across 11
+  entries got prose, 1 failed a second time and keeps the sentence it shipped with, and **no
+  explanation that already existed was rewritten**. Measured on the same run, those 11 entries
+  hold 226 changes, of which 14 gained sentences and 0 that already had them moved by a byte; in
+  the densest of them, 3 of 66 rendered change blocks changed and 63 were byte-identical.
+  `detected_on` is carried over on every one, because a repair is not a detection. **A repaired
+  explanation was produced by a call the entry's own `explain` block does not count**: that block
+  records the run that first wrote the entry, and overwriting it would lose the original while
+  summing into it would turn a record of one run into a lifetime total, so the repair records
+  itself beside it with its own usage and a `coordinates_checked` flag that reads false, this
+  repair holding neither provision tree and an unrun check never being allowed to read as a
+  passed one. It cost about USD 0.35 against an estimate of USD 0.26, the difference being seven
+  schema repairs the estimate says in words it cannot see.
+  **The seventy-five it could not select are a counted limitation and not a gap being closed.**
+  The repair matches the kind `model_failed` or the curated sentence above, and that sentence has
+  existed only since 2026-08-31; the seventy-five were written before it and carry the provider
+  library's own error text in `unexplained` instead. Matching that text would make the selection
+  depend on a string a dependency is free to change, which is the reason the curated sentence
+  exists at all. The split is clean by act, 8 acts holding all 15 selectable changes and 19
+  holding all 75, which is what a cause that is a date looks like. Reaching them means stamping
+  the kind onto them, a one-off migration through the document model rather than anything a
+  repair should infer, and until that runs they stay in the published record saying what they
+  have always said.
 - **Explanations can still outrun their evidence, and the shape of it has changed.** The hand
   review of 2026-08-08 over the prose that shipped then marked 3 of 20 entries unfaithful at the
   truncation marker. That count was published as one class and it was three different things, and
