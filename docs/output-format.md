@@ -49,6 +49,19 @@ own marker file. Together those are the general form of the embarrassing bug whe
 nothing was staged, and an entry that *has* changed is replaced in place rather than duplicated at
 the top, so a cron entry running hourly produces one commit per amendment.
 
+**A correction is a new commit on top, and history is never rewritten.** `emendrix repair` is the
+one command that reaches into entries already committed. It reads a payload, replaces one part of
+it and writes it back through the same writer, so the entry is replaced in place and every other
+entry in that act's `CHANGELOG.md` keeps its bytes. It is always invoked explicitly and is never
+reached from a resume, it writes only the entries it actually changes, and each one is its own
+commit whose subject says the entry was repaired rather than emitted. What a repair did is
+recorded on the entry as a `repairs` entry beside the `explain` and `gate` blocks, which keep
+recording the run that produced it: no repair retracts a call that was made. Re-serialising an
+entry written under an older schema adds the fields the schema has gained since, so a repaired
+entry's diff carries those additions beside the correction; entries the repair had nothing to say
+about are not touched at all, which is what keeps that drift on the corrected set and nowhere
+else.
+
 "Newest first" means the newest **version**, not the newest emission. The poller runs forward and a
 backfill fills history in underneath it weeks later, so a new entry is inserted at its place in the
 order rather than at the top; every entry already in the file keeps its bytes and its neighbours.

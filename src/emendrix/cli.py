@@ -1,10 +1,16 @@
-"""`emendrix` on the command line: `diff`, `watch`, `explain`, `run`, `backfill`, `eval`, `site`.
+"""`emendrix` on the command line: `diff`, `watch`, `explain`, `run`, `backfill`, `repair`,
+`eval`, `site`.
 
 This module is the composition root for `diff`, the one place allowed to know that the EU
 adapter, the disk cache and the diff engine exist at the same time. It reads the observation
 date once, at the boundary, and passes it down as a value; nothing below it ever asks what time
-it is. `watch`, `run`, `explain`, `backfill` and `eval` are each their own package's root,
-mounted here.
+it is. `watch`, `run`, `explain`, `backfill`, `repair` and `eval` are each their own package's
+root, mounted here.
+
+`emendrix repair <kind>` is the one command that reaches into entries already committed. It is
+always invoked explicitly, never reached from a resume, and it corrects one part of an entry
+while every other entry in that act's changelog keeps its bytes. `--dry-run` prints what would
+move and writes nothing.
 
 `emendrix diff <act> <from> <to>` fetches two versions through the cache and prints the delta,
 as a plain structural dump, as the serialised `core.Delta` (`--json`), or as the changelog
@@ -37,6 +43,7 @@ from emendrix.eval_.cli import app as eval_app
 from emendrix.graph.cli import explain as explain_command
 from emendrix.graph.cli import run as run_command
 from emendrix.output import diff_only_entry, render_standalone
+from emendrix.repair.cli import app as repair_app
 from emendrix.site_.cli import app as site_app
 from emendrix.watch.cli import watch
 
@@ -50,6 +57,7 @@ app = typer.Typer(
 )
 
 app.add_typer(eval_app, name="eval")
+app.add_typer(repair_app, name="repair")
 app.add_typer(site_app, name="site")
 app.command("watch")(watch)
 app.command("run")(run_command)
@@ -69,9 +77,9 @@ _MARKERS = {
 def main() -> None:
     """Keep `emendrix` a multi-command app whatever it happens to hold today.
 
-    `site` sits beside `diff`, `watch`, `eval`, `run`, `explain` and `backfill`; without this
-    callback Typer would collapse a single command into the root and every one of those would
-    change the invocation of the others.
+    `site` sits beside `diff`, `watch`, `eval`, `run`, `explain`, `backfill` and `repair`;
+    without this callback Typer would collapse a single command into the root and every one of
+    those would change the invocation of the others.
     """
 
 

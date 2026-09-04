@@ -37,7 +37,26 @@ from emendrix.eu.modmeta import ModificationSet, parse_branch_modifications
 from emendrix.eu.modmeta import metadata_signal as build_metadata_signal
 from emendrix.eu.packages import FormexPackage
 
-__all__ = ["EuSignalSource"]
+__all__ = ["EuSignalSource", "instruction_signal_for"]
+
+
+def instruction_signal_for(client: CellarClient, celex: Celex, act: ActId) -> SignalReport:
+    """The third signal for one amended act, read out of one amending act's own package.
+
+    The one place that turns an amending act's identifier into the instruction signal, so the
+    loop and anything that recomputes the signal over an entry already written cannot disagree
+    about what was parsed or about the note that says how much of it was read. A package with no
+    readable text is an answer and is reported as one.
+    """
+    fetched = client.fetch_formex(celex, celex.version, allow_original_fallback=False)
+    if not isinstance(fetched, FormexPackage):
+        return SignalReport.unavailable(
+            Signal.INSTRUCTION_PARSE, note=f"{celex} has no readable text: {fetched.state}"
+        )
+    parsed = parse_instructions(fetched)
+    return instruction_signal(
+        parsed, act, note=f"{celex}, {parsed.coverage:.3f} of its instruction clauses read"
+    )
 
 
 class EuSignalSource:
@@ -124,16 +143,4 @@ class EuSignalSource:
                     else f"the window folds in {len(amending)} amending acts: {', '.join(amending)}"
                 ),
             )
-        celex = Celex.parse(amending[0])
-        fetched = self.client.fetch_formex(celex, celex.version, allow_original_fallback=False)
-        if not isinstance(fetched, FormexPackage):
-            return SignalReport.unavailable(
-                Signal.INSTRUCTION_PARSE,
-                note=f"{celex} has no readable text: {fetched.state}",
-            )
-        parsed = parse_instructions(fetched)
-        return instruction_signal(
-            parsed,
-            act,
-            note=f"{celex}, {parsed.coverage:.3f} of its instruction clauses read",
-        )
+        return instruction_signal_for(self.client, Celex.parse(amending[0]), act)

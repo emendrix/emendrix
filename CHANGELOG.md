@@ -42,6 +42,22 @@ two consolidated versions, and emits a reviewable changelog into an output git r
 - **`emendrix backfill`**: every consecutive pair of readable versions a watched act published,
   through the same graph. `--dry-run` prints the bill and spends nothing; `--limit`, `--since` and
   `--act` narrow it; an emitted transition is skipped.
+- **`emendrix repair`**: the one command that reaches into entries already committed, to correct
+  one part of one entry while every other entry in that act's changelog keeps its bytes. It is
+  explicitly invoked and is never reached from a resume, because `holds_finished` treats a settled
+  change as settled on purpose and a repair a backfill could trigger would re-address the same
+  entries for ever. Four properties hold for every repair it carries and each is a test: an entry
+  taken apart and put back unchanged re-serialises to the bytes it came from; repairing one change
+  leaves every sibling's prose, citations and gate outcome byte-identical; an entry it does not
+  actually change is not written, compared against the re-serialised original so that schema drift
+  alone never counts as a change; and running it twice produces one commit. `corroboration` is the
+  first repair on it: it recomputes the third signal from the amending act's own package, which is
+  a cache read, calls no model and spends nothing, and it carries every committed explanation over
+  rather than re-asking for it. `--dry-run` prints what would move, disputed flags flipped among
+  it, and writes nothing at all. What a repair did is recorded on the entry as a `repairs` entry
+  with the date it ran, beside an `explain` block that keeps recording the run that produced the
+  entry: no repair retracts a call that was made, and summing the two would turn a record of one
+  run into a lifetime total. The field has a default and `schema_version` stays `1.0`.
 - **The output repository**: Markdown and versioned JSON (`schema_version` 1.0) committed into a
   local git repository you own, ordered by the version each entry describes; each change names the
   acts that amended it and what each signal claimed.
@@ -65,8 +81,8 @@ two consolidated versions, and emits a reviewable changelog into an output git r
   summary. The label says only what was established, that no amending act is named, never a cause
   such as a corrigendum.
 - **Deployment**: a two-stage `Dockerfile` with a non-root runtime and a reference `compose.yaml`.
-- **The CLI**: `diff`, `watch`, `explain`, `run`, `backfill`, `eval` and `site`, with the delay
-  between network calls set by `--polite-delay` or `EMENDRIX_POLITE_DELAY_S`.
+- **The CLI**: `diff`, `watch`, `explain`, `run`, `backfill`, `repair`, `eval` and `site`, with the
+  delay between network calls set by `--polite-delay` or `EMENDRIX_POLITE_DELAY_S`.
 
 ### Known limitations
 

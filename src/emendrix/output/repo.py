@@ -163,8 +163,30 @@ class OutputRepo:
             for change in changes
         )
 
-    def write(self, entry: ChangelogEntry) -> WriteResult:
-        """Write one amendment event and commit it. Idempotent: identical bytes → no commit."""
+    def entry_for(self, act: ActId, version: VersionId | str) -> ChangelogEntry | None:
+        """The committed entry for one transition, validated, or None when there is none.
+
+        `holds` answers whether a file is here and `holds_finished` reads one field out of it by
+        hand. A caller that means to rebuild an entry needs the document itself, and needs a
+        document that does not validate to be loud rather than skipped.
+        """
+        path = self.path / payload_for(act, version)
+        if not path.is_file():
+            return None
+        try:
+            return ChangelogEntry.model_validate_json(path.read_bytes())
+        except ValueError as error:
+            raise ValueError(f"{path} is not a changelog document emendrix wrote: {error}") from (
+                error
+            )
+
+    def write(self, entry: ChangelogEntry, *, message: str | None = None) -> WriteResult:
+        """Write one amendment event and commit it. Idempotent: identical bytes → no commit.
+
+        `message` replaces the emit subject `message_for` builds. A commit that repaired part of
+        a committed entry is not an emission of it, and a subject that says otherwise is the one
+        place a reader of `git log` would be misled.
+        """
         initialised = self._ensure_repository()
         changelog = self.act_dir(entry) / "CHANGELOG.md"
         payload = self.act_dir(entry) / "changes" / f"{entry.key}.json"
@@ -178,7 +200,7 @@ class OutputRepo:
         payload.parent.mkdir(parents=True, exist_ok=True)
         changelog.write_text(rendered, encoding="utf-8")
         payload.write_text(document, encoding="utf-8")
-        return self._commit(entry, changelog, payload, initialised=initialised)
+        return self._commit(entry, changelog, payload, initialised=initialised, message=message)
 
     # ------------------------------------------------------------------ the git half
 
@@ -190,7 +212,13 @@ class OutputRepo:
         return created
 
     def _commit(
-        self, entry: ChangelogEntry, changelog: Path, payload: Path, *, initialised: bool
+        self,
+        entry: ChangelogEntry,
+        changelog: Path,
+        payload: Path,
+        *,
+        initialised: bool,
+        message: str | None = None,
     ) -> WriteResult:
         """Stage exactly this act's directory (plus, on a fresh repo, its two root files).
 
@@ -201,7 +229,7 @@ class OutputRepo:
         if initialised:
             targets.extend(("README.md", MARKER_FILE))
         git("add", "--", *targets, cwd=self.path)
-        message = self.message_for(entry)
+        subject = self.message_for(entry) if message is None else message
         if not staged(self.path):
             return WriteResult(
                 act=str(entry.act), changelog=changelog, payload=payload, unchanged=True
@@ -211,8 +239,8 @@ class OutputRepo:
             changelog=changelog,
             payload=payload,
             initialised=initialised,
-            revision=commit(self.path, message),
-            message=message,
+            revision=commit(self.path, subject),
+            message=subject,
         )
 
     @staticmethod

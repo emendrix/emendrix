@@ -29,7 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix.core import ActId, ChangeType, Delta, DeltaSummary, VersionId
 from emendrix.corroborate import CorroborationReport
-from emendrix.explain import RunStats
+from emendrix.explain import CallUsage, RunStats
 from emendrix.gate import GateOutcome, GateStats
 from emendrix.graph.report import EmittedChange, EmittedDelta, EmittedSentence, RunReport
 from emendrix.output.disclaimer import DISCLAIMER
@@ -39,6 +39,7 @@ __all__ = [
     "SCHEMA_VERSION",
     "ChangelogEntry",
     "EntryCounts",
+    "RepairRecord",
     "act_dir_for",
     "diff_only_entry",
     "entries_for",
@@ -113,6 +114,29 @@ class EntryCounts(BaseModel):
     )
 
 
+class RepairRecord(BaseModel):
+    """One repair applied to this entry after it was first written.
+
+    The `explain` and `gate` blocks record the run that produced the entry and stay as that run
+    left them: no repair retracts a call that was made, and summing them would turn a record of
+    one run into a lifetime total. What a later pass did is recorded here instead.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: str = Field(min_length=1, description="Which repair this was.")
+    repaired_on: date = Field(description="Passed in from the CLI boundary; never clock-read here.")
+    addressed: int = Field(default=0, ge=0, description="Changes this repair looked at.")
+    repaired: int = Field(default=0, ge=0, description="Changes it actually changed.")
+    remaining: int = Field(default=0, ge=0, description="Changes it addressed and could not fix.")
+    usage: CallUsage = CallUsage()
+    coordinates_checked: bool = Field(
+        default=False,
+        description="Whether a coordinate check ran; False suppresses the count rather than "
+        "letting an unrun check read as a pass.",
+    )
+
+
 def _sentences(change: EmittedChange) -> tuple[EmittedSentence, ...]:
     note = change.applicability_note
     return change.sentences if note is None else (*change.sentences, note)
@@ -163,6 +187,9 @@ class ChangelogEntry(BaseModel):
     corroboration: CorroborationReport | None = None
     explain: RunStats | None = None
     gate: GateStats = GateStats()
+    repairs: tuple[RepairRecord, ...] = Field(
+        default=(), description="Repairs applied after this entry was first written, oldest first."
+    )
 
     @classmethod
     def of(cls, delta: EmittedDelta, *, detected_on: date, diff_only: bool = False) -> Self:

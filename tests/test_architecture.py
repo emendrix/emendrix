@@ -235,6 +235,23 @@ def test_the_site_is_generated_and_not_fetched() -> None:
         assert "today_utc" not in source, name
 
 
+def test_a_repair_reaches_the_corpus_only_from_its_own_command_line() -> None:
+    """A repair addresses a committed document, and a document is not a corpus.
+
+    `repair/cli.py` is the composition root: it names the one sanctioned clock read and is the
+    one module allowed to know which corpus published the amending act whose instructions the
+    corroboration repair re-parses, which is a cache read through the same client everything
+    else uses. Every other module in the package sees the committed entry and core types only,
+    so the whole spine would run over a corpus that is not law, exactly as `backfill/` does.
+    """
+    for name, source in modules():
+        if not name.startswith("repair/") or name == "repair/cli.py":
+            continue
+        assert "emendrix.eu" not in source, name
+        assert "today_utc" not in source, name
+        assert not re.search(r"\bCELEX\b|\bFormex\b|\bCELLAR\b", source), name
+
+
 def test_the_site_writes_no_script_of_its_own() -> None:
     """The one script is a committed asset loaded by `src`, never markup a generator wrote.
 
