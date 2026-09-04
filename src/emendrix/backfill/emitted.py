@@ -31,9 +31,13 @@ __all__ = ["emitted_keys"]
 def emitted_keys(repository: OutputRepo | None, plans: Iterable[TransitionPlan]) -> frozenset[str]:
     """The keys of the planned transitions this repository already carries an entry for.
 
-    Reads nothing but directory entries, so it is as cheap in a dry run as in a real one, and
-    an unconfigured repository (there is none in a dry run that was never given one) answers
+    An unconfigured repository (there is none in a dry run that was never given one) answers
     with the empty set rather than with a claim about what has been done.
+
+    "Carries an entry" means a *finished* one. An entry written while the provider was
+    refusing calls is not work this run need not do again, so `holds_finished` reads it rather
+    than only looking for it, which is what lets a run interrupted by an exhausted credit
+    balance complete itself the next time it is started.
     """
     if repository is None:
         return frozenset()
@@ -41,5 +45,5 @@ def emitted_keys(repository: OutputRepo | None, plans: Iterable[TransitionPlan])
         transition.key
         for plan in plans
         for transition in plan.transitions
-        if repository.holds(transition.act, transition.to_version)
+        if repository.holds_finished(transition.act, transition.to_version)
     )

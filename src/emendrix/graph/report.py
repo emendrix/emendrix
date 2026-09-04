@@ -79,6 +79,10 @@ class EmittedChange(BaseModel):
     unexplained: str = Field(
         default="", description="Why there are no sentences, when there are none."
     )
+    unexplained_kind: str = Field(
+        default="",
+        description="Which counted kind that reason was, empty when there are sentences.",
+    )
 
 
 class EmittedDelta(BaseModel):
@@ -208,7 +212,13 @@ def _change(
     explanation = gated.explanation
     if explanation is None or context is None:
         reason = gated.unavailable.reason if gated.unavailable is not None else "no explanation"
-        return EmittedChange(change=change, outcome=gated.outcome, unexplained=reason)
+        # The kind rides along because the payload is also read back: `OutputRepo.holds_finished`
+        # tells an entry a re-run would add nothing to from one written while the provider was
+        # refusing calls, and the reason sentence alone cannot carry that.
+        kind = gated.unavailable.kind if gated.unavailable is not None else ""
+        return EmittedChange(
+            change=change, outcome=gated.outcome, unexplained=reason, unexplained_kind=kind
+        )
     note = explanation.applicability_note
     return EmittedChange(
         change=change,

@@ -49,7 +49,8 @@ from emendrix.explain.context import (
     explainable,
 )
 from emendrix.explain.coordinates import mentioned_locations
-from emendrix.explain.engine import MODEL_FAILED, ExplainEngine
+from emendrix.explain.engine import ExplainEngine
+from emendrix.explain.failures import MODEL_FAILED, PROVIDER_UNAVAILABLE, provider_failed
 from emendrix.explain.prompt import (
     FENCE_TOKEN_CHARS,
     PromptParts,
@@ -86,6 +87,7 @@ __all__ = [
     "MODEL_FAILED",
     "NOTHING_TO_EXPLAIN",
     "NO_EVIDENCE_PAST_CAP",
+    "PROVIDER_UNAVAILABLE",
     "PUBLISHED_RATES",
     "SCHEMA_VERSION",
     "SYSTEM_PROMPT",
@@ -120,6 +122,7 @@ __all__ = [
     "header_block",
     "mentioned_locations",
     "model_slug",
+    "provider_failed",
     "rate_for",
     "revision_note",
     "shows_no_difference",

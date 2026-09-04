@@ -19,6 +19,7 @@ from collections.abc import Callable
 
 import pytest
 from pydantic_ai import ModelMessage, ModelResponse, ToolCallPart
+from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
 from emendrix.core import (
@@ -33,6 +34,7 @@ from emendrix.core import (
 )
 from emendrix.explain import (
     MODEL_FAILED,
+    PROVIDER_UNAVAILABLE,
     CassetteMode,
     ExplainEngine,
     ExplainSettings,
@@ -164,6 +166,47 @@ def test_one_failure_does_not_sink_the_batch() -> None:
     assert "provider said no" not in failed.unavailable.reason
     assert "RuntimeError" not in failed.unavailable.reason
     assert not failed.ok
+
+
+@pytest.mark.parametrize("status", [401, 402, 429, 500, 503])
+def test_a_provider_that_never_answered_leaves_the_entry_unfinished(status: int) -> None:
+    """Out of credit is not an answer about the change, so it must not settle it.
+
+    The kind is what `OutputRepo.holds_finished` reads, and it is the whole reason this is a
+    separate value rather than one more way to be `model_failed`: an installation whose balance
+    ran out mid-backfill publishes the gap once and would otherwise skip past it for ever.
+    """
+
+    async def call(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        if "new 2" in str(messages[-1]):
+            raise ModelHTTPError(status_code=status, model_name="m", body={"message": "no"})
+        return ModelResponse(parts=[ToolCallPart(info.output_tools[0].name, ANSWER)])
+
+    run = asyncio.run(engine(FunctionModel(call)).explain_delta(delta(5)))
+    assert run.stats.explained == 4
+    assert run.stats.provider_unavailable == 1
+    assert run.stats.model_failed == 0
+    failed = run.results[2]
+    assert failed.unavailable is not None
+    assert failed.unavailable.kind == "provider_unavailable"
+    assert failed.unavailable.reason == PROVIDER_UNAVAILABLE
+    assert str(status) not in failed.unavailable.reason
+
+
+def test_an_unknown_http_status_settles_the_change_rather_than_re_running_for_ever() -> None:
+    """Marking one unfinished wrongly costs a re-run on every backfill; the other way costs
+    a thinner entry once. So an unrecognised status falls through to `model_failed`."""
+
+    async def call(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        if "new 2" in str(messages[-1]):
+            raise ModelHTTPError(status_code=418, model_name="m", body={"message": "no"})
+        return ModelResponse(parts=[ToolCallPart(info.output_tools[0].name, ANSWER)])
+
+    run = asyncio.run(engine(FunctionModel(call)).explain_delta(delta(5)))
+    assert run.stats.model_failed == 1
+    assert run.stats.provider_unavailable == 0
+    assert run.results[2].unavailable is not None
+    assert run.results[2].unavailable.kind == "model_failed"
 
 
 def test_usage_is_accounted_per_call_and_summed_for_the_run() -> None:

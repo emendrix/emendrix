@@ -249,11 +249,15 @@ class ExplainSettings(BaseSettings):
         default=1024, gt=0, validation_alias="EMENDRIX_EXPLAIN_MAX_TOKENS"
     )
     output_retries: int = Field(
-        default=1,
+        default=2,
         ge=0,
         validation_alias="EMENDRIX_EXPLAIN_OUTPUT_RETRIES",
         description="Schema-repair attempts pydantic-ai may make. Not the gate's retry.",
     )
+    """Two since 2026-09-04, one before that. Measured over the 5 336 changes the changelog
+    repository then held, 90 shipped without an explanation because the repair budget ran out,
+    2.8% of the 3 213 that reached the model. A repair costs one request and a failure costs the
+    whole call for nothing, so the second attempt is cheaper than the gap it prevents."""
     max_concurrency: int = Field(
         default=4,
         gt=0,

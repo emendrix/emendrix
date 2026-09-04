@@ -32,6 +32,7 @@ entry that runs this hourly produces one commit per amendment, not one per hour.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Final, Self
 
@@ -135,6 +136,32 @@ class OutputRepo:
         add anything.
         """
         return (self.path / payload_for(act, version)).is_file()
+
+    def holds_finished(self, act: ActId, version: VersionId) -> bool:
+        """Whether the entry here is one a re-run would have nothing to add to.
+
+        `holds` asks whether the file exists, which is the right question for everything except
+        one case: an entry written while the provider was refusing calls carries changes nobody
+        ever asked the model about. The file's existence is the whole resume record, so without
+        this an installation that ran out of credit mid-backfill would publish the gap once and
+        then skip past it for ever.
+
+        Unreadable or unexpected JSON answers `True`, the same as a plain `holds`. A file this
+        cannot parse is a reason to leave an entry alone and look at it, never a reason to spend
+        on rewriting it on every run.
+        """
+        path = self.path / payload_for(act, version)
+        if not path.is_file():
+            return False
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            changes = payload["changes"]
+        except (OSError, ValueError, KeyError, TypeError):
+            return True
+        return not any(
+            isinstance(change, dict) and change.get("unexplained_kind") == "provider_unavailable"
+            for change in changes
+        )
 
     def write(self, entry: ChangelogEntry) -> WriteResult:
         """Write one amendment event and commit it. Idempotent: identical bytes → no commit."""

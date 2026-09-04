@@ -70,7 +70,7 @@ def test_the_key_the_pinned_model_needs_is_the_one_the_setup_documents() -> None
 def test_the_defaults_are_the_ones_the_design_specifies() -> None:
     settings = ExplainSettings()
     assert settings.temperature is None
-    assert settings.output_retries == 1
+    assert settings.output_retries == 2
     assert settings.max_concurrency == 4
     assert settings.cassette_mode is CassetteMode.REPLAY
 

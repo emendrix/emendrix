@@ -13,9 +13,12 @@ the wrong article.
 
 **Failure is a value.** A provider error, a refusal, or an exhausted repair budget yields
 `ExplanationUnavailable` on that one change and the batch continues; a change is never dropped
-because the model failed on it. The exceptions are the two cassette faults — `CassetteMiss`
-and `CassetteCorrupt` — which propagate: an unrecorded prompt and a cassette that is not the
-exchange its name claims are both build faults, not answers about a change. Turning either
+because the model failed on it. `failures.py` decides which of the two reasons it carries, and
+the distinction is about the entry rather than the reader: a provider that never answered
+leaves the entry unfinished, so a later backfill will ask again. The exceptions are the two
+cassette faults — `CassetteMiss` and `CassetteCorrupt` — which propagate: an unrecorded prompt
+and a cassette that is not the exchange its name claims are both build faults, not answers
+about a change. Turning either
 into a counted value would let CI go green while explaining nothing, and a corrupt one is the
 worse of the two because it also shrinks the denominator every published rate is computed
 over (see `eval_/thresholds.py`, whose floors all move with it and so never catch it).
@@ -34,7 +37,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Final
 
 from pydantic_ai import Agent
 from pydantic_ai.models import Model
@@ -50,25 +52,15 @@ from emendrix.explain.cassette import (
     cassette_key,
 )
 from emendrix.explain.context import NOTHING_TO_EXPLAIN, ExplainContext, contexts_for_delta
+from emendrix.explain.failures import MODEL_FAILED, PROVIDER_UNAVAILABLE, provider_failed
 from emendrix.explain.prompt import PromptParts, build_prompt, revision_note
 from emendrix.explain.results import CallUsage, ExplainedChange, ExplainRun, RunStats
 from emendrix.explain.schema import SCHEMA_VERSION, Explanation, ExplanationUnavailable
 from emendrix.explain.settings import CassetteMode, ExplainSettings
 
-__all__ = ["MODEL_FAILED", "ExplainEngine"]
+__all__ = ["ExplainEngine"]
 
 _log = logging.getLogger(__name__)
-
-MODEL_FAILED: Final = (
-    "the model did not return a well-formed explanation for this change, so none is shipped; "
-    "the verbatim before and after texts are unaffected"
-)
-"""The reader-facing reason for every way a live call can fail: timeout, refusal, rate limit,
-exhausted repair budget. One sentence for all of them, because the distinctions are about the
-provider and the reader's situation is the same in each — the change ships, thinner, with the
-texts it always carries. The exception's own class and message go to the log for the operator;
-they never reach a stored field, because a published document is not the place a library names
-its errors."""
 
 
 class ExplainEngine:
@@ -185,8 +177,10 @@ class ExplainEngine:
             # which every model-layer floor absorbs without moving.
             raise
         except Exception as error:
-            # Deliberately broad: every way a provider can fail — timeout, refusal, rate
-            # limit, exhausted repair budget — is one counted value, not five call sites.
+            # Deliberately broad: every way a call can fail is a counted value rather than
+            # five call sites. The one distinction drawn is whether the provider answered,
+            # because that decides if the entry it produces is finished.
+            provider = provider_failed(error)
             _log.warning(
                 "explain failed for %s: %s: %s",
                 change.provision.location.canonical,
@@ -195,7 +189,10 @@ class ExplainEngine:
             )
             return ExplainedChange(
                 provision=change.provision,
-                unavailable=ExplanationUnavailable(kind="model_failed", reason=MODEL_FAILED),
+                unavailable=ExplanationUnavailable(
+                    kind="provider_unavailable" if provider else "model_failed",
+                    reason=PROVIDER_UNAVAILABLE if provider else MODEL_FAILED,
+                ),
                 cassette_key=cassette_key(
                     self.settings.model_id, parts.system, parts.user, SCHEMA_VERSION
                 ),

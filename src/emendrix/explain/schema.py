@@ -115,7 +115,12 @@ class ExplanationUnavailable(BaseModel):
 
     `kind` is what happened, closed and countable; `reason` is the sentence a reader is shown,
     always one of the curated constants beside the mechanism that mints it (`NOTHING_TO_EXPLAIN`
-    in `context.py`, `NO_EVIDENCE_PAST_CAP` in `capping.py`, `MODEL_FAILED` in `engine.py`).
+    in `context.py`, `NO_EVIDENCE_PAST_CAP` in `capping.py`, `MODEL_FAILED` and
+    `PROVIDER_UNAVAILABLE` in `engine.py`).
+
+    `provider_unavailable` is the one kind that does not settle the change. The other three are
+    answers about it; that one says the question was never put, so the entry carrying it is
+    unfinished and a later run is free to ask again.
     `reason` is never an exception's text: what a library called its failure is a fact for the
     operator's log, not for a document intended for publication.
     """
@@ -123,7 +128,7 @@ class ExplanationUnavailable(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     state: Literal["explanation_unavailable"] = "explanation_unavailable"
-    kind: Literal["nothing_to_explain", "no_evidence_past_cap", "model_failed"] = Field(
-        description="Which of the three ways a change ends up with no explanation this was."
-    )
+    kind: Literal[
+        "nothing_to_explain", "no_evidence_past_cap", "model_failed", "provider_unavailable"
+    ] = Field(description="Which of the four ways a change ends up with no explanation this was.")
     reason: str = Field(min_length=1, description="What went wrong, for the reader and the eval.")

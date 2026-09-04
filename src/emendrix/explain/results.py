@@ -132,6 +132,11 @@ class RunStats(BaseModel):
         ge=0,
         description="Changes another signal named that the diff saw no text for. No call made.",
     )
+    provider_unavailable: int = Field(
+        default=0,
+        ge=0,
+        description="Changes whose call never reached the model, so the entry is unfinished.",
+    )
     usage: CallUsage = CallUsage()
 
     @classmethod
@@ -152,6 +157,12 @@ class RunStats(BaseModel):
                 1
                 for result in results
                 if result.unavailable is not None and result.unavailable.kind == "model_failed"
+            ),
+            provider_unavailable=sum(
+                1
+                for result in results
+                if result.unavailable is not None
+                and result.unavailable.kind == "provider_unavailable"
             ),
             nothing_to_explain=sum(
                 1

@@ -11,6 +11,7 @@ working tree, emendrix's own most plausibly, is refused before a single file is 
 
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -28,6 +29,7 @@ from emendrix.output import (
     diff_only_entry,
 )
 from emendrix.output.git import AUTHOR_EMAIL, AUTHOR_NAME
+from emendrix.output.json_out import payload_for
 
 
 def git(*arguments: str, cwd: Path) -> str:
@@ -110,6 +112,37 @@ def test_a_repository_says_which_transition_it_already_holds(repo: OutputRepo) -
     repo.write(toy_entry())
     assert repo.holds(act, VersionId("v2")) is True
     assert repo.holds(act, VersionId("v3")) is False
+
+
+def test_an_entry_written_while_the_provider_refused_is_not_finished(repo: OutputRepo) -> None:
+    """The credit-exhaustion case: the file exists, but nobody ever asked the model.
+
+    `holds` and `holds_finished` disagree here on purpose. The file's existence is the whole
+    resume record, so without the second question a backfill interrupted by an empty balance
+    would publish the gap once and skip past it on every later run.
+    """
+    act = toy_entry().act
+    repo.write(toy_entry())
+    payload = repo.path / payload_for(act, VersionId("v2"))
+    assert repo.holds_finished(act, VersionId("v2")) is True
+
+    written = json.loads(payload.read_text(encoding="utf-8"))
+    written["changes"][0]["unexplained_kind"] = "provider_unavailable"
+    payload.write_text(json.dumps(written), encoding="utf-8")
+    assert repo.holds(act, VersionId("v2")) is True
+    assert repo.holds_finished(act, VersionId("v2")) is False
+
+    written["changes"][0]["unexplained_kind"] = "model_failed"
+    payload.write_text(json.dumps(written), encoding="utf-8")
+    assert repo.holds_finished(act, VersionId("v2")) is True
+
+
+def test_an_unreadable_payload_is_left_alone_rather_than_re_run(repo: OutputRepo) -> None:
+    """A file this cannot parse is a reason to look at an entry, never to re-pay for it."""
+    act = toy_entry().act
+    repo.write(toy_entry())
+    (repo.path / payload_for(act, VersionId("v2"))).write_text("{not json", encoding="utf-8")
+    assert repo.holds_finished(act, VersionId("v2")) is True
 
 
 def test_a_second_event_prepends_and_leaves_the_first_intact(repo: OutputRepo) -> None:
