@@ -9,6 +9,10 @@ disputed had its explanation written with a line in the prompt saying the signal
 that count is what decides whether any committed prose was written under a question that is now
 false. It cannot be read off the published record and a dry run is the only way to get it.
 
+**A price is printed with the model and the rates beside it, and with what it leaves out.** An
+operator agreeing to spend is agreeing to spend on a named model at a published rate, and a
+figure with neither of those on the same line is a number to be taken on trust.
+
 Nothing here reads a clock, a network or a model: it is given the results and it prints them.
 """
 
@@ -19,10 +23,19 @@ from collections.abc import Sequence
 import typer
 from pydantic import BaseModel, ConfigDict, Field
 
+from emendrix.explain import rate_for
 from emendrix.graph.cli import SummaryFormat
 from emendrix.repair.entry import RepairResult, UnitShift, shift_between
+from emendrix.repair.pricing import Estimate, Selection
 
-__all__ = ["RepairSummary", "report_results", "report_summary", "shift_of"]
+__all__ = [
+    "RepairSummary",
+    "report_estimate",
+    "report_results",
+    "report_selection",
+    "report_summary",
+    "shift_of",
+]
 
 
 class RepairSummary(BaseModel):
@@ -96,10 +109,52 @@ def report_summary(
     )
     typer.echo(
         f"examined {totals.examined} entries · {totals.would_change} would change · "
-        f"{totals.changes_repaired} changes repaired · {totals.units_gained} units gained · "
-        f"{totals.units_dropped} units dropped · "
+        f"{totals.changes_repaired} changes repaired · {totals.changes_remaining} not repaired · "
+        f"{totals.units_gained} units gained · {totals.units_dropped} units dropped · "
         f"{totals.disputed_flipped} disputed flags flipped"
     )
     if format_ is SummaryFormat.JSON:
         typer.echo(totals.model_dump_json(), err=True)
     return totals
+
+
+def report_selection(selections: Sequence[Selection]) -> None:
+    """One line per entry a repair would address, then the changes it would ask about.
+
+    The changes are named rather than counted, because the selection is the thing a wrong
+    predicate would get wrong, and a count cannot show that.
+    """
+    for item in selections:
+        typer.echo(
+            f"{item.act}: {item.from_version} -> {item.to_version} · "
+            f"{len(item.units)} changes · {item.prompt_chars} prompt characters"
+        )
+        for unit in item.units:
+            typer.echo(f"  {unit}")
+
+
+def report_estimate(format_: SummaryFormat, estimate: Estimate) -> Estimate:
+    """What a selection would cost, the model and the rates that price it, and what it omits.
+
+    Returned as well as printed for the reason `report_summary` is: a caller reporting the
+    total wants the one it printed rather than a second computation of the same thing.
+    """
+    rate = rate_for(estimate.model_id)
+    priced = (
+        "unpriced (no published rate on file)"
+        if estimate.cost_usd is None or rate is None
+        else f"about ${estimate.cost_usd:.4f} at ${rate.input_per_mtok:.2f} in and "
+        f"${rate.output_per_mtok:.2f} out per 1M tokens (checked {rate.checked_on})"
+    )
+    typer.echo(
+        f"{estimate.changes} changes in {estimate.entries} entries · "
+        f"{estimate.prompt_chars} prompt characters · about {estimate.usage.input_tokens} input "
+        f"and {estimate.usage.output_tokens} output tokens · {estimate.model_id} · {priced}"
+    )
+    typer.echo(
+        "that price is a floor: one call per change, so it counts neither the gate's one retry "
+        "nor a schema repair, and each of those is a further request."
+    )
+    if format_ is SummaryFormat.JSON:
+        typer.echo(estimate.model_dump_json(), err=True)
+    return estimate

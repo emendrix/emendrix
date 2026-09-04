@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix.core import Change, Delta, SignalSet, SignalStatus
 from emendrix.corroborate import CorroborationReport
+from emendrix.explain import CallUsage
 from emendrix.graph.report import EmittedChange, EmittedDelta
 from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import RepairRecord
@@ -57,12 +58,16 @@ class RepairResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     target: RepairTarget
+    addressed: int = Field(default=0, ge=0, description="Changes this repair looked at.")
     repaired: int = Field(default=0, ge=0, description="Changes this repair actually changed.")
     remaining: int = Field(default=0, ge=0, description="Changes it addressed and could not fix.")
     entry: ChangelogEntry | None = Field(
         default=None, description="The rebuilt entry, or None when nothing moved."
     )
     detail: tuple[str, ...] = ()
+    usage: CallUsage = Field(
+        default=CallUsage(), description="What it spent. Zero for a repair that calls no model."
+    )
 
     @property
     def would_change(self) -> bool:

@@ -1,10 +1,15 @@
-"""An output repository whose third signal is wrong, built through the shipped machinery.
+"""Output repositories with a defect put back into them, built through the shipped machinery.
 
 The suite needs an entry a repair actually has something to say about, and writing one by hand
 would prove a repair against a document nothing wrote. So this takes the repository the shipped
 command chain produced and puts the defect back into it with the same functions the repair uses
-to take it out: an instruction signal that names a unit nothing else saw and misses one that
-everything else saw, merged through `corroborate` and committed through `OutputRepo`.
+to take it out.
+
+Two defects, one per repair kind. `poisoned_repo` gives the entry an instruction signal that
+names a unit nothing else saw and misses one that everything else saw, merged through
+`corroborate` and committed through `OutputRepo`. `unexplained_repo` takes the prose off the
+first few changes and puts each of the counted reasons a change can carry no explanation in its
+place, which is the state the explanation repair has to tell apart.
 
 A second entry is written into the same act's `CHANGELOG.md` so that "every other entry keeps
 its bytes" is a claim with a neighbour to check it against. Its version identifiers are the only
@@ -24,8 +29,16 @@ from pathlib import Path
 from emendrix.core import ActId, ProvisionLocation, Signal, SignalClaim, SignalReport, VersionId
 from emendrix.eu.identifiers import celex_of
 from emendrix.eu.signals import instruction_signal_for
+from emendrix.explain import (
+    MODEL_FAILED,
+    NO_EVIDENCE_PAST_CAP,
+    NOTHING_TO_EXPLAIN,
+    PROVIDER_UNAVAILABLE,
+)
+from emendrix.gate import GateOutcome
+from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry, OutputRepo
-from emendrix.repair import RepairResult, RepairTarget, read_targets
+from emendrix.repair import RepairResult, RepairTarget, delta_of, read_targets, rebuild
 from emendrix.repair.corroborate import amending_act_of, instructions_of, needs, repair
 from emendrix.session import adapter_for
 from eu_pins import FIXTURE_DIR, OBSERVED_ON
@@ -36,6 +49,20 @@ PHANTOM = ProvisionLocation.parse("AR 99")
 NEIGHBOUR_FROM = VersionId("02017R0745-20170101")
 NEIGHBOUR_TO = VersionId("02017R0745-20170505")
 """An older transition of the same act, so its entry sorts below the one under repair."""
+
+UNEXPLAINED = (
+    (MODEL_FAILED, "model_failed"),
+    (MODEL_FAILED, ""),
+    (NOTHING_TO_EXPLAIN, "nothing_to_explain"),
+    (NO_EVIDENCE_PAST_CAP, "no_evidence_past_cap"),
+    (PROVIDER_UNAVAILABLE, "provider_unavailable"),
+)
+"""The five states a change with no prose can be in, in the order they are injected.
+
+The first two are the same failure written under two schemas: a change written since the kind
+existed carries it, and one written before carries the curated reason alone. Both are the
+explanation repair's business and the other three are not.
+"""
 
 
 def poisoned_repo(source: Path, destination: Path) -> Path:
@@ -53,6 +80,45 @@ def poisoned_repo(source: Path, destination: Path) -> Path:
         repository.write(spoiled.entry)
         repository.write(_neighbour(spoiled.entry))
     return repository.path
+
+
+def unexplained_repo(source: Path, destination: Path) -> Path:
+    """A copy of `source` whose one entry has lost its prose on one change of each state.
+
+    Written back through `rebuild` and `OutputRepo`, so the document under test is one the
+    shipped machinery produced and the counts in its header match the changes it holds.
+    """
+    shutil.copytree(source, destination)
+    repository = OutputRepo.open(destination)
+    for target in read_targets(repository.path):
+        # The neighbour keeps its prose, so it is an entry this repair has nothing to say
+        # about and a real check that a pass leaves such an entry alone.
+        repository.write(_neighbour(target.entry))
+        repository.write(_stripped(target.entry))
+    return repository.path
+
+
+def unexplained_target(root: Path) -> RepairTarget:
+    """The one entry of such a repository that carries a model failure."""
+    found = [target for target in read_targets(root) if target.entry.changes[0].unexplained]
+    assert len(found) == 1, [str(target.path) for target in found]
+    return found[0]
+
+
+def _stripped(entry: ChangelogEntry) -> ChangelogEntry:
+    changes = list(entry.changes)
+    assert len(changes) > len(UNEXPLAINED), "the entry needs a change left over as a sibling"
+    for index, (reason, kind) in enumerate(UNEXPLAINED):
+        assert changes[index].sentences, "a change with no prose proves nothing here"
+        changes[index] = EmittedChange(
+            change=changes[index].change,
+            outcome=GateOutcome.UNEXPLAINED,
+            unexplained=reason,
+            unexplained_kind=kind,
+        )
+    return rebuild(
+        entry, delta=delta_of(entry), corroboration=entry.corroboration, changes=tuple(changes)
+    )
 
 
 def poisoned_target(root: Path) -> RepairTarget:

@@ -10,7 +10,9 @@ root, mounted here.
 `emendrix repair <kind>` is the one command that reaches into entries already committed. It is
 always invoked explicitly, never reached from a resume, and it corrects one part of an entry
 while every other entry in that act's changelog keeps its bytes. `--dry-run` prints what would
-move and writes nothing.
+move and writes nothing. `corroboration` recomputes the third signal and spends nothing;
+`explanations` asks the model again for a change that shipped without one, rebuilding the prompt
+from the entry's own stored texts, and its `--dry-run` prices the work before any of it is sent.
 
 `emendrix diff <act> <from> <to>` fetches two versions through the cache and prints the delta,
 as a plain structural dump, as the serialised `core.Delta` (`--json`), or as the changelog

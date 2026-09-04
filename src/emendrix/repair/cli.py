@@ -4,6 +4,8 @@
 uv run emendrix repair corroboration --dry-run                       # what would move, and no more
 uv run emendrix repair corroboration --output-repo ~/regulatory-changelog
 uv run emendrix repair corroboration --act 32019R2088 --limit 5      # narrower
+uv run emendrix repair explanations --dry-run                        # the selection and the price
+uv run emendrix repair explanations --cassettes live --limit 20      # a tranche of the changes
 ```
 
 This module is the EU composition root for the repair commands: it reads the clock once, here,
@@ -25,10 +27,18 @@ which act was corrected, and the subject says the entry was repaired rather than
 against the entry's stored delta. That is a disk-cache read where the cache holds the package
 and a fetch where it does not, and `--fixture-dir` pins it to a committed fixture set instead.
 It calls no model, spends nothing, and carries every committed explanation over untouched.
+
+`explanations` asks the model again for a change that shipped with no explanation because the
+answer was unusable, rebuilding the prompt from the entry's own stored texts, so it fetches
+nothing at all. This one spends money: `--limit` counts **changes** rather than entries, because
+a change is what a call is paid for, and `--dry-run` names and prices them before anything is
+sent.
 """
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Callable, Sequence
 from datetime import date, datetime
 from pathlib import Path
 from typing import Annotated
@@ -39,16 +49,24 @@ from emendrix.backfill.inputs import celex_of, delay_of, repository_at, watchlis
 from emendrix.eu.http import POLITE_DELAY_ENV, POLITE_DELAY_S, today_utc
 from emendrix.eu.identifiers import celex_of as celex_for
 from emendrix.eu.signals import instruction_signal_for
+from emendrix.explain import CassetteMode, ExplainSettings
 from emendrix.graph.cli import SummaryFormat
 from emendrix.output import GitError, OutputRepo, resolve_repo_path
 from emendrix.output.json_out import ChangelogEntry, RepairRecord
+from emendrix.repair import explanations as explain_repair
 from emendrix.repair.corroborate import KIND, amending_act_of, needs, repair
 from emendrix.repair.entry import RepairResult, with_record
-from emendrix.repair.render import report_results, report_summary
+from emendrix.repair.pricing import estimate_over, plan
+from emendrix.repair.render import (
+    report_estimate,
+    report_results,
+    report_selection,
+    report_summary,
+)
 from emendrix.repair.select import for_act, read_targets
-from emendrix.session import adapter_for
+from emendrix.session import adapter_for, deps_for
 
-__all__ = ["app", "corroboration"]
+__all__ = ["app", "corroboration", "explanations"]
 
 app = typer.Typer(
     name="repair",
@@ -77,6 +95,16 @@ _REPAIRED = typer.Option(
 _SUMMARY = typer.Option(
     "--summary", help="The stderr summary: `text` for a person, `json` for a log collector."
 )
+_CHANGES = typer.Option(
+    "--limit", min=1, help="Stop after this many changes. Changes are what a call is paid for."
+)
+_CASSETTES = typer.Option("--cassettes", help="How the explain stage meets its cassette store.")
+
+_NO_COORDINATES = (
+    "no coordinate check ran: this repair holds neither provision tree, so the gate counted "
+    "nothing rather than counting every coordinate a sentence names as unsupported."
+)
+"""Said on every pass and recorded on every entry, so an unrun check never reads as a passed one."""
 
 
 @app.command("corroboration")
@@ -122,10 +150,61 @@ def corroboration(
             if limit is not None and sum(1 for item in results if item.would_change) >= limit:
                 break
     report_results(results)
-    written = 0 if dry_run else _write_all(repository, results, repaired_on=stamp)
+    written = 0 if dry_run else _write_all(repository, results, KIND, stamp, _corroborated_subject)
     if dry_run:
         typer.echo("dry run: nothing written, nothing committed.")
     report_summary(summary, results, kind=KIND, examined=examined, written=written)
+
+
+@app.command("explanations")
+def explanations(
+    watchlist_path: Annotated[Path, _LIST] = _WATCHLIST,
+    output_repo: Annotated[Path | None, _REPO] = None,
+    dry_run: Annotated[bool, _DRY] = False,
+    act: Annotated[str | None, _ACT] = None,
+    limit: Annotated[int | None, _CHANGES] = None,
+    cassettes: Annotated[CassetteMode | None, _CASSETTES] = None,
+    repaired_on: Annotated[datetime | None, _REPAIRED] = None,
+    summary: Annotated[SummaryFormat, _SUMMARY] = SummaryFormat.TEXT,
+) -> None:
+    """Ask the model again for every committed change that shipped with no explanation.
+
+    Start with `--dry-run`: it names every change it would ask about, prices them, builds no
+    engine and spends nothing. A real pass calls the model, so it needs `--cassettes live` and
+    a key unless every prompt it rebuilds is already recorded. Nothing is fetched either way,
+    and no sibling explanation is re-asked for.
+    """
+    watchlist = watchlist_at(watchlist_path)
+    wanted = None if act is None else celex_of(act)
+    stamp = repaired_on.date() if repaired_on is not None else today_utc()
+    repository = _repository(resolve_repo_path(output_repo, watchlist.output.repo_path))
+    targets = read_targets(repository.path)
+    if wanted is not None:
+        targets = for_act(targets, wanted)
+    kind = explain_repair.KIND
+    settings = ExplainSettings.from_env()
+    if dry_run:
+        # No engine at all, exactly as `backfill --dry-run` builds none: the mode's whole
+        # promise is that it cannot spend, and a process holding no provider client cannot.
+        selections, examined = plan(targets, settings, limit=limit)
+        report_selection(selections)
+        typer.echo(_NO_COORDINATES)
+        typer.echo(f"examined {examined} entries · dry run: nothing written, nothing asked.")
+        report_estimate(summary, estimate_over(selections, model_id=settings.model_id))
+        return
+    with adapter_for(None, stamp) as adapter:
+        results, examined = asyncio.run(
+            explain_repair.repair_all(
+                targets,
+                deps_for(adapter, stamp, cassettes).engine,
+                render=adapter.render_citation,
+                limit=limit,
+            )
+        )
+    report_results(results)
+    typer.echo(_NO_COORDINATES)
+    written = _write_all(repository, results, kind, stamp, _explained_subject)
+    report_summary(summary, results, kind=kind, examined=examined, written=written)
 
 
 # ------------------------------------------------------------------ the pieces
@@ -146,10 +225,25 @@ def _repository(path: Path | None) -> OutputRepo:
     return opened
 
 
-def _write_all(repository: OutputRepo, results: list[RepairResult], *, repaired_on: date) -> int:
-    """Commit each repaired entry on its own.
+Subject = Callable[[ChangelogEntry, RepairResult], str]
+"""How one repair kind names its commit. The count phrase is the only part that differs."""
+
+
+def _write_all(
+    repository: OutputRepo,
+    results: Sequence[RepairResult],
+    kind: str,
+    repaired_on: date,
+    subject: Subject,
+) -> int:
+    """Commit each repaired entry on its own, with what the pass did recorded on it.
 
     A git failure ends the pass, because the next entry's commit would fail the same way.
+
+    `coordinates_checked` is False for every repair this command carries, and it is passed
+    rather than left to a default: neither repair holds the two provision trees the
+    coordinate-support sets are computed from, so the check did not run and an unrun check may
+    not read on a published entry as one that passed.
     """
     written = 0
     try:
@@ -160,14 +254,16 @@ def _write_all(repository: OutputRepo, results: list[RepairResult], *, repaired_
             stamped = with_record(
                 rebuilt,
                 RepairRecord(
-                    kind=KIND,
+                    kind=kind,
                     repaired_on=repaired_on,
-                    addressed=len(result.target.entry.changes),
+                    addressed=result.addressed,
                     repaired=result.repaired,
                     remaining=result.remaining,
+                    usage=result.usage,
+                    coordinates_checked=False,
                 ),
             )
-            outcome = repository.write(stamped, message=_message(stamped, result.repaired))
+            outcome = repository.write(stamped, message=subject(stamped, result))
             if not outcome.unchanged:
                 written += 1
                 typer.echo(f"  {outcome.changelog}: committed {outcome.revision[:7]}")
@@ -177,14 +273,29 @@ def _write_all(repository: OutputRepo, results: list[RepairResult], *, repaired_
     return written
 
 
-def _message(entry: ChangelogEntry, repaired: int) -> str:
-    """`32019R2088: 02019R2088-20260702 corroboration repaired (2 changes)`, and what did not move.
+def _corroborated_subject(entry: ChangelogEntry, result: RepairResult) -> str:
+    """`32019R2088: 02019R2088-20260702 corroboration repaired (2 changes)`."""
+    return _message(entry, f"{KIND} repaired ({result.repaired} changes)")
+
+
+def _explained_subject(entry: ChangelogEntry, result: RepairResult) -> str:
+    """`32013R0575: 02013R0575-20140101 explanations repaired (3 of 4 changes)`.
+
+    Both counts, because a change that failed again is part of what the pass did and a subject
+    naming only the successes would read as though every gap had been closed.
+    """
+    phrase = f"{explain_repair.KIND} repaired ({result.repaired} of {result.addressed} changes)"
+    return _message(entry, phrase)
+
+
+def _message(entry: ChangelogEntry, phrase: str) -> str:
+    """The subject and the one line saying what did not move.
 
     The subject says what was repaired rather than what was emitted, because a reader of
     `git log` would otherwise be told an amendment was detected on the day a correction ran.
     """
     return (
-        f"{entry.act.key}: {entry.to_version} {KIND} repaired ({repaired} changes)\n"
+        f"{entry.act.key}: {entry.to_version} {phrase}\n"
         "\n"
         "The verbatim texts, the sibling explanations and the detection date did not move."
     )

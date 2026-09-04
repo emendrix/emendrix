@@ -62,6 +62,16 @@ entry's diff carries those additions beside the correction; entries the repair h
 about are not touched at all, which is what keeps that drift on the corrected set and nowhere
 else.
 
+**A repaired explanation was written later than the entry it sits in, and the entry says so.**
+`emendrix repair explanations` asks the model again for a change that shipped with no
+explanation, so that change's prose is newer than every sentence beside it and than the
+`detected_on` date, which does not move: a repair is not a detection. The `repairs` entry carries
+the date the pass ran, how many changes it addressed, how many it repaired, how many it could not,
+and what the calls cost. It also carries `coordinates_checked: false`, because a repair works from
+the entry's own stored texts and holds neither provision tree, so the gate's coordinate check did
+not run; recording it is how an unrun check is kept from reading as one that passed. A change the
+model failed on again keeps the reason it was committed with, word for word.
+
 "Newest first" means the newest **version**, not the newest emission. The poller runs forward and a
 backfill fills history in underneath it weeks later, so a new entry is inserted at its place in the
 order rather than at the top; every entry already in the file keeps its bytes and its neighbours.

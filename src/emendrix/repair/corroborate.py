@@ -111,10 +111,17 @@ def repair(target: RepairTarget, instructions: SignalReport | None) -> RepairRes
         corroboration=merged.report,
         changes=_reattached(entry, merged),
     )
+    addressed = len(entry.changes)
     if not moved(entry, rebuilt):
-        return RepairResult(target=target)
+        return RepairResult(target=target, addressed=addressed)
     shift = shift_between(entry, rebuilt)
-    return RepairResult(target=target, repaired=shift.changed, entry=rebuilt, detail=shift.lines)
+    return RepairResult(
+        target=target,
+        addressed=addressed,
+        repaired=shift.changed,
+        entry=rebuilt,
+        detail=shift.lines,
+    )
 
 
 # ------------------------------------------------------------------ the pieces

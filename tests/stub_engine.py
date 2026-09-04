@@ -33,6 +33,7 @@ __all__ = [
     "engine",
     "offered_keys",
     "prompt_of",
+    "refusing",
     "revision_count",
 ]
 
@@ -108,6 +109,20 @@ def citing_badly_then_well() -> FunctionModel:
         return sentences(("Corrected on the second attempt.", offered_keys(prompt)[0]))
 
     return _model(answer)
+
+
+def refusing() -> FunctionModel:
+    """Raises instead of answering, which the engine records as a model failure and carries on.
+
+    A plain exception on purpose: `provider_failed` recognises the provider's own error types,
+    so anything else is an answer about the change and settles it. That is the state a repair
+    counts as still failed rather than repaired.
+    """
+
+    async def call(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        raise RuntimeError("nothing usable came back")
+
+    return FunctionModel(call)
 
 
 def revision_count(prompts: list[str]) -> int:

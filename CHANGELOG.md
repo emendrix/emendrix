@@ -58,6 +58,29 @@ two consolidated versions, and emits a reviewable changelog into an output git r
   with the date it ran, beside an `explain` block that keeps recording the run that produced the
   entry: no repair retracts a call that was made, and summing the two would turn a record of one
   run into a lifetime total. The field has a default and `schema_version` stays `1.0`.
+- **`emendrix repair explanations`**: the second repair, and the one that spends money. A change
+  that shipped with no explanation because the model answered and the answer was unusable is asked
+  again, gated, and spliced into the entry that already exists; every sibling explanation keeps
+  its bytes, and a change that fails again keeps the reason it was committed with and is counted
+  as still failed rather than reported as repaired. The whole prompt is rebuilt from the committed
+  payload, so nothing is fetched and nothing is re-diffed: a change carries both verbatim texts,
+  and running today's parser over a document whose stored text predates a parser fix would produce
+  an explanation of text no reader can see. Two decisions are stated rather than defaulted into.
+  The gate resolves citations against the provisions the entry itself carries text for, which is
+  narrower than the loop's resolution against two whole provision trees: an offered key still
+  resolves and an unknown one is still rejected, but a key naming a provision the version does not
+  contain cannot be caught there. And no coordinate check runs, because the support sets are
+  computed from the trees, so the contexts carry `coordinates_checked=False`, the gate counts
+  nothing rather than counting every mention as unsupported, and the repair record on the entry
+  says the check did not run. The unsupported-coordinate figure this project publishes is computed
+  by the eval harness over the committed corpus and never over a changelog repository, so no
+  published number moves either way. `--limit` counts changes rather than entries, because a
+  change is what a call is paid for, and `--dry-run` names every change it would ask about, prints
+  the characters it would send and prices them at the published rate with the model named beside
+  the figure, building no engine and reading no API key. The price is a floor: one call per change,
+  counting neither the gate's one retry nor a schema repair. A repaired explanation was produced by
+  a call the entry's own `explain` block does not count, and the repair record beside it is where
+  that call's tokens are.
 - **The output repository**: Markdown and versioned JSON (`schema_version` 1.0) committed into a
   local git repository you own, ordered by the version each entry describes; each change names the
   acts that amended it and what each signal claimed.
@@ -217,6 +240,9 @@ Named rather than discovered later; the eval report's disagreement list is the l
   and returns nothing. Re-running those 90 was considered and rejected. The unit a re-run replaces
   is a whole transition, so recovering them would re-explain 1 979 changes to fix 90, and because
   the model is not deterministic it would rewrite 1 889 explanations that are already correct.
+  `emendrix repair explanations` is what replaces the change instead of the transition, so those
+  1 889 keep their bytes; the 90 stay in the published record until a pass is run against it, and
+  the failure being stochastic means a pass is expected to leave a few of them still unexplained.
 - **Explanations can still outrun their evidence, and the shape of it has changed.** The hand
   review of 2026-08-08 over the prose that shipped then marked 3 of 20 entries unfaithful at the
   truncation marker. That count was published as one class and it was three different things, and

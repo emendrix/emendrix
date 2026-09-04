@@ -213,6 +213,18 @@ the third recording in a row to write none, so `notes_dropped` is 0 because none
 than because every one passed. That is in the known limitations of
 [`../CHANGELOG.md`](../CHANGELOG.md) rather than softened here.
 
+**One place resolves against an entry's own texts rather than against two trees.**
+`emendrix repair explanations` rebuilds a prompt from a committed payload, which carries the
+verbatim texts and no provision tree, so the gate is handed a resolver built from the provisions
+that entry ships text for. Every key the model could legitimately cite is minted from those same
+provisions, so an offered key resolves and a key from anywhere else is still rejected as unknown,
+which is the check's whole strengthening and is unchanged. What the narrower resolver cannot do
+is notice an offered key naming a provision the version does not actually contain, and it answers
+"I was not given that" rather than "present" for anything else. The coordinate check does not run
+there at all: the two support sets are computed from the trees, so the context carries
+`coordinates_checked=False`, the gate counts nothing rather than counting every mention as
+unsupported, and the repaired entry records that the check did not run.
+
 **The gate has no opinion about whether a sentence is true.** A factually wrong sentence with a
 valid citation passes, and it is supposed to. Whether what a sentence says follows from the texts
 is *faithfulness*, measured separately against a different reference
