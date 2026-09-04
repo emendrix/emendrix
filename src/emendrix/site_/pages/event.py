@@ -165,7 +165,7 @@ def render_event_page(
         (
             *_header(act),
             *_instruments(site, act, entry),
-            *render_event(entry, anchors, texts, acts),
+            *render_event(entry, anchors, texts, acts, site.changelogs_url),
             *_pager(act, entry),
         ),
         "\n",

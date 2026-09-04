@@ -79,6 +79,7 @@ from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
 from emendrix.site_.pages.facts import event_facts
 from emendrix.site_.pages.prose import dates_line, permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
+from emendrix.site_.sources import repo_file
 from emendrix.site_.untouched import untouched, untouched_note
 from emendrix.site_.urls import location_slug
 
@@ -238,6 +239,7 @@ def render_event(
     anchors: tuple[str, ...],
     texts: tuple[RenderedText, ...],
     acts: tuple[AmendingAct, ...] = (),
+    changelogs_url: str = "",
 ) -> list[Html]:
     """One event's full body. `anchors` is one fragment per change, in the entry's own order.
 
@@ -246,6 +248,11 @@ def render_event(
     both sides running the same counter; `acts`, the instruments the entry names, and `texts`,
     the evidence blocks, arrive resolved for the same reason. `texts` is positional too, one
     block per change, and is built once per entry however many pages show one of its changes.
+
+    `changelogs_url` is the changelog repository's public home, or `""` where a deployment
+    publishes none, and it decides only whether the closing sentence's path is a link. Where
+    that repository lives on the operator's machine is never printed either way; the path it
+    does print is the stable one inside the repository.
     """
     lines = _event_header(entry, acts, full=True)
     if any(emitted.change.disputed for emitted in entry.changes):
@@ -264,13 +271,14 @@ def render_event(
         lines.extend((Html("</section>"), Html("</div>")))
     else:
         lines.extend(blocks)
+    committed = repo_file(f"{entry.act_dir}/CHANGELOG.md", changelogs_url)
     lines.extend(
         (
             Html(
                 f'<p class="small muted">The full entry, with the citation mapping '
                 f"<code>v1</code> = <code>{escape(str(entry.from_version))}</code>, "
                 f"<code>v2</code> = <code>{escape(str(entry.to_version))}</code>, is committed "
-                f"at <code>{escape(entry.act_dir)}/CHANGELOG.md</code>.</p>"
+                f"at {committed}.</p>"
             ),
             Html("</article>"),
         )

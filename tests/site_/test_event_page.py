@@ -52,8 +52,14 @@ def _delta() -> Delta:
     return compute_delta(before, after)
 
 
-def _site(*entries: ChangelogEntry) -> SiteInputs:
-    return collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries)
+def _site(*entries: ChangelogEntry, changelogs_url: str = "") -> SiteInputs:
+    return collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=entries,
+        changelogs_url=changelogs_url,
+    )
 
 
 def _rendered(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
@@ -577,3 +583,44 @@ def test_the_dates_line_states_dates_and_never_calls_one_a_deadline() -> None:
     assert line == "dates removed: 2026-08-02"
     for word in ("deadline", "application", "applies", "obligation", "compliance"):
         assert word not in line
+
+
+def _closing_path(entry: ChangelogEntry) -> str:
+    """The changelog document this entry was committed to, as the sentence names it."""
+    return f"{entry.act_dir}/CHANGELOG.md"
+
+
+def _closed_with(changelogs_url: str) -> tuple[str, str]:
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = _site(entry, changelogs_url=changelogs_url)
+    return _rendered(site, site.acts[0], site.acts[0].entries[0]), _closing_path(entry)
+
+
+def test_the_closing_path_links_into_a_public_changelog_repository() -> None:
+    """A deployment that publishes the changelog data says where the entry is, in a link.
+
+    GitHub serves a committed file under `blob/<ref>/`, verified against a changelog
+    repository's own `CHANGELOG.md` on 2026-09-04. The link is to the file and never to a
+    heading inside it: that host derives a heading anchor from the heading's text, so a deeper
+    link would break silently the day the heading is reworded.
+    """
+    rendered, path = _closed_with("https://github.com/o/changelogs")
+    assert (
+        f'is committed at <a href="https://github.com/o/changelogs/blob/main/{path}">'
+        f"<code>{path}</code></a>." in rendered
+    )
+
+
+def test_a_changelog_home_of_unknown_shape_leaves_the_closing_path_as_text() -> None:
+    """A forge whose file layout nobody has checked gets no guessed link, only the path."""
+    rendered, path = _closed_with("https://data.example.invalid/changelogs")
+    assert f"is committed at <code>{path}</code>." in rendered
+    assert f"https://data.example.invalid/changelogs/{path}" not in rendered
+
+
+def test_a_build_with_no_public_changelog_home_prints_the_closing_path_plainly() -> None:
+    """The honest answer where the repository is the operator's own: the stable path inside
+    it, for a reader who has the checkout, and no host named."""
+    rendered, path = _closed_with("")
+    assert f"is committed at <code>{path}</code>." in rendered
+    assert "github.com" not in rendered

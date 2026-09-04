@@ -25,14 +25,13 @@ value on the page was read off an artifact somebody committed.
 
 from __future__ import annotations
 
-from typing import Final
-
 from emendrix.eval_.metric_rows import metric_rows, synthetic_caveats
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, count, escape, inline, join
 from emendrix.site_.pitch import PITCH
+from emendrix.site_.sources import repo_file
 
 __all__ = ["render_methodology"]
 
@@ -95,40 +94,6 @@ own rendering, and a row here would be a figure with no provenance in the one pl
 to refuse them.
 """
 
-_GITHUB: Final = "https://github.com/"
-"""The one public host whose file layout this module knows. A prefix, not a vendor endorsement."""
-
-
-def _file_url(repo_url: str, path: str) -> str | None:
-    """Where a committed file is browsable under a public home, or None when the shape is unknown.
-
-    GitHub serves a committed file at `<repo>/blob/<ref>/<path>`, and `main` is the ref a
-    public home publishes; a bare join of the repository URL and the path answers 404, which
-    is how the link proving this page's figures came to fail on its first click (verified
-    2026-09-03). The ref is `main` rather than the report's own `revision` because `eval run`
-    records the revision of the tree it scored and the report is committed after it, so a URL
-    naming that revision would point at a tree the file is not in yet.
-
-    Any other host renders the path as text instead: the layout of a forge nobody has checked
-    is a guess, and a guessed link is worse here than no link at all.
-    """
-    base = repo_url.rstrip("/")
-    return f"{base}/blob/main/{path}" if base.startswith(_GITHUB) else None
-
-
-def _source(path: str, repo_url: str) -> Html:
-    """A path inside the repository: a link where one can be built, plain text otherwise.
-
-    Both branches are honest, which is the whole requirement on this page: a build given no
-    public home, or given one whose file layout is not known here, prints the path for a
-    reader who has the checkout, and only a home the shape of which is known becomes a link.
-    """
-    shown = Html(f"<code>{escape(path)}</code>")
-    href = _file_url(repo_url, path) if repo_url else None
-    if href is None:
-        return shown
-    return Html(f'<a href="{escape(href)}">{shown}</a>')
-
 
 def _headline_sentence(site: SiteInputs) -> Html:
     """The measured claim, in the opening paragraph, with its limitation in the same sentence."""
@@ -185,7 +150,7 @@ def _metrics(site: SiteInputs) -> list[Html]:
         Html(
             f'<p class="small muted">Measured on {run.run_date.isoformat()} at revision '
             f"<code>{escape(run.revision)}</code>, from "
-            f"{_source(site.report_markdown, site.repo_url)}. The deterministic rows cover every "
+            f"{repo_file(site.report_markdown, site.repo_url)}. The deterministic rows cover every "
             f"transition in the committed corpus ({run.metrics.cases_scored} of "
             f"{run.metrics.cases} scored); the model rows cover the pinned explanation subset "
             f"only, because each change in it is one recorded call to a provider.</p>"
