@@ -72,6 +72,16 @@ the entry's own stored texts and holds neither provision tree, so the gate's coo
 not run; recording it is how an unrun check is kept from reading as one that passed. A change the
 model failed on again keeps the reason it was committed with, word for word.
 
+**A note that quoted a library is restated, and one that names an unreachable provider is not.**
+`emendrix repair unexplained` replaces a reason written before the curated ones existed, which
+could be the provider library's own error text, with the sentence the code writes today, and
+stamps the counted kind beside it. The change keeps everything else it had: no sentence gains or
+loses a citation, no verbatim text moves, and every reason this project curated stands, including
+the ones a change written before the kind existed carries with no kind at all. A note naming a
+provider that never answered is counted in the `repairs` entry as remaining and left exactly as it
+is, because neither kind is true of one and `unexplained_kind: "provider_unavailable"` is what
+tells a later run the entry is unfinished.
+
 "Newest first" means the newest **version**, not the newest emission. The poller runs forward and a
 backfill fills history in underneath it weeks later, so a new entry is inserted at its place in the
 order rather than at the top; every entry already in the file keeps its bytes and its neighbours.

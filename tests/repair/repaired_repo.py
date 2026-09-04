@@ -5,11 +5,14 @@ would prove a repair against a document nothing wrote. So this takes the reposit
 command chain produced and puts the defect back into it with the same functions the repair uses
 to take it out.
 
-Two defects, one per repair kind. `poisoned_repo` gives the entry an instruction signal that
+Three defects, one per repair kind. `poisoned_repo` gives the entry an instruction signal that
 names a unit nothing else saw and misses one that everything else saw, merged through
 `corroborate` and committed through `OutputRepo`. `unexplained_repo` takes the prose off the
 first few changes and puts each of the counted reasons a change can carry no explanation in its
-place, which is the state the explanation repair has to tell apart.
+place, which is the state the explanation repair has to tell apart. `raw_reason_repo` does the
+same with the notes a change carried before the curated reasons existed: two of them a library's
+own error text, two of them the house register, so a selector that reached wider than it should
+would be caught by the pair.
 
 A second entry is written into the same act's `CHANGELOG.md` so that "every other entry keeps
 its bytes" is a claim with a neighbour to check it against. Its version identifiers are the only
@@ -50,6 +53,16 @@ NEIGHBOUR_FROM = VersionId("02017R0745-20170101")
 NEIGHBOUR_TO = VersionId("02017R0745-20170505")
 """An older transition of the same act, so its entry sorts below the one under repair."""
 
+RAW_MODEL_FAILURE = "UnexpectedModelBehavior: Exceeded maximum output retries (1)"
+"""A malformed answer as the provider library named it, verbatim.
+
+Written out here rather than imported, so a change to the set the repair matches on is a test
+failure rather than two constants agreeing with each other. Measured 2026-09-04 over the
+published changelogs, where it is the only raw text of this shape any entry carries."""
+
+RAW_PROVIDER_FAILURE = "ModelAPIError: Connection error."
+"""The other raw text those entries carry: a provider that never answered, not a bad answer."""
+
 UNEXPLAINED = (
     (MODEL_FAILED, "model_failed"),
     (MODEL_FAILED, ""),
@@ -62,6 +75,20 @@ UNEXPLAINED = (
 The first two are the same failure written under two schemas: a change written since the kind
 existed carries it, and one written before carries the curated reason alone. Both are the
 explanation repair's business and the other three are not.
+"""
+
+RAW_REASONS = (
+    (RAW_MODEL_FAILURE, ""),
+    (RAW_PROVIDER_FAILURE, ""),
+    (NOTHING_TO_EXPLAIN, ""),
+    (MODEL_FAILED, ""),
+)
+"""Four notes carrying no kind, in the order they are injected.
+
+The first is the one the restating repair addresses and the second is the one it must count and
+refuse to stamp. The last two are the trap: reasons this project curated, carried by a change
+written before the kind existed, and a selector matching on anything looser than the exact text
+of the first would take them with it.
 """
 
 
@@ -98,17 +125,33 @@ def unexplained_repo(source: Path, destination: Path) -> Path:
     return repository.path
 
 
+def raw_reason_repo(source: Path, destination: Path) -> Path:
+    """A copy of `source` whose one entry carries the notes written before the kinds existed.
+
+    Built the same way and for the same reason: the document under test is one the shipped
+    writer produced, so what a repair reads is what a reader is served.
+    """
+    shutil.copytree(source, destination)
+    repository = OutputRepo.open(destination)
+    for target in read_targets(repository.path):
+        repository.write(_neighbour(target.entry))
+        repository.write(_stripped(target.entry, RAW_REASONS))
+    return repository.path
+
+
 def unexplained_target(root: Path) -> RepairTarget:
-    """The one entry of such a repository that carries a model failure."""
+    """The one entry of such a repository whose first change lost its prose."""
     found = [target for target in read_targets(root) if target.entry.changes[0].unexplained]
     assert len(found) == 1, [str(target.path) for target in found]
     return found[0]
 
 
-def _stripped(entry: ChangelogEntry) -> ChangelogEntry:
+def _stripped(
+    entry: ChangelogEntry, states: tuple[tuple[str, str], ...] = UNEXPLAINED
+) -> ChangelogEntry:
     changes = list(entry.changes)
-    assert len(changes) > len(UNEXPLAINED), "the entry needs a change left over as a sibling"
-    for index, (reason, kind) in enumerate(UNEXPLAINED):
+    assert len(changes) > len(states), "the entry needs a change left over as a sibling"
+    for index, (reason, kind) in enumerate(states):
         assert changes[index].sentences, "a change with no prose proves nothing here"
         changes[index] = EmittedChange(
             change=changes[index].change,

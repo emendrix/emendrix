@@ -29,7 +29,11 @@ Layout:
 entry         read one committed payload, take it apart, put it back, decide whether it moved
 select        which committed entries a repair kind would touch, over a whole repository
 corroborate   the deterministic repair: the third signal recomputed
+explanations  the paid repair: a change with no explanation, asked again from its payload
+unexplained   the restating repair: a note that quoted a library, put in the house register
+pricing       what a paid repair would address and cost, computed before anything is sent
 render        the table an operator decides from, before anything is written
+commit        opening the repository, committing what moved, and naming the commit
 cli           `emendrix repair`: the EU composition root and the sub-verbs
 ```
 

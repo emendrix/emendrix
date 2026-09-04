@@ -12,7 +12,9 @@ always invoked explicitly, never reached from a resume, and it corrects one part
 while every other entry in that act's changelog keeps its bytes. `--dry-run` prints what would
 move and writes nothing. `corroboration` recomputes the third signal and spends nothing;
 `explanations` asks the model again for a change that shipped without one, rebuilding the prompt
-from the entry's own stored texts, and its `--dry-run` prices the work before any of it is sent.
+from the entry's own stored texts, and its `--dry-run` prices the work before any of it is sent;
+`unexplained` restates a note that quoted the provider library's own error text in the register
+the code writes today, and reads nothing but the committed document.
 
 `emendrix diff <act> <from> <to>` fetches two versions through the cache and prints the delta,
 as a plain structural dump, as the serialised `core.Delta` (`--json`), or as the changelog
