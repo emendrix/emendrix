@@ -45,14 +45,14 @@ The promises live here, each as a line of markup rather than a claim made elsewh
   a reader forty blocks down can still see the map; below that width it stays the wrapping row
   it has always been, which costs a few lines rather than a screen.
 
-What a change block carries wherever it appears, the pill, the permalink, the sentences and
-the row of their citations, lives in `pages/prose.py`; the index a long page opens with lives
-in `pages/event_index.py`; and the dates-and-counts line under the heading lives in
-`pages/facts.py`. All three were split off on 2026-09-03, the first when naming the amending
-act pushed this module past the size cap, the second when the index gained a label and a column
-to stand in, and the third when the gate clause was rewritten for a reader and the cap was
-reached again. Each is a statement this module places rather than composes. What is left is
-one event's shape: its opening, the block each change sits in and the order all of it comes in.
+What a change block carries wherever it appears, the pill, the permalink, the sentences, the row
+of their citations and the dates its text moved, lives in `pages/prose.py`; the index a long page
+opens with lives in `pages/event_index.py`; and the dates-and-counts line under the heading lives
+in `pages/facts.py`. All three were split off on 2026-09-03, the first when naming the amending
+act pushed this module past the size cap, the second when the index gained a label and a column to
+stand in, and the third when the gate clause was rewritten for a reader and the cap was reached
+again. Each is a statement this module places rather than composes. What is left is one event's
+shape: its opening, the block each change sits in and the order all of it comes in.
 
 Wording is imported rather than restated wherever the changelog says the same thing
 (`output.markdown`): two renderings of one fact that describe it differently are how a caveat
@@ -77,7 +77,7 @@ from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
 from emendrix.site_.pages.facts import event_facts
-from emendrix.site_.pages.prose import permalink, pill, prose
+from emendrix.site_.pages.prose import dates_line, permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.untouched import untouched, untouched_note
 from emendrix.site_.urls import location_slug
@@ -125,6 +125,10 @@ def _change_block(
     not an invitation to leave it. The permalink closes the heading and points at this block's
     own `id`, so a reader can hand one change to somebody without knowing the anchor scheme.
 
+    The dates line follows the applies line where a date moved, and is absent where none did.
+    The order is the argument: the applies line answers whether one of them governs the
+    provision, and the dates below it are the ones the text stopped and started naming.
+
     `text` is the evidence, rendered once for the whole entry by `pages.texts` and handed in:
     the provision page shows the same block, and a diff computed twice is the one cost the
     split of these pages could have introduced. It carries the size of the difference it shows,
@@ -145,6 +149,9 @@ def _change_block(
         ),
         Html(f'<p class="applies">applies from {escape(applies_text(change.applies_from))}</p>'),
     ]
+    dates = dates_line(change)
+    if dates is not None:
+        lines.append(dates)
     if change.disputed:
         note = dispute_note(change.signals)
         lines.append(

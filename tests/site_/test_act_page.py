@@ -8,7 +8,8 @@ and links that land where the evidence went.
 
 from __future__ import annotations
 
-from datetime import date
+import re
+from datetime import date, timedelta
 from pathlib import Path
 
 from site_entries import unattributed_entry
@@ -19,7 +20,9 @@ from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import SiteInputs, collect_site
+from emendrix.site_.markup import escape
 from emendrix.site_.pages.act import render_act
+from emendrix.site_.pages.act_dates import FOLD_ABOVE, LEDE
 from emendrix.site_.urls import event_href, provision_href
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -364,3 +367,72 @@ def test_a_timeline_card_is_headed_by_its_date_with_the_version_pair_below() -> 
     assert (
         f'<p class="ident"><code>{entry.from_version} → {entry.to_version}</code></p>' in rendered
     )
+
+
+_SECTION = re.compile(r'<section class="dates-named" id="dates-named">(.*?)</section>', re.DOTALL)
+"""The dates section alone, so an assertion about it cannot be answered by the rest of the page."""
+
+
+def _dated(added: tuple[date, ...] = (), removed: tuple[date, ...] = ()) -> str:
+    """The act page for one event whose first change moved the dates handed in.
+
+    Patched onto a real change because the toy corpus writes no date markup: it moves none,
+    which is what makes the plain toy entry the input for the absent case below.
+    """
+    delta = _delta()
+    changes = (
+        delta.changes[0].model_copy(update={"dates_added": added, "dates_removed": removed}),
+        *delta.changes[1:],
+    )
+    entry = diff_only_entry(delta.model_copy(update={"changes": changes}), detected_on=OBSERVED)
+    site = _site(entry)
+    return render_act(site, site.acts[0])
+
+
+def test_the_act_lists_the_dates_its_amended_text_names() -> None:
+    """One row per mention, sorted by the date, each saying which way the date moved and
+    linking the two places a reader can check it: the provision's own history and the change
+    block that moved it."""
+    rendered = _dated((date(2027, 12, 2),), (date(2026, 8, 2),))
+    (section,) = _SECTION.findall(rendered)
+    assert "<h2>Dates the amended text names</h2>" in rendered
+    assert escape(LEDE) in section
+    assert '<span class="on">2026-08-02</span> removed from' in section
+    assert '<span class="on">2027-12-02</span> added to' in section
+    assert section.index("2026-08-02") < section.index("2027-12-02")
+    assert 'href="../../acts/house-rules/ar-2/">Art. 2</a>' in section
+    assert 'href="../../acts/house-rules/v2/#v2-ar-2">detected 2026-08-09</a>' in section
+
+
+def test_the_list_says_what_it_is_and_never_calls_a_date_a_deadline() -> None:
+    """The lede is the whole of the care taken: it says the list is dates the text contains,
+    says where the other question is answered, and the words for that reading appear nowhere."""
+    (section,) = _SECTION.findall(_dated((date(2027, 12, 2),)))
+    assert "This is a list of dates the text contains." in escape(LEDE)
+    assert "&quot;applies from&quot;, and nowhere else." in section
+    for word in ("deadline", "obligation", "compliance date", "timeline of obligations"):
+        assert word not in section
+
+
+def test_an_act_whose_changes_moved_no_date_gets_no_section_and_no_index_link() -> None:
+    """Most acts are this one: a heading over an empty list is a page inventing a subject."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = _site(entry)
+    rendered = render_act(site, site.acts[0])
+    assert "dates-named" not in rendered
+
+
+def test_the_index_links_the_section_wherever_it_exists() -> None:
+    rendered = _dated((date(2027, 12, 2),))
+    assert '<p class="small"><a href="#dates-named">Dates named</a></p>' in rendered
+    assert rendered.index('href="#dates-named"') < rendered.index('id="dates-named"')
+
+
+def test_the_list_folds_once_it_is_longer_than_a_screenful() -> None:
+    """A list of scores of dates standing in front of the timeline would be the section
+    answering a question nobody asked; the fold says how many rows it holds."""
+    dates = tuple(date(2027, 1, 1) + timedelta(days=day) for day in range(FOLD_ABOVE))
+    (section,) = _SECTION.findall(_dated(dates))
+    assert "<summary>" not in section
+    (longer,) = _SECTION.findall(_dated((*dates, date(2028, 1, 1))))
+    assert f"<details><summary>{FOLD_ABOVE + 1} dates</summary>" in longer

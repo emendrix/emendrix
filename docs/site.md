@@ -94,6 +94,16 @@ been touched by 47 events, so a page repeating the evidence per step would multi
 page on the site by its own history. The step ids are the anchors the event pages already
 publish, so nothing addressable moved when these pages arrived.
 
+Where a change moved a machine-readable date, the event page and the provision page print those
+dates under its applies-from line: the dates its new text names and the ones its old text named,
+in the ISO form, as the parser read them off the source's own date markup and never as a reading
+of what any of them governs. The act's own page gathers every one of them under **Dates the
+amended text names**, sorted by the date rather than by the event, each row linking the
+provision's page and the change block that moved it, and folded behind a summary above twelve
+rows. It is a list of dates the text contains and never a schedule: whether a provision applies
+from one of them is stated for each change under "applies from" and nowhere else, which is the
+line the section's own lede points at.
+
 Every event that does name an amending act says which one, on every surface it appears on: the
 event page's `<title>`, its description and a line under its heading, the act page's timeline
 card, the front page's card, the acts index row's date fact and the Atom entry's title and

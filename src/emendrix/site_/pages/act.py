@@ -1,6 +1,6 @@
 """One act, whole: every amendment seen for it, newest first, each linking to its evidence.
 
-This is the page the rest of the site exists to point at. It assembles three things and
+This is the page the rest of the site exists to point at. It assembles four things and
 renders one summary card per event through `act_event`:
 
 - the header, which identifies the act well enough to check it against the official source;
@@ -11,7 +11,11 @@ renders one summary card per event through `act_event`:
   recently. A card states the event's facts and links to the event's own page, which is where
   the per-change blocks and the verbatim text live: an act with a long history was shipping
   megabytes of collapsed evidence on this one page, and a timeline a phone can hold serves
-  the same reader better than a fold it cannot.
+  the same reader better than a fold it cannot;
+- the list of dates the amended text names, under the timeline, which `act_dates` renders and
+  which is the one place on the site that reads this act's dates as a set rather than one
+  change at a time. It states facts about text and never a schedule, which is why the words
+  around it live in that module beside the list they qualify.
 
 Every card still carries `id="{entry.key}"`, because that fragment is the permalink every
 feed entry was published under and an address published once never stops resolving.
@@ -32,8 +36,10 @@ from emendrix.site_.amending import amenders
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_dated
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.history import DateMention, dates_named
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.pages.act_dates import ANCHOR, LINK, dates_section
 from emendrix.site_.pages.act_event import render_event_summary
 from emendrix.site_.pages.prose import pill
 from emendrix.site_.seo import act_json_ld
@@ -111,12 +117,15 @@ def _provisions(act: ActSite) -> list[Html]:
     return lines
 
 
-def _sidebar(act: ActSite) -> Html:
+def _sidebar(act: ActSite, mentions: tuple[DateMention, ...]) -> Html:
     """The index: provisions and events, each a plain link into an event page. No script.
 
     The lists sit inside a `<details open>` so a narrow screen can fold the whole index away
     with the browser's own control, which needs no JavaScript. The element carrying the class
     is on the outside, because that is the one the layout makes sticky on a wide screen.
+
+    The dates section is a link rather than a list: it is one section with one heading, and
+    the index carries it only when the page has one, so the link cannot point at nothing.
     """
     lines = [
         Html('<aside class="sidebar">'),
@@ -134,7 +143,10 @@ def _sidebar(act: ActSite) -> Html:
         )
         for entry in act.entries
     )
-    lines.extend((Html("</ul>"), Html("</details>"), Html("</aside>")))
+    lines.append(Html("</ul>"))
+    if mentions:
+        lines.append(Html(f'<p class="small"><a href="#{ANCHOR}">{escape(LINK)}</a></p>'))
+    lines.extend((Html("</details>"), Html("</aside>")))
     return join(lines, "\n")
 
 
@@ -269,8 +281,15 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     timeline.append(Html("</section>"))
     # A quiet act gets no index and no two-column layout: the index would be two headings
     # over two empty lists, and the grid reserves its first column for exactly that index.
+    mentions = dates_named(act)
     columns = (
-        (Html('<div class="layout">'), _sidebar(act), *timeline, Html("</div>"))
+        (
+            Html('<div class="layout">'),
+            _sidebar(act, mentions),
+            *timeline,
+            *dates_section(act, mentions, up(_DEPTH)),
+            Html("</div>"),
+        )
         if act.entries
         else tuple(timeline)
     )

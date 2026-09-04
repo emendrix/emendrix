@@ -5,6 +5,10 @@ act in one event, which is where "every change is in exactly one history" is che
 change. The generated two-hundred-event tree is where the rest has teeth: one coordinate touched
 twice inside one event, one coordinate touched by all two hundred, and an ordering that a sort
 on the canonical string would get wrong at `AR 10`.
+
+The dates the same pass gathers get a third input: neither corpus writes a date, so the two
+above are what proves the empty case, and the present case is a real change with dates patched
+onto it.
 """
 
 from __future__ import annotations
@@ -19,8 +23,10 @@ from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
-from emendrix.site_.history import histories
-from emendrix.site_.inputs import ActSite, collect_site
+from emendrix.site_.history import dates_named, histories
+from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
+from emendrix.site_.pages.event import render_event_page
+from emendrix.site_.pages.texts import text_blocks
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -121,3 +127,64 @@ def test_histories_are_sorted_the_way_the_act_page_lists_provisions() -> None:
 def test_an_act_with_no_events_has_no_histories() -> None:
     """A quiet act is a real answer here too: no coordinate was touched, so no page is due."""
     assert histories(ActSite(act=_delta().act, label="quiet")) == ()
+
+
+def _dated() -> SiteInputs:
+    """The toy transition with dates hung on two of its four changes, in one event.
+
+    Patched onto real changes because the toy corpus writes no date markup: every change of it
+    moves none, which is the input the empty case below wants and the wrong one for every case
+    above it. One date is added by two changes at two coordinates, which is the shape a list
+    keyed by the date has to get right.
+    """
+    delta = _delta()
+    changes = list(delta.changes)
+    changes[0] = changes[0].model_copy(update={"dates_added": (date(2027, 12, 2),)})
+    changes[3] = changes[3].model_copy(
+        update={"dates_added": (date(2027, 12, 2),), "dates_removed": (date(2026, 8, 2),)}
+    )
+    entry = diff_only_entry(
+        delta.model_copy(update={"changes": tuple(changes)}), detected_on=OBSERVED
+    )
+    return collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(entry,))
+
+
+def test_dates_named_is_sorted_by_the_date_and_then_by_the_provision() -> None:
+    """By the date first, because that is what makes the list a fact about the act rather than
+    a second copy of its timeline; the provision breaks the tie in the order the act page's own
+    index lists coordinates in."""
+    site = _dated()
+    mentions = dates_named(site.acts[0])
+    assert [(one.on, one.location.canonical, one.added) for one in mentions] == [
+        (date(2026, 8, 2), "AN I", False),
+        (date(2027, 12, 2), "AR 2", True),
+        (date(2027, 12, 2), "AN I", True),
+    ]
+
+
+def test_one_date_two_changes_name_is_two_mentions() -> None:
+    """Two provisions naming one date are two facts, and each carries its own change: merging
+    them would leave a row pointing at one of the two blocks that made it."""
+    mentions = [one for one in dates_named(_dated().acts[0]) if one.on == date(2027, 12, 2)]
+    assert len(mentions) == 2
+    assert len({one.anchor for one in mentions}) == 2
+
+
+def test_every_mention_names_a_block_that_exists_on_its_own_event_page() -> None:
+    """The anchors are the event page's own, not a second set minted here, so every row of the
+    act's list lands on the change block that moved the date."""
+    site = _dated()
+    act = site.acts[0]
+    entry = act.entries[0]
+    rendered = render_event_page(site, act, entry, text_blocks(entry))
+    mentions = dates_named(act)
+    assert mentions
+    for one in mentions:
+        assert f'id="{one.anchor}"' in rendered
+
+
+def test_an_act_whose_changes_moved_no_date_names_none() -> None:
+    """The toy corpus writes no date markup at all, which is the common case in the corpus too:
+    most committed changes move no date and their acts get no list."""
+    for act in (_toy(), _scaled()):
+        assert dates_named(act) == ()

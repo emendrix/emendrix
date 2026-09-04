@@ -39,7 +39,10 @@ as false positives, and the transitions stay in the corpus.
 binding that says which provision they govern is prose. It is populated only when the change
 itself moves a date in the act's own application article; otherwise the answer is `unknown`, with
 the applicable prose quoted verbatim. It is never inferred by the model. Many unknowns is the
-correct outcome, and the metrics count them.
+correct outcome, and the metrics count them. The site lists the machine-readable dates a change
+added to and removed from a provision's text, per change and gathered per act, as facts about the
+text and nothing more: which of them a provision applies from is this field's answer, and where
+it is `unknown` the site says so rather than picking one of the dates it just printed.
 
 **Every model-layer figure describes one recording of one subset by one pair of models.** All four
 committed cassette sets were recorded on 2026-08-12 against

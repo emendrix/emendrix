@@ -21,9 +21,18 @@ Two consequences of that, both deliberate:
 The anchors ride along rather than being recomputed by whoever renders a step: a provision page
 uses them as its step ids, so a link minted for an event page keeps working on the provision
 page and the reader can move between the two without either side running its own counter.
+
+`dates_named` reads the same pass a second way, by the date rather than by the coordinate. A
+change carries the machine-readable dates its text stopped and started naming, and gathering
+them under the act answers a question no one event page can: which dates does this legislation's
+text name, and which amendment put each one there. It is a list of mentions and never a
+schedule. Whether a provision applies from one of the dates in it is `Change.applies_from`'s
+answer, stated on the change and nowhere else.
 """
 
 from __future__ import annotations
+
+from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -32,7 +41,7 @@ from emendrix.output import ChangelogEntry
 from emendrix.site_.inputs import ActSite
 from emendrix.site_.urls import entry_anchors, location_slug
 
-__all__ = ["ProvisionHistory", "ProvisionStep", "histories"]
+__all__ = ["DateMention", "ProvisionHistory", "ProvisionStep", "dates_named", "histories"]
 
 
 class ProvisionStep(BaseModel):
@@ -104,4 +113,56 @@ def histories(act: ActSite) -> tuple[ProvisionHistory, ...]:
     return tuple(
         ProvisionHistory(location=locations[key], steps=tuple(steps))
         for key, steps in sorted(found.items(), key=lambda item: locations[item[0]].sort_key)
+    )
+
+
+class DateMention(BaseModel):
+    """One machine-readable date one change moved, and everywhere a reader can go to see it.
+
+    A mention, never an entry in a calendar: it says that a provision's text stopped or started
+    naming this date, which is what the parser read. What the date does, and whether the
+    provision applies from it, is `Change.applies_from`'s question and is answered on the change
+    itself.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    on: date = Field(
+        description="The date the text names, as the source's own date markup gave it."
+    )
+    added: bool = Field(description="True when the new text names it, False when the old text did.")
+    location: ProvisionLocation = Field(description="The provision whose text moved it.")
+    entry: ChangelogEntry = Field(description="The committed event the change came from.")
+    anchor: str = Field(
+        min_length=1, description="That change's fragment on the event page, as `ProvisionStep`."
+    )
+
+
+def dates_named(act: ActSite) -> tuple[DateMention, ...]:
+    """Every date any change of this act added or removed, sorted by the date, then location.
+
+    By the date first because that is the only order in which the list is about the act rather
+    than about its events: a reader scanning it is asking which dates this legislation's text
+    now names, and the events that moved them arrived in whatever order the corpus consolidated.
+    Ties break on the provision and then on the change's own anchor, which is unique per change,
+    so two events moving one date to one coordinate still come out in a fixed order and the page
+    is byte-stable across builds.
+
+    Read off `histories` rather than off the entries directly, so a mention carries the same
+    anchor the provision page and the event page publish for the change that made it, and no
+    second pass counts the coordinates an event touched twice.
+    """
+    mentions = [
+        DateMention(
+            on=on, added=added, location=history.location, entry=step.entry, anchor=step.anchor
+        )
+        for history in histories(act)
+        for step in history.steps
+        for on, added in (
+            *((value, True) for value in step.change.dates_added),
+            *((value, False) for value in step.change.dates_removed),
+        )
+    ]
+    return tuple(
+        sorted(mentions, key=lambda one: (one.on, one.location.sort_key, one.anchor, one.added))
     )

@@ -3,8 +3,9 @@
 Last in the cascade, so a rule here may rely on everything before it. This is the half of the
 sheet that dresses evidence rather than navigation: the act page's header lines, its two-column
 layout and sticky index, the timeline, the change blocks and their headings, the in-page map of
-touched provisions, the dispute and applies lines, the unified diff, the verbatim blocks, the
-metrics table, and the two rules an amending instrument's page and the event pager need. Both
+touched provisions, the dispute, applies and dates lines, the act's list of the dates its text
+names, the unified diff, the verbatim blocks, the metrics table, and the two rules an amending
+instrument's page and the event pager need. Both
 of those reuse the timeline rather than inventing a second one, an instrument's page being a
 timeline per watched act it moved. A provision page's steps reuse the change block for the same
 reason: a step is one change, stated the way every other change on the site is stated, and the
@@ -104,6 +105,10 @@ EVIDENCE: Final = """\
     align-items: start;
   }
   .sidebar { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+  /* The dates list follows the timeline down the page, so it belongs in the timeline's column
+     rather than under the index: auto-placement would otherwise start it a row lower in the
+     16rem one, where a row of two links and a date does not fit. */
+  .layout > .dates-named { grid-column: 2; }
 }
 /* The rail and its nodes: an act's history is a sequence, and the heading of each entry on
    it is a date. Drawn in the sheet so the markup stays one article per event. */
@@ -209,6 +214,19 @@ a.loc { color: inherit; font-weight: 600; }
    a sentence. */
 .cites { font-size: var(--step-sm); color: var(--muted); }
 .applies { font-size: var(--step-sm); color: var(--muted); }
+/* The dates a change moved, directly under the line that says whether one of them governs the
+   provision. Set like the applies line, because the two are facts of the same rank about one
+   change, and in tabular figures so a column of ISO dates reads as a column. */
+.dates { margin: var(--space-1) 0 var(--space-2); font-size: var(--step-sm);
+         color: var(--muted); font-variant-numeric: tabular-nums; }
+/* Every date one act's text names, under its timeline. A list rather than a table: a row is a
+   date and the two places it can be checked, and columns would promise a structure the corpus
+   never wrote. The date leads each row in the mono face, so the dates scan as a column while
+   the words around them stay prose. */
+.dates-named { margin: var(--space-5) 0 0; }
+.dates-named ul { list-style: none; margin: 0; padding: 0; font-size: var(--step-sm); }
+.dates-named li { padding: .15rem 0; }
+.dates-named .on { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 /* One watched act on an amending instrument's page: its own heading, then the rail of events
    that instrument produced there. The heading carries the act, so it is set as a page heading
    rather than as a card's. */

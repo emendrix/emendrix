@@ -523,3 +523,57 @@ def test_the_applicability_note_s_citation_is_in_the_row_with_the_sentences() ->
 def test_a_change_with_nothing_cited_carries_no_citation_row() -> None:
     """An empty row would be a label with nothing under it; a diff-only entry cites nothing."""
     assert 'class="cites"' not in _page(diff_only_entry(_delta(), detected_on=OBSERVED))
+
+
+_DATES = re.compile(r'<p class="applies">[^<]*</p>\n<p class="dates">([^<]*)</p>')
+"""The dates line, captured only where it sits directly under the line it qualifies."""
+
+
+def _dated_page(**moved: object) -> str:
+    """One event page whose first change carries the dates the test hands it.
+
+    Patched onto a real change rather than built from a fixture with dates in it, because the
+    toy corpus writes no date markup at all: every change of it moves nothing, which is what
+    makes it the right input for the absent case below and the wrong one for the present case.
+    """
+    delta = _delta()
+    changes = (delta.changes[0].model_copy(update=moved), *delta.changes[1:])
+    entry = diff_only_entry(delta.model_copy(update={"changes": changes}), detected_on=OBSERVED)
+    site = _site(entry)
+    return _rendered(site, site.acts[0], site.acts[0].entries[0])
+
+
+def test_a_change_that_moved_dates_names_them_under_the_applies_line() -> None:
+    """Both clauses, in the ISO form every date on the site is printed in, added first.
+
+    Under the applies line and never above it: that line answers whether one of these dates
+    governs the provision, and this one only says which dates the text stopped and started
+    naming.
+    """
+    rendered = _dated_page(
+        dates_added=(date(2027, 12, 2), date(2028, 8, 2)), dates_removed=(date(2026, 8, 2),)
+    )
+    assert _DATES.findall(rendered) == [
+        "dates added to the text: 2027-12-02, 2028-08-02 · dates removed: 2026-08-02"
+    ]
+
+
+def test_a_change_that_moved_no_date_prints_no_dates_line() -> None:
+    """Nine hundred committed changes moved none, and a paragraph saying so on each of them
+    would be markup carrying the absence of a fact."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    assert not any(
+        emitted.change.dates_added or emitted.change.dates_removed for emitted in entry.changes
+    )
+    assert 'class="dates"' not in _page(entry)
+
+
+def test_the_dates_line_states_dates_and_never_calls_one_a_deadline() -> None:
+    """The words are the whole risk. A date in a provision's text is a fact about the text;
+    what it governs is prose nothing in this project parses, and the words for that reading
+    are the ones that may never appear here."""
+    rendered = _dated_page(dates_removed=(date(2026, 8, 2),))
+    (line,) = _DATES.findall(rendered)
+    assert line == "dates removed: 2026-08-02"
+    for word in ("deadline", "application", "applies", "obligation", "compliance"):
+        assert word not in line

@@ -376,4 +376,30 @@ every feed `<id>` with them, and no anchor or relative path already published mo
 `_LARGEST_PAGE` falls 15 bytes on the facts line and stays the MDR event page; `_HEAVIEST` and
 `_TOTAL_BYTES` do not move at all, that tree being built with no watchlist, so it has no
 domains, no kinds and no published addresses. No measured figure moved with any of it.
+
+**2026-09-04, the dates the amended text names are printed, per change and per act.** Twelve
+files moved and none was added. Each of the MDR event page's nine change blocks gained one
+`<p class="dates">` under its applies line, naming the machine-readable dates that change added
+to the text and the ones it dropped, in the ISO form every date on the site is printed in; the
+nine provision pages each gained the same line on their one step, the newest and only one they
+have. The words are the whole of the care taken here: the line says which dates the text names
+and says nothing about what any of them governs, because reading a date out of a provision as
+the day an obligation begins is the inference the two clocks rule forbids, and the applies line
+directly above it is the one line that answers that question at all. The six `DEFERRED` changes
+are the useful check: each names exactly one added date and it is the date its applies line
+already carried, which is what `DEFERRED` means. The MDR act page gained the section listing
+all nineteen mentions, sorted by the date rather than by the event, each row linking the
+provision's own page and the change block that moved it, and folded behind a `<details>` because
+nineteen is above the twelve rows the section shows open; its index gained the link to it. The
+lede over that list is two sentences of disclaimer and one of description, and no word in the
+new markup calls a date a deadline, an application date or an obligation. `style.css` grew from
+20 760 to 22 056 bytes for the two blocks of rules and the one grid line that keeps the section
+in the timeline's column; no hex value moved, both new rules use `--muted`, already measured on
+every surface it sits on, so both contrast tables are unchanged. Both feeds, `sitemap.xml`,
+`search-index.json`, `robots.txt`, `search.js`, `icon.svg` and `og.png` are byte-identical,
+every feed `<id>` with them, and no anchor or relative path already published moved.
+`_LARGEST_PAGE` rises 769 bytes on the nine new lines and stays the MDR event page; `_HEAVIEST`
+and `_TOTAL_BYTES` do not move at all, no change in that generated tree carrying a date. Nothing
+under `diff/` moved, the dates being read off the committed documents exactly as they were
+written, and no measured figure moved with any of it.
 """

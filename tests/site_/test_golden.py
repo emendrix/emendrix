@@ -184,7 +184,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 41068)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 41837)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -266,7 +266,14 @@ items carry a weight class as well, and the count line above them gained the eve
 This is the most expensive markup per change the page has ever gained, and it is spent on the
 one fact the type pill cannot carry: six of these nine changes are date moves of 4 to 50
 characters and three are prose, which a reader could previously tell apart only by opening
-nine `<details>`. Nothing inside one moved and no anchor did."""
+nine `<details>`. Nothing inside one moved and no anchor did.
+
+769 bytes heavier on 2026-09-04, when every change whose text moved a machine-readable date
+started printing those dates under its applies line. All nine of this event's changes moved
+one, so the page pays nine paragraphs of about 85 bytes: this is the postponement, and the
+dates are the whole of what it did. The line is a fact about the text and never a schedule,
+which is the wording `pages/prose.py` holds and the act page's own list repeats at length. No
+measured figure moved with it; nothing inside a `<details>` and no anchor moved."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

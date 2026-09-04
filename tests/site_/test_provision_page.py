@@ -313,3 +313,25 @@ def test_only_the_step_showing_its_evidence_says_how_much_moved() -> None:
     assert len(magnitudes) == 1
     assert magnitude_html(newest) in magnitudes[0]
     assert magnitudes[0].index('<span class="pill') < magnitudes[0].index('<span class="mag"')
+
+
+def test_a_step_carries_the_dates_its_own_change_moved() -> None:
+    """The same line the event page prints under the same applies line, from the one renderer
+    both pages read: a change stated two ways on its two pages is the thing that module exists
+    to prevent. The toy corpus writes no date markup, so the dates are patched onto a real
+    change and every other step of the page still carries none."""
+    delta = _delta()
+    changes = (
+        delta.changes[0].model_copy(update={"dates_added": (date(2027, 12, 2),)}),
+        *delta.changes[1:],
+    )
+    entry = diff_only_entry(delta.model_copy(update={"changes": changes}), detected_on=OBSERVED)
+    site = _site(entry)
+    act = site.acts[0]
+    moved = next(one for one in histories(act) if one.location.canonical == "AR 2")
+    rendered = _render(site, act, moved)
+    ((_, body),) = _STEPS.findall(rendered)
+    assert '<p class="dates">dates added to the text: 2027-12-02</p>' in body
+    assert body.index('<p class="applies">') < body.index('<p class="dates">')
+    untouched = next(one for one in histories(act) if one.location.canonical == "AN I")
+    assert 'class="dates"' not in _render(site, act, untouched)

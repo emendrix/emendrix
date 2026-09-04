@@ -6,7 +6,7 @@ where what stays behind renders *one event*: its opening, its facts, its index a
 each change sits in. An event page and a provision page both show a change, and both read this
 module, which is what stops one change being stated two ways on the two pages that hold it.
 
-Two promises live here:
+Three promises live here:
 
 - **The gate's.** A sentence a model composed and a sentence the gate lifted verbatim out of
   the legal text are different kinds of claim, so the second carries the changelog's own
@@ -19,23 +19,36 @@ Two promises live here:
   decision and nothing below it moves: the JSON and the Markdown keep every citation on the
   sentence that carries it, which is the form the citation gate resolves and the eval harness
   counts, and a reader who wants that mapping has the committed entry.
+- **A date the text names is stated as one.** The dates a change added and dropped are printed
+  under the applies-from line, which is the one line on the block that says whether a date
+  governs anything. Nothing here calls a date a deadline, an application date or an obligation:
+  the parser read them off the source's own date markup and the site says exactly that.
 """
 
 from __future__ import annotations
 
-from emendrix.core import ChangeType, Citation
+from emendrix.core import Change, ChangeType, Citation
 from emendrix.graph.report import EmittedChange, EmittedSentence
 from emendrix.output import ChangelogEntry
 from emendrix.output.markdown import FALLBACK_PREFIX, short_label
 from emendrix.site_.markup import Html, escape, join
 
-__all__ = ["citation_links", "permalink", "pill", "prose", "sentence"]
+__all__ = ["citation_links", "dates_line", "permalink", "pill", "prose", "sentence"]
 
 _PERMALINK_NAME = "Link to this change"
 """The permalink's accessible name. `§` is a symbol and never a name a screen reader can read."""
 
 _CITED_LEAD = "Cited:"
 """What the row of links is, said in one word, so a row of coordinates is not read as prose."""
+
+_ADDED_LEAD = "dates added to the text"
+_REMOVED_LEAD = "dates removed"
+"""The two clauses of the dates line, added first, because the question is what the text says now.
+
+The changelog states the same two tuples in one compact field, `*dates* -2020-05-26
++2021-05-26`, under the same word: a line of Markdown has one line to say it in, and a page has
+room to say which tuple is which.
+"""
 
 
 def pill(change_type: ChangeType, *, disputed: bool = False) -> Html:
@@ -148,3 +161,29 @@ def prose(emitted: EmittedChange, entry: ChangelogEntry) -> list[Html]:
             Html(f'<p class="cites">{escape(_CITED_LEAD)} {citation_links(cited, entry)}</p>')
         )
     return lines
+
+
+def dates_line(change: Change) -> Html | None:
+    """`dates added to the text: 2027-12-02, 2028-08-02 · dates removed: 2026-08-02`.
+
+    The machine-readable dates that moved, as the parser read them off the source's own date
+    markup. Whether any of them is the date the provision applies from is the applies line's
+    question, answered above this one and never here.
+
+    `None` where neither tuple holds anything, which is most changes: a paragraph saying that
+    no date moved would be a line on every block to carry a fact about nine hundred of them.
+
+    The dates are printed in the order the change carries them, which the diff sorted, and in
+    the ISO form every date on the site is printed in.
+    """
+    clauses = [
+        f"{label}: {', '.join(value.isoformat() for value in dates)}"
+        for label, dates in (
+            (_ADDED_LEAD, change.dates_added),
+            (_REMOVED_LEAD, change.dates_removed),
+        )
+        if dates
+    ]
+    if not clauses:
+        return None
+    return Html(f'<p class="dates">{escape(" · ".join(clauses))}</p>')

@@ -40,7 +40,7 @@ from emendrix.site_.history import ProvisionHistory, ProvisionStep
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, count, escape, join
-from emendrix.site_.pages.prose import permalink, pill, prose
+from emendrix.site_.pages.prose import dates_line, permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import provision_json_ld
 from emendrix.site_.titles import SUFFIX
@@ -116,6 +116,10 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     reason: the count is measured on a rendered comparison, and an older step's comparison is
     rendered on the event page, which is where that step's count is printed.
 
+    The dates line sits under the applies line, in the order and for the reason a change block
+    on the event page carries the two: which dates the step moved is a different question from
+    whether one of them is the date the provision applies from.
+
     The heading closes with the same permalink a change block carries on its event page, and
     on the same anchor, so one change can be handed to somebody from either view of it.
     """
@@ -137,6 +141,9 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     lines.append(
         Html(f'<p class="applies">applies from {escape(applies_text(change.applies_from))}</p>')
     )
+    dates = dates_line(change)
+    if dates is not None:
+        lines.append(dates)
     if change.disputed:
         note = dispute_note(change.signals)
         lines.append(
