@@ -145,6 +145,30 @@ Named rather than discovered later; the eval report's disagreement list is the l
   re-record is unknown and left unanswered on purpose: a failed exchange is never recorded, a
   cassette holds only a well-formed answer, and answering would cost a recording about a question
   no published figure depends on.
+- **A provider that never answered leaves the entry unfinished, since 2026-09-04.** The kind
+  above settles a change: the model answered and the answer was unusable, which is a fact about
+  that change. A refused or unreachable provider is not, and until this date it was counted the
+  same way. That mattered because `backfill.emitted` resumes on the payload file existing, so an
+  installation whose provider credit ran out mid-run published the gap once and then skipped past
+  it on every later run. `provider_unavailable` is now its own counted kind, reaching the payload
+  as `unexplained_kind`, and `OutputRepo.holds_finished` reads the file rather than only looking
+  for it, so a later backfill completes what an interrupted one left. An unrecognised HTTP status
+  settles the change rather than marking it unfinished, because settling one wrongly costs a
+  thinner entry once while the other way costs a re-run on every backfill for ever; an unreadable
+  payload settles for the same reason. Entries written before this date carry no such field and
+  read as finished, which is correct: nothing structural separates them from older entries whose
+  reasons predate any counter, so clearing them is a one-off rather than something this can infer.
+  Measured 2026-09-04 over the public changelog: 43 entries, 176 changes across four chemicals
+  acts, carry a provider refusal that no later run would ever have revisited.
+- **The schema-repair budget is two attempts since 2026-09-04, and was one before.** Measured the
+  same day over the 5 336 changes the public changelog then held, 90 shipped with no explanation
+  because the budget ran out, 2.8% of the 3 213 that reached the model. The character counts of
+  the failed and the explained changes overlap heavily and the largest act sits on the base rate,
+  so the failure reads as stochastic rather than as a property of a change, and a second attempt
+  is cheaper than the gap it prevents: a repair costs one request, a failure costs the whole call
+  and returns nothing. Re-running those 90 was considered and rejected. The unit a re-run replaces
+  is a whole transition, so recovering them would re-explain 1 979 changes to fix 90, and because
+  the model is not deterministic it would rewrite 1 889 explanations that are already correct.
 - **Explanations can still outrun their evidence, and the shape of it has changed.** The hand
   review of 2026-08-08 over the prose that shipped then marked 3 of 20 entries unfaithful at the
   truncation marker. That count was published as one class and it was three different things, and
