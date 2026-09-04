@@ -221,6 +221,12 @@ reviewed still matches: re-recording a cassette, re-pinning the subset or a chan
 the model at all sends the published string back to `pending` on its own, which is what the most
 recent re-record did to the review before this one, and what widening the evidence base did to the
 one before that, since the header the worksheet quotes is part of the digest. There is no override.
+That is where the published string stands as of the report of 2026-09-04: re-recording four of
+the subset's prompts on 2026-09-01 moved the sample the sign-off of 2026-08-13 was written
+against, so the review lapsed on its own and twenty triples are owed a reading before any
+hand-reviewed rate is published again. That reading of 17 of 20 stands as a reading of the
+sample it covered, the judged rate beside it is unchanged at 0.800, and no sheet was ticked, no
+sign-off back-dated and no verdict re-scored to avoid the lapse.
 `uv run emendrix eval sample-digest` prints the digest and the entries the next review has to
 cover.
 

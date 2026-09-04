@@ -53,7 +53,7 @@ class Floors(BaseModel):
 
 
 FLOORS: Final = Floors(
-    source="reports/eval/2026-08-13-ea13042.md",
+    source="reports/eval/2026-09-04-984347f.md",
     # Recall is the number that matters most: across every transition traced since 2026-08-05 the
     # structural diff has missed exactly the provisions the two location vocabularies spell
     # differently (`AN 4` vs `AN IV`, that report's known-class 3) and no others. Micro precision
@@ -75,6 +75,16 @@ FLOORS: Final = Floors(
     # the report of 2026-08-13, which scores the same recording and differs only in publishing a
     # transcribed hand review. There is one report per date, because a second report of one date
     # is a re-score of the same corpus rather than a second measurement of it.
+    #
+    # It moved a third time on 2026-09-04, to a report that scores 101 changes where the previous
+    # source scored 104, and again no floor value moved with it. An amending article carrying no
+    # `LIST` had its own heading read as the provision its instruction named, so the third signal
+    # claimed the amending act's article numbers rather than the amended act's. Nothing floored
+    # here consults that signal: localisation pairs the structural diff against the metadata and
+    # never reads the instruction parse, and classification is computed over the units those same
+    # two signals both named. Neither the disputed rate nor either instruction pairing is floored
+    # at all, deliberately, because the instruction parse is a measured cross-check rather than a
+    # reference set, which is why the largest movement of that day is absent from this list.
     localisation_micro_f1=0.963,
     localisation_micro_recall=0.975,
     localisation_macro_f1=0.915,
@@ -118,7 +128,7 @@ class ModelFloors(BaseModel):
 
 
 MODEL_FLOORS: Final = ModelFloors(
-    source="reports/eval/2026-08-13-ea13042.md",
+    source="reports/eval/2026-09-04-984347f.md",
     subset_changes=55,
     # Measured over the cassettes recorded on 2026-08-12 against
     # `openrouter:anthropic/claude-sonnet-5`, at the 40 000-character prompt cap. All 55 of them
@@ -130,6 +140,13 @@ MODEL_FLOORS: Final = ModelFloors(
     # 2026-08-12 offered 184. Those key counts are not one measurement moving. Each counts the
     # keys one recording's prose happened to cite, and the three recordings were given
     # differently formed evidence.
+    #
+    # Four of those 55 were re-recorded on 2026-09-01, when stored text stopped joining a
+    # footnote to the sentence it interrupts and their prompts changed key. `source` follows that
+    # recording from 2026-09-04 and no floored figure moved with it: grounding, fallback, the
+    # missing-unit count and the judged 20 read exactly as before. What did move is not floored
+    # and is a count of one recording rather than a rate: 7 schema repairs where the earlier
+    # recording needed 9, over 365 757 in / 20 198 out tokens where it used 404 846 / 20 998.
     #
     # Every change of the subset reaches the model at this cap. The explain stage still refuses a
     # prompt a cap has left with two identical texts, and at 40 000 characters no subset change is

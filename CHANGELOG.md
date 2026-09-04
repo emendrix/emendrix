@@ -127,6 +127,38 @@ Named rather than discovered later; the eval report's disagreement list is the l
   Changelogs already published keep the text they were written with and are corrected forward, not
   rewritten: measured 2026-09-01 over 369 committed change files of an output repository, 246
   carry a run of this class.
+- **An amending article's own heading was read as the provision it points at, and no longer is.**
+  Where an amending act states an instruction in prose instead of in a list, the instruction parser
+  built the clause from the whole `ARTICLE` element, heading included, so the reference grammar met
+  the amending act's own article number before the provision the sentence pointed at and read the
+  first as the second. Since 2026-09-04 `TI.ART` and `STI.ART` are excluded from a clause beside
+  the enumerator and the quoted text that were already there, and the clause is the instruction's
+  own words. `source_ref` is untouched: it names the amending article the claim came from, which is
+  provenance and was always right. Measured 2026-09-04 over the public changelog, every one of the
+  82 claims that path has ever produced carried the amending act's article number, 81 of them
+  naming a unit no other signal saw, 8 of them naming an article number larger than the amended act
+  has articles; they land in 79 committed changelogs across 44 acts. Changelogs already published
+  keep the text they were written with and are corrected forward, not rewritten, which is the
+  posture the 2026-09-01 fix above took, so a page served today may still show a phantom unit. Over
+  the committed corpus, scored offline from the fixtures, the disputed rate reads 13 of 101 changes
+  (0.129) where it read 17 of 104 (0.163), `metadata_only_units` reads 3 where it read 6, the
+  structural diff against the instruction parse reads P 0.917 / R 0.985 / F1 0.950 and macro F1
+  0.531 over 13 transitions where it read P 0.875 / R 0.940 / F1 0.906 and macro F1 0.378, and the
+  metadata against the instruction parse reads P 0.889 / R 0.955 / F1 0.921 and macro F1 0.455
+  where it read the same four figures as the pairing above it. **Neither set is the other
+  improved.** Three of the 104 were phantom units and were never changes at all, so the denominator
+  differs, and the third signal now reads the amended act's article numbers where it read the
+  amending act's, so the right-hand side of every pairing it enters is a different set of claims;
+  the question each figure asks is unchanged. Both sets are published under their own dates, in
+  `reports/eval/2026-08-13-ea13042.md` and `reports/eval/2026-09-04-984347f.md`, and neither is
+  adjusted for the other. Localisation does not move in any component, pairing the structural diff
+  against the metadata and never consulting the instruction parse; classification, the case count,
+  `instruction_unread` and both parser counters do not move, and neither does the flagship, so no
+  committed floor moved and only the two `source` strings did. What this does not fix is that an
+  article on that path still yields one claim for the whole article: every alinea and paragraph is
+  flattened into one string and one record is written from it, so an article stating two or three
+  amendments in prose names at most one of them, and a collapsed instruction leaves nothing behind
+  to count. `docs/limitations.md` carries that as the named gap it is.
 - **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
   cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
   rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure

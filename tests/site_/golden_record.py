@@ -417,4 +417,29 @@ that day where the origin held 22 056, so a name that moves with the content is 
 page and its assets always come from one build. `_LARGEST_PAGE` rises 18 bytes and stays the
 MDR event page; `_HEAVIEST` rises the same 18 and `_TOTAL_BYTES` 10 836, eighteen on each of
 that tree's 602 pages. No measured figure moved with it.
+
+**2026-09-04, the corpus re-scored after an amending article's heading stopped being read as a
+provision.** Two files moved and none was added: `methodology/index.html`, whose metrics table
+and provenance line follow the newest committed report, and that page's `lastmod` in
+`sitemap.xml`. Measured figures moved with them, which is rare here and is the reason to read
+this entry rather than skim it. The instruction-parse cross-check reads P 0.917 / R 0.985 /
+F1 0.950 over 13 transitions where it read P 0.875 / R 0.940 / F1 0.906, and the disputed rate
+reads 0.129 over 101 changes where it read 0.163 over 104. **Neither pair is one number
+improved.** A prose-only amending article had its own heading read as the provision its
+instruction pointed at, so the third signal was claiming the amending act's article numbers
+rather than the amended act's; three of the 104 existed only because of that and were never
+changes at all. The denominator differs and the right-hand side of the pairing is a different
+set of claims, while the question each figure asks is unchanged, and neither reading is adjusted
+for the other. The localisation row did not move in any component, which is why `index.html` is
+byte-identical: it pairs the structural diff against the metadata and never reads the
+instruction parse. The spot-review cell reads `pending` where it named a reviewer and a date,
+because the sign-off of 2026-08-13 stopped matching its sample when four subset prompts were
+re-recorded on 2026-09-01, and this is the first report published since. The judged rate beside
+it is unchanged at 0.800, no sheet was ticked and no verdict was re-scored; twenty triples are
+owed a reading before any hand-reviewed rate is published again. Every other page, both feeds,
+`search-index.json`, `robots.txt`, `style.031c3956.css`, `search.622da217.js`, `icon.svg` and
+`og.png` are byte-identical, every feed `<id>` with them, and no anchor or relative path moved.
+None of the three pinned sizes moves: the two at-scale pins are measured over a generated tree of
+act, event and provision pages that carries no methodology page at all, and `_LARGEST_PAGE` is
+the MDR event page, which did not move.
 """
