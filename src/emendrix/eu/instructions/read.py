@@ -62,8 +62,10 @@ _INSTRUCTION_HINT: Final = re.compile(
 """What makes a clause *look like* an instruction. A clause that looks like one and yields no
 record is an unread instruction and is counted; a clause that does not is simply not one."""
 
-_CLAUSE_SKIPPED: Final = frozenset({"NO.P", "LIST", "QUOT.S"})
-"""Excluded from a clause: its enumerator, its sub-instructions, and the text it quotes."""
+_CLAUSE_SKIPPED: Final = frozenset({"NO.P", "LIST", "QUOT.S", "TI.ART", "STI.ART"})
+"""Excluded from a clause: its heading, its enumerator, its sub-instructions, and the text it
+quotes. The heading carries the amending article's own number, and the reference grammar keeps
+only the first coordinate at each depth, so a heading left in speaks before the instruction does."""
 
 _QUOTED_TAGS: Final = frozenset({"ARTICLE", "PARAG", "INCL.ELEMENT"})
 

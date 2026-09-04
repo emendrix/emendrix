@@ -1,6 +1,6 @@
 """The third signal: the amending act's own instructions, and the reference grammar under it.
 
-What the structure-aware parser reaches on the two amending acts the fixture set contains,
+What the structure-aware parser reaches on the amending acts the fixture set contains, first
 measured 2026-08-06. Reading the clauses alone misses every insertion, because EU drafting
 writes "the following Article is inserted:" without the number; the identifiers are in the
 quoted markup, which is why the parser reads structure rather than prose.
@@ -24,7 +24,17 @@ from emendrix.eu.instructions import (
     parse_instructions,
 )
 from emendrix.eu.references import parse_reference, resolve
-from eu_pins import AI_ACT, DIGITAL_OMNIBUS, MDR, MDR_ANNEX_AMENDER, MDR_POSTPONEMENT, package
+from eu_pins import (
+    AI_ACT,
+    DIGITAL_OMNIBUS,
+    MDR,
+    MDR_2023_AMENDER,
+    MDR_ANNEX_AMENDER,
+    MDR_POSTPONEMENT,
+    REACH,
+    REACH_2008_AMENDER,
+    package,
+)
 
 INSERTED_UNITS = ("AR 4a", "AR 60a", "AR 75a", "AR 75b", "AR 75c", "AR 75d", "AN XIV")
 """What `32026R1744` creates. Six articles and one annex, none of them named in prose."""
@@ -47,6 +57,16 @@ def postponement(client: CellarClient) -> InstructionParse:
 @pytest.fixture
 def annex_amender(client: CellarClient) -> InstructionParse:
     return parse_instructions(package(client, MDR_ANNEX_AMENDER, MDR_ANNEX_AMENDER))
+
+
+@pytest.fixture
+def mdr_2023(client: CellarClient) -> InstructionParse:
+    return parse_instructions(package(client, MDR_2023_AMENDER, MDR_2023_AMENDER))
+
+
+@pytest.fixture
+def reach_2008(client: CellarClient) -> InstructionParse:
+    return parse_instructions(package(client, REACH_2008_AMENDER, REACH_2008_AMENDER))
 
 
 # ------------------------------------------------------------------- the flagship
@@ -179,6 +199,54 @@ def test_a_reference_written_innermost_first_still_orders_outermost_first(
     """ "in point (h) of Section 5.1 of Annex IX": the *of* chain runs the other way."""
     found = {record.location.canonical for record in postponement.records}
     assert "AN IX SCT 5.1 PTA (h)" in found
+
+
+# ------------------------------------------------- the articles that carry no list
+
+
+def test_an_article_without_a_list_reads_the_provision_its_prose_names(
+    mdr_2023: InstructionParse,
+) -> None:
+    """`32023R0502` states its one instruction in prose, so the whole article is the clause.
+
+    The clause is the instruction's own words and nothing else: read on 2026-09-04, the record
+    names `AR 44` of the MDR, the unit the structural diff and the annotations both name. Its
+    `source_ref` stays the bare `AR 001`, which is provenance rather than a coordinate: it says
+    which article of the amending act drafted the instruction, and that is Article 1.
+    """
+    records = mdr_2023.for_act(act(MDR))
+    assert [record.unit.canonical for record in records] == ["AR 44"]
+    assert [record.source_ref for record in records] == ["AR 001"]
+    assert [unit.canonical for unit in mdr_2023.units(act(MDR))] == ["AR 44"]
+
+
+def test_the_amending_acts_own_heading_is_not_a_provision_reference(
+    reach_2008: InstructionParse,
+) -> None:
+    """An article heading names the amending act's own number, never the amended act's.
+
+    `32008R0987` states both of its instructions in prose. Until 2026-09-04 the heading survived
+    into the clause, and because the reference grammar keeps only the first coordinate at each
+    depth, "Article 1" and "Article 2" spoke before "Annex IV" and "Annex V" could: the claims
+    came out as `AR 1` and `AR 2`, coordinates no other signal on that transition named.
+    """
+    assert {unit.canonical for unit in reach_2008.units(act(REACH))} == {"AN IV", "AN V"}
+    located = {record.location.canonical for record in reach_2008.records}
+    assert not located & {"AR 1", "AR 2"}
+
+
+def test_a_hybrid_claim_keeps_its_deeper_coordinates_under_the_right_article(
+    mdr_2023: InstructionParse,
+) -> None:
+    """The deeper coordinates were always read off the real sentence; only the article was wrong.
+
+    `32023R0502` Article 1 amends Article 44(10) of the MDR, and until 2026-09-04 the claim read
+    `AR 1 PA 10`: the paragraph came off the instruction, the article off the heading above it.
+    A claim of that shape is the more misleading of the two the leak produced, because it looks
+    like a precise reading. The paragraph must survive the correction rather than go with it.
+    """
+    records = mdr_2023.for_act(act(MDR))
+    assert [record.location.canonical for record in records] == ["AR 44 PA 10"]
 
 
 # ------------------------------------------------------------- the reference grammar

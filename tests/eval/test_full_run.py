@@ -155,7 +155,18 @@ def test_the_corrigendum_consolidation_scores_nothing_and_stays_in(run: EvalRun)
 
 
 def test_the_annex_numbering_mismatch_is_published_not_hidden(run: EvalRun) -> None:
-    """`AN 4`/`AN 5` in a legacy notice against `AN IV`/`AN V` in the markup: 0 shared units."""
+    """`AN 4`/`AN 5` in a legacy notice against `AN IV`/`AN V` in the markup: 0 shared units.
+
+    The vocabulary disagreement is the point of the case and is untouched. Two signals name the
+    same two annexes in two spellings, neither shares a unit with the other, and all four
+    coordinates ship disputed rather than being reconciled by a table of equivalent numerals.
+
+    What left this transition on 2026-09-04 is two phantoms beside them. `32008R0987` states
+    both of its instructions in prose with no list, so the whole article was the clause and its
+    own heading was read as the provision the prose pointed at: the claims came out `AR 1` and
+    `AR 2`, coordinates neither of the other two signals named. They now read `AN IV` and
+    `AN V`, which is where the structural diff already was.
+    """
     case = next(item for item in run.cases if item.case_id == "32006R1907@20081012")
     assert case.agreement(Signal.STRUCTURAL_DIFF, Signal.CORPUS_METADATA) == (2, 2, 0)
     assert case.report is not None
@@ -164,7 +175,19 @@ def test_the_annex_numbering_mismatch_is_published_not_hidden(run: EvalRun) -> N
 
 
 def test_nothing_is_dropped_across_the_whole_corpus(run: EvalRun) -> None:
-    """17 disputed of 104 changes, and every one of them ships.
+    """13 disputed of 101 changes, and every one of them ships.
+
+    Until 2026-09-04 this read 17 of 104, with `(4, 6)` for the two unit counts: an amending
+    article that states its instruction in prose rather than in a list had its own heading read
+    as the provision the instruction pointed at, because the reference grammar keeps the first
+    coordinate at each depth and the article title got there first. `32006R1907@20081012`
+    shipped phantom `AR 1` and `AR 2` claims where its amender's prose names Annexes IV and V;
+    `32017R0745@20230311` shipped a phantom `AR 1` and left its real `AR 44` disputed for want
+    of the third confirmation it should have had. **13 of 101 is not 17 of 104 improved.** Three
+    of the 104 were never changes at all, so the denominator is a different one, and the third
+    signal now reads the amended act's article numbers where it read the amending act's, so the
+    right-hand side of every pairing it takes part in is a different set of claims. The question
+    is unchanged; the claims are not.
 
     Until 2026-08-12 this read 32 of 104: a metadata signal handed no annotations at all was
     reported as available, so every unit the diff found in an unannotated window resolved to
@@ -180,9 +203,9 @@ def test_nothing_is_dropped_across_the_whole_corpus(run: EvalRun) -> None:
     beside the `AN I` unit every other signal used. That shipped four phantom units and five
     false disputes on `32017R0745@20260101`, which now agrees three ways.
     """
-    assert (run.metrics.changes, run.metrics.disputed) == (104, 17)
-    assert (run.metrics.diff_only_units, run.metrics.metadata_only_units) == (4, 6)
-    assert sum(len(case.report.disagreements) for case in run.cases if case.report) == 17
+    assert (run.metrics.changes, run.metrics.disputed) == (101, 13)
+    assert (run.metrics.diff_only_units, run.metrics.metadata_only_units) == (4, 3)
+    assert sum(len(case.report.disagreements) for case in run.cases if case.report) == 13
 
 
 def test_the_parser_accounts_for_every_element_it_read(run: EvalRun) -> None:
@@ -266,8 +289,18 @@ def test_the_committed_floors_are_cleared(run: EvalRun) -> None:
 
 
 def test_the_third_signal_publishes_its_own_coverage(run: EvalRun) -> None:
-    """Read on 13 of 18 windows; the rest name several amending acts, and say so."""
+    """Read on 13 of 18 windows; the rest name several amending acts, and say so.
+
+    The six unread instructions are one shape: a REACH annex amender whose article delegates the
+    work to its own annex ("Annex XVII to Regulation (EC) No 1907/2006 is amended in accordance
+    with the Annex to this Regulation"), which states no instruction verb and so describes no
+    change to read. A gap in a cross-check is counted, never approximated. The six did not move
+    on 2026-09-04, when an amending article's own heading stopped being read as the provision
+    its instruction points at: that changed which location a clause resolves to, not whether the
+    clause states an instruction at all.
+    """
     assert run.metrics.instruction_cases == 13
+    assert run.metrics.instruction_unread == 6
     silent = [case for case in run.cases if case.instruction_coverage is None]
     assert len(silent) == 5
     assert all(case.instruction_note for case in silent)

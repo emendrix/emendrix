@@ -35,6 +35,16 @@ the text" is one annotation and dozens of touched provisions. Precision against 
 collapses and the diff is the one that is right. Those units are counted as their own class, not
 as false positives, and the transitions stay in the corpus.
 
+**An amending article that states its instructions in prose contributes one claim.** The
+instruction parser reads a list item at a time where the drafting uses a list, and where it does
+not, the whole article is a single clause: every alinea and paragraph of it is flattened into one
+string and one record is written from that, keyed on the first coordinate at each depth found
+anywhere in the merged text. An article stating two or three amendments in prose therefore names
+at most one of them. This is not measurable from the published record, because a collapsed
+instruction leaves nothing behind to count: there is no second claim missing from a total anybody
+can recompute. The third signal is a measured cross-check rather than ground truth, which is the
+standing reason a gap in it is counted and stated rather than approximated.
+
 **`applies_from` is `unknown` far more often than not.** The dates are machine-tagged but the
 binding that says which provision they govern is prose. It is populated only when the change
 itself moves a date in the act's own application article; otherwise the answer is `unknown`, with

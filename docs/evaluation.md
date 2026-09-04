@@ -67,7 +67,7 @@ without the sentence that says what it does not mean.
 comments. It is generated, and there is one of it: a second copy here would be a hand-typed number
 with nothing regenerating it, which is the failure this project exists to avoid.
 
-Corpus coverage is **18 of the 70 transitions the four acts offer**, and 104 changes ship, 17 of
+Corpus coverage is **18 of the 70 transitions the four acts offer**, and 101 changes ship, 13 of
 them marked `disputed`.
 
 What those numbers do *not* mean is written into the report itself, in fixed text that does not
@@ -78,9 +78,14 @@ the corrigendum consolidation, does not enter the pairing at all: nobody annotat
 so there is no reference set to score against and the transition contributes neither units nor a
 score. Until 2026-08-12 it was scored as a reference set that contradicted every unit the diff
 found, and **the localisation and disputed figures before and after that date are not
-comparable**, because one is computed over a denominator the other does not have. Those
-transitions all stay in the corpus, their disagreements are printed verbatim, and the units only
-the diff found are counted as their own class rather than as errors.
+comparable**, because one is computed over a denominator the other does not have. The disputed
+figure moved again on 2026-09-04, when an amending article's own heading stopped being read as
+the provision its instruction points at, and the two readings are not comparable either: three of
+the changes counted before that date existed only because a claim named the amending act's own
+article number, so the denominator differs, and the third signal now reads the amended act's
+article numbers where it read the amending act's. Those transitions all stay in the corpus, their
+disagreements are printed verbatim, and the units only the diff found are counted as their own
+class rather than as errors.
 
 ```bash
 uv run emendrix eval run --fixture-dir tests/fixtures/eu   # offline, what CI runs on every push

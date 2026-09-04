@@ -31,7 +31,11 @@ MDR_POSTPONEMENT = "32020R0561"
 MDR_ANNEX_AMENDER = "32025R2457"
 """Amends MDR Annex I through an article lead-in that names the annex once, with the list items
 drafted relative to it: the scope the instruction parser must carry down (read 2026-08-11)."""
+MDR_2023_AMENDER = "32023R0502"
+"""The MDR's 2023 amender. One instruction article, stated in prose with no `LIST`."""
 REACH = "32006R1907"
+REACH_2008_AMENDER = "32008R0987"
+"""REACH's 2007→2008 amender. Both of its instruction articles are prose, with no `LIST`."""
 CLP = "32008R1272"
 """REACH's 2008→2009 amender. Its own Formex is 3.3 MB and is deliberately not pinned."""
 
