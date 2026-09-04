@@ -194,7 +194,7 @@ def test_every_step_states_its_date_its_kind_and_when_it_applies() -> None:
     found = _STEPS.findall(rendered)
     assert [anchor for anchor, _ in found] == [step.anchor for step in history.steps]
     for _, block in found:
-        assert '<p class="applies">applies from' in block
+        assert '<p class="applies">applies from: ' in block
         assert '<span class="pill' in block
         assert "in force" in block or "detected" in block
 

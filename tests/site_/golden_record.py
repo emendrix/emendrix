@@ -442,4 +442,34 @@ owed a reading before any hand-reviewed rate is published again. Every other pag
 None of the three pinned sizes moves: the two at-scale pins are measured over a generated tree of
 act, event and provision pages that carries no methodology page at all, and `_LARGEST_PAGE` is
 the MDR event page, which did not move.
+
+**2026-09-05, the applies line is labelled, and a date it can name is set apart from the two
+non-answers it can name instead.** Twenty-three files moved: twenty-two pages and the
+stylesheet, which is committed under a new digest as `style.88e068bb.css`. The line reads
+`applies from: <value>` where it read `applies from <value>`, because only one of the three
+values that share it is a date: without the colon the label opens a sentence that `unchanged`
+and `unknown` cannot finish, so two readings in three were broken English while the third read
+fine. The colon is what the committed Markdown and the CLI have always printed, so the three
+surfaces now say one thing, and no committed changelog moved, `output/markdown.py` being
+untouched. A real date is now wrapped in a `<span class="date">` and nothing else is, which is
+the whole of the visual change: the stylesheet lifts that span out of the muted colour and sets
+it in tabular figures, and the two stated non-answers keep the muted colour and recede. No hue
+is spent on the distinction, `--fg` on `--bg` being the body pair already measured in both
+schemes, so both contrast tables are unchanged and no hex value moved. **The line is still on
+every change block without exception**, which is the point of styling the difference rather
+than hiding it: `ApplicabilityUnknown` is a value that reaches the output, and a block that
+simply omitted the line would leave the question to the reader, whose own fill-in is the
+inference the two clocks rule forbids. Ten pages moved by their applies lines, the MDR event
+page and its nine provision pages; the other twelve moved by their `<link rel="stylesheet">`
+alone, and nothing else on any page moved, not an `id`, an anchor, a relative path or a word.
+`style.css` grew from 22 056 to 22 486 bytes for the one rule and the comment saying why the
+distinction costs no colour. Both feeds, `sitemap.xml`, `search-index.json`, `robots.txt`,
+`search.622da217.js`, `icon.svg` and `og.png` are byte-identical, every feed `<id>` with them.
+`_LARGEST_PAGE` rises 165 bytes and stays the MDR event page, nine colons and six spans at 26
+bytes each; `_HEAVIEST` does not move, its page being a timeline of cards with no change block
+on it; `_TOTAL_BYTES` rises 1600, one byte on each of that generated tree's 1600 applies lines
+and not a span among them, no change in it carrying a date. The golden tree holds no
+`unchanged` line at all, every MDR change having either deferred or been left unknown, so that
+third shape is pinned in `test_event_page.py` against the toy corpus instead, which writes no
+date markup and so moves no date on any change. No measured figure moved with any of it.
 """

@@ -95,7 +95,7 @@ def test_every_change_opens_with_a_heading_and_the_applies_line_stays_outside_it
     rendered = _page(entry)
     assert rendered.count("<h3>") == len(entry.changes)
     assert rendered.count('<div class="chg"') == len(entry.changes)
-    assert rendered.count('<p class="applies">applies from ') == len(entry.changes)
+    assert rendered.count('<p class="applies">applies from: ') == len(entry.changes)
     for emitted in entry.changes:
         change = emitted.change
         slug = location_slug(change.location.canonical)

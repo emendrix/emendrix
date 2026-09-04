@@ -27,19 +27,32 @@ Three promises live here:
 
 from __future__ import annotations
 
+from datetime import date
+
 from emendrix.core import Change, ChangeType, Citation
 from emendrix.graph.report import EmittedChange, EmittedSentence
 from emendrix.output import ChangelogEntry
-from emendrix.output.markdown import FALLBACK_PREFIX, short_label
+from emendrix.output.markdown import FALLBACK_PREFIX, applies_text, short_label
 from emendrix.site_.markup import Html, escape, join
 
-__all__ = ["citation_links", "dates_line", "permalink", "pill", "prose", "sentence"]
+__all__ = [
+    "applies_line",
+    "citation_links",
+    "dates_line",
+    "permalink",
+    "pill",
+    "prose",
+    "sentence",
+]
 
 _PERMALINK_NAME = "Link to this change"
 """The permalink's accessible name. `§` is a symbol and never a name a screen reader can read."""
 
 _CITED_LEAD = "Cited:"
 """What the row of links is, said in one word, so a row of coordinates is not read as prose."""
+
+_APPLIES_LEAD = "applies from:"
+"""Clock 2's label. The colon is load-bearing: see `applies_line`."""
 
 _ADDED_LEAD = "dates added to the text"
 _REMOVED_LEAD = "dates removed"
@@ -161,6 +174,32 @@ def prose(emitted: EmittedChange, entry: ChangelogEntry) -> list[Html]:
             Html(f'<p class="cites">{escape(_CITED_LEAD)} {citation_links(cited, entry)}</p>')
         )
     return lines
+
+
+def applies_line(change: Change) -> Html:
+    """`applies from: 2021-05-26`, and the two stated non-answers in the same shape.
+
+    Clock 2's answer, on every change block without exception. A block with no line here would
+    leave the question to the reader, and the reader's own fill-in is the inference
+    `CLAUDE.md` §"Two clocks" forbids; `ApplicabilityUnknown` is a value that reaches the
+    output, never a silence.
+
+    The label carries a colon because two of the three values are not dates: without it
+    `applies from` reads as a sentence that `unchanged` and `unknown` cannot finish. With it
+    the line is a label and a value, which is the form the committed Markdown and the CLI
+    already print.
+
+    Only a real date is wrapped, so the stylesheet can lift it out of the muted colour the two
+    non-answers keep. The words are `output.markdown`'s own, so one change says one thing on
+    the site and in the changelog.
+    """
+    value = applies_text(change.applies_from)
+    shown = (
+        Html(f'<span class="date">{escape(value)}</span>')
+        if isinstance(change.applies_from, date)
+        else escape(value)
+    )
+    return Html(f'<p class="applies">{_APPLIES_LEAD} {shown}</p>')
 
 
 def dates_line(change: Change) -> Html | None:

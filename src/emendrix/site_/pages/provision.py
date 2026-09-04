@@ -29,7 +29,6 @@ list of every title a provision has ever had would be a second history nobody as
 
 from __future__ import annotations
 
-from emendrix.output.markdown import applies_text
 from emendrix.site_.amending import amenders, amending_links
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, unattributed
 from emendrix.site_.chrome import page
@@ -40,7 +39,7 @@ from emendrix.site_.history import ProvisionHistory, ProvisionStep
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, count, escape, join
-from emendrix.site_.pages.prose import dates_line, permalink, pill, prose
+from emendrix.site_.pages.prose import applies_line, dates_line, permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import provision_json_ld
 from emendrix.site_.titles import SUFFIX
@@ -138,9 +137,7 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     lines.extend(amending_links(acts, up(_DEPTH)))
     if not acts and unattributed(entry):
         lines.append(Html(f'<p class="amending">{escape(UNATTRIBUTED_LABEL)}</p>'))
-    lines.append(
-        Html(f'<p class="applies">applies from {escape(applies_text(change.applies_from))}</p>')
-    )
+    lines.append(applies_line(change))
     dates = dates_line(change)
     if dates is not None:
         lines.append(dates)

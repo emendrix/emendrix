@@ -14,6 +14,8 @@ from pathlib import Path
 
 from emendrix.core import (
     ActId,
+    ApplicabilityUnchanged,
+    ApplicabilityUnknown,
     Delta,
     ProvisionLocation,
     ProvisionTree,
@@ -32,6 +34,7 @@ from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.event import render_event_page
+from emendrix.site_.pages.prose import applies_line
 from emendrix.site_.pages.texts import text_blocks
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -531,8 +534,12 @@ def test_a_change_with_nothing_cited_carries_no_citation_row() -> None:
     assert 'class="cites"' not in _page(diff_only_entry(_delta(), detected_on=OBSERVED))
 
 
-_DATES = re.compile(r'<p class="applies">[^<]*</p>\n<p class="dates">([^<]*)</p>')
-"""The dates line, captured only where it sits directly under the line it qualifies."""
+_DATES = re.compile(r'<p class="applies">.*</p>\n<p class="dates">([^<]*)</p>')
+"""The dates line, captured only where it sits directly under the line it qualifies.
+
+The applies line above it is matched loosely because it carries markup of its own: a real date
+is wrapped so the stylesheet can lift it, and a pattern that stopped at the first `<` would
+quietly stop finding the pair on exactly the changes that moved a date."""
 
 
 def _dated_page(**moved: object) -> str:
@@ -562,6 +569,32 @@ def test_a_change_that_moved_dates_names_them_under_the_applies_line() -> None:
     assert _DATES.findall(rendered) == [
         "dates added to the text: 2027-12-02, 2028-08-02 · dates removed: 2026-08-02"
     ]
+
+
+def test_the_applies_line_labels_its_value_and_marks_only_a_real_date() -> None:
+    """Three values share this line and only one of them is a date.
+
+    The colon is what makes it a label. Without it `applies from` opens a sentence that
+    `unchanged` and `unknown` cannot finish, which is how two of the three values read as
+    broken English while the third read fine. The committed Markdown and the CLI print the
+    label this way already, so the three surfaces now say one thing.
+
+    The span is on the date alone. It is what lets the stylesheet lift a date out of the
+    colour the two non-answers keep, and marking a non-answer with it would style a stated
+    absence as a fact a reader can act on.
+    """
+    unchanged = _delta().changes[0]
+    assert isinstance(unchanged.applies_from, ApplicabilityUnchanged)
+    assert applies_line(unchanged) == '<p class="applies">applies from: unchanged</p>'
+
+    deferred = unchanged.model_copy(update={"applies_from": date(2021, 5, 26)})
+    assert applies_line(deferred) == (
+        '<p class="applies">applies from: <span class="date">2021-05-26</span></p>'
+    )
+
+    reason = "the text changed beyond its dates"
+    unknown = unchanged.model_copy(update={"applies_from": ApplicabilityUnknown(reason=reason)})
+    assert applies_line(unknown) == f'<p class="applies">applies from: unknown ({reason})</p>'
 
 
 def test_a_change_that_moved_no_date_prints_no_dates_line() -> None:

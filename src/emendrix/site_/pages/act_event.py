@@ -68,7 +68,6 @@ from __future__ import annotations
 
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry
-from emendrix.output.markdown import applies_text
 from emendrix.site_.amending import AmendingAct, amending_lines
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
 from emendrix.site_.clocks import event_date
@@ -77,7 +76,7 @@ from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
 from emendrix.site_.pages.facts import event_facts
-from emendrix.site_.pages.prose import dates_line, permalink, pill, prose
+from emendrix.site_.pages.prose import applies_line, dates_line, permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.sources import repo_file
 from emendrix.site_.untouched import untouched, untouched_note
@@ -148,7 +147,7 @@ def _change_block(
             f'<a class="loc" href="../{escape(location_slug(change.location.canonical))}/">'
             f"{escape(change.location.human)}</a>{title}{permalink(anchor)}</h3>"
         ),
-        Html(f'<p class="applies">applies from {escape(applies_text(change.applies_from))}</p>'),
+        applies_line(change),
     ]
     dates = dates_line(change)
     if dates is not None:

@@ -107,7 +107,7 @@ bytes in their names: nine characters in each of the two asset links, which ever
 tree and on the site pays once. It is the fixed cost of a cache that cannot serve an asset from
 before the deploy that changed it."""
 
-_TOTAL_BYTES: Final = 2375135
+_TOTAL_BYTES: Final = 2376735
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.

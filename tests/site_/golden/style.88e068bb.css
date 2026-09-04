@@ -393,7 +393,12 @@ a.loc { color: inherit; font-weight: 600; }
    anchors keep the sheet's link colour, so the row reads as links with a label rather than as
    a sentence. */
 .cites { font-size: var(--step-sm); color: var(--muted); }
+/* Clock 2's answer for one change, on every block. A date is lifted out of the muted colour
+   and set in tabular figures, so it scans as the figure it is; the two stated non-answers keep
+   the muted colour, and recede without the line ever going silent about them. No hue is spent
+   on the distinction: colour here goes to diffs, disputes and links. */
 .applies { font-size: var(--step-sm); color: var(--muted); }
+.applies .date { color: var(--fg); font-variant-numeric: tabular-nums; }
 /* The dates a change moved, directly under the line that says whether one of them governs the
    provision. Set like the applies line, because the two are facts of the same rank about one
    change, and in tabular figures so a column of ISO dates reads as a column. */
