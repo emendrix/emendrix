@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 168230)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 168248)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -100,9 +100,14 @@ that coordinate on the event page holding it, and now links `../../acts/house-ru
 that coordinate's whole history. About 9 bytes a link over 401 links. The heaviest page in
 this tree is not a provision page: the annex every one of the two hundred events touches is
 53 782 bytes over two hundred steps, a third of the index, because 199 of those steps carry a
-link where the newest carries the diff."""
+link where the newest carries the diff.
 
-_TOTAL_BYTES: Final = 2364299
+18 bytes heavier on 2026-09-04, when the stylesheet and the script gained a digest of their own
+bytes in their names: nine characters in each of the two asset links, which every page in this
+tree and on the site pays once. It is the fixed cost of a cache that cannot serve an asset from
+before the deploy that changed it."""
+
+_TOTAL_BYTES: Final = 2375135
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -172,6 +177,12 @@ cheapest place to have paid it would be a legend, which a page carrying four cha
 room for and a reader arriving at one block would never see. Nothing else moved: these events
 are diff-only and under the index threshold, so no page here carries the totals line or the
 weighted list, and `_HEAVIEST` does not move again, its page being a timeline of cards.
+
+10 836 bytes heavier on 2026-09-04, when the stylesheet and the script gained a digest of their
+own bytes in their names: eighteen bytes on each of the 602 pages of this tree, nine in each of
+the two asset links, and nothing else. It is the whole cost of the change, it is flat in the
+number of pages rather than in what is on them, and it buys the property that a page and the
+assets it names are always from one build.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

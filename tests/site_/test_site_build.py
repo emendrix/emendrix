@@ -9,6 +9,7 @@ that the command writes every surface, twice over, to the same bytes.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import date
 from pathlib import Path
@@ -24,6 +25,7 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_ import collect_site, write_site
 from emendrix.site_.cli import _eurlex_urls, _version_dates
+from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
 from eu_pins import OBSERVED_ON
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -78,8 +80,8 @@ def test_the_command_writes_every_surface(tmp_path: Path, changelog_repo: Path) 
     for expected in (
         "index.html",
         "404.html",
-        "style.css",
-        "search.js",
+        STYLESHEET,
+        SCRIPT,
         "icon.svg",
         "og.png",
         "robots.txt",
@@ -93,6 +95,30 @@ def test_the_command_writes_every_surface(tmp_path: Path, changelog_repo: Path) 
     ):
         assert expected in tree, expected
     assert any(name.startswith("acts/") and name.endswith("/index.html") for name in tree)
+
+
+def test_the_two_cached_assets_are_named_for_the_bytes_they_hold(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """The digest in each name is a digest of the file that was written, not of a rendering.
+
+    The edge caches an asset for a day, so a name that did not move with the bytes served
+    readers a stale stylesheet against fresh pages, as it did on 2026-09-04. Recomputed here
+    over the bytes on disk rather than over the constant they came from, because the writer
+    encodes and pins the line ending and the name has to survive both.
+
+    The pages are checked in the same test: a file nothing links is as broken as a link to a
+    file nothing wrote, and the two can only be asserted together.
+    """
+    out = build(tmp_path / "site", changelog_repo)
+    for name in (STYLESHEET, SCRIPT):
+        stem, digest, suffix = name.split(".")
+        assert len(digest) == 8, name
+        assert hashlib.sha256((out / name).read_bytes()).hexdigest().startswith(digest), name
+        assert not (out / f"{stem}.{suffix}").exists(), name
+    home = (out / "index.html").read_text(encoding="utf-8")
+    assert f'href="{STYLESHEET}"' in home
+    assert f'src="{SCRIPT}"' in home
 
 
 def test_the_committed_assets_are_copied_and_not_re_encoded(
@@ -158,7 +184,7 @@ def test_the_search_index_is_valid_json_at_the_site_root(
     out = build(tmp_path / "site", changelog_repo)
     payload = json.loads((out / "search-index.json").read_text(encoding="utf-8"))
     assert payload["entries"]
-    assert (out / "search.js").read_text(encoding="utf-8").strip()
+    assert (out / SCRIPT).read_text(encoding="utf-8").strip()
 
 
 def test_no_changelog_repository_is_a_site_that_says_so(tmp_path: Path) -> None:

@@ -11,11 +11,16 @@ is part of the shell because a page without it must be unrepresentable, not mere
 The header's `#search` element is an empty div: the search control is built by the script,
 so a reader without JavaScript sees no dead input box, and the recent-act links and the acts
 index remain the whole navigation. `generated_on` is a parameter, never a clock read.
+
+The stylesheet and the script are linked under the names `fingerprint` computes from their own
+bytes, the same names `build.py` writes them to, so a cached asset can never be a page's stale
+one. The icon is linked by its fixed name for the reason that module gives.
 """
 
 from __future__ import annotations
 
 from emendrix import DISCLAIMER
+from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
 from emendrix.site_.head import head_metadata
 from emendrix.site_.inputs import PageChrome
 from emendrix.site_.markup import Html, escape, join
@@ -162,8 +167,8 @@ def page(
                 structured=structured,
             ),
             Html(f'<link rel="icon" href="{root}icon.svg" type="image/svg+xml">'),
-            Html(f'<link rel="stylesheet" href="{root}style.css">'),
-            Html(f'<script defer src="{root}search.js"></script>'),
+            Html(f'<link rel="stylesheet" href="{root}{STYLESHEET}">'),
+            Html(f'<script defer src="{root}{SCRIPT}"></script>'),
             Html("</head>"),
             Html("<body>"),
             nav_links(depth),

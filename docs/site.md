@@ -31,9 +31,30 @@ feeds/<celex>.xml     one act's events, for a reader who watches only that act
 robots.txt            what crawlers may read, and where the sitemap is
 sitemap.xml           every page, with the date its content last moved
 search-index.json     act and instrument names, aliases, CELEX numbers and touched provisions
-search.js             the one script; style.css is the one stylesheet
+search.<digest>.js    the one script; style.<digest>.css is the one stylesheet
 icon.svg              the favicon; og.png is the link-preview card
 ```
+
+**Two of those names carry a digest of the file's own bytes**, and that is a caching decision.
+An edge that gives an asset a one-day lifetime will happily serve yesterday's stylesheet beside
+today's pages, which is what the live site did on 2026-09-04: the edge held 14 424 bytes of CSS
+where the origin had 22 056, so a layout that had shipped was invisible until somebody purged
+the cache by hand. A name that moves with the content makes that unrepresentable: a build that
+changes the bytes writes a new URL and a build that does not leaves the URL alone, so an asset
+may be cached for as long as the edge likes and no deploy needs a purge.
+
+The other three keep fixed names on purpose. `search-index.json` changes on every build and is
+served with the short lifetime the pages carry, and the script fetches it by a path relative to
+the site root. `icon.svg` and `og.png` are identity rather than code: a link-preview image whose
+address moves breaks the card every social site has already cached for the pages that name it.
+**They are the one part of the tree that still needs a manual purge**, so an operator who
+changes either should purge that one path at the edge and expect previews to refresh slowly.
+
+The builder writes its own files and deletes nothing, so a rebuild into a directory a previous
+build wrote leaves the previous stylesheet and script beside the new ones: a few unreferenced
+kilobytes, harmless, and useful for the seconds in which a reader is still loading a page that
+names them. Sweep them whenever the directory is worth tidying, or let a deployment that
+replaces the directory whole do it.
 
 Four things about that tree are not visible in the listing. Every page states its own canonical
 address, so the two ways a static host serves one page, with and without the `index.html`, do not

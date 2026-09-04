@@ -99,14 +99,18 @@ because a scheduler image is a third thing to keep patched and a second place a 
 `deploy/compose.yaml` documents what runs when and which volumes are disposable, and `VERSION` is
 the caller's to set: omitting it labels the image `dev`.
 
-Two things the operator handles outside this repository. `deploy/absolute-redirect.conf` is the web
-service's one line of nginx configuration, for anyone putting this behind a TLS-terminating proxy:
-without it nginx builds the redirect to a missing trailing slash out of the scheme it can see, the
-proxy's plain HTTP, and sends an `https://` reader through one unencrypted request. And **this
-deployment does not yet serve the site's own 404 page.** `site build` writes `404.html` on every
-build, and a host that serves it for an unmatched address gives the reader the search box and a way
-back, but nothing under `deploy/` names it as nginx's error page. That is server configuration
-rather than a generator change, and the file is already there.
+Three things the operator handles outside this repository. `deploy/absolute-redirect.conf` is the
+web service's one line of nginx configuration, for anyone putting this behind a TLS-terminating
+proxy: without it nginx builds the redirect to a missing trailing slash out of the scheme it can
+see, the proxy's plain HTTP, and sends an `https://` reader through one unencrypted request.
+Caching is the second: the stylesheet and the script are named for a digest of their own bytes, so
+they may be cached for as long as you like and a deploy never needs a purge, while the pages and
+`search-index.json` want a short lifetime. `icon.svg` and `og.png` keep fixed names, so changing
+either is the one thing on the site that still needs one. And **this deployment does not yet serve
+the site's own 404 page.** `site build` writes `404.html` on every build, and a host that serves it
+for an unmatched address gives the reader the search box and a way back, but nothing under
+`deploy/` names it as nginx's error page. That is server configuration rather than a generator
+change, and the file is already there.
 
 ## What it does not do
 

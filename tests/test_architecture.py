@@ -249,13 +249,18 @@ def test_the_site_writes_no_script_of_its_own() -> None:
     than broken. The executable-script rule is unchanged for every other tag. Which module may
     mint such an element is pinned here too, because one place that knows the JSON-LD escaping
     rule is reviewable and two places are a rule waiting to be half-remembered.
+
+    The `src` is asserted to be the `SCRIPT` name rather than a literal, because the file the
+    build writes carries a digest of its own bytes and no source may spell that name a second
+    time. `tests/site_/test_golden.py` holds the built pages to the file the tree actually
+    holds, which is the other half of the same rule.
     """
     for name, source in modules():
         for tag in re.findall(r"<script[^>]*>", source):
             if 'type="application/ld+json"' in tag:
                 assert name == "site_/seo.py", f"{name}: JSON-LD belongs in one module"
                 continue
-            assert "src=" in tag and "search.js" in tag, f"{name}: {tag}"
+            assert "src=" in tag and "{SCRIPT}" in tag, f"{name}: {tag}"
 
 
 def test_the_renderers_cannot_reach_the_model_or_the_corpus() -> None:

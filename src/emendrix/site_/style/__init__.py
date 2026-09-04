@@ -1,4 +1,4 @@
-"""The site's whole stylesheet, as one constant, written to `style.css` by the builder.
+"""The site's whole stylesheet, as one constant, written out under one file name.
 
 One file, shared by every page, because the site is a *tree* of pages: inlining the same
 few kilobytes into every act page would grow with the corpus and defeat the browser cache.
@@ -44,4 +44,5 @@ from emendrix.site_.style.tokens import TOKENS
 __all__ = ["STYLE"]
 
 STYLE: Final = TOKENS + BASE + PAGES + EVIDENCE
-"""The whole sheet, in cascade order. `build.py` writes exactly this to `style.css`."""
+"""The whole sheet, in cascade order. `build.py` writes exactly this, and `fingerprint`
+names the file from these bytes so a page never loads a cached sheet from another build."""

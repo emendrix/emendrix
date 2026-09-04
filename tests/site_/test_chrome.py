@@ -8,6 +8,7 @@ from helpers import text_of
 
 from emendrix import DISCLAIMER
 from emendrix.site_.chrome import nav_links, page
+from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
 from emendrix.site_.inputs import PageChrome
 from emendrix.site_.markup import Html, escape
 
@@ -65,9 +66,14 @@ def test_the_footer_links_the_about_page_from_whatever_depth_the_page_sits_at() 
 
 
 def test_the_path_prefixes_every_internal_link_and_asset() -> None:
+    """The two content-addressed names come from `fingerprint`, never from a literal here.
+
+    A hard-coded digest would be a second spelling of the one name the builder writes, and it
+    would pass on the day somebody changed the naming and forgot this file.
+    """
     rendered = _page(path="acts/x/")
-    assert '<link rel="stylesheet" href="../../style.css">' in rendered
-    assert '<script defer src="../../search.js"></script>' in rendered
+    assert f'<link rel="stylesheet" href="../../{STYLESHEET}">' in rendered
+    assert f'<script defer src="../../{SCRIPT}"></script>' in rendered
     assert 'href="../../acts/"' in rendered
     assert 'data-root="../../"' in nav_links(2)
 

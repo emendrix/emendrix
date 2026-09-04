@@ -402,4 +402,19 @@ every feed `<id>` with them, and no anchor or relative path already published mo
 and `_TOTAL_BYTES` do not move at all, no change in that generated tree carrying a date. Nothing
 under `diff/` moved, the dates being read off the committed documents exactly as they were
 written, and no measured figure moved with any of it.
+
+Regenerated on 2026-09-04, when the stylesheet and the script started carrying a digest of
+their own bytes in their names. Every one of the twenty-two pages moved by exactly two lines,
+its `<link rel="stylesheet">` and its `<script defer src>`, which is eighteen bytes a page at
+any depth; the two files themselves are byte-identical to the ones they replace and are
+committed under `style.031c3956.css` and `search.622da217.js`, the old fixed names being gone
+from the tree. Nothing else on any page moved: not an `id`, an anchor, a relative path or a
+word. Both feeds, `sitemap.xml`, `search-index.json`, `robots.txt`, `icon.svg` and `og.png` are
+byte-identical, every feed `<id>` with them, and the icon, the card and the search index keep
+fixed names on purpose, the first two because a moved `og:image` breaks the previews already
+cached against it. The edge caches an asset for a day and served a stylesheet of 14 424 bytes
+that day where the origin held 22 056, so a name that moves with the content is what makes a
+page and its assets always come from one build. `_LARGEST_PAGE` rises 18 bytes and stays the
+MDR event page; `_HEAVIEST` rises the same 18 and `_TOTAL_BYTES` 10 836, eighteen on each of
+that tree's 602 pages. No measured figure moved with it.
 """

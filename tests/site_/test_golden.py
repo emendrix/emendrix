@@ -72,6 +72,18 @@ def _pages(site: Path) -> list[Path]:
     return pages
 
 
+def _asset(site: Path, suffix: str) -> str:
+    """The one root-level file of that kind, under whatever name the build wrote it under.
+
+    The stylesheet and the script carry a digest of their own bytes, so their names move with
+    their content and nothing may pin one as a literal. Read off the tree rather than imported
+    from the builder, because what these tests are about is the file the tree actually holds.
+    """
+    names = sorted(path.name for path in site.glob(f"*{suffix}"))
+    assert len(names) == 1, names
+    return names[0]
+
+
 # ------------------------------------------------------------------ the golden
 
 
@@ -145,7 +157,11 @@ def test_the_only_script_is_the_committed_search_script(site: Path) -> None:
     is precisely the property this rule exists to protect, so the rule is widened rather than
     broken. `tests/test_architecture.py` holds the same line over the sources and additionally
     pins `site_/seo.py` as the one module allowed to mint such an element.
+
+    The name is read off the tree, so this stays an assertion that every page loads the one
+    script the build wrote and cannot pass by matching a string nothing on disk answers to.
     """
+    script = _asset(site, ".js")
     for page in _pages(site):
         text = page.read_text(encoding="utf-8")
         scripts = re.findall(r"<script[^>]*>", text)
@@ -153,7 +169,7 @@ def test_the_only_script_is_the_committed_search_script(site: Path) -> None:
         for tag in scripts:
             if 'type="application/ld+json"' in tag:
                 continue
-            assert 'src="' in tag and "search.js" in tag, page
+            assert 'src="' in tag and script in tag, page
 
 
 def test_no_page_reaches_a_third_party_or_counts_its_readers(site: Path) -> None:
@@ -178,13 +194,13 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
     the scan for exactly that reason: the SVG namespace names the language the document is
     written in and no browser ever resolves it.
     """
-    for name in ("style.css", "search.js", "icon.svg"):
+    for name in (_asset(site, ".css"), _asset(site, ".js"), "icon.svg"):
         text = (site / name).read_text(encoding="utf-8").replace(SVG_NS, "")
         for banned in ("http://", "https://", "@import", "url("):
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 41837)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 41855)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -273,7 +289,14 @@ started printing those dates under its applies line. All nine of this event's ch
 one, so the page pays nine paragraphs of about 85 bytes: this is the postponement, and the
 dates are the whole of what it did. The line is a fact about the text and never a schedule,
 which is the wording `pages/prose.py` holds and the act page's own list repeats at length. No
-measured figure moved with it; nothing inside a `<details>` and no anchor moved."""
+measured figure moved with it; nothing inside a `<details>` and no anchor moved.
+
+18 bytes heavier on 2026-09-04, when the stylesheet and the script gained a digest of their own
+bytes in their names: nine characters in each of the two asset links, paid identically by every
+page on the site. It buys a cache that cannot serve yesterday's stylesheet beside today's
+markup, which is what the edge did serve that day, holding 14 424 bytes of it against the
+origin's 22 056 under a one-day asset lifetime. No measured figure moved with it, and on this
+page nothing else moved at all."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

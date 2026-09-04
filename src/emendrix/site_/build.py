@@ -3,8 +3,8 @@
 ```
 index.html                      the front door
 404.html                        what an address that matches nothing gets
-style.css                       the one stylesheet every page links
-search.js                       the one script, copied from the package as committed
+style.<digest>.css              the one stylesheet every page links, named for its bytes
+search.<digest>.js              the one script, copied from the package as committed
 icon.svg                        the favicon every head links
 og.png                          the link-preview card, the one binary published
 robots.txt                      the crawl policy, and where the sitemap is
@@ -25,8 +25,11 @@ feeds/<slug>.xml                one feed per act, quiet acts included
 
 The stylesheet, the script and the icon live at the site root because `chrome.page` links them
 relative to it, and the script reads the index back from the root it was handed; move any of
-them and every page below the root loads nothing. `robots.txt` and `sitemap.xml` sit at the root
-because that is the only place a crawler looks for either.
+them and every page below the root loads nothing. The first two carry a digest of their own
+bytes in the name, and `fingerprint` is the module that says why; both names are read from
+there rather than spelled again here, so what a page links and what this table writes cannot
+be two strings. `robots.txt` and `sitemap.xml` sit at the root because that is the only place a
+crawler looks for either.
 
 The feeds and the sitemap are the one conditional, and it is one rule rather than two: a feed's
 links and a sitemap's locations are both absolute, so without a site URL `render_feed` and
@@ -44,7 +47,11 @@ boundary, and everything else is a pure function of the committed artifacts.
 
 Nothing already in `out` is read, moved or deleted. The directory belongs to the operator, who
 may well keep a `CNAME`, a `.nojekyll` or the leftovers of another build in it; a generator that
-tidies is a generator that eventually deletes something it did not write.
+tidies is a generator that eventually deletes something it did not write. So a build into a
+directory a previous build wrote leaves the previous stylesheet and script sitting beside the
+new ones, unreferenced by any page and a few kilobytes each. That is the deliberate cost of the
+rule above, and it is also what lets a reader who is mid-request keep loading the file the page
+they already have names; `docs/site.md` tells the operator when to sweep them.
 """
 
 from __future__ import annotations
@@ -55,6 +62,7 @@ from emendrix.site_.amending import resolve
 from emendrix.site_.assets import icon_svg, og_png, search_js
 from emendrix.site_.discovery import ROBOTS, SITEMAP, robots_txt, sitemap_xml
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
+from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
 from emendrix.site_.history import histories
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
@@ -81,12 +89,9 @@ from emendrix.site_.urls import (
 
 __all__ = ["act_pages", "write_site"]
 
-STYLESHEET = "style.css"
-"""Where `chrome.page` says the stylesheet is. Both ends of that link are in this package."""
-
-SCRIPT = "search.js"
 INDEX = "search-index.json"
-"""The script and the index it fetches, both at the root the script is handed as `data-root`."""
+"""What the script fetches, at the root the script is handed as `data-root`. A fixed name: it
+changes on every build and is served with the short lifetime the pages carry."""
 
 ICON = "icon.svg"
 CARD = "og.png"
