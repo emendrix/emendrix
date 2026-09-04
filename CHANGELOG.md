@@ -243,30 +243,41 @@ Named rather than discovered later; the eval report's disagreement list is the l
   `emendrix repair explanations` is what replaces the change instead of the transition, so those
   1 889 keep their bytes; the 90 stay in the published record until a pass is run against it, and
   the failure being stochastic means a pass is expected to leave a few of them still unexplained.
-- **Fifteen of those ninety were asked again on 2026-09-04, and seventy-five are out of reach.**
-  A change-scoped repair ran against the published changelog repository: 14 changes across 11
-  entries got prose, 1 failed a second time and keeps the sentence it shipped with, and **no
-  explanation that already existed was rewritten**. Measured on the same run, those 11 entries
-  hold 226 changes, of which 14 gained sentences and 0 that already had them moved by a byte; in
-  the densest of them, 3 of 66 rendered change blocks changed and 63 were byte-identical.
-  `detected_on` is carried over on every one, because a repair is not a detection. **A repaired
-  explanation was produced by a call the entry's own `explain` block does not count**: that block
-  records the run that first wrote the entry, and overwriting it would lose the original while
-  summing into it would turn a record of one run into a lifetime total, so the repair records
-  itself beside it with its own usage and a `coordinates_checked` flag that reads false, this
-  repair holding neither provision tree and an unrun check never being allowed to read as a
-  passed one. It cost about USD 0.35 against an estimate of USD 0.26, the difference being seven
-  schema repairs the estimate says in words it cannot see.
-  **The seventy-five it could not select are a counted limitation and not a gap being closed.**
-  The repair matches the kind `model_failed` or the curated sentence above, and that sentence has
-  existed only since 2026-08-31; the seventy-five were written before it and carry the provider
-  library's own error text in `unexplained` instead. Matching that text would make the selection
-  depend on a string a dependency is free to change, which is the reason the curated sentence
-  exists at all. The split is clean by act, 8 acts holding all 15 selectable changes and 19
-  holding all 75, which is what a cause that is a date looks like. Reaching them means stamping
-  the kind onto them, a one-off migration through the document model rather than anything a
-  repair should infer, and until that runs they stay in the published record saying what they
-  have always said.
+- **All ninety were asked again on 2026-09-04, in two passes, and eighty-nine of them now carry
+  prose.** The first pass reached fifteen: 14 changes across 11 entries got sentences and 1 failed
+  a second time. The other seventy-five were unreachable, because the repair selects on the counted
+  kind `model_failed` or on the curated sentence above and that sentence has existed only since
+  2026-08-31; those seventy-five predate it and carried the provider library's own error text in
+  `unexplained`, which a reader saw on the page. `emendrix repair unexplained` restated them in the
+  register the rest of the output is written in and stamped the kind beside them, matching one
+  exact string and an empty kind rather than a prefix, since the same field carries the ordinary
+  reason of every other unexplained change. That pass calls no model and opens no adapter: 75 notes
+  across 40 entries in 19 acts, after which no published page renders a library exception name at
+  all. A second explanation pass then repaired 75 of the 76 changes that had become selectable,
+  the seventy-sixth being the one the first pass had already failed on and which is free to try
+  again.
+  **No explanation that already existed was rewritten in any of it.** Across the 40 entries the
+  second pass wrote there are 2 345 changes, of which 75 gained sentences and 0 that already had
+  them moved by a byte; in the densest, a Capital Requirements Regulation entry of 293 rendered
+  change blocks, exactly the 3 repaired blocks moved. `detected_on` is carried over everywhere,
+  because a repair is not a detection. **A repaired explanation was produced by a call the entry's
+  own `explain` block does not count**: that block records the run that first wrote the entry, so
+  the repair records itself beside it with its own usage and a `coordinates_checked` flag that
+  reads false, this repair holding neither provision tree and an unrun check never being allowed
+  to read as a passed one. Measured cost was USD 2.66 against a floor estimate of USD 1.41, the
+  difference being 52 schema repairs across 127 requests for 75 changes, which the estimate states
+  it cannot count.
+  **One change still has no explanation and three notes are deliberately left as they are.**
+  `AR 14` exhausted the repair budget twice and keeps the sentence it shipped with, which is one in
+  seventy-six and in line with the measured rate of this failure. Separately, three changes in
+  `32014R0600`, `32014R0806` and `32017R0745` carry a note naming a second library shape, a
+  connection error, and the restatement counts them and refuses to write them: that is a provider
+  that could not be reached rather than a model that answered badly, so `model_failed` would claim
+  an answer that never came and `provider_unavailable` would make `holds_finished` reopen those
+  entries and re-run three whole transitions whose explanations are already correct. Naming them
+  wrongly is worse than leaving them named as they are, so they stay, counted and stated, until
+  something establishes what they should say.
+
 - **Explanations can still outrun their evidence, and the shape of it has changed.** The hand
   review of 2026-08-08 over the prose that shipped then marked 3 of 20 entries unfaithful at the
   truncation marker. That count was published as one class and it was three different things, and
