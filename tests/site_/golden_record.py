@@ -564,4 +564,33 @@ golden, whose corpus is the fixture's one event. Every other page, both feeds,
 `search-index.json`, `robots.txt`, the stylesheet, the script and both images are
 byte-identical, no `<id>`, permalink or anchor moved, so nothing renotifies, and no size pin
 moved: no page the three at-scale pins measure carries a methodology section.
+
+**2026-09-05, later again: the page says which of three things `disputed` means.** Twenty-two
+files moved, every HTML page in the tree, by one line each: the digest in their one stylesheet
+link, `style.88e068bb.css` becoming `style.9481cdd6.css`. The sheet itself grew 1958 bytes,
+22 486 to 24 444, in two parts. The first is a split with no effect on any page: `timeline` was
+cut off `evidence`, which was at the module cap, so the four blocks that dress an act's dates
+list, an instrument's rail, the event pager and the amending line now sit before the change
+block's rules instead of after them. None of the four shares a property or a selector with
+anything the change block declares, so the cascade reads the same either way, and the diff is
+the same twenty-five lines deleted in one place and added in another. The second part is new:
+two rules that grade the disputed badge by the shape of the disagreement, dashed for a row with
+no text and filled and bold for the contradiction about kind, one that sets the source named on
+such a row, and five that collapse the gathered rows to a line each and reopen one when a
+permalink makes it the fragment target, and two more in the print block: one that opens all of
+those rows on paper, where no link can be followed and both indexes already print whole, and
+one that takes the filled badge's tint back off, the blanket print rule being a single class
+deep and the badge's own selector three. No hue is spent
+on any of it: the one custom property the two grading rules name between them is `--mark`, the
+surface the plain pill already sits on, and `--warn` on it measures 6.52:1 light and 6.36:1
+dark, a pair the contrast test already covers. **Not one page's markup moved**, because not
+one event in this tree carries a change the sources disagree about or one with no text on
+either side: no lead, no badge class, no clause
+after the disputed count and no gathered list appears anywhere in the golden, and the count
+lines still read `0 disputed` with nothing after them, which is the branch an event with
+nothing disputed takes. No measured figure moved either; nothing here is read out of a report.
+Both feeds, `search-index.json`, `sitemap.xml`, `robots.txt`, `search.622da217.js`, `icon.svg`
+and `og.png` are byte-identical, no `<id>`, permalink or anchor moved, so nothing renotifies,
+and no size pin moved: the digest is eight hex characters before and after, so every page in
+this tree and in the generated one weighs exactly what it weighed.
 """

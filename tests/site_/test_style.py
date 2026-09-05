@@ -197,16 +197,71 @@ def test_a_diff_mark_says_which_it_is_without_its_tint() -> None:
 
 
 def test_the_modules_are_concatenated_in_cascade_order() -> None:
-    """Tokens, then the shell, then the pages, then the evidence.
+    """Tokens, then the shell, then the pages, then the page furniture, then the evidence.
 
-    The package is four `Final` strings joined in one place, so what can drift is the order
+    The package is five `Final` strings joined in one place, so what can drift is the order
     they are joined in, and the order is a contract: a rule in a later module may rely on an
     earlier one and never the reverse. One selector from each module, in the order they must
-    appear, is the cheapest way to hold it.
+    appear, is the cheapest way to hold it. `timeline` was split off `evidence` on 2026-09-05
+    and sits between the pages and the change blocks, which is where the grid the event page's
+    sticky index relies on is declared.
     """
     assert STYLE.index("--bg:") < STYLE.index("header.bar")
     assert STYLE.index("header.bar") < STYLE.index(".cardrow")
-    assert STYLE.index(".cardrow") < STYLE.index(".chg")
+    assert STYLE.index(".cardrow") < STYLE.index(".timeline")
+    assert STYLE.index(".timeline") < STYLE.index(".chg {")
+
+
+def test_the_three_shapes_of_a_disagreement_are_told_apart_without_a_hue() -> None:
+    """The badge is graded by border and weight, and all three keep the disputed colour.
+
+    Measured 2026-09-05 over the palette as it stands, which is why no hex moved in the pass
+    that graded them: the one surface the grading introduces is the filled badge of the kind
+    contradiction, `--warn` on `--mark`, at 6.52:1 light and 6.36:1 dark, a pair `_PAIRS`
+    already checks. The other two shapes reach for no colour at all: a dashed border for a row
+    with no text and the sheet's plain disputed pill for the evidenced one, which adds no rule.
+    """
+    assert ("warn", "mark") in _PAIRS
+    graded = [line for line in STYLE.splitlines() if line.startswith((".disp-", ".pill.disp"))]
+    assert graded == [
+        ".pill.disp { background: transparent; border-color: var(--warn); color: var(--warn); }",
+        ".disp-none .pill.disp { border-style: dashed; }",
+        ".disp-kind .pill.disp { background: var(--mark); font-weight: 700; }",
+    ]
+    # The two grading rules reach for exactly one custom property between them, and it is the
+    # surface the plain pill already sits on rather than a colour of their own.
+    assert re.findall(r"var\((--[a-z-]+)\)", " ".join(graded[1:])) == ["--mark"]
+
+
+def test_a_row_gathered_with_no_text_is_opened_by_the_permalink_that_names_it() -> None:
+    """A `§` that scrolled to a row a reader still could not read is a broken promise.
+
+    The collapse is `display: none` on everything but the row's own heading, and `:target` is
+    what a same-page permalink sets, so the link that names a row is the link that opens it,
+    with no script and nothing dropped from the markup. Both halves are one rule each and both
+    are asserted, because either alone is a row that cannot be read or a list that never
+    collapsed.
+    """
+    assert ".quiet .chg > *:not(h3) { display: none; }" in STYLE
+    assert ".quiet .chg:target > *:not(h3) { display: block; }" in STYLE
+    assert STYLE.index(".quiet .chg > *") < STYLE.index(".quiet .chg:target > *")
+
+
+def test_every_tint_a_word_already_says_is_stripped_for_print() -> None:
+    """A background that costs ink and says nothing no word beside it says does not print.
+
+    The blanket rule in the print block is one class deep, so every tint drawn by a selector
+    of higher specificity has to be named there again or it survives on paper. That is why the
+    two verbatim blocks, the insertion pill and a targeted change block are all listed, and it
+    is why the filled badge of the kind contradiction was added to the list the day it was
+    drawn: `.disp-kind .pill.disp` outranks `.pill` three simple selectors to one.
+    """
+    screen, marker, printed = STYLE.partition("@media print")
+    assert marker
+    assert ".disp-kind .pill.disp { background: var(--mark); font-weight: 700; }" in screen
+    for selector in (".verbatim.ins", ".verbatim.del", ".pill.ins", ".chg:target"):
+        assert selector in printed, selector
+    assert ".disp-kind .pill.disp { background: transparent; }" in printed
 
 
 def test_the_sheet_reaches_no_third_party_and_names_no_web_font() -> None:

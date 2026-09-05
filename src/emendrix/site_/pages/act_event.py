@@ -18,8 +18,14 @@ The promises live here, each as a line of markup rather than a claim made elsewh
 - **A sentence the gate quoted is marked as one**, in the changelog's own words, because a
   sentence a model composed and a sentence the gate lifted verbatim are different kinds of
   claim.
-- **A disputed change is shown and says what disagreed.** Dropping it would make the card
-  tidier and the counts wrong.
+- **A disputed change is shown, says what disagreed and says which shape the disagreement
+  has**, in the lead of its note and in the weight of its badge. Dropping it would make the
+  card tidier and the counts wrong; grading it changes what the page says about a disagreement
+  and never whether one is recorded.
+- **A change with no text to show is one line, and every one is still on the page.** They
+  gather at the foot of the changes under a heading saying how many and what they are, each
+  still a block with its own anchor, permalink and disagreement note, and each opens where it
+  stands when a permalink names it. Nothing leaves the page or the counts for it.
 - **An event names the instrument that made it**, where a document names one: the number, the
   declared short name, the identifier, and on the event's own page the recorded official title.
 - **An event no amending act is named for says so**, once, above its changes: a label and a
@@ -47,12 +53,14 @@ The promises live here, each as a line of markup rather than a claim made elsewh
 
 What a change block carries wherever it appears, the pill, the permalink, the sentences, the row
 of their citations and the dates its text moved, lives in `pages/prose.py`; the index a long page
-opens with lives in `pages/event_index.py`; and the dates-and-counts line under the heading lives
-in `pages/facts.py`. All three were split off on 2026-09-03, the first when naming the amending
-act pushed this module past the size cap, the second when the index gained a label and a column to
-stand in, and the third when the gate clause was rewritten for a reader and the cap was reached
-again. Each is a statement this module places rather than composes. What is left is one event's
-shape: its opening, the block each change sits in and the order all of it comes in.
+opens with lives in `pages/event_index.py`; and the event's whole opening, its heading, its
+identity, its dates and its counts, lives in `pages/facts.py`. All three were split off on
+2026-09-03, the first when naming the amending act pushed this module past the size cap, the
+second when the index gained a label and a column to stand in, and the third when the gate clause
+was rewritten for a reader and the cap was reached again; the opening followed the count line it
+ends on when gathering the changes with no text crossed the cap on 2026-09-05. Each is a
+statement this module places rather than composes. What is left is one event's changes: the block
+each sits in, and the order all of them come in.
 
 Wording is imported rather than restated wherever the changelog says the same thing
 (`output.markdown`): two renderings of one fact that describe it differently are how a caveat
@@ -68,18 +76,22 @@ from __future__ import annotations
 
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry
-from emendrix.site_.amending import AmendingAct, amending_lines
-from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
-from emendrix.site_.clocks import event_date
-from emendrix.site_.dispute import dispute_note
+from emendrix.site_.amending import AmendingAct
+from emendrix.site_.dispute import (
+    QUIET_NOTE,
+    SHAPE_CLASS,
+    dispute_note,
+    dispute_shape,
+    named_by,
+    quiet_heading,
+)
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
-from emendrix.site_.pages.facts import event_facts
+from emendrix.site_.pages.facts import event_header
 from emendrix.site_.pages.prose import applies_line, dates_line, permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.sources import repo_file
-from emendrix.site_.untouched import all_textless, textless_note, untouched, untouched_note
 from emendrix.site_.urls import location_slug
 
 __all__ = ["render_event", "render_event_summary"]
@@ -129,6 +141,10 @@ def _change_block(
     The order is the argument: the applies line answers whether one of them governs the
     provision, and the dates below it are the ones the text stopped and started naming.
 
+    The block carries the shape of its disagreement as a class, which is what grades its badge
+    in the sheet, and a change with no text names its naming source in the heading: that
+    heading is the whole of such a row until a permalink opens it.
+
     `text` is the evidence, rendered once for the whole entry by `pages.texts` and handed in:
     the provision page shows the same block, and a diff computed twice is the one cost the
     split of these pages could have introduced. It carries the size of the difference it shows,
@@ -139,13 +155,19 @@ def _change_block(
     title = (
         Html(f' <span class="ttl">{escape(change.heading)}</span>') if change.heading else Html("")
     )
+    graded = f" {SHAPE_CLASS[dispute_shape(change.signals)]}" if change.disputed else ""
+    named = (
+        Html(f' <span class="by">named by {escape(named_by(change.signals))}</span>')
+        if change.textless
+        else Html("")
+    )
     lines = [
-        Html(f'<div class="chg" id="{escape(anchor)}">'),
+        Html(f'<div class="chg{graded}" id="{escape(anchor)}">'),
         Html(
             f"<h3>{pill(change.change_type, disputed=change.disputed)} "
             f"{magnitude_html(text)} "
             f'<a class="loc" href="../{escape(location_slug(change.location.canonical))}/">'
-            f"{escape(change.location.human)}</a>{title}{permalink(anchor)}</h3>"
+            f"{escape(change.location.human)}</a>{title}{named}{permalink(anchor)}</h3>"
         ),
         applies_line(change),
     ]
@@ -172,40 +194,22 @@ def _change_block(
     return lines
 
 
-def _event_header(
-    entry: ChangelogEntry, acts: tuple[AmendingAct, ...], *, full: bool
-) -> list[Html]:
-    """The article's opening, shared by the card and the event page: id, date, versions, facts.
+def _quiet(rows: list[Html], number: int) -> list[Html]:
+    """The changes with no text to show, gathered under a heading that says what they are.
 
-    The `id` is the fragment every feed entry's `<id>` was minted from, so both surfaces must
-    keep answering to it forever. The heading is the date, because a reader arriving at a
-    timeline is asking when; it names its clock through the one helper every dated line on the
-    site reads, so a detection date can never be set as an in-force date. The version pair is
-    what the event *is* and sits directly below in the mono face, an identifier to check against
-    EUR-Lex rather than a name to scan a list by. Then the instrument that made it, where one is
-    named, because that is what a reader knows the event by; `full` is the event's own page
-    rather than the card, and is what lets the official titles through. The facts line carries
-    both clocks, so the record of when this happened is whole whichever the heading named.
+    They are the same blocks as any other change, in the same order and with the same anchors;
+    the section adds the heading, the sentence saying how a row opens, and the class the sheet
+    collapses each row to its own heading under. `number` counts the rows, which is also the
+    count of provisions the heading states: the corroborator appends one such change per
+    top-level unit and never for a unit the comparison already covered.
     """
-    versions = f"<code>{escape(str(entry.from_version))} → {escape(str(entry.to_version))}</code>"
-    # The bare pill, no colour modifier: the label is a fact about the corpus's records, and
-    # the palette spends colour on diffs, disputes and links only (`style/tokens.py`).
-    unnamed = unattributed(entry)
-    marker = f' <span class="pill">{escape(UNATTRIBUTED_LABEL)}</span>' if unnamed else ""
-    lines = [
-        Html(f'<article class="event" id="{escape(entry.key)}">'),
-        Html(f"<h2>{escape(event_date(entry).words)}{marker}</h2>"),
-        Html(f'<p class="ident">{versions}</p>'),
-        *amending_lines(acts, full=full),
-        *event_facts(entry),
+    return [
+        Html('<section class="quiet">'),
+        Html(f"<h3>{escape(quiet_heading(number))}</h3>"),
+        Html(f'<p class="small muted">{escape(QUIET_NOTE)}</p>'),
+        *rows,
+        Html("</section>"),
     ]
-    if unnamed:
-        lines.append(Html(f'<p class="small muted">{escape(UNATTRIBUTED_NOTE)}</p>'))
-    if untouched(entry):
-        lines.append(Html(f'<p class="small muted">{escape(untouched_note(entry))}</p>'))
-    elif all_textless(entry):
-        lines.append(Html(f'<p class="small muted">{escape(textless_note(entry))}</p>'))
-    return lines
 
 
 def render_event_summary(
@@ -228,7 +232,7 @@ def render_event_summary(
     is about, which is a fact about the pairing and not about the event.
     """
     return [
-        *_event_header(entry, acts, full=False),
+        *event_header(entry, acts, full=False),
         Html(f'<p><a href="{escape(href)}">{escape(_SUMMARY_LINK)}</a></p>'),
         *extra,
         Html("</article>"),
@@ -250,17 +254,29 @@ def render_event(
     the evidence blocks, arrive resolved for the same reason. `texts` is positional too, one
     block per change, and is built once per entry however many pages show one of its changes.
 
+    The changes with no text to show are moved to the foot of the list, which is the one place
+    this page reorders anything. Anchors, permalinks and the index above them are untouched by
+    the move: a link into one still lands on it and still opens it.
+
     `changelogs_url` is the changelog repository's public home, or `""` where a deployment
     publishes none, and it decides only whether the closing sentence's path is a link. Where
     that repository lives on the operator's machine is never printed either way; the path it
     does print is the stable one inside the repository.
     """
-    lines = _event_header(entry, acts, full=True)
+    lines = event_header(entry, acts, full=True)
     if any(emitted.change.disputed for emitted in entry.changes):
         lines.append(Html(f'<p class="small muted">{escape(_THREE_SOURCES)}</p>'))
-    blocks: list[Html] = []
+    shown: list[Html] = []
+    hushed: list[Html] = []
+    quiet = 0
     for emitted, anchor, text in zip(entry.changes, anchors, texts, strict=True):
-        blocks.extend(_change_block(emitted, entry, anchor, text))
+        block = _change_block(emitted, entry, anchor, text)
+        if emitted.change.textless:
+            quiet += 1
+            hushed.extend(block)
+        else:
+            shown.extend(block)
+    blocks = shown + (_quiet(hushed, quiet) if quiet else [])
     if len(entry.changes) >= INDEX_ABOVE:
         lines.append(Html('<div class="layout event-layout">'))
         lines.extend(touched(entry, anchors, texts))

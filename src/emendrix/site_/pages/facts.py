@@ -1,13 +1,16 @@
-"""One event's dates and counts, in the line that sits under its heading.
+"""One event's opening: the heading it is known by, its identity, its dates and its counts.
 
 Split out of `act_event.py` on 2026-09-03, when the gate clause was rewritten for a reader and
-that module crossed the size cap. The seam is the one the module already had: everything here
-is a statement about the committed document's own fields, the two clocks and the seven counts,
-and none of it knows what a change block looks like or where the evidence lives.
+that module crossed the size cap, and widened on 2026-09-05, when gathering the changes with
+no text to show crossed it again and the opening came here to join the count line it ends on.
+The seam is the one that module always had and is a real one: everything here is a statement
+about the committed document's own fields, the two clocks and the seven counts, and none of it
+knows what a change block looks like or where the evidence lives. What stays behind is the
+changes and the order they come in.
 
-One line, three surfaces. The card on an act's timeline, the event's own page and an
-instrument's page all print it through the shared header in `act_event`, so an event cannot
-state its counts one way in a list and another way on the page a reader opens.
+One opening, three surfaces. The card on an act's timeline, the event's own page and an
+instrument's page all print it, so an event cannot state its counts one way in a list and
+another way on the page a reader opens.
 
 The words are the reader's, the numbers are the document's. `unexplained` and `quoted` are
 counted by the citation gate and are named after it in the committed Markdown; here they are
@@ -17,18 +20,25 @@ Nothing below this page moves with the rewording: the changelog keeps its own na
 
 from __future__ import annotations
 
+from collections import Counter
+
 from emendrix.output import ChangelogEntry
 from emendrix.output.counts import EntryCounts
+from emendrix.site_.amending import AmendingAct, amending_lines
+from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
 from emendrix.site_.clocks import event_date
+from emendrix.site_.dispute import SHAPE_WORDS, dispute_shape
 from emendrix.site_.markup import Html, count, escape
 from emendrix.site_.untouched import (
     TEXTLESS_CLAUSE,
     UNTOUCHED_SENTENCE,
     all_textless,
+    textless_note,
     untouched,
+    untouched_note,
 )
 
-__all__ = ["event_facts"]
+__all__ = ["event_facts", "event_header"]
 
 _ALL_CHECKED = "every change carries an explanation that passed its citation check"
 """The all-clear, as a sentence rather than as a pair of zeros. Two zeros beside two nouns read
@@ -55,6 +65,29 @@ def _checked(counts: EntryCounts) -> str:
     return "; ".join(stated) if stated else _ALL_CHECKED
 
 
+def _shapes(entry: ChangelogEntry) -> str:
+    """What the disputed count is a count of, one clause per shape, or nothing to say.
+
+    The three are read off the same function the site's published rates are counted by, so a
+    reader can add these up and get the number to their left, and the methodology table's rows
+    say the same thing about the same corpus. They print unconditionally once there is a
+    disagreement at all, zeroes included, for the reason the split beside them does: a line
+    that changes shape between two events is a line a reader has to read twice.
+
+    An event with nothing disputed gets no clause. There is no shape of a disagreement that
+    did not happen, and `0 disputed (0, 0, 0)` would put three numbers on every count line on
+    the site to say what one zero already says.
+    """
+    shapes = Counter(
+        dispute_shape(emitted.change.signals)
+        for emitted in entry.changes
+        if emitted.change.disputed
+    )
+    if not shapes.total():
+        return ""
+    return " (" + ", ".join(f"{shapes[key]} {words}" for key, words in SHAPE_WORDS.items()) + ")"
+
+
 def event_facts(entry: ChangelogEntry) -> list[Html]:
     """The dates and the counts, all of them read off the document, none of them recomputed.
 
@@ -67,6 +100,12 @@ def event_facts(entry: ChangelogEntry) -> list[Html]:
     The split prints unconditionally otherwise, `0 with no text` included. Every count on this
     line is printed whether or not it happened, and a line that changed shape between two
     events is a line a reader has to read twice.
+
+    The disputed count is followed by what it is a count of, wherever it is not zero, because
+    one number covered three findings a reader would weigh differently: a change whose words
+    the comparison read and another source did not list, one with no text to show at all, and
+    the outright contradiction about kind. Naming them takes nothing away, and the total they
+    add up to is the one that has always been printed here.
 
     The dates line carries what the heading above it did not. The heading names one clock and
     one date, so repeating that clause here would print the same fact twice on one screen and
@@ -99,6 +138,41 @@ def event_facts(entry: ChangelogEntry) -> list[Html]:
         dates,
         Html(
             f'<p class="facts">{escape(count(counts.touched, "provision"))} touched — '
-            f"{split}, <strong>{counts.disputed} disputed</strong> · {escape(gate)}</p>"
+            f"{split}, <strong>{counts.disputed} disputed</strong>"
+            f"{escape(_shapes(entry))} · {escape(gate)}</p>"
         ),
     ]
+
+
+def event_header(entry: ChangelogEntry, acts: tuple[AmendingAct, ...], *, full: bool) -> list[Html]:
+    """The article's opening, shared by the card and the event page: id, date, versions, facts.
+
+    The `id` is the fragment every feed entry's `<id>` was minted from, so both surfaces must
+    keep answering to it forever. The heading is the date, because a reader arriving at a
+    timeline is asking when; it names its clock through the one helper every dated line on the
+    site reads, so a detection date can never be set as an in-force date. The version pair is
+    what the event *is* and sits directly below in the mono face, an identifier to check against
+    EUR-Lex rather than a name to scan a list by. Then the instrument that made it, where one is
+    named, because that is what a reader knows the event by; `full` is the event's own page
+    rather than the card, and is what lets the official titles through. The facts line carries
+    both clocks, so the record of when this happened is whole whichever the heading named.
+    """
+    versions = f"<code>{escape(str(entry.from_version))} → {escape(str(entry.to_version))}</code>"
+    # The bare pill, no colour modifier: the label is a fact about the corpus's records, and
+    # the palette spends colour on diffs, disputes and links only (`style/tokens.py`).
+    unnamed = unattributed(entry)
+    marker = f' <span class="pill">{escape(UNATTRIBUTED_LABEL)}</span>' if unnamed else ""
+    lines = [
+        Html(f'<article class="event" id="{escape(entry.key)}">'),
+        Html(f"<h2>{escape(event_date(entry).words)}{marker}</h2>"),
+        Html(f'<p class="ident">{versions}</p>'),
+        *amending_lines(acts, full=full),
+        *event_facts(entry),
+    ]
+    if unnamed:
+        lines.append(Html(f'<p class="small muted">{escape(UNATTRIBUTED_NOTE)}</p>'))
+    if untouched(entry):
+        lines.append(Html(f'<p class="small muted">{escape(untouched_note(entry))}</p>'))
+    elif all_textless(entry):
+        lines.append(Html(f'<p class="small muted">{escape(textless_note(entry))}</p>'))
+    return lines

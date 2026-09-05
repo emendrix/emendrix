@@ -18,6 +18,7 @@ from emendrix.core import (
     ActId,
     ApplicabilityUnchanged,
     ApplicabilityUnknown,
+    ChangeType,
     Delta,
     ProvisionLocation,
     ProvisionTree,
@@ -38,6 +39,7 @@ from emendrix.site_.markup import escape
 from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.prose import applies_line
 from emendrix.site_.pages.texts import text_blocks
+from emendrix.site_.style import STYLE
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -173,7 +175,12 @@ def test_no_markdown_fence_reaches_the_words_of_a_change_with_no_text() -> None:
 
 
 def _disputed_entry() -> ChangelogEntry:
-    """One entry whose changes the metadata signal saw only for `AR 9`, so the rest disagree."""
+    """One entry whose changes the metadata signal saw only for `AR 9`, so the rest disagree.
+
+    Five disagreements in two shapes: the four the comparison read and the metadata did not
+    list, and `AR 9`, which the metadata named and the comparison never saw, so it carries no
+    text at all and is appended by the corroborator.
+    """
     metadata = SignalReport(
         signal=Signal.CORPUS_METADATA,
         claims=(SignalClaim(location=ProvisionLocation.parse("AR 9")),),
@@ -186,14 +193,110 @@ def test_a_disputed_change_says_what_disagreed_without_saying_disputed() -> None
 
     A newcomer takes "disputed" for a claim about the law. The claim is about the tool, so the
     marker names the sources and says neither is overruled.
+
+    The lead also says which shape the disagreement has. These changes are the evidenced one:
+    the comparison read the text, which is on the page below the marker, and the metadata did
+    not list it. The block carries that shape as a class, which is what grades its badge.
     """
     rendered = _page(_disputed_entry())
-    assert "<strong>Sources disagree</strong>" in rendered
+    assert "<strong>Sources disagree about what is listed, not about the text</strong>" in rendered
     assert (
         "the text comparison found this change; the EU&#x27;s own amendment metadata does not "
         "list it. Both are shown; neither is overruled." in rendered
     )
     assert "<strong>Disputed</strong>" not in rendered
+    assert rendered.count('<div class="chg disp-text"') == 4
+    assert "disp-kind" not in rendered
+
+
+def test_the_count_line_says_what_the_disputed_count_is_a_count_of() -> None:
+    """One number covered three findings, and the clauses under it add back up to that number.
+
+    They are read off the same function the site's published rates are counted by, so the line
+    under an event and the methodology table cannot say different things about one corpus.
+    """
+    rendered = _page(_disputed_entry())
+    assert (
+        "<strong>5 disputed</strong> (4 found in the text, 1 named with no text, "
+        "0 called different kinds)" in rendered
+    )
+
+
+def test_an_event_with_nothing_disputed_gets_no_clause_about_shapes() -> None:
+    """There is no shape of a disagreement that did not happen, and one zero already says so."""
+    rendered = _page(diff_only_entry(_delta(), detected_on=OBSERVED))
+    assert "<strong>0 disputed</strong> ·" in rendered
+    assert "found in the text" not in rendered
+
+
+def test_the_changes_with_no_text_are_gathered_and_every_one_is_still_on_the_page() -> None:
+    """A row that can show a reader nothing is one line; nothing about it leaves the page.
+
+    The mixed event is the one that matters here: four changes carrying text and one carrying
+    none. The four stay where they are, the fifth moves to the foot under a heading that counts
+    them, and it keeps its anchor, its permalink, its disagreement note and its own reason for
+    carrying no prose.
+    """
+    from site_entries import some_textless_entry
+
+    entry = some_textless_entry()
+    rendered = _page(entry)
+    (quiet,) = [emitted for emitted in entry.changes if emitted.change.textless]
+    anchor = f"{entry.key}-{quiet.change.location.canonical.lower().replace(' ', '-')}"
+    assert "<h3>1 provision named with no text to show</h3>" in rendered
+    assert "None was dropped and every one still counts in the disputed total above." in rendered
+    section = rendered[rendered.index('<section class="quiet">') :]
+    assert f'<div class="chg disp-none" id="{anchor}">' in section
+    assert f'<a class="permalink" href="#{anchor}"' in section
+    assert "named by the EU&#x27;s own amendment metadata" in section
+    assert "Sources disagree, and there is no text on either side" in section
+    # The four that carry text are blocks above the gathered list, not rows inside it.
+    assert rendered.count('<div class="chg') == len(entry.changes)
+    assert section.count('<div class="chg') == 1
+    # The heading counts rows and calls them provisions, which is only honest because the
+    # corroborator appends one such change per top-level unit: the number it prints is the
+    # `with no text` figure the count line above states, reached by a different route.
+    assert entry.counts.textless == 1
+    assert "1 with no text" in rendered
+
+
+def test_a_permalink_into_the_gathered_list_opens_the_row_it_names() -> None:
+    """A `§` that scrolled to a row a reader still could not read would be a worse promise.
+
+    The row is collapsed by the sheet and reopened by `:target`, which is exactly what its own
+    permalink sets, so the link that names a row is the link that opens it. Both halves are
+    asserted: the markup pairs the anchor with the id, and the sheet reveals a targeted row.
+    """
+    from site_entries import some_textless_entry
+
+    rendered = _page(some_textless_entry())
+    section = rendered[rendered.index('<section class="quiet">') :]
+    (target,) = re.findall(r'<div class="chg disp-none" id="([^"]+)">', section)
+    assert f'href="#{target}"' in section
+    assert ".quiet .chg > *:not(h3) { display: none; }" in STYLE
+    assert ".quiet .chg:target > *:not(h3) { display: block; }" in STYLE
+
+
+def test_the_outright_contradiction_about_kind_is_the_one_that_reads_as_an_alert() -> None:
+    """The smallest and loudest of the three shapes, on the page and in the sheet.
+
+    Every source that looked found the provision and they named different kinds, so nothing is
+    missing and nothing is unlisted: the lead says so, the block carries the kind class, and the
+    badge is the only one of the three the sheet fills and weights.
+    """
+    metadata = SignalReport(
+        signal=Signal.CORPUS_METADATA,
+        claims=tuple(
+            SignalClaim(location=change.unit, change_type=ChangeType.INSERTED)
+            for change in _delta().changes
+        ),
+    )
+    entry = diff_only_entry(corroborate(_delta(), metadata=metadata).delta, detected_on=OBSERVED)
+    rendered = _page(entry)
+    assert rendered.count('<div class="chg disp-kind"') == 3
+    assert "<strong>Sources disagree about the kind of change</strong>" in rendered
+    assert "<strong>3 disputed</strong> (0 found in the text, 0 named with no text, " in rendered
+    assert ".disp-kind .pill.disp { background: var(--mark); font-weight: 700; }" in STYLE
 
 
 def test_the_three_sources_explainer_is_said_once_above_the_first_disagreement() -> None:

@@ -1,23 +1,18 @@
-"""The act, event and amendment pages and the text they quote: layout, blocks, diffs, tables.
+"""One change on a page, and the text it quotes: the block, the marks, the diff, the print rules.
 
-Last in the cascade, so a rule here may rely on everything before it. This is the half of the
-sheet that dresses evidence rather than navigation: the act page's header lines, its two-column
-layout and sticky index, the timeline, the change blocks and their headings, the in-page map of
-touched provisions, the dispute, applies and dates lines, the act's list of the dates its text
-names, the unified diff, the verbatim blocks, the metrics table, and the two rules an amending
-instrument's page and the event pager need. Both
-of those reuse the timeline rather than inventing a second one, an instrument's page being a
-timeline per watched act it moved. A provision page's steps reuse the change block for the same
-reason: a step is one change, stated the way every other change on the site is stated, and the
-three rules it adds only undo the block's horizontal bleed and set its heading level. The
-permalink and the citation row are shared the same way, by both pages that show a change.
+Last in the cascade, so a rule here may rely on everything before it and on `timeline` in
+particular, which draws the pages these blocks sit on. This module dresses the evidence rather
+than the page: the change block and its heading, the in-page map of touched provisions and the
+sticky column it becomes, the permalink and the citation row, the applies and dates lines, the
+disagreement note and the badge that grades it, the gathered rows with no text to show, the
+unified diff, the verbatim blocks and the metrics table. A provision page's steps reuse the
+change block: a step is one change, stated the way every other change on the site is stated,
+and the three rules it adds only undo the block's horizontal bleed and set its heading level.
+The permalink and the citation row are shared the same way, by both pages that show a change.
 
-Four decisions carry the look of these two pages and are worth stating:
+`timeline` was split off on 2026-09-05, when the gathered rows needed rules this module had no
+room for under the size cap. Three decisions carry the look of a change and are worth stating:
 
-- **The timeline is drawn as one.** A rail with a node per event, because an act's history is
-  genuinely a sequence and the heading of each entry is now its date. The events lost the
-  panel, border and radius they used to be boxed in: identical rounded cards say the entries
-  are alike, and what a reader needs to see is where each one sits on the line.
 - **A change block is a row on a document, not a card.** A hairline above it, the heading on
   one baseline (pill, coordinate, title), and horizontal padding it always has, so the tint a
   fragment link puts on `.chg:target` has room to sit in and lands without moving anything.
@@ -25,10 +20,9 @@ Four decisions carry the look of these two pages and are worth stating:
   caps only direct children, and every sentence on an event page is nested two levels down.
   The diff is the one thing deliberately let out to the full column: it is prose to read but
   it is also the artifact, and stored text carries its own line structure.
-- **An index is bounded by what it is at that width.** The act page's index is a `<details>`
-  of hundreds of links and is capped everywhere; an event page's is a row of a few dozen that
-  costs a few lines, so it is capped only at the width where it becomes a sticky column beside
-  the changes. Two indexes, two caps, and neither rule is written for the other's shape.
+- **A disagreement is graded by weight, never by hue.** The three shapes a disagreement takes
+  all keep the one disputed colour; the border and the weight of the badge are what tell them
+  apart, and the shape rides in on a class the change block carries.
 
 Two rules carry a constraint rather than a preference and are commented where they sit: the
 diff preserves the line breaks the stored text already has, and the print block must name any
@@ -40,7 +34,7 @@ evidence typography and belongs here, where an act page that grows one would fin
 
 The `@media print` block closes the sheet, and it is here rather than with the chrome it
 mostly undoes for one reason: a print rule beats a screen rule of the same specificity only
-by coming after it, and the screen rules it overrides are spread across all four modules.
+by coming after it, and the screen rules it overrides are spread across all five modules.
 Coming last is not enough on its own: a two-class or pseudo-class selector outranks a
 one-class one whatever the order, so `.chg:target` and the two tinted verbatim blocks are
 named again there rather than left to the blanket line. It takes the header's navigation and
@@ -57,89 +51,6 @@ from typing import Final
 __all__ = ["EVIDENCE"]
 
 EVIDENCE: Final = """\
-.official {
-  margin: var(--space-2) 0;
-  font-family: var(--display);
-  font-size: var(--step-1);
-  line-height: 1.45;
-  color: var(--muted);
-}
-.links { margin: var(--space-1) 0 var(--space-4); font-size: var(--step-sm); }
-/* The neighbours line closes the header, so its gap above is the links line's own. */
-.related { margin: 0 0 var(--space-4); font-size: var(--step-sm); color: var(--muted); }
-.layout { display: block; }
-/* The index is bounded at every width. An act with hundreds of provisions renders hundreds
-   of links, and `<details open>` opens them all: unbounded, the CRR index stands 20510px tall
-   on a 390px screen and the timeline it sits above starts below all of it. */
-.sidebar {
-  margin: var(--space-4) 0;
-  padding: .2rem 1rem .8rem;
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  font-size: var(--step-sm);
-  max-height: 60vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-.sidebar summary { padding: var(--space-2) 0; font-family: var(--display);
-                   font-size: var(--step-0); }
-.sidebar h2 {
-  margin: var(--space-3) 0 .3rem;
-  padding: 0;
-  border: 0;
-  font-family: var(--sans);
-  font-size: .75rem;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.sidebar ul { list-style: none; margin: 0; padding: 0; }
-.sidebar li { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1);
-              padding: .15rem 0; }
-@media (min-width: 60rem) {
-  .layout {
-    display: grid;
-    grid-template-columns: 16rem minmax(0, 1fr);
-    gap: 2rem;
-    align-items: start;
-  }
-  .sidebar { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
-  /* The dates list follows the timeline down the page, so it belongs in the timeline's column
-     rather than under the index: auto-placement would otherwise start it a row lower in the
-     16rem one, where a row of two links and a date does not fit. */
-  .layout > .dates-named { grid-column: 2; }
-}
-/* The rail and its nodes: an act's history is a sequence, and the heading of each entry on
-   it is a date. Drawn in the sheet so the markup stays one article per event. */
-.timeline { min-width: 0; }
-.layout > .timeline, .amended > .timeline { padding-left: var(--space-4);
-                                            border-left: 1px solid var(--rule); }
-.timeline .event { position: relative; padding-bottom: var(--space-5); }
-.timeline .event::before {
-  content: "";
-  position: absolute;
-  top: .8em;
-  left: calc(-1 * var(--space-4) - 3px);
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--muted);
-}
-.timeline .event:last-child { padding-bottom: 0; }
-.event { min-width: 0; }
-.event > h2 {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: var(--step-2);
-}
-.event > p { max-width: var(--measure); }
-.event > .ident { margin: var(--space-1) 0 0; }
 .chg {
   margin: 0 calc(-1 * var(--space-3));
   padding: var(--space-4) var(--space-3) var(--space-3);
@@ -224,32 +135,27 @@ a.loc { color: inherit; font-weight: 600; }
    change, and in tabular figures so a column of ISO dates reads as a column. */
 .dates { margin: var(--space-1) 0 var(--space-2); font-size: var(--step-sm);
          color: var(--muted); font-variant-numeric: tabular-nums; }
-/* Every date one act's text names, under its timeline. A list rather than a table: a row is a
-   date and the two places it can be checked, and columns would promise a structure the corpus
-   never wrote. The date leads each row in the mono face, so the dates scan as a column while
-   the words around them stay prose. */
-.dates-named { margin: var(--space-5) 0 0; }
-.dates-named ul { list-style: none; margin: 0; padding: 0; font-size: var(--step-sm); }
-.dates-named li { padding: .15rem 0; }
-.dates-named .on { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-/* One watched act on an amending instrument's page: its own heading, then the rail of events
-   that instrument produced there. The heading carries the act, so it is set as a page heading
-   rather than as a card's. */
-.amended { margin: var(--space-5) 0 0; }
-.amended > h2 a { text-decoration: none; }
-.amended > h2 a:hover { text-decoration: underline; }
-/* The events either side of this one, at the foot of an event page. Each link carries the date
-   it goes to, so the row is read rather than decoded; they sit at the two ends of the line so
-   the direction is visible before the words are. */
-.pager { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2);
-         margin: var(--space-5) 0 0; padding-top: var(--space-3);
-         border-top: 1px solid var(--rule); font-size: var(--step-sm); }
-/* The instrument that made the event, under the version pair it produced. Set small, like the
-   other fact lines, and the declared short name italic beside the number so the label and the
-   identifier read as two different kinds of name. */
-.amending { font-size: var(--step-sm); }
-.amending .ttl { font-style: italic; }
 .disputed { font-size: var(--step-sm); color: var(--warn); }
+/* A disagreement is graded by which of the three shapes it is, and the badge carries the
+   grade. No hue is spent on it: all three keep the one disputed colour, and the border and
+   the weight are what tell them apart. The evidenced shape, a change the comparison read and
+   another source did not list, is the plain disputed pill and adds no rule at all. */
+.disp-none .pill.disp { border-style: dashed; }
+.disp-kind .pill.disp { background: var(--mark); font-weight: 700; }
+/* The source that named a row with no text, on the heading that is the whole of that row
+   until it is opened. Set like the title beside it: the sans face at the small step, so the
+   heading stays one coordinate and everything after it reads as a note about it. */
+.chg .by { font-family: var(--sans); font-weight: 400; font-size: var(--step-sm);
+           color: var(--muted); }
+/* The changes with no text to show, gathered at the foot of an event: one line each, with the
+   rest of the block hidden until the row is the fragment target. `:target` is what a permalink
+   into this list sets, so the link that names a row is the link that opens it, with no script
+   and nothing dropped from the markup. */
+.quiet { margin: var(--space-5) 0 0; }
+.quiet .chg { margin: 0; padding: .2rem var(--space-3); border-top: 0; }
+.quiet .chg > *:not(h3) { display: none; }
+.quiet .chg:target { padding: var(--space-3); }
+.quiet .chg:target > *:not(h3) { display: block; }
 details { margin: var(--space-3) 0 0; }
 summary { cursor: pointer; font-size: var(--step-sm); color: var(--accent); }
 summary:hover { text-decoration: underline; }
@@ -313,6 +219,10 @@ th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color:
   /* Navigation, like the header's: a permalink and a way back to the top of a sheet of paper
      are both instructions a printed page cannot carry out. */
   .permalink, .backtop { display: none; }
+  /* A row cannot be opened on paper either, so the gathered ones print whole, for the reason
+     both indexes do. Named with the same two classes the screen rule uses, since a shorter
+     selector would not outrank it. */
+  .quiet .chg > *:not(h3) { display: block; }
   .strip, .disclaimer, .sidebar, .diff, .verbatim, .loop li, .pill, .tag
     { background: transparent; }
   /* Named again because a two-class or pseudo-class selector outranks a one-class one
@@ -320,9 +230,13 @@ th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color:
      label above a whole inserted or deleted provision, in the word inside the pill, and in
      the fragment that brought a reader to one block. */
   .verbatim.ins, .verbatim.del, .pill.ins, .chg:target { background: transparent; }
+  /* And the filled badge of the one shape that is an alert, for the same reason and by the
+     same rule: what its tint says is written beside it, in the lead of the note under it. */
+  .disp-kind .pill.disp { background: transparent; }
   /* The tints inside a diff are the only ones that say something no word beside them does,
      so they stay, and nothing is redeclared for them: the screen rules already underline an
      insertion and strike a deletion, which is what a printer with no colour reads. */
   a { color: inherit; }
 }
+
 """
