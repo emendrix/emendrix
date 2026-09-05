@@ -42,7 +42,7 @@ __all__ = [
 
 NOTHING_TO_EXPLAIN = (
     "the structural diff did not see this change, so it carries no text; another signal named "
-    "the unit and the disagreement ships as `disputed`"
+    "the unit and the disagreement ships marked disputed"
 )
 """Why a change can reach this stage with nothing to explain — and why that is not an error.
 
@@ -51,6 +51,10 @@ names and the diff did not (`corroborate/merge.py`). The diff is the only signal
 text, so those changes have a location, a kind, `disputed=True` and no quotable text at all.
 They are routine — the REACH pair produces 32 of them — and they must ship, so the explain
 stage records this reason against them and moves on rather than raising.
+
+The sentence carries no markup of any format: it is stored on a published document and reaches
+a reader through the Markdown changelog, the JSON payload and an HTML page, and only one of
+those three would read a fence as anything but a character.
 """
 
 
@@ -207,9 +211,10 @@ def explainable(change: Change) -> bool:
     """Whether there is anything here for a model to read.
 
     False exactly for the textless changes the corroborator appends (see `NOTHING_TO_EXPLAIN`).
-    Checked with `is None`, not truthiness: an empty provision text is a text.
+    The predicate itself lives on `Change`, so the stage that asks nothing of a model and the
+    counts that report it cannot part company over what carries text.
     """
-    return change.before is not None or change.after is not None
+    return not change.textless
 
 
 def build_context(

@@ -103,7 +103,19 @@ title is fetched for one, so the identifier is what ships. And each signal publi
 behind its verdict (`corroboration.signals[].claims`), at the depth the corpus made them, so an
 annotation on `AR 5 PA 1 ALN 1 PTA (bb)` survives into the artifact instead of being flattened to
 `AR 5`. The structural diff publishes none: it produces the changes themselves, so a copy there
-would be a second delta. Neither field is a schema bump: both have defaults, and `schema_version`
-stays `1.0`.
+would be a second delta. Neither field is a schema bump: both have defaults.
+
+`schema_version` is `1.1`. It moved there on 2026-09-05, when `counts.substantive` stopped
+covering a touched unit that carries no text on either side. Such a unit was named by the corpus
+metadata or by an amending act's instructions and never seen by the text comparison, which is the
+only signal carrying any text, and it now has a bucket of its own: `counts.textless`. The three
+buckets `substantive`, `date_only` and `textless` sum to `touched`. Adding the field would not
+have been a bump, since it has a default; re-meaning `substantive` is one, because a consumer
+summing it with `date_only` to get `touched` was right before that date and is wrong after it.
+
+Documents written before it say `1.0` and stay valid, so a reader of the corpus meets both
+versions. One read under the newer schema reports `textless` as 0 and the wider `substantive` its
+own run computed, which is the older question answered under the older name; it is corrected when
+something rewrites the entry, by the same rule the rest of this page states, and never in bulk.
 
 A rendering of these artifacts as a browsable site is in [`./site.md`](./site.md).

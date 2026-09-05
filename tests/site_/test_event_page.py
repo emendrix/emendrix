@@ -12,6 +12,8 @@ import re
 from datetime import date, timedelta
 from pathlib import Path
 
+from helpers import text_of
+
 from emendrix.core import (
     ActId,
     ApplicabilityUnchanged,
@@ -41,6 +43,10 @@ from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 REPO = Path(__file__).resolve().parents[2]
 REPORTS = REPO / "reports" / "eval"
 OBSERVED = date(2026, 8, 9)
+
+_SCRIPT = re.compile(r"<script\b.*?</script>", re.DOTALL)
+"""Tags and their contents, for a check about words: `text_of` strips only the tags, and the
+inline JSON-LD block every page carries would otherwise be read as part of the prose."""
 
 
 def _run() -> EvalRun:
@@ -138,6 +144,32 @@ def test_an_event_that_touched_nothing_is_titled_in_words_not_as_a_zero() -> Non
     rendered = _page(untouched_entry())
     assert "no provisions differ, detected 2026-08-09 — emendrix</title>" in rendered
     assert "0 provisions changed" not in rendered
+
+
+def test_an_event_with_no_text_anywhere_says_that_in_its_title_and_its_description() -> None:
+    """Every unit here was named by a source that carries no text, so nothing on the page
+    changed in any text this site can show, and `2 provisions changed` would say it did."""
+    from site_entries import textless_entry
+
+    rendered = _page(textless_entry())
+    assert "2 provisions named with no text to show" in rendered
+    assert "2 provisions changed" not in rendered
+    assert "2 provisions touched — none with text to show" in rendered
+    assert "<strong>2 disputed</strong>" in rendered
+    assert "Each provision, with the source that named it, from consolidated" in rendered
+    assert "the verbatim text before and after" not in rendered
+
+
+def test_no_markdown_fence_reaches_the_words_of_a_change_with_no_text() -> None:
+    """The reason is stored on the document and escaped into the page, which is correct and
+    stays correct, so the sentence itself may carry no markup of any format: a fence would
+    reach a reader as two stray characters here and as an element in the changelog."""
+    from site_entries import textless_entry
+
+    rendered = _page(textless_entry())
+    assert '<p class="none">No explanation shipped — ' in rendered
+    assert "another signal named the unit and the disagreement ships marked disputed" in rendered
+    assert "`" not in text_of(_SCRIPT.sub("", rendered))
 
 
 def _disputed_entry() -> ChangelogEntry:
@@ -244,7 +276,7 @@ def _headed(**update: object) -> str:
 
 def _gate_clause(**counts: int) -> str:
     """The facts line of an explained event whose gate counts are patched to order."""
-    from emendrix.output.json_out import EntryCounts
+    from emendrix.output.counts import EntryCounts
     from emendrix.site_.pages.facts import event_facts
 
     entry = diff_only_entry(_delta(), detected_on=OBSERVED).model_copy(

@@ -47,7 +47,12 @@ from emendrix.site_.clocks import event_dated
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.titles import event_words
-from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched
+from emendrix.site_.untouched import (
+    TEXTLESS_CLAUSE,
+    UNTOUCHED_SENTENCE,
+    all_textless,
+    untouched,
+)
 from emendrix.site_.urls import act_href, depth_of, event_href, up
 
 __all__ = ["feed_path", "feed_title", "render_feed", "render_feeds_page"]
@@ -110,7 +115,9 @@ def _summary(site: SiteInputs, entry: ChangelogEntry) -> str:
     for keeps its entry whole and says so first, for the same reason: the feed carries every
     event, worded as what it is. An event that touched nothing states the finding as a
     sentence rather than a row of zeros: a subscriber told nothing changed has learned
-    something, and the words say it was a finding rather than a failure.
+    something, and the words say it was a finding rather than a failure. An event none of whose
+    units carries any text says that in place of the three-way split alone, and keeps both its
+    counts either side of it.
 
     The instruments are named by their numbers rather than by the short names the title
     already used: a summary is where a subscriber checks which instrument this was, and a
@@ -119,11 +126,16 @@ def _summary(site: SiteInputs, entry: ChangelogEntry) -> str:
     counts = entry.counts
     in_force = ", ".join(value.isoformat() for value in entry.in_force) or "not stated"
     lead = f"{UNATTRIBUTED_FEED_LEAD} " if unattributed(entry) else ""
+    split = (
+        TEXTLESS_CLAUSE
+        if all_textless(entry)
+        else f"{counts.substantive} substantive, {counts.date_only} date-only, "
+        f"{counts.textless} with no text"
+    )
     counted = (
         UNTOUCHED_SENTENCE
         if untouched(entry)
-        else f"{count(counts.touched, 'provision')} touched: {counts.substantive} substantive, "
-        f"{counts.date_only} date-only, {counts.disputed} disputed."
+        else f"{count(counts.touched, 'provision')} touched: {split}, {counts.disputed} disputed."
     )
     numbers = ", ".join(act.number or act.key for act in amenders(site.amending, entry))
     made_by = f" Amended by {numbers}." if numbers else ""

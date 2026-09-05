@@ -172,6 +172,29 @@ def test_the_only_script_is_the_committed_search_script(site: Path) -> None:
             assert 'src="' in tag and script in tag, page
 
 
+_SCRIPT = re.compile(r"<script\b.*?</script>", re.DOTALL)
+"""Tags and their contents, for a check about words: `text_of` strips only the tags, so the
+inline `application/ld+json` block every page carries would otherwise be read as prose."""
+
+
+def test_no_page_carries_a_markdown_fence_in_its_words(site: Path) -> None:
+    """A stored sentence reaches this site through `escape`, which is what it should do.
+
+    So the sentences themselves carry no markup of any format: a backtick pair that reads as
+    inline code in the Markdown changelog reads as two stray characters here, and the same
+    string is stored verbatim in the JSON a consumer parses.
+
+    **What this is not evidence of.** The golden corpus is the MDR postponement, which carries
+    no unit the text comparison missed, so this property passed on the day the one sentence
+    with a fence in it was still shipping. It is a floor under future strings; the checks that
+    catch this class are the class guard in `tests/explain/test_textless_changes.py` and the
+    rendering guard in `test_event_page.py`, which render the string that has one.
+    """
+    for page in _pages(site):
+        words = text_of(_SCRIPT.sub("", page.read_text(encoding="utf-8")))
+        assert "`" not in words, page
+
+
 def test_no_page_reaches_a_third_party_or_counts_its_readers(site: Path) -> None:
     """The security story stays one sentence, and that sentence is the only place the word is.
 
@@ -200,7 +223,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 42020)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 42036)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -296,7 +319,12 @@ bytes in their names: nine characters in each of the two asset links, paid ident
 page on the site. It buys a cache that cannot serve yesterday's stylesheet beside today's
 markup, which is what the edge did serve that day, holding 14 424 bytes of it against the
 origin's 22 056 under a one-day asset lifetime. No measured figure moved with it, and on this
-page nothing else moved at all."""
+page nothing else moved at all.
+
+16 bytes heavier on 2026-09-05, when the count line started printing the units carrying no text
+on either side as their own bucket. It is one clause of the facts line, `0 with no text`, and
+this event has none of them: the three-way split is what moved, not any number on this page.
+Nothing else on it moved."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

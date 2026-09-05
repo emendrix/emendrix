@@ -16,9 +16,10 @@ from __future__ import annotations
 
 from datetime import date
 
-from emendrix.core import Delta, Signal, SignalClaim, SignalReport
+from emendrix.core import Delta, ProvisionLocation, Signal, SignalClaim, SignalReport
 from emendrix.corroborate import corroborate
 from emendrix.diff import compute_delta
+from emendrix.explain import NOTHING_TO_EXPLAIN
 from emendrix.gate import GateOutcome
 from emendrix.graph.report import EmittedChange, EmittedDelta
 from emendrix.output import ChangelogEntry
@@ -32,6 +33,8 @@ __all__ = [
     "OBSERVED_ON",
     "attributed_entry",
     "disputed_entry",
+    "some_textless_entry",
+    "textless_entry",
     "unattributed_entry",
     "untouched_entry",
 ]
@@ -45,7 +48,13 @@ def _toy_delta() -> Delta:
     return compute_delta(before, after)  # type: ignore[arg-type]
 
 
-def _entry_of(delta: Delta, metadata: SignalReport | None) -> ChangelogEntry:
+def _entry_of(delta: Delta, metadata: SignalReport | None, *, reason: str = "") -> ChangelogEntry:
+    """The toy transition corroborated and wrapped the way `ChangelogEntry.of` wraps one.
+
+    `reason` is the sentence the explain stage records against a change it was never able to
+    ask about, and giving one means the stage ran: a diff-only entry has no per-change reason
+    to give, so the two travel together.
+    """
     merged = corroborate(delta, metadata=metadata, instructions=None)
     return ChangelogEntry.of(
         EmittedDelta(
@@ -54,13 +63,32 @@ def _entry_of(delta: Delta, metadata: SignalReport | None) -> ChangelogEntry:
             to_version=merged.delta.to_version,
             summary=merged.delta.summary,
             changes=tuple(
-                EmittedChange(change=change, outcome=GateOutcome.UNEXPLAINED)
+                EmittedChange(
+                    change=change,
+                    outcome=GateOutcome.UNEXPLAINED,
+                    unexplained=reason if change.textless else "",
+                )
                 for change in merged.delta.changes
             ),
             corroboration=merged.report,
         ),
         detected_on=OBSERVED_ON,
-        diff_only=True,
+        diff_only=not reason,
+    )
+
+
+def _named(*locations: str) -> SignalReport:
+    """A metadata signal naming units and nothing else, the way an annotation window does."""
+    return SignalReport(
+        signal=Signal.CORPUS_METADATA,
+        claims=tuple(
+            SignalClaim(
+                location=ProvisionLocation.parse(location),
+                in_force=IN_FORCE,
+                amending_act=AMENDMENT,
+            )
+            for location in locations
+        ),
     )
 
 
@@ -128,3 +156,28 @@ def disputed_entry() -> ChangelogEntry:
         ),
     )
     return _entry_of(delta, metadata)
+
+
+def textless_entry() -> ChangelogEntry:
+    """Every touched unit named by the metadata, and the text comparison saw none of them.
+
+    The shape `corroborate.merge` appends: a location, a kind, `disputed=True` and no text on
+    either side. It is built by comparing one version with itself, so the diff has nothing to
+    contribute, and by naming two units the toy act does not contain, so both are appended.
+    """
+    adapter = ToyCorpusAdapter(observed_on=OBSERVED_ON)
+    before = adapter.fetch_version(HOUSE_RULES, V1)
+    assert not isinstance(before, Exception)
+    delta = compute_delta(before, before)  # type: ignore[arg-type]
+    return _entry_of(delta, _named("AR 9", "AR 12"), reason=NOTHING_TO_EXPLAIN)
+
+
+def some_textless_entry() -> ChangelogEntry:
+    """The toy transition, with one unit the metadata named and the diff never saw.
+
+    The mixed event: four units carrying text and one carrying none, which is what keeps the
+    count line's three-way split honest rather than only its all-or-nothing branch.
+    """
+    delta = _toy_delta()
+    named = [change.unit.canonical for change in delta.changes] + ["AR 9"]
+    return _entry_of(delta, _named(*named), reason=NOTHING_TO_EXPLAIN)

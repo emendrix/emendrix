@@ -472,4 +472,26 @@ and not a span among them, no change in it carrying a date. The golden tree hold
 `unchanged` line at all, every MDR change having either deferred or been left unknown, so that
 third shape is pinned in `test_event_page.py` against the toy corpus instead, which writes no
 date markup and so moves no date on any change. No measured figure moved with any of it.
+
+**2026-09-05, later the same day: a touched unit carrying no text on either side is counted as
+one.** Five files moved, three pages and both feeds, and every one of them by the same clause.
+`substantive` stopped meaning "not date-only" and started meaning "not date-only and carrying
+text", and the units the narrowing takes out are counted in a bucket of their own, `textless`,
+printed on the count line and in the Atom summary as `with no text`. The MDR postponement
+carries none of them, so the three counts on these five files read `3 substantive, 6 date-only,
+0 with no text` where they read `3 substantive, 6 date-only`: **not one number on the golden
+moved, only the split**. The clause prints unconditionally, zero included, because a line that
+changed shape between two events is a line a reader has to read twice; the event that has
+nothing but such units says so in a clause instead, and there is no such event in this tree.
+No `<id>`, no permalink, no anchor and no relative path moved, so nothing renotifies. Every
+other page, `sitemap.xml`, `search-index.json`, `robots.txt`, `style.88e068bb.css`,
+`search.622da217.js`, `icon.svg` and `og.png` are byte-identical. `_LARGEST_PAGE` rises 16
+bytes, the clause on the MDR event page, and stays that page. The two at-scale pins rise by the
+same clause on every count line of a generated tree of 200 events: `_HEAVIEST` by 3200 bytes,
+one clause per event card on the act index, and `_TOTAL_BYTES` by 6400, that index and each
+event page. No published figure moved with any of it: nothing in `eval_` reads these counts, no
+cassette and no faithfulness sign-off is touched, and the flagship AI Act event carries no
+textless unit either. What did move is a stored field on every future document, which is why
+`schema_version` is now `1.1`; the 446 documents already published say `1.0`, read back with
+`textless` at 0 and their own `substantive`, and are corrected where they are stored.
 """

@@ -1,4 +1,9 @@
-"""Wording for an event whose comparison found no provision to report.
+"""Wording for the two kinds of event whose counts say less than a sentence does.
+
+Both are findings rather than rendering accidents, both are derived at build time from the
+committed document's own counts, and each is asked through one predicate so no two surfaces
+can disagree about what the class is. The first is an event with nothing to report at all; the
+second is an event with rows to report and no text in any of them.
 
 A committed entry can carry a version pair and an empty change list: the corpus published the
 two as distinct versions, and the structural comparison matched every top-level provision.
@@ -12,9 +17,16 @@ against both source documents byte by byte; the only difference sits in the bibl
 front matter, before the enacting terms, so the comparison is right to report nothing. The
 scoping caveat in `untouched_note` exists for exactly that shape.
 
-Like `attribution.py`, the classification is derived here at build time from the committed
-document's own counts, is not a pipeline concept, and every renderer asks this one predicate
-so no two surfaces can disagree about what the class is.
+The second class is an event every touched unit of which carries no text on either side. Such
+a unit was named by the corpus metadata or by an amending act's instructions, and the text
+comparison, which is the only source carrying any text, never saw it. Printing that event's
+three-way split gives `0 substantive, 0 date-only, 36 with no text`, which spends a line on two
+zeros to say what one clause says. Nothing is hidden by the swap: the touched count, the
+disputed count and the gate clause all stay, and every row is still on the page.
+
+Like `attribution.py`, both classifications are derived here from the committed document and
+are not pipeline concepts. Neither recomputes anything: `counts` is what the emit stage wrote,
+so a page states what the document says and an old document is corrected where it is stored.
 """
 
 from __future__ import annotations
@@ -24,7 +36,17 @@ from typing import Final
 from emendrix.output import ChangelogEntry
 from emendrix.site_.markup import count
 
-__all__ = ["UNTOUCHED_CARD", "UNTOUCHED_SENTENCE", "untouched", "untouched_note"]
+__all__ = [
+    "TEXTLESS_CLAUSE",
+    "TEXTLESS_TAIL",
+    "UNTOUCHED_CARD",
+    "UNTOUCHED_SENTENCE",
+    "all_textless",
+    "textless_note",
+    "textless_words",
+    "untouched",
+    "untouched_note",
+]
 
 UNTOUCHED_SENTENCE: Final = "No provisions differ between these two versions."
 """The finding as a sentence, for the act page's facts line and the feed summary."""
@@ -56,4 +78,53 @@ def untouched_note(entry: ChangelogEntry) -> str:
         f"The comparison read all {compared} and matched every one. The corpus still "
         "published the two as distinct versions, so whatever distinguishes them sits outside "
         "the provisions this site compares."
+    )
+
+
+TEXTLESS_CLAUSE: Final = "none with text to show"
+"""The three-way split, for an event none of whose units carries any text.
+
+It stands where `0 substantive, 0 date-only, 36 with no text` would, on the count line and in
+the feed summary. The counts either side of it, touched and disputed, are printed as they
+always were.
+"""
+
+TEXTLESS_TAIL: Final = "named with no text to show"
+"""What follows the provision count on a card and in a title, where the others say `changed`.
+
+`36 provisions named with no text to show by Digital Omnibus on AI` is the whole frame, and
+the instrument clause is joined to it with a space, so the fragment ends in a form that reads
+on into it.
+"""
+
+
+def all_textless(entry: ChangelogEntry) -> bool:
+    """True when this event touched units and not one of them carries any text.
+
+    Read off the committed counts and never recomputed, the rule this module holds throughout.
+    An entry written under schema `1.0` reports no textless units, so it is never in the class
+    until whatever rewrote it has said otherwise.
+    """
+    counts = entry.counts
+    return counts.touched > 0 and counts.textless == counts.touched
+
+
+def textless_words(entry: ChangelogEntry) -> str:
+    """`36 provisions named with no text to show`, for a card, a `<title>` and a description."""
+    return f"{count(entry.counts.touched, 'provision')} {TEXTLESS_TAIL}"
+
+
+def textless_note(entry: ChangelogEntry) -> str:
+    """The sentence under the facts line, naming what the rows are and what became of them.
+
+    The point a reader needs is that the rows exist and that the one source carrying text is
+    not among the sources that named them, which is why there is nothing to open. The closing
+    clause is the same promise the disputed mark carries everywhere else on this site: a
+    disagreement ships as one and is never dropped.
+    """
+    named = count(entry.counts.touched, "provision")
+    return (
+        f"All {named} were named by a source other than the text comparison, which is the "
+        "only source that carries any text. Each ships with the source that named it and is "
+        "marked disputed; none was dropped."
     )

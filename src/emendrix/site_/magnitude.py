@@ -10,8 +10,9 @@ site build makes is not made twice.
 wherever it prints one. The title on every count states what was counted, the label beside the
 totals says `characters`, and nothing here turns a number into a word like minor, typographic
 or substantive. Two characters can move a deadline by sixteen months, and two thousand can
-renumber a list. The site's own `substantive` / `date-only` split is a different fact, computed
-in the pipeline from what the change did rather than from how much of it there is.
+renumber a list. The site's own split of the touched units, into the substantive, the date-only
+and the ones carrying no text at all, is a different fact, computed in the pipeline from what the
+change did rather than from how much of it there is.
 
 The class names are decades and say only that: under a hundred characters, under a thousand,
 under ten thousand, and above. Decades because that is the span the corpus covers, from a

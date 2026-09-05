@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import date
+from typing import get_args
 
 from pydantic_ai import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
@@ -50,12 +51,15 @@ from emendrix.explain import (
     MODEL_FAILED,
     NO_EVIDENCE_PAST_CAP,
     NOTHING_TO_EXPLAIN,
+    PROVIDER_UNAVAILABLE,
     CassetteMode,
     ExplainEngine,
     ExplainSettings,
     contexts_for_delta,
     explainable,
 )
+from emendrix.explain.schema import ExplanationUnavailable
+from emendrix.output.json_out import DIFF_ONLY_NOTE
 from eu_pins import REACH, REACH_2008, REACH_2009, package
 
 ACT = ActId(corpus="toy", key="house-rules")
@@ -99,8 +103,45 @@ def test_a_textless_disputed_change_really_is_constructible() -> None:
     """If `core` ever forbids this shape, this whole module is obsolete, so check first."""
     change = textless("AR 12")
     assert change.disputed
+    assert change.textless
     assert not explainable(change)
     assert explainable(with_text("AR 5"))
+    assert not with_text("AR 5").textless
+
+
+def test_every_reader_facing_reason_is_free_of_markup() -> None:
+    """These sentences are stored on a published document and read on three surfaces.
+
+    One of the three is Markdown, one is JSON and one is an HTML page that escapes what it is
+    given, so a sentence carrying a fence is a code element on one surface and two stray
+    characters on the other two. The check is exactly the two constructs `site_/markup.py`
+    converts; a wider one would fail on ordinary prose.
+    """
+    for reason in (
+        NOTHING_TO_EXPLAIN,
+        NO_EVIDENCE_PAST_CAP,
+        MODEL_FAILED,
+        PROVIDER_UNAVAILABLE,
+        DIFF_ONLY_NOTE,
+    ):
+        assert "`" not in reason, reason
+        assert "**" not in reason, reason
+
+
+def test_the_reason_constants_cover_every_counted_kind() -> None:
+    """A fifth way to end up with no explanation may not reach a page unaccompanied.
+
+    The kinds are a `Literal` on the schema and are read off it here rather than retyped, so a
+    kind added with no reason sentence beside it fails here instead of shipping.
+    """
+    by_kind = {
+        "nothing_to_explain": NOTHING_TO_EXPLAIN,
+        "no_evidence_past_cap": NO_EVIDENCE_PAST_CAP,
+        "model_failed": MODEL_FAILED,
+        "provider_unavailable": PROVIDER_UNAVAILABLE,
+    }
+    kinds = get_args(ExplanationUnavailable.model_fields["kind"].annotation)
+    assert set(by_kind) == set(kinds)
 
 
 def test_contexts_for_delta_answers_none_rather_than_raising() -> None:

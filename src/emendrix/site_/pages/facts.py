@@ -2,7 +2,7 @@
 
 Split out of `act_event.py` on 2026-09-03, when the gate clause was rewritten for a reader and
 that module crossed the size cap. The seam is the one the module already had: everything here
-is a statement about the committed document's own fields, the two clocks and the six counts,
+is a statement about the committed document's own fields, the two clocks and the seven counts,
 and none of it knows what a change block looks like or where the evidence lives.
 
 One line, three surfaces. The card on an act's timeline, the event's own page and an
@@ -18,10 +18,15 @@ Nothing below this page moves with the rewording: the changelog keeps its own na
 from __future__ import annotations
 
 from emendrix.output import ChangelogEntry
-from emendrix.output.json_out import EntryCounts
+from emendrix.output.counts import EntryCounts
 from emendrix.site_.clocks import event_date
 from emendrix.site_.markup import Html, count, escape
-from emendrix.site_.untouched import UNTOUCHED_SENTENCE, untouched
+from emendrix.site_.untouched import (
+    TEXTLESS_CLAUSE,
+    UNTOUCHED_SENTENCE,
+    all_textless,
+    untouched,
+)
 
 __all__ = ["event_facts"]
 
@@ -55,7 +60,13 @@ def event_facts(entry: ChangelogEntry) -> list[Html]:
 
     An event that touched nothing states the finding as a sentence instead of the count line:
     "0 provisions touched" with three more zeros and a clause about explanations reads like a
-    counter that failed, where the sentence says what the comparison found.
+    counter that failed, where the sentence says what the comparison found. An event with rows
+    and no text in any of them replaces the three-way split alone, for the same reason and with
+    nothing else dropped: the touched count, the disputed count and the gate clause all stay.
+
+    The split prints unconditionally otherwise, `0 with no text` included. Every count on this
+    line is printed whether or not it happened, and a line that changed shape between two
+    events is a line a reader has to read twice.
 
     The dates line carries what the heading above it did not. The heading names one clock and
     one date, so repeating that clause here would print the same fact twice on one screen and
@@ -76,11 +87,18 @@ def event_facts(entry: ChangelogEntry) -> list[Html]:
     if untouched(entry):
         return [dates, Html(f'<p class="facts">{escape(UNTOUCHED_SENTENCE)}</p>')]
     gate = _DIFF_ONLY if entry.diff_only else _checked(counts)
+    split = (
+        escape(TEXTLESS_CLAUSE)
+        if all_textless(entry)
+        else (
+            f"{counts.substantive} substantive, {counts.date_only} date-only, "
+            f"{counts.textless} with no text"
+        )
+    )
     return [
         dates,
         Html(
             f'<p class="facts">{escape(count(counts.touched, "provision"))} touched — '
-            f"{counts.substantive} substantive, {counts.date_only} date-only, "
-            f"<strong>{counts.disputed} disputed</strong> · {escape(gate)}</p>"
+            f"{split}, <strong>{counts.disputed} disputed</strong> · {escape(gate)}</p>"
         ),
     ]

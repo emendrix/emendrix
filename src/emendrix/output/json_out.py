@@ -4,6 +4,9 @@ The second output of the loop: structured JSON for the same content, so other to
 consume it. Because other tools consume it, it carries `schema_version` from the first byte
 and is documented rather than left for a reader to infer from an example.
 
+The counts it carries are derived next door in `counts.py`, which is the module's one real
+seam: this one holds the document and asks for them once.
+
 **A `ChangelogEntry` is the unit both renderers consume.** The Markdown renderer
 (`markdown.py`) and this schema are two views of one object, so they cannot drift: a count
 printed in the changelog is the same field a consumer reads out of the JSON. The entry is built
@@ -27,18 +30,18 @@ from typing import Final, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from emendrix.core import ActId, ChangeType, Delta, DeltaSummary, VersionId
+from emendrix.core import ActId, Delta, DeltaSummary, VersionId
 from emendrix.corroborate import CorroborationReport
 from emendrix.explain import CallUsage, RunStats
 from emendrix.gate import GateOutcome, GateStats
-from emendrix.graph.report import EmittedChange, EmittedDelta, EmittedSentence, RunReport
+from emendrix.graph.report import EmittedChange, EmittedDelta, RunReport
+from emendrix.output.counts import EntryCounts, counts_of
 from emendrix.output.disclaimer import DISCLAIMER
 
 __all__ = [
     "DIFF_ONLY_NOTE",
     "SCHEMA_VERSION",
     "ChangelogEntry",
-    "EntryCounts",
     "RepairRecord",
     "act_dir_for",
     "diff_only_entry",
@@ -47,11 +50,17 @@ __all__ = [
     "slug",
 ]
 
-SCHEMA_VERSION: Final = "1.0"
+SCHEMA_VERSION: Final = "1.1"
 """Bumped whenever a consumer would have to change to keep reading these documents.
 
 `1.0` is the first published shape. A field added with a default is *not* a bump; a field
-removed, renamed or re-meant is.
+removed, renamed or re-meant is. `1.1` re-means one: `substantive` stopped covering a unit
+that carries no text on either side, so summing `substantive + date_only` no longer gives
+`touched`. The new `textless` count is the third term of that sum.
+
+Documents already published say `1.0` and stay readable, which is why the field's type is a
+union of the two. An entry written under `1.0` reads back with `textless` at 0 and the
+`substantive` its own run computed; it is corrected when something rewrites it, not in bulk.
 """
 
 DIFF_ONLY_NOTE: Final = "diff-only mode: the explain stage did not run for this entry"
@@ -91,29 +100,6 @@ def payload_for(act: ActId, version: VersionId | str) -> str:
     return f"{act_dir_for(act)}/changes/{slug(str(version))}.json"
 
 
-class EntryCounts(BaseModel):
-    """The counts a reader is shown first, at the unit of change.
-
-    `substantive` and `date_only` split the touched units by whether *anything but a date*
-    moved: a unit whose every change is `DEFERRED` is a date-only unit. The split is
-    the one the Markdown header prints ("Provisions touched: 14 · Substantive: 9 ·
-    Date-only: 5") and it is computed, never asserted.
-    """
-
-    model_config = ConfigDict(frozen=True)
-
-    touched: int = Field(default=0, ge=0, description="Top-level units this event touched.")
-    substantive: int = Field(default=0, ge=0, description="Touched units that are not date-only.")
-    date_only: int = Field(default=0, ge=0, description="Units whose every change is DEFERRED.")
-    disputed: int = Field(default=0, ge=0, description="Changes the signals disagree about.")
-    quoted: int = Field(
-        default=0, ge=0, description="Sentences the citation gate wrote as verbatim quotations."
-    )
-    unexplained: int = Field(
-        default=0, ge=0, description="Changes that ship with no prose at all, and say why."
-    )
-
-
 class RepairRecord(BaseModel):
     """One repair applied to this entry after it was first written.
 
@@ -137,39 +123,12 @@ class RepairRecord(BaseModel):
     )
 
 
-def _sentences(change: EmittedChange) -> tuple[EmittedSentence, ...]:
-    note = change.applicability_note
-    return change.sentences if note is None else (*change.sentences, note)
-
-
-def _counts(delta: EmittedDelta, *, diff_only: bool) -> EntryCounts:
-    units: dict[str, list[ChangeType]] = {}
-    for emitted in delta.changes:
-        units.setdefault(emitted.change.unit.canonical, []).append(emitted.change.change_type)
-    date_only = sum(
-        1 for kinds in units.values() if all(kind is ChangeType.DEFERRED for kind in kinds)
-    )
-    quoted = sum(
-        1 for emitted in delta.changes for sentence in _sentences(emitted) if sentence.fallback
-    )
-    return EntryCounts(
-        touched=len(units),
-        substantive=len(units) - date_only,
-        date_only=date_only,
-        disputed=sum(1 for emitted in delta.changes if emitted.change.disputed),
-        # In diff-only mode nothing was asked of a model, so nothing is missing: reporting
-        # 45 "unexplained" changes there would be a defect count for a stage that never ran.
-        quoted=0 if diff_only else quoted,
-        unexplained=0 if diff_only else sum(1 for e in delta.changes if not e.sentences),
-    )
-
-
 class ChangelogEntry(BaseModel):
     """One amendment event of one act: the JSON document, and the Markdown renderer's input."""
 
     model_config = ConfigDict(frozen=True)
 
-    schema_version: Literal["1.0"] = SCHEMA_VERSION
+    schema_version: Literal["1.0", "1.1"] = SCHEMA_VERSION
     disclaimer: str = DISCLAIMER
     act: ActId
     from_version: VersionId
@@ -210,7 +169,7 @@ class ChangelogEntry(BaseModel):
             ),
             diff_only=diff_only,
             summary=delta.summary,
-            counts=_counts(delta, diff_only=diff_only),
+            counts=counts_of(delta, diff_only=diff_only),
             changes=delta.changes,
             corroboration=delta.corroboration,
             explain=delta.explain,

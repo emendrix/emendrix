@@ -29,13 +29,13 @@ Layout:
 
 from emendrix.output.changelog import MARKER, changelog_text, header_for, split_entries
 from emendrix.output.config import OUTPUT_REPO_ENV, resolve_repo_path
+from emendrix.output.counts import EntryCounts
 from emendrix.output.disclaimer import MARKDOWN_DISCLAIMER
 from emendrix.output.git import AUTHOR_EMAIL, AUTHOR_NAME, GitError
 from emendrix.output.json_out import (
     DIFF_ONLY_NOTE,
     SCHEMA_VERSION,
     ChangelogEntry,
-    EntryCounts,
     diff_only_entry,
     entries_for,
 )

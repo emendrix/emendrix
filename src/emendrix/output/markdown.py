@@ -230,7 +230,7 @@ def _texts(change: Change, entry: ChangelogEntry) -> list[str]:
         lines.extend(("", f"*before* (`{entry.from_version}`)", "", *_quote(change.before)))
     if change.after is not None:
         lines.extend(("", f"*after* (`{entry.to_version}`)", "", *_quote(change.after)))
-    if change.before is None and change.after is None:
+    if change.textless:
         lines.extend(
             (
                 "",
@@ -261,7 +261,8 @@ def _header(entry: ChangelogEntry) -> list[str]:
         f"- **Act** `{entry.act}` · **In force** {in_force} · "
         f"**Detected** {entry.detected_on.isoformat()}",
         f"- **Touched** {counts.touched} provisions — {counts.substantive} substantive · "
-        f"{counts.date_only} date-only · **{counts.disputed} disputed**",
+        f"{counts.date_only} date-only · {counts.textless} with no text · "
+        f"**{counts.disputed} disputed**",
         f"- **Diff** {summary.inserted} inserted · {summary.modified} modified · "
         f"{summary.deleted} deleted · {summary.renumbered} renumbered · "
         f"{summary.deferred} deferred · {summary.unchanged_units} unchanged",

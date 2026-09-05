@@ -13,14 +13,14 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 import pytest
-from site_entries import unattributed_entry
+from site_entries import some_textless_entry, textless_entry, unattributed_entry
 
 from emendrix import DISCLAIMER
 from emendrix.core import ProvisionTree
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
-from emendrix.output import diff_only_entry
+from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.titles import SUFFIX, event_title, event_words
@@ -115,6 +115,42 @@ def test_an_event_naming_no_amending_act_keeps_its_entry_and_says_so_first() -> 
     assert summary.startswith("No amending act is named for this event. ")
     entry_id = entries[0].findtext(f"{ATOM}id")
     assert entry_id is not None and entry_id.startswith("https://example.invalid/site/acts/")
+
+
+def _summary_of(entry: ChangelogEntry) -> tuple[str, str]:
+    """One entry's Atom summary and its id, which is the promise a rewording may not move."""
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
+        report=Path("r.json"),
+        entries=(entry,),
+        site_url="https://example.invalid/site",
+    )
+    element = ElementTree.fromstring(render_feed(site, None)).find(f"{ATOM}entry")
+    assert element is not None
+    summary, ident = element.findtext(f"{ATOM}summary"), element.findtext(f"{ATOM}id")
+    assert summary is not None and ident is not None
+    return summary, ident
+
+
+def test_a_summary_counts_the_units_with_no_text_beside_the_other_two() -> None:
+    """The split the count line prints, printed here too, so the two cannot disagree."""
+    summary, _ = _summary_of(some_textless_entry())
+    assert "5 provisions touched: 4 substantive, 0 date-only, 1 with no text, 1 disputed." in (
+        summary
+    )
+
+
+def test_an_event_with_no_text_anywhere_says_so_and_keeps_its_id() -> None:
+    """Three zeros and a count would say less than the clause does, and nothing is dropped:
+    the touched count and the disputed count are still either side of it, and the id, which is
+    what would renotify a subscriber, is the permalink it always was."""
+    entry = textless_entry()
+    summary, ident = _summary_of(entry)
+    assert "2 provisions touched: none with text to show, 2 disputed." in summary
+    assert "0 substantive" not in summary
+    assert ident.startswith("https://example.invalid/site/acts/")
+    assert ident.endswith(f"#{entry.key}")
 
 
 def test_the_feeds_page_lists_the_global_feed_and_every_watched_act() -> None:

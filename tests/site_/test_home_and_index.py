@@ -5,7 +5,12 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from site_entries import attributed_entry, disputed_entry, unattributed_entry
+from site_entries import (
+    attributed_entry,
+    disputed_entry,
+    textless_entry,
+    unattributed_entry,
+)
 
 from emendrix.core import Delta, ProvisionTree, VersionId
 from emendrix.diff import compute_delta
@@ -152,6 +157,23 @@ def test_a_card_for_one_touched_provision_says_provision_not_provisions() -> Non
     rendered = render_home(site)
     assert "1 provisions" not in rendered
     assert "1 provision ·" in rendered
+
+
+def test_a_card_for_an_event_with_no_text_anywhere_says_what_the_count_counts() -> None:
+    """The card's count is the news, so it may not be a count of provisions changed when no
+    text on this event changed in any way the site can show. The event stays in the list: it
+    is a real one, and the fragment now says plainly what it is."""
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(textless_entry(),),
+        configured=True,
+    )
+    rendered = render_home(site)
+    assert rendered.count('<article class="cardrow">') == 1
+    assert "2 provisions named with no text to show by " in rendered
+    assert "2 disputed changes" in rendered
 
 
 def test_home_excludes_events_naming_no_amending_act_and_says_how_many() -> None:

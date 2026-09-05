@@ -40,7 +40,12 @@ from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.seo import website_json_ld
-from emendrix.site_.untouched import UNTOUCHED_CARD, untouched
+from emendrix.site_.untouched import (
+    UNTOUCHED_CARD,
+    all_textless,
+    textless_words,
+    untouched,
+)
 from emendrix.site_.urls import act_href, depth_of, event_href, up
 
 __all__ = ["render_home"]
@@ -141,7 +146,12 @@ def _card(act: ActSite, entry: ChangelogEntry, named: str) -> Html:
     an event naming no amending act, which never reaches this list anyway.
     """
     counts = entry.counts
-    touched = UNTOUCHED_CARD if untouched(entry) else count(counts.touched, "provision")
+    if untouched(entry):
+        touched = UNTOUCHED_CARD
+    elif all_textless(entry):
+        touched = textless_words(entry)
+    else:
+        touched = count(counts.touched, "provision")
     disputed = (
         Html(
             f' · <span class="disp" title="{escape(DISPUTED_GLOSS)}">'

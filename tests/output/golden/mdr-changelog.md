@@ -15,7 +15,7 @@ Generated — do not edit by hand. Entries are delimited by `<!-- emendrix:entry
 ### `02017R0745-20170505` → `02017R0745-20200424`
 
 - **Act** `eu:32017R0745` · **In force** 2020-04-24 · **Detected** 2026-08-06
-- **Touched** 9 provisions — 3 substantive · 6 date-only · **0 disputed**
+- **Touched** 9 provisions — 3 substantive · 6 date-only · 0 with no text · **0 disputed**
 - **Diff** 0 inserted · 3 modified · 0 deleted · 0 renumbered · 6 deferred · 131 unchanged
 - **Gate** 0 sentences quoted verbatim · 0 changes shipped without an explanation
 - **Citations** `v1` = `02017R0745-20170505` · `v2` = `02017R0745-20200424`

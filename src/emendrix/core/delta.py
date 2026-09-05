@@ -140,6 +140,17 @@ class Change(BaseModel):
         """The top-level unit this change is counted under."""
         return self.provision.location.top_level
 
+    @property
+    def textless(self) -> bool:
+        """No text on either side: the one signal that carries text did not see this unit.
+
+        The corroborator's appended change: it has a location, a kind and `disputed=True` and
+        nothing quotable at all. The question is asked here rather than in each renderer so a
+        count, a prompt and a page cannot disagree about what the class is. Tested with
+        `is None`, never truthiness: an empty provision text is a text.
+        """
+        return self.before is None and self.after is None
+
 
 def sort_changes(changes: tuple[Change, ...]) -> tuple[Change, ...]:
     """Order changes deterministically by location; output stability is a contract.

@@ -79,7 +79,7 @@ from emendrix.site_.pages.facts import event_facts
 from emendrix.site_.pages.prose import applies_line, dates_line, permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.sources import repo_file
-from emendrix.site_.untouched import untouched, untouched_note
+from emendrix.site_.untouched import all_textless, textless_note, untouched, untouched_note
 from emendrix.site_.urls import location_slug
 
 __all__ = ["render_event", "render_event_summary"]
@@ -203,6 +203,8 @@ def _event_header(
         lines.append(Html(f'<p class="small muted">{escape(UNATTRIBUTED_NOTE)}</p>'))
     if untouched(entry):
         lines.append(Html(f'<p class="small muted">{escape(untouched_note(entry))}</p>'))
+    elif all_textless(entry):
+        lines.append(Html(f'<p class="small muted">{escape(textless_note(entry))}</p>'))
     return lines
 
 

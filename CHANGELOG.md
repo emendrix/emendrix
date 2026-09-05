@@ -198,6 +198,37 @@ Named rather than discovered later; the eval report's disagreement list is the l
   flattened into one string and one record is written from it, so an article stating two or three
   amendments in prose names at most one of them, and a collapsed instruction leaves nothing behind
   to count. `docs/limitations.md` carries that as the named gap it is.
+- **A touched unit carrying no text was counted substantive, and is counted in its own bucket
+  since 2026-09-05.** The corroborator appends one change for every unit another signal named and
+  the structural diff never saw, and the diff is the only signal carrying text, so such a change
+  has a location, a kind, `disputed: true` and nothing quotable at all. `substantive` was computed
+  as every touched unit that was not date-only, so it covered them. It is now every touched unit
+  that is neither date-only nor textless, and the units it no longer covers are counted as
+  `textless` and printed on the count line, in the Markdown header and in the Atom summary as
+  `with no text`. Measured 2026-09-05 over the 446 committed events of the public changelog and
+  their 5 259 touched units: `substantive` reads 3 414 where it read 5 218, and `textless` is
+  published for the first time at 1 804, 34.3% of the 5 261 changes. **This is not the corpus
+  having shrunk and no row was dropped**: `touched` reads 5 259, `date_only` 41 and `disputed`
+  2 865, each unchanged, and the three buckets sum to the touched count. The question the word
+  answers changed, from "not date-only" to "not date-only and carrying text", so the two readings
+  are two definitions rather than one number improving, both are published under their own dates
+  and neither is adjusted for the other. 148 events change their count line and 26, every unit of
+  which is of this kind, state that in a clause in place of the three-way split, in their first
+  line, their title, their meta description and their feed entry's title; no permalink and no Atom
+  entry id moves, so nothing renotifies. No published evaluation figure moves with any of it,
+  nothing in `eval_` reading these counts, no cassette moves and no faithfulness sign-off is
+  affected; the flagship AI Act event and the MDR postponement the goldens are built on carry no
+  such unit, so their numbers are identical either side. `schema_version` is `1.1` for documents
+  written from this date, because a consumer summing `substantive` and `date_only` to get
+  `touched` was right before it and is wrong after, which is exactly what a version is for; the
+  446 already published say `1.0`, still validate, and read back with `textless` at 0 and the
+  `substantive` their own run computed. The site reads these counts off the committed document and
+  is forbidden from recomputing them, so a page served today still shows the older split until the
+  document behind it is rewritten, which is the corrected-forward posture the two fixes above take.
+  The curated reason those changes ship with lost the one backtick pair in it on the same date: it
+  is stored on a published document and is read into Markdown, into JSON and into an HTML page
+  that escapes what it is given, so only one of the three surfaces would have read a fence as
+  anything but two stray characters. The 1 804 stored copies are corrected forward with the counts.
 - **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
   cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
   rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure

@@ -10,7 +10,14 @@ from __future__ import annotations
 
 import json
 
-from toy_entries import OBSERVED_ON, disputed_entry, explained_entry, toy_delta, toy_entry
+from toy_entries import (
+    OBSERVED_ON,
+    disputed_delta,
+    disputed_entry,
+    explained_entry,
+    toy_delta,
+    toy_entry,
+)
 
 from emendrix import DISCLAIMER
 from emendrix.core import ChangeType
@@ -21,7 +28,7 @@ from emendrix.output.json_out import DIFF_ONLY_NOTE, slug
 
 def test_the_document_declares_its_schema_version_and_its_disclaimer() -> None:
     payload = json.loads(toy_entry().to_json())
-    assert payload["schema_version"] == SCHEMA_VERSION == "1.0"
+    assert payload["schema_version"] == SCHEMA_VERSION == "1.1"
     assert payload["disclaimer"] == DISCLAIMER
 
 
@@ -70,11 +77,56 @@ def test_verbatim_texts_are_in_the_document_unnormalised() -> None:
     assert any("evening,  and the recycling" in text for text in texts), "two spaces, kept"
 
 
-def test_the_counts_split_touched_units_into_substantive_and_date_only() -> None:
-    """The header line's split. Computed from the changes, never asserted by a caller."""
-    entry = toy_entry()
-    assert entry.counts.touched == entry.counts.substantive + entry.counts.date_only
-    assert entry.counts.date_only == 0, "the toy transition moves no dates"
+def test_the_counts_split_touched_units_three_ways() -> None:
+    """The header line's split. Computed from the changes, never asserted by a caller.
+
+    Every touched unit falls in exactly one bucket, so the three sum to the touched count.
+    The delta carries all three shapes at once: the toy transition's own units, one turned
+    into a date move, and one the metadata signal named and the diff never saw.
+    """
+    delta = disputed_delta()
+    deferred = delta.changes[0].model_copy(
+        update={"change_type": ChangeType.DEFERRED, "applies_from": OBSERVED_ON}
+    )
+    entry = diff_only_entry(
+        delta.model_copy(update={"changes": (deferred, *delta.changes[1:])}),
+        detected_on=OBSERVED_ON,
+    )
+    counts = entry.counts
+    assert counts.touched == counts.substantive + counts.date_only + counts.textless
+    assert (counts.touched, counts.substantive, counts.date_only, counts.textless) == (5, 3, 1, 1)
+
+
+def test_a_unit_with_no_text_is_not_counted_substantive() -> None:
+    """`AR 9` exists in neither version: the metadata named it and the diff never saw it.
+
+    It is a real row and it ships, and calling it substantive would say a provision's text
+    moved when the one source that carries text reported nothing about it at all.
+    """
+    entry = disputed_entry()
+    plain = toy_entry()
+    assert entry.counts.touched == plain.counts.touched + 1
+    assert entry.counts.substantive == plain.counts.substantive
+    assert entry.counts.textless == 1
+    textless = [emitted for emitted in entry.changes if emitted.change.textless]
+    assert [emitted.change.unit.canonical for emitted in textless] == ["AR 9"]
+
+
+def test_a_document_written_under_the_earlier_schema_still_reads() -> None:
+    """All 446 published documents say `1.0`, and the site is built from them.
+
+    They read back with `textless` at 0 and the `substantive` their own run computed, which is
+    the older question answered under the older name. They are corrected where they are
+    stored, by whatever rewrites them, and never by a renderer recomputing a stored count.
+    """
+    payload = json.loads(disputed_entry().to_json())
+    payload["schema_version"] = "1.0"
+    del payload["counts"]["textless"]
+    payload["counts"]["substantive"] = payload["counts"]["touched"]
+    entry = ChangelogEntry.model_validate(payload)
+    assert entry.schema_version == "1.0"
+    assert entry.counts.textless == 0
+    assert entry.counts.substantive == entry.counts.touched
 
 
 def test_a_deferred_unit_counts_as_date_only() -> None:
@@ -86,6 +138,7 @@ def test_a_deferred_unit_counts_as_date_only() -> None:
         delta.model_copy(update={"changes": (deferred,)}), detected_on=OBSERVED_ON
     )
     assert (entry.counts.touched, entry.counts.date_only, entry.counts.substantive) == (1, 1, 0)
+    assert entry.counts.textless == 0, "a deferred change carries the text it deferred"
 
 
 def test_diff_only_mode_says_so_rather_than_counting_absent_prose_as_a_defect() -> None:

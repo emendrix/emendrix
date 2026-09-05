@@ -28,7 +28,12 @@ from emendrix.site_.pages.act_event import render_event
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import event_json_ld
 from emendrix.site_.titles import event_title
-from emendrix.site_.untouched import UNTOUCHED_CARD, untouched
+from emendrix.site_.untouched import (
+    UNTOUCHED_CARD,
+    all_textless,
+    textless_words,
+    untouched,
+)
 from emendrix.site_.urls import act_href, amendment_href, entry_anchors, event_href, up
 
 __all__ = ["render_event_page"]
@@ -175,18 +180,24 @@ def render_event_page(
     # entry says the same thing and the two may not drift. The description says it again under
     # the act's long form, which is what a snippet is read under, and names the version the
     # text below was read from; the version pair itself is under the H2 the body opens with.
+    # It also says what the page holds, so a page with no text on it does not promise any.
     dated = event_date(entry)
-    counted = (
-        UNTOUCHED_CARD
-        if untouched(entry)
-        else f"{count(entry.counts.touched, 'provision')} changed"
-    )
+    if untouched(entry):
+        counted = UNTOUCHED_CARD
+    elif all_textless(entry):
+        counted = textless_words(entry)
+    else:
+        counted = f"{count(entry.counts.touched, 'provision')} changed"
     named = by_words(acts)
     title = event_title(site, act, entry)
+    holds = (
+        "Each provision, with the source that named it"
+        if all_textless(entry)
+        else "Every changed provision, with the verbatim text before and after"
+    )
     description = (
-        f"{act.headline}: {counted}{' ' + named if named else ''}, {dated.words}. Every changed "
-        f"provision, with the verbatim text before and after, from consolidated version "
-        f"{entry.to_version}."
+        f"{act.headline}: {counted}{' ' + named if named else ''}, {dated.words}. {holds}, "
+        f"from consolidated version {entry.to_version}."
     )
     return page(
         title=title,

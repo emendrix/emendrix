@@ -21,13 +21,27 @@ from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.clocks import event_date
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import count
-from emendrix.site_.untouched import UNTOUCHED_CARD, untouched
+from emendrix.site_.untouched import (
+    UNTOUCHED_CARD,
+    all_textless,
+    textless_words,
+    untouched,
+)
 
 __all__ = ["SUFFIX", "event_title", "event_words"]
 
 SUFFIX = " — emendrix"
 """What a page's `<title>` ends with and a feed entry's does not: inside a feed already titled
 `emendrix — <act>`, the site's own name on every entry is the one word a reader never needs."""
+
+
+def _counted(entry: ChangelogEntry) -> str:
+    """The count and what it is a count of, in the one form both surfaces name the event by."""
+    if untouched(entry):
+        return UNTOUCHED_CARD
+    if all_textless(entry):
+        return textless_words(entry)
+    return f"{count(entry.counts.touched, 'provision')} changed"
 
 
 def event_words(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
@@ -37,11 +51,12 @@ def event_words(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
     news, and a long form in front of them pushes all three past where a result snippet cuts.
     The clock is named by the one helper every dated line on the site reads, so a detection
     date can never be set as an in-force date. An event that touched nothing is said in words,
-    because "0 provisions changed" reads as a counter that failed. An event naming no amending
-    act carries no clause at all, which is the same sentence this has always been.
+    because "0 provisions changed" reads as a counter that failed. An event whose every unit
+    carries no text says that instead of "changed", because nothing on its page changed in any
+    text this site can show. An event naming no amending act carries no clause at all, which is
+    the same sentence this has always been.
     """
-    touched = count(entry.counts.touched, "provision")
-    counted = UNTOUCHED_CARD if untouched(entry) else f"{touched} changed"
+    counted = _counted(entry)
     named = by_words(amenders(site.amending, entry))
     return f"{act.label}: {counted}{' ' + named if named else ''}, {event_date(entry).words}"
 

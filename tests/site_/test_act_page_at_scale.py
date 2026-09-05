@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 168248)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 171448)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -105,9 +105,14 @@ link where the newest carries the diff.
 18 bytes heavier on 2026-09-04, when the stylesheet and the script gained a digest of their own
 bytes in their names: nine characters in each of the two asset links, which every page in this
 tree and on the site pays once. It is the fixed cost of a cache that cannot serve an asset from
-before the deploy that changed it."""
+before the deploy that changed it.
 
-_TOTAL_BYTES: Final = 2376735
+3200 bytes heavier on 2026-09-05, when the count line started printing the touched units
+carrying no text on either side as their own bucket: sixteen bytes of `0 with no text, ` on
+each of the two hundred event cards this index holds. None of these events carries such a
+unit, so the clause reads zero on every one of them. The split moved, no number did."""
+
+_TOTAL_BYTES: Final = 2383135
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -183,6 +188,12 @@ own bytes in their names: eighteen bytes on each of the 602 pages of this tree, 
 the two asset links, and nothing else. It is the whole cost of the change, it is flat in the
 number of pages rather than in what is on them, and it buys the property that a page and the
 assets it names are always from one build.
+
+6400 bytes heavier on 2026-09-05, when the count line started printing the touched units
+carrying no text on either side as their own bucket: sixteen bytes on each of the two hundred
+event cards on the index and on each of the two hundred event pages. The provision pages carry
+no count line and did not move. Every event here reads zero in the new bucket, so what grew is
+the sentence and not any count it states.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
