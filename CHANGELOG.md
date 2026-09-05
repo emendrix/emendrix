@@ -523,26 +523,51 @@ Named rather than discovered later; the eval report's disagreement list is the l
   before 2026-09-05 is none. Where an entry's own digest proves its sentences were written about
   the text today's parser produces, a stored text that has drifted from it is corrected with no
   call at all and counted apart from the re-asked.
-  **Measured over the committed corpus on 2026-09-05, before anything was spent**, against a
-  clone at `351bf4c`, the corpus as the corroboration pass of the same day left it. All 446
-  entries re-derived: none of the 17 consolidations the disk cache had been missing refused, so
-  no transition was left unread. Of the 4 948 changes, **557 differ and would be asked about
-  again, across 247 of the 446 transitions**; every other change with text still reads as the
-  evidence it was published with. **No unit was added and none was withdrawn anywhere**, and no
-  change newly carries no text. The prompts a pass would send hold **20 029 173 characters**,
-  about 8 901 855 input and 195 507 output tokens at one call per change, which is
-  **about USD 19.76** at the USD 2.00 and USD 10.00 per million tokens this repository has on
-  file for `openrouter:anthropic/claude-sonnet-5`, checked 2026-08-08. That price is a floor: it
-  counts one call per change and so counts neither the gate's one retry nor a schema repair, and
-  each of those is a further request against the same provider. **This reading is not the one of
-  539 of 5 261 published earlier the same day**, which the validation script took before the
+  **Priced before it ran, on 2026-09-05**, against a clone at `351bf4c`, the corpus as the
+  corroboration pass of the same day left it. All 446 entries re-derived: none of the 17
+  consolidations the disk cache had been missing refused, so no transition was left unread. Of
+  the 4 948 changes, **557 differed, across 247 of the 446 transitions**; every other change with
+  text still read as the evidence it was published with. **No unit was added and none was
+  withdrawn anywhere**, and no change newly carried no text. The prompts held **20 029 173
+  characters**, about 8 901 855 input and 195 507 output tokens at one call per change, which the
+  USD 2.00 and USD 10.00 per million tokens this repository has on file for
+  `openrouter:anthropic/claude-sonnet-5`, checked 2026-08-08, priced at **about USD 19.76**, a
+  floor counting neither the gate's one retry nor a schema repair. **That reading is not the one
+  of 539 of 5 261 published earlier the same day**, which the validation script took before the
   corroboration pass withdrew 313 claims and rewrote 337 entries, and which counted 120 changes
   it could not derive at all; the denominator differs, the underivable are now derived, and
-  neither figure is adjusted for the other. The zeroes for added and withdrawn are not a
-  re-parse finding today's delta unchanged in every respect either: the merge holds today's diff
-  against the signals the payload already carries, so a unit only a signal ever named is
-  re-created exactly as it was published, and what the zeroes say is that the diff itself now
-  finds the same units the published entries hold.
+  neither figure is adjusted for the other. The zeroes for added and withdrawn are not a re-parse
+  finding today's delta unchanged in every respect: the merge holds today's diff against the
+  signals the payload already carries, so a unit only a signal ever named is re-created exactly as
+  it was published, and what the zeroes say is that the diff itself now finds the same units the
+  published entries hold.
+- **The pass ran on 2026-09-05 and cost about USD 18 against an estimate of USD 19.76.** It went
+  in three tranches, priced against the provider between each, and **472 of the 557 changes were
+  re-explained across 206 rewritten entries**. Every one of the 557 was asked about at least once.
+  **85 changes across 66 entries still differ and were deliberately left exactly as published**,
+  text and prose together: the model failed on them again, which is counted and is never reported
+  as repaired, and keeping the pair intact is what lets a later pass still see them as stale. The
+  identifiers held: **no entry's act, version pair or `detected_on` moved, and no file was added,
+  removed or renamed**, so nothing a permalink or a feed id is derived from can have changed; 240
+  files moved, being 206 payloads and the 34 act changelogs they sit in. **3 054 changes inside
+  the rewritten entries kept every byte**, prose, citations and gate outcome included, verified
+  against the versions they replaced rather than counted, and **not one explanation moved on a
+  change whose text did not**. 472 evidence digests were written, one per change this pass
+  watched a call for, each verified to be the digest of the change it names; every other change
+  carries the provenance it arrived with, which for this corpus is none.
+  **On the estimate.** The provider billed **USD 16.25** for the second and third tranches, read
+  from its own credit meter; the first was not metered there and its repair records price it at
+  **USD 1.43**, so the pass cost **about USD 18**, under a floor of USD 19.76 and well inside the
+  USD 40 ceiling it was authorised against. The floor held despite counting neither of the two
+  things that did happen: the written entries record **574 requests for 500 changes addressed,
+  102 of them schema repairs**. What made up the difference is the character-to-token assumption:
+  the estimate reads 2.25 prompt characters per input token, measured 2026-09-04 over 71
+  exchanges, and this pass recorded 7 624 638 input tokens where that ratio predicted 8 901 855
+  for fewer requests. **The estimator undershot by a factor of two on the recorded run of
+  2026-09-04 and overshot by a tenth here**, so it is a floor with a real spread rather than a
+  reliable multiple, and the spread is what a reader should carry rather than either number.
+  Nothing was pushed, no site was rebuilt and no feed was reissued: the corrected entries sit in
+  the output repository until the hostname move, so that the feeds reissue exactly once.
 - **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
   cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
   rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure
