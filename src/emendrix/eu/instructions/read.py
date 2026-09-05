@@ -30,6 +30,7 @@ from emendrix.eu.instructions.model import (
     InstructionParse,
     InstructionRecord,
     UnreadInstruction,
+    Window,
 )
 from emendrix.eu.packages import FormexPackage
 from emendrix.eu.references import parse_reference, resolve
@@ -95,15 +96,27 @@ def parse_instructions(package: FormexPackage) -> InstructionParse:
 
 
 def instruction_signal(
-    parse: InstructionParse, act: ActId, *, note: str | None = None
+    parse: InstructionParse,
+    act: ActId,
+    *,
+    window: Window | None = None,
+    note: str | None = None,
 ) -> SignalReport:
-    """The instruction-parse signal for one amended act, in corroboration's own shape."""
-    records = parse.for_act(act)
+    """The instruction-parse signal for one amended act, in corroboration's own shape.
+
+    `window` is the consolidation's own `(after, until]`, passed down from the composition
+    root. Without one the whole act is claimed under the unbounded window, which is what a
+    caller holding no dates can honestly say, and the note counts the nothing it excluded.
+    """
+    claimed = parse.in_window(act, window)
+    head = (
+        note
+        or f"{parse.act.key}: {len(claimed.records)} instructions read, {len(parse.unread)} unread"
+    )
     return SignalReport(
         signal=Signal.INSTRUCTION_PARSE,
-        claims=tuple(record.to_claim(amending_act=parse.act) for record in records),
-        note=note
-        or f"{parse.act.key}: {len(records)} instructions read, {len(parse.unread)} unread",
+        claims=tuple(record.to_claim(amending_act=parse.act) for record in claimed.records),
+        note=f"{head}, {claimed.summary}",
     )
 
 

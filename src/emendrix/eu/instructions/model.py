@@ -13,7 +13,20 @@ from pydantic import BaseModel, ConfigDict, Field
 from emendrix.core import ActId, ChangeType, ProvisionLocation, SignalClaim
 from emendrix.eu.instructions.effect import EffectDateSource
 
-__all__ = ["InstructionParse", "InstructionRecord", "UnreadInstruction"]
+__all__ = [
+    "InstructionParse",
+    "InstructionRecord",
+    "UnreadInstruction",
+    "Window",
+    "WindowedInstructions",
+]
+
+type Window = tuple[date | None, date]
+"""One consolidation's window, `(after, until]`, exactly as `eu/signals.py` computes it.
+
+A value passed down from the composition root, never a clock read. `None` for the lower bound
+is the act as published, where everything up to the later version belongs to the pair.
+"""
 
 
 class InstructionRecord(BaseModel):
@@ -43,6 +56,18 @@ class InstructionRecord(BaseModel):
     def unit(self) -> ProvisionLocation:
         return self.location.top_level
 
+    def claimed_in(self, window: Window | None) -> bool:
+        """Whether this instruction belongs to `(after, until]`, the window's own convention.
+
+        A record the act dated nowhere belongs to every window: the reader that could not date
+        it is a counted gap, and dropping a claim on the strength of a date nobody read would
+        be guessing in the one direction that loses a finding.
+        """
+        if window is None or self.effect_date is None:
+            return True
+        after, until = window
+        return (after is None or after < self.effect_date) and self.effect_date <= until
+
     def to_claim(self, *, amending_act: ActId | None = None) -> SignalClaim:
         """The corroboration-shaped claim. `amending_act` is the document this was parsed from.
 
@@ -65,6 +90,32 @@ class UnreadInstruction(BaseModel):
     source_ref: str
     clause: str
     reason: str
+
+
+class WindowedInstructions(BaseModel):
+    """The records one consolidation claims from an act, and what claiming them cost.
+
+    Both counts are published in the signal's note, so a reader of the payload can tell an
+    empty signal from a scoped one without leaving the payload. Both are counts over the
+    records, not statements about the caller, which is why the unbounded window reports the
+    zero it measured rather than a phrase about having no dates.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    records: tuple[InstructionRecord, ...] = ()
+    excluded: int = Field(
+        default=0,
+        description="Records this act dates outside the window. No window excludes nothing.",
+    )
+    undated: int = Field(
+        default=0, description="Claimed records the act's own text left with no effect date."
+    )
+
+    @property
+    def summary(self) -> str:
+        """The note's own second half: what the window left out and what it could not date."""
+        return f"{self.excluded} dated outside the window, {self.undated} undated and claimed"
 
 
 class InstructionParse(BaseModel):
@@ -117,6 +168,24 @@ class InstructionParse(BaseModel):
         if not self.scoped:
             return self.records
         return tuple(record for record in self.records if record.amended_act == act)
+
+    def in_window(self, act: ActId, window: Window | None) -> WindowedInstructions:
+        """One act's records as one consolidation may claim them, with the two counts.
+
+        An amending act's instruction set is one document and is read once; which of it belongs
+        to a given consolidation is this. Without it the same instructions are claimed again in
+        every window the act touches, years after the one they took effect in.
+
+        `None` is the unbounded window and claims the act whole, which is what a caller holding
+        no dates can honestly say. It excludes nothing, and the count says so.
+        """
+        wanted = self.for_act(act)
+        claimed = tuple(record for record in wanted if record.claimed_in(window))
+        return WindowedInstructions(
+            records=claimed,
+            excluded=len(wanted) - len(claimed),
+            undated=sum(1 for record in claimed if record.effect_date is None),
+        )
 
     def units(self, act: ActId) -> tuple[ProvisionLocation, ...]:
         seen = {record.unit.canonical: record.unit for record in self.for_act(act)}

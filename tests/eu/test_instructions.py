@@ -23,6 +23,7 @@ from emendrix.eu.identifiers import Celex, act_id
 from emendrix.eu.instructions import (
     EffectDateSource,
     InstructionParse,
+    InstructionRecord,
     instruction_signal,
     parse_instructions,
 )
@@ -500,3 +501,96 @@ def test_a_scope_article_is_not_a_final_provisions_article() -> None:
         "<DATE ISO='20210526'>26 May 2021</DATE>."
     )
     assert read_effect_dates([_act(scope)]).default is None
+
+
+# -------------------------------------------- which of them one consolidation may claim
+
+
+def record(effect: date | None) -> InstructionRecord:
+    """One record with nothing under test but its date. The location is never consulted."""
+    return InstructionRecord(
+        location=ProvisionLocation.parse("AR 5"),
+        change_type=ChangeType.MODIFIED,
+        source_ref="AR 001 (1)",
+        effect_date=effect,
+        effect_source=(
+            EffectDateSource.UNREAD if effect is None else EffectDateSource.FINAL_PROVISIONS
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    ("effect", "claimed"),
+    [
+        (date(2024, 7, 9), True),
+        (date(2023, 3, 20), False),
+        (date(2023, 3, 21), True),
+        (date(2024, 7, 10), False),
+        (date(2019, 1, 1), False),
+    ],
+)
+def test_the_window_is_half_open_at_both_ends_as_the_metadata_signal_reads_it(
+    effect: date, claimed: bool
+) -> None:
+    """`(after, until]`: the day a consolidation is dated belongs to it, the day it left does not.
+
+    One convention for both non-diff signals, so a unit's two second opinions cannot land in
+    two different windows for want of a boundary rule.
+    """
+    assert record(effect).claimed_in((date(2023, 3, 20), date(2024, 7, 9))) is claimed
+
+
+def test_the_act_as_published_bounds_a_window_only_at_its_far_end() -> None:
+    """No lower bound: everything up to the later version belongs to a pair that starts at the
+    act itself, which is the same rule the annotations are selected under."""
+    assert record(date(1999, 1, 1)).claimed_in((None, date(2024, 7, 9))) is True
+    assert record(date(2024, 7, 10)).claimed_in((None, date(2024, 7, 9))) is False
+
+
+def test_a_record_the_act_dated_nowhere_is_claimed_in_every_window() -> None:
+    """The fail-safe direction. A date nobody read is a counted gap, never a reason to drop."""
+    undated = record(None)
+    assert undated.claimed_in((date(2023, 3, 20), date(2024, 7, 9))) is True
+    assert undated.claimed_in((None, date(1999, 1, 1))) is True
+    assert undated.claimed_in(None) is True
+
+
+def test_the_deferred_instruction_leaves_the_window_it_had_not_reached(
+    client: CellarClient,
+) -> None:
+    """`32024R1860` orders MDR Article 10a into existence from 10 January 2025.
+
+    A consolidation that ends on 9 July 2024 may not claim it, and the five instructions the
+    act dates nowhere are claimed there exactly as they were before any date was read.
+    """
+    parse = parse_instructions(package(client, MDR_2024_AMENDER, MDR_2024_AMENDER))
+    early = parse.in_window(act(MDR), (date(2023, 3, 20), date(2024, 7, 9)))
+    late = parse.in_window(act(MDR), (date(2024, 7, 9), date(2025, 1, 10)))
+    assert "AR 10a" not in {record.unit.canonical for record in early.records}
+    assert "AR 10a" in {record.unit.canonical for record in late.records}
+    assert (early.excluded, late.excluded) == (1, 0)
+    assert early.undated == late.undated == len(early.records)
+
+
+def test_an_unwindowed_read_claims_the_whole_act_and_excludes_nothing(
+    client: CellarClient,
+) -> None:
+    """No window is the unbounded one: everything is claimed and nothing falls outside it.
+
+    Both counts are over the records, so the zero here is a measurement of the unbounded window
+    rather than a phrase about a caller that held no dates.
+    """
+    parse = parse_instructions(package(client, MDR_2024_AMENDER, MDR_2024_AMENDER))
+    whole = parse.in_window(act(MDR), None)
+    assert len(whole.records) == len(parse.for_act(act(MDR)))
+    assert whole.excluded == 0
+    assert whole.summary == "0 dated outside the window, 13 undated and claimed"
+
+
+def test_the_signal_note_carries_both_counts(client: CellarClient) -> None:
+    """The reporting half: an empty signal and a scoped one are told apart in the payload."""
+    parse = parse_instructions(package(client, MDR_2024_AMENDER, MDR_2024_AMENDER))
+    report = instruction_signal(
+        parse, act(MDR), window=(date(2023, 3, 20), date(2024, 7, 9)), note="32024R1860"
+    )
+    assert report.note == "32024R1860, 1 dated outside the window, 13 undated and claimed"

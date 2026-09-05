@@ -55,8 +55,16 @@ def metadata(client: CellarClient, celex: str, after: date | None, until: date) 
     return metadata_signal(notice.between(after, until))
 
 
-def instructions(client: CellarClient, amender: str, amended: ActId) -> SignalReport:
-    return instruction_signal(parse_instructions(package(client, amender, amender)), amended)
+def instructions(
+    client: CellarClient,
+    amender: str,
+    amended: ActId,
+    *,
+    window: tuple[date | None, date] | None = None,
+) -> SignalReport:
+    """The third signal, optionally scoped to the consolidation window the pair covers."""
+    parsed = parse_instructions(package(client, amender, amender))
+    return instruction_signal(parsed, amended, window=window)
 
 
 @pytest.fixture
@@ -214,6 +222,60 @@ def test_an_unpinned_amending_act_is_silence_not_dissent(reach: Corroboration) -
     assert len(reach.report.agreements) == 1
     for change in reach.delta.changes:
         assert change.signals.instruction_parse.status is SignalStatus.UNAVAILABLE
+
+
+# ---------------------------------------- an instruction the window has not reached
+
+
+MDR_2024_AMENDER = "32024R1860"
+"""The MDR's 2024 amender. Its Article 3 defers one of its own points by name: *"Article 1,
+point (1) \u2026 shall apply from 10 January 2025"*, which is the instruction that creates
+Article 10a."""
+
+MDR_2023 = "02017R0745-20230320"
+MDR_2024 = "02017R0745-20240709"
+
+
+def mdr_2024(client: CellarClient, *, scoped: bool) -> Corroboration:
+    """The MDR's 2023 to 2024 transition, with and without the window on the third signal."""
+    window = (date(2023, 3, 20), date(2024, 7, 9))
+    return corroborate(
+        delta(client, MDR, MDR_2023, MDR_2024),
+        metadata=metadata(client, MDR, *window),
+        instructions=instructions(
+            client, MDR_2024_AMENDER, act_id(Celex.parse(MDR)), window=window if scoped else None
+        ),
+    )
+
+
+def test_an_instruction_dated_past_the_window_is_not_claimed_in_it(
+    client: CellarClient,
+) -> None:
+    """Article 10a is ordered into existence from 10 January 2025 and is not in the text of
+    9 July 2024. Read whole, the amending act put it here anyway: a unit with no text on either
+    side, `disputed` against two signals that had never heard of it, on a page whose reader
+    could do nothing with it. Scoped, the transition agrees three ways over its five units.
+    """
+    unscoped = mdr_2024(client, scoped=False)
+    assert [change.unit.canonical for change in unscoped.delta.changes if change.textless] == [
+        "AR 10a"
+    ]
+    assert unscoped.disputed == 1
+
+    scoped = mdr_2024(client, scoped=True)
+    assert [item.count for item in scoped.report.signals] == [5, 5, 5]
+    assert len(scoped.delta.changes) == 5
+    assert scoped.disputed == 0
+    assert scoped.report.disagreements == ()
+
+
+def test_the_units_the_window_keeps_are_the_ones_the_diff_found(client: CellarClient) -> None:
+    """Nothing but the deferred unit left. Scoping answers *when*, never *whether*: the five
+    that stay are the five the other two signals name, and they are untouched by it."""
+    scoped = mdr_2024(client, scoped=True)
+    named = {unit.canonical for unit in scoped.report.units_of(Signal.INSTRUCTION_PARSE)}
+    assert named == {"AR 34", "AR 78", "AR 120", "AR 122", "AR 123"}
+    assert named == {unit.canonical for unit in scoped.report.units_of(Signal.STRUCTURAL_DIFF)}
 
 
 # ------------------------------------------------------------------- determinism

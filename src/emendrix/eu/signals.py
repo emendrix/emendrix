@@ -22,6 +22,12 @@ pinned branch notices; `eu/modmeta.py` carries the evidence):
    is a cross-check, not ground truth, and attributing two acts' instructions to one pair
    would measure nothing. Where it is skipped the report says how many acts the window folds
    in, so the reason is in the output rather than in this file.
+4. **The window goes down to the instruction parse as well.** It already chose the document;
+   it now also says which of that document's instructions this pair may claim, because an
+   amending act's orders can be dated years apart and the act is read whole. Only the act's own
+   text dates them (`eu/instructions/effect.py`), never an annotation: the metadata may say
+   where the third signal looks and must never say what it finds there. A record the act dated
+   nowhere is claimed as before.
 """
 
 from __future__ import annotations
@@ -32,7 +38,7 @@ from emendrix.core import ActId, Signal, SignalReport, VersionId
 from emendrix.corroborate.sources import TransitionSignals
 from emendrix.eu.cellar import CellarClient
 from emendrix.eu.identifiers import Celex, celex_of
-from emendrix.eu.instructions import instruction_signal, parse_instructions
+from emendrix.eu.instructions import Window, instruction_signal, parse_instructions
 from emendrix.eu.modmeta import ModificationSet, parse_branch_modifications
 from emendrix.eu.modmeta import metadata_signal as build_metadata_signal
 from emendrix.eu.packages import FormexPackage
@@ -40,13 +46,19 @@ from emendrix.eu.packages import FormexPackage
 __all__ = ["EuSignalSource", "instruction_signal_for"]
 
 
-def instruction_signal_for(client: CellarClient, celex: Celex, act: ActId) -> SignalReport:
+def instruction_signal_for(
+    client: CellarClient, celex: Celex, act: ActId, *, window: Window | None = None
+) -> SignalReport:
     """The third signal for one amended act, read out of one amending act's own package.
 
     The one place that turns an amending act's identifier into the instruction signal, so the
     loop and anything that recomputes the signal over an entry already written cannot disagree
     about what was parsed or about the note that says how much of it was read. A package with no
     readable text is an answer and is reported as one.
+
+    `window` is the consolidation's `(after, until]`, a value from the composition root. A
+    caller holding none claims the whole act under the unbounded window, and the note counts
+    what that window excluded either way.
     """
     fetched = client.fetch_formex(celex, celex.version, allow_original_fallback=False)
     if not isinstance(fetched, FormexPackage):
@@ -55,7 +67,10 @@ def instruction_signal_for(client: CellarClient, celex: Celex, act: ActId) -> Si
         )
     parsed = parse_instructions(fetched)
     return instruction_signal(
-        parsed, act, note=f"{celex}, {parsed.coverage:.3f} of its instruction clauses read"
+        parsed,
+        act,
+        window=window,
+        note=f"{celex}, {parsed.coverage:.3f} of its instruction clauses read",
     )
 
 
@@ -96,7 +111,7 @@ class EuSignalSource:
                 records,
                 note=f"{len(records)} annotations in ({start or 'the act itself'}, {end}]",
             ),
-            instructions=self._instructions(act, amending),
+            instructions=self._instructions(act, amending, window),
         )
 
     # ---------------------------------------------------------------- the pieces
@@ -117,7 +132,7 @@ class EuSignalSource:
 
     def _window(
         self, celex: Celex, from_version: VersionId, to_version: VersionId
-    ) -> tuple[date | None, date] | None:
+    ) -> Window | None:
         """`(after, until]`, or `None` when the corpus does not date the pair.
 
         The lower bound is `None` when `from_version` is the act as published: everything
@@ -132,8 +147,12 @@ class EuSignalSource:
         start = dates.get(str(from_version))
         return None if start is None else (start, end)
 
-    def _instructions(self, act: ActId, amending: tuple[str, ...]) -> SignalReport:
-        """The third signal, when exactly one amending act is in the window and it has text."""
+    def _instructions(self, act: ActId, amending: tuple[str, ...], window: Window) -> SignalReport:
+        """The third signal, when exactly one amending act is in the window and it has text.
+
+        The window goes down with the act: it selects *which* document is read, and then which
+        of that document's instructions this consolidation is entitled to claim.
+        """
         if len(amending) != 1:
             return SignalReport.unavailable(
                 Signal.INSTRUCTION_PARSE,
@@ -143,4 +162,4 @@ class EuSignalSource:
                     else f"the window folds in {len(amending)} amending acts: {', '.join(amending)}"
                 ),
             )
-        return instruction_signal_for(self.client, Celex.parse(amending[0]), act)
+        return instruction_signal_for(self.client, Celex.parse(amending[0]), act, window=window)

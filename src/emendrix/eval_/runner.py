@@ -9,9 +9,11 @@ Per case the pipeline is exactly the shipped one, adapter → parse → diff →
 and then `metrics.score`. Nothing here reimplements a stage, because a harness that measures its
 own copy of the pipeline measures nothing.
 
-The metadata window is `(date(A), date(B)]`, with no lower bound when A is the act as published: a
+The window is `(date(A), date(B)]`, with no lower bound when A is the act as published: a
 version pair can fold in several amending acts and one amending act's changes can be split across
-dates. The third signal is read only where `build.py` decided one amending act could supply it;
+dates. Both non-diff signals are scoped by it, the annotations by their own dates and the
+instructions by the dates their act gives them, exactly as `eu/signals.py` scopes them in the
+loop. The third signal is read only where `build.py` decided one amending act could supply it;
 elsewhere it is `UNAVAILABLE`, which is silence and not dissent.
 """
 
@@ -29,7 +31,7 @@ from emendrix.eu.cache import FixtureMissing
 from emendrix.eu.cellar import CellarClient
 from emendrix.eu.formex import Formex4Parser, ParsedAct
 from emendrix.eu.identifiers import Celex, act_id
-from emendrix.eu.instructions import instruction_signal, parse_instructions
+from emendrix.eu.instructions import Window, instruction_signal, parse_instructions
 from emendrix.eu.modmeta import ModificationSet, metadata_signal, parse_branch_modifications
 from emendrix.eu.packages import FormexPackage
 from emendrix.eval_.aggregate import EvalMetrics, aggregate
@@ -106,14 +108,21 @@ class CorpusReader:
             return self.parser.read_version(fetched)
         return fetched
 
-    def instructions(self, celex: str, amended: ActId) -> tuple[SignalReport, float, int] | None:
-        """The third signal for one amending act, with its coverage. `None` if it has no text."""
+    def instructions(
+        self, celex: str, amended: ActId, window: Window
+    ) -> tuple[SignalReport, float, int] | None:
+        """The third signal for one amending act, with its coverage. `None` if it has no text.
+
+        `window` is the transition's own `(after, until]`, the same value the metadata signal
+        selects its annotations with, because the shipped signal source scopes both the same
+        way and a harness reading the act whole would score a pipeline nobody runs.
+        """
         parsed = Celex.parse(celex)
         fetched = self.client.fetch_formex(parsed, parsed.version)
         if not isinstance(fetched, FormexPackage):
             return None
         read = parse_instructions(fetched)
-        return instruction_signal(read, amended), read.coverage, len(read.unread)
+        return instruction_signal(read, amended, window=window), read.coverage, len(read.unread)
 
 
 def _coverage(*parsed: ParsedAct) -> CoverageStats:
@@ -168,14 +177,13 @@ def prepare_case(reader: CorpusReader, case: CorpusCase) -> PreparedCase | CaseR
     if not isinstance(after, ParsedAct):
         return _state(case, after, "to")
 
-    window = reader.modifications(case.act).between(
-        None if case.from_original else case.from_date, case.to_date
-    )
+    covers: Window = (None if case.from_original else case.from_date, case.to_date)
+    window = reader.modifications(case.act).between(*covers)
     amended = act_id(Celex.parse(case.act))
     third = (
         None
         if case.instruction_source is None
-        else reader.instructions(case.instruction_source, amended)
+        else reader.instructions(case.instruction_source, amended, covers)
     )
     instructions = (
         third[0]

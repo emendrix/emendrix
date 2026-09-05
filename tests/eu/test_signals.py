@@ -8,11 +8,14 @@ nowhere, a pair it annotated once, and a pair it annotated twenty-six times.
 
 from __future__ import annotations
 
+from datetime import date
+
 import pytest
 
 from emendrix.core import ActId, Signal, SignalReport, VersionId
 from emendrix.eu.cellar import CellarClient
-from emendrix.eu.signals import EuSignalSource
+from emendrix.eu.identifiers import Celex
+from emendrix.eu.signals import EuSignalSource, instruction_signal_for
 from eu_pins import MDR
 
 MDR_ACT = ActId(corpus="eu", key=MDR)
@@ -90,3 +93,60 @@ def test_a_pair_the_tree_notice_does_not_date_yields_no_metadata_signal(
     assert metadata.available is False
     assert metadata.note is not None and "02017R0745-19000101" in metadata.note
     assert instructions.available is False
+
+
+def test_the_window_reaches_the_third_signal_and_not_only_the_second(
+    source: EuSignalSource,
+) -> None:
+    """`32024R1860` orders MDR Article 10a into existence from 10 January 2025.
+
+    The consolidation that ends on 9 July 2024 reads the same amending act, reads all six of
+    the units it names for the MDR, and claims the five whose date the act does not put after
+    the window. Before the window reached this signal it claimed all six, so the reader of a
+    version of 9 July 2024 was told a provision it does not contain had changed in it.
+    """
+    metadata, instructions = both(source, "02017R0745-20230320", "02017R0745-20240709")
+    assert metadata.note == "18 annotations in (2023-03-20, 2024-07-09]"
+    assert instructions.available is True
+    assert [unit.canonical for unit in instructions.units] == [
+        "AR 34",
+        "AR 78",
+        "AR 120",
+        "AR 122",
+        "AR 123",
+    ]
+
+
+def test_the_signal_note_says_what_the_window_left_out_and_what_it_could_not_date(
+    source: EuSignalSource,
+) -> None:
+    """Both counts ride in the payload, so an empty signal and a scoped one are told apart
+    without leaving it. The undated thirteen are claimed, which is why the note names them."""
+    _, instructions = both(source, "02017R0745-20230320", "02017R0745-20240709")
+    assert instructions.note == (
+        "32024R1860, 1.000 of its instruction clauses read, "
+        "1 dated outside the window, 13 undated and claimed"
+    )
+
+
+def test_the_same_amending_act_claims_different_units_in_two_windows(
+    client: CellarClient,
+) -> None:
+    """One act, read once, claimed twice: the replay this scoping exists to stop.
+
+    `instruction_signal_for` is the composition root's own entry point, and the window is the
+    only thing that differs between these two calls. The MDR's 2024 amender is the pinned act
+    that carries the shape: one of its points is deferred by its own final provisions and the
+    rest are dated nowhere, so the later window gains the deferred unit and keeps the undated
+    ones rather than exchanging one set for another.
+    """
+    early, late = (
+        instruction_signal_for(
+            client, Celex.parse("32024R1860"), MDR_ACT, window=(date(2023, 3, 20), until)
+        )
+        for until in (date(2024, 7, 9), date(2025, 1, 10))
+    )
+    early_units = {unit.canonical for unit in early.units}
+    late_units = {unit.canonical for unit in late.units}
+    assert late_units - early_units == {"AR 10a"}
+    assert early_units < late_units

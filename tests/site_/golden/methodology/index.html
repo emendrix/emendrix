@@ -34,8 +34,8 @@
 <thead><tr><th>Measure</th><th>Result</th><th>n</th><th>What it means — and what it does not</th></tr></thead>
 <tbody>
 <tr><td><strong>Localisation</strong> (which provisions changed)</td><td class="result">P 0.952 / R 0.975 / <strong>F1 0.963</strong></td><td>17 transitions</td><td class="meaning">Structural diff against the corpus&#x27;s own modification metadata, at article-or-annex granularity. Not a measure of whether the explanation is any good; precision is dragged down by blanket amendments the reference set annotates only once.</td></tr>
-<tr><td>Instruction-parse agreement (cross-check)</td><td class="result">P 0.917 / R 0.985 / F1 0.950</td><td>13 transitions</td><td class="meaning">A third, independent reading of the same question, from the amending act&#x27;s own prose. Weaker by construction: it cannot read a range or an instruction that delegates to an annex, and those are counted as unread, never approximated.</td></tr>
-<tr><td>Disputed changes (signals disagree)</td><td class="result">0.129</td><td>101 changes</td><td class="meaning">Changes at least one signal named and another did not. They ship marked <code>disputed</code>; a high rate is a data-quality finding, not a hidden failure.</td></tr>
+<tr><td>Instruction-parse agreement (cross-check)</td><td class="result">P 0.917 / R 1.000 / F1 0.957</td><td>13 transitions</td><td class="meaning">A third, independent reading of the same question, from the amending act&#x27;s own prose. Weaker by construction: it cannot read a range or an instruction that delegates to an annex, and those are counted as unread, never approximated.</td></tr>
+<tr><td>Disputed changes (signals disagree)</td><td class="result">0.120</td><td>100 changes</td><td class="meaning">Changes at least one signal named and another did not. They ship marked <code>disputed</code>; a high rate is a data-quality finding, not a hidden failure.</td></tr>
 <tr><td>Change classification</td><td class="result">accuracy 1.000</td><td>79 units</td><td class="meaning">Insert / modify / delete against the metadata&#x27;s role codes, on units both signals named. The role semantics are empirical — the authority tables publish no labels.</td></tr>
 <tr><td>Citation grounding (gate pass, no retry)</td><td class="result">1.000</td><td>55 changes</td><td class="meaning">Of the changes with an explanation to check, the share whose first answer cited only provisions it had been offered. <strong>Citation validity, not explanation quality</strong> — a wrong sentence with a good citation passes.</td></tr>
 <tr><td>Quote-fallback rate</td><td class="result">0.000</td><td>55 changes</td><td class="meaning">The share where the gate replaced the model&#x27;s prose with a verbatim quotation of the provision after one failed retry. Correct by construction and visibly marked; this is where grounding losses go, and no change is ever dropped.</td></tr>
@@ -43,7 +43,7 @@
 </tbody>
 </table>
 </div>
-<p class="small muted">Measured on 2026-09-04 at revision <code>984347f</code>, from <code>reports/eval/2026-09-04-984347f.md</code>. The deterministic rows cover every transition in the committed corpus (18 of 18 scored); the model rows cover the pinned explanation subset only, because each change in it is one recorded call to a provider.</p>
+<p class="small muted">Measured on 2026-09-05 at revision <code>8cb6d5f</code>, from <code>reports/eval/2026-09-05-8cb6d5f.md</code>. The deterministic rows cover every transition in the committed corpus (18 of 18 scored); the model rows cover the pinned explanation subset only, because each change in it is one recorded call to a provider.</p>
 <h2>How it works</h2>
 <ul class="loop">
 <li><b>1 · Watch</b>A watchlist of acts, matched against the Publications Office notification feed by identifier. Deterministic.</li>

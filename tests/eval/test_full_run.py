@@ -175,7 +175,18 @@ def test_the_annex_numbering_mismatch_is_published_not_hidden(run: EvalRun) -> N
 
 
 def test_nothing_is_dropped_across_the_whole_corpus(run: EvalRun) -> None:
-    """13 disputed of 101 changes, and every one of them ships.
+    """12 disputed of 100 changes, and every one of them ships.
+
+    Until 2026-09-05 this read 13 of 101, with `(4, 3)` for the two unit counts: the third
+    signal read an amending act whole and claimed every instruction in it in every window that
+    act touched, however the act dated them. `32024R1860` orders MDR Article 10a into existence
+    from 10 January 2025 and `32017R0745@20240709` ends six months before that, so the claim
+    shipped in a window whose text does not contain the provision, with no text on either side
+    and disputed against two signals that had never heard of it. The window now reaches the
+    instruction parse as well, and only the act's own text dates a record. **12 of 100 is not
+    13 of 101 improved.** One of the 101 was never a change in this window at all, so the
+    denominator is a different one, and the right-hand side of both pairings the third signal
+    enters is a different set of claims. The question each figure asks is unchanged.
 
     Until 2026-09-04 this read 17 of 104, with `(4, 6)` for the two unit counts: an amending
     article that states its instruction in prose rather than in a list had its own heading read
@@ -203,9 +214,9 @@ def test_nothing_is_dropped_across_the_whole_corpus(run: EvalRun) -> None:
     beside the `AN I` unit every other signal used. That shipped four phantom units and five
     false disputes on `32017R0745@20260101`, which now agrees three ways.
     """
-    assert (run.metrics.changes, run.metrics.disputed) == (101, 13)
-    assert (run.metrics.diff_only_units, run.metrics.metadata_only_units) == (4, 3)
-    assert sum(len(case.report.disagreements) for case in run.cases if case.report) == 13
+    assert (run.metrics.changes, run.metrics.disputed) == (100, 12)
+    assert (run.metrics.diff_only_units, run.metrics.metadata_only_units) == (4, 2)
+    assert sum(len(case.report.disagreements) for case in run.cases if case.report) == 12
 
 
 def test_the_parser_accounts_for_every_element_it_read(run: EvalRun) -> None:

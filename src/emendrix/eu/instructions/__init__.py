@@ -42,6 +42,15 @@ all take effect on one day, and none of them need take effect on the day the act
 so the date is read where the act states it and is left unread where it does not. `dated` and
 `undated` are that second coverage statistic; `docs/limitations.md` carries its size.
 
+**Which of them one consolidation may claim** is `InstructionParse.in_window`, and it is the
+reason the date is read at all. An act is read once and a consolidation covers `(after,
+until]`, so a record the act dates outside that window is out of scope for the transition and
+is not claimed there; without the scope the same instruction set is claimed again in every
+window the act touches, years after the one it took effect in. A record the act dated nowhere
+is claimed exactly as it was before the date existed, because dropping a claim on a date nobody
+read would be guessing in the one direction that loses a finding. The signal's note carries
+both counts, so an empty signal and a scoped one are told apart in the payload itself.
+
 Measured 2026-08-06 over the pinned amending acts: `32026R1744` → 84 records over 45 units,
 0 unread, exactly the 45 units its metadata names; `32020R0561` → 9 units, exactly the 9 its
 metadata names. `tests/eu/test_instructions.py` asserts both.
@@ -54,6 +63,8 @@ from emendrix.eu.instructions.model import (
     InstructionParse,
     InstructionRecord,
     UnreadInstruction,
+    Window,
+    WindowedInstructions,
 )
 from emendrix.eu.instructions.read import (
     AMEND,
@@ -70,6 +81,8 @@ __all__ = [
     "InstructionParse",
     "InstructionRecord",
     "UnreadInstruction",
+    "Window",
+    "WindowedInstructions",
     "instruction_signal",
     "parse_instructions",
 ]

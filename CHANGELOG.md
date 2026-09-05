@@ -198,6 +198,54 @@ Named rather than discovered later; the eval report's disagreement list is the l
   flattened into one string and one record is written from it, so an article stating two or three
   amendments in prose names at most one of them, and a collapsed instruction leaves nothing behind
   to count. `docs/limitations.md` carries that as the named gap it is.
+- **An amending act's instructions were claimed in every window that act touched, and are
+  scoped to one since 2026-09-05.** The third signal was read out of an amending act's own
+  package whole, so an act amending a regulation over several consolidations had its entire
+  instruction set attributed to each of them, however the act itself dated the orders in it. The
+  consolidation window `(after, until]` now goes down to that signal as well as to the
+  annotations: a record whose effect date the act's own text yields and which falls outside the
+  window is out of scope for that transition and is not claimed there. Only the act's own text
+  dates a record, never an annotation, because the metadata may say which document the third
+  signal reads and must never say what it finds in it; intersecting the two would delete the
+  cases where the instruction parse is the only signal corroborating the structural diff against
+  silent metadata, and it is not done. A record the act dated nowhere is claimed exactly as it
+  was before any date was read, which is the safe direction of every failure here and the reason
+  the change is small. The signal's note now carries both counts, how many records the window
+  excluded and how many carried no readable date, so an empty signal and a scoped one are told
+  apart in the payload itself. Over the committed corpus, scored offline from the fixtures, the
+  disputed rate reads 12 of 100 changes (0.120) where it read 13 of 101 (0.129),
+  `metadata_only_units` reads 2 where it read 3, the structural diff against the instruction
+  parse reads P 0.917 / R 1.000 / F1 0.957 and macro F1 0.538 over 13 transitions where it read
+  P 0.917 / R 0.985 / F1 0.950 and macro F1 0.531, and the metadata against the instruction
+  parse reads P 0.889 / R 0.970 / F1 0.928 and macro F1 0.462 where it read P 0.889 / R 0.955 /
+  F1 0.921 and macro F1 0.455. **Neither set is the other improved.** One of the 101 was never a
+  change in the window it shipped in, so the denominator differs, and the right-hand side of both
+  pairings the third signal enters is a different set of claims; the question each figure asks is
+  unchanged. Both sets are published under their own dates, in
+  `reports/eval/2026-09-04-984347f.md` and `reports/eval/2026-09-05-8cb6d5f.md`, and neither is
+  adjusted for the other. Localisation does not move in any component, pairing the structural
+  diff against the metadata and never consulting the instruction parse; classification, the case
+  count, `instruction_unread` and both parser counters do not move, and neither does the
+  flagship, so no committed floor moved. The transition that moved is `32017R0745@20240709`, its
+  amending act ordering an article into existence from a day six months past the far end of that
+  window. What this does not fix is how rarely an act says when its own instructions apply.
+  Measured on 2026-09-05 over a clone of the published corpus as it stood on 2026-08-14, 369
+  events and 4,588 changes carrying 1,309 claims no other signal named, the window excludes 85 of
+  them, 0.065, across 13 events: changes with no text on either side fall from 1,580 to 1,495,
+  0.344 to 0.326, where removing the whole class would have taken them to 271. Only 0.183 of
+  instruction records carry a date at all and four fifths of those come from the act's single
+  date of application, so an act that states one date for everything is scoped exactly once and
+  an act that states none is not scoped at all. That is a counted coverage gap and not a
+  disappointment to be widened away: a rule that dropped a claim on a date nobody read would lose
+  a finding to gain a smaller number. Where the act does date an instruction the scoping bites
+  hard and correctly: `32019R2033` dates a deletion into one window in its own words, and that
+  claim stays there, ships `disputed` against a structural diff that found nothing, and is the
+  kind of disagreement this project exists to publish, while the same act's other orders stop
+  appearing in two windows seven years apart. Changelogs already published keep the text they
+  were written with and are corrected forward, not rewritten, so a page served today may still
+  show a claim in a window its act dates elsewhere; the note on every committed payload is stale
+  by its new counts as well, so the pass that corrects them will rewrite entries whose claims did
+  not move.
 - **A touched unit carrying no text was counted substantive, and is counted in its own bucket
   since 2026-09-05.** The corroborator appends one change for every unit another signal named and
   the structural diff never saw, and the diff is the only signal carrying text, so such a change

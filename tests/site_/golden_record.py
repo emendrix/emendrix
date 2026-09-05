@@ -494,4 +494,18 @@ cassette and no faithfulness sign-off is touched, and the flagship AI Act event 
 textless unit either. What did move is a stored field on every future document, which is why
 `schema_version` is now `1.1`; the 446 documents already published say `1.0`, read back with
 `textless` at 0 and their own `substantive`, and are corrected where they are stored.
+
+**2026-09-05, later the same day: an amending act's instructions are claimed only in the window
+they take effect in.** Two files moved, `methodology/index.html` and `sitemap.xml`, by three
+lines and one. The methodology table's cross-check cell reads P 0.917 / R 1.000 / F1 0.957 where
+it read P 0.917 / R 0.985 / F1 0.950, its disputed cell reads 0.120 over 100 changes where it
+read 0.129 over 101, and its provenance line and the page's `lastmod` follow the newest report,
+which is what the newest-report rule in `test_golden.py` makes them do. **Those two cells are
+not one measurement improved**: the right-hand side of the pairing is a different set of claims
+and the denominator is a different one, and `CHANGELOG.md` carries the reading under its own
+date. Localisation did not move in any component, which is why `index.html`, every act page and
+every event page are byte-identical, and so are both feeds, `search-index.json`, `robots.txt`,
+the stylesheet, the script and both images. No `<id>`, no permalink and no anchor moved, so
+nothing renotifies, and no size pin moved: the pages the three at-scale pins measure are built
+from the toy corpus, whose events name no amending act at all.
 """
