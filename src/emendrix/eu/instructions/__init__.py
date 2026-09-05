@@ -36,6 +36,12 @@ are not handled: an instruction can **delegate** (*"Annexes VI to X … are amen
 with the Annex to this Regulation"*, `32022R0477`, on which the naive parser scores 0.000) and
 can express **ranges**. Both are counted as unread instructions rather than approximated.
 
+**When each instruction takes effect** is read from the same document, in `effect.py` and
+`final_provisions.py`, and rides on the record as `effect_date`. An act's instructions do not
+all take effect on one day, and none of them need take effect on the day the act was published,
+so the date is read where the act states it and is left unread where it does not. `dated` and
+`undated` are that second coverage statistic; `docs/limitations.md` carries its size.
+
 Measured 2026-08-06 over the pinned amending acts: `32026R1744` → 84 records over 45 units,
 0 unread, exactly the 45 units its metadata names; `32020R0561` → 9 units, exactly the 9 its
 metadata names. `tests/eu/test_instructions.py` asserts both.
@@ -43,6 +49,7 @@ metadata names. `tests/eu/test_instructions.py` asserts both.
 
 from __future__ import annotations
 
+from emendrix.eu.instructions.effect import EffectDates, EffectDateSource
 from emendrix.eu.instructions.model import (
     InstructionParse,
     InstructionRecord,
@@ -58,6 +65,8 @@ from emendrix.eu.instructions.read import (
 __all__ = [
     "AMEND",
     "INSTRUCTION_VERBS",
+    "EffectDateSource",
+    "EffectDates",
     "InstructionParse",
     "InstructionRecord",
     "UnreadInstruction",

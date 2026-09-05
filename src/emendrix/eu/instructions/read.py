@@ -8,6 +8,7 @@ is `eu/references.py`.
 from __future__ import annotations
 
 import re
+from datetime import date
 from typing import Final
 from xml.etree.ElementTree import Element
 
@@ -17,13 +18,14 @@ from emendrix.core import (
     ProvisionLocation,
     Signal,
     SignalReport,
-    normalize_for_comparison,
 )
 from emendrix.eu.formex.amending import named_act, quoted_location
 from emendrix.eu.formex.documents import act_documents, documents_of, unit_elements
 from emendrix.eu.formex.locations import annex_segment
 from emendrix.eu.formex.model import CoverageCounter
 from emendrix.eu.formex.text import flat_text
+from emendrix.eu.instructions.effect import EffectDates, EffectDateSource, prose
+from emendrix.eu.instructions.final_provisions import read_effect_dates
 from emendrix.eu.instructions.model import (
     InstructionParse,
     InstructionRecord,
@@ -80,7 +82,7 @@ def parse_instructions(package: FormexPackage) -> InstructionParse:
         if not is_annex
     ]
     scoped = any(target is not None for _, target in articles)
-    reader = _Reader(package, scoped=scoped)
+    reader = _Reader(package, scoped=scoped, effect=read_effect_dates(unit for unit, _ in articles))
     for unit, target in articles:
         reader.read_article(unit, target)
     return InstructionParse(
@@ -106,24 +108,8 @@ def instruction_signal(
 
 
 def _clause(node: Element) -> str:
-    """The instruction's own words: everything but its enumerator, sub-list and quoted text.
-
-    A separator at every element boundary, exactly as `eu/formex/text.py` builds a comparison
-    form — the reference grammar reads words, and a lost boundary is a lost reference.
-    """
-    parts: list[str] = []
-
-    def walk(element: Element) -> None:
-        if element.text:
-            parts.append(element.text)
-        for child in element:
-            if child.tag not in _CLAUSE_SKIPPED:
-                walk(child)
-            if child.tail:
-                parts.append(child.tail)
-
-    walk(node)
-    return normalize_for_comparison(" ".join(parts))
+    """The instruction's own words: everything but its enumerator, sub-list and quoted text."""
+    return prose(node, skipped=_CLAUSE_SKIPPED)
 
 
 def _verb(clause: str) -> str | ChangeType | None:
@@ -151,11 +137,12 @@ def _lead_in(host: Element) -> ProvisionLocation | None:
 
 
 class _Reader:
-    """The walk. Holds the package (for `INCL.ELEMENT`) and the two tallies it fills."""
+    """The walk. Holds the package (for `INCL.ELEMENT`), the act's own dates and its tallies."""
 
-    def __init__(self, package: FormexPackage, *, scoped: bool) -> None:
+    def __init__(self, package: FormexPackage, *, scoped: bool, effect: EffectDates) -> None:
         self.package = package
         self.scoped = scoped
+        self.effect = effect
         self.records: list[InstructionRecord] = []
         self.unread: list[UnreadInstruction] = []
 
@@ -222,10 +209,11 @@ class _Reader:
         if not isinstance(kind, ChangeType):
             self._miss(clause, where, "no instruction verb")
             return
+        dated = self.effect.for_clause(clause, where)
         quoted = self._quoted_locations(node)
         if kind is ChangeType.INSERTED and quoted:
             for target in quoted:
-                self._record(target, kind, where, act, from_quotation=True)
+                self._record(target, kind, where, act, dated, from_quotation=True)
             return
         if location is None:
             self._miss(clause, where, "no provision reference")
@@ -234,7 +222,7 @@ class _Reader:
             # The prose never names what it inserts, so a lone top-level reference is the
             # host of the insertion, not the thing inserted.
             kind = ChangeType.MODIFIED
-        self._record(location, kind, where, act, from_quotation=False)
+        self._record(location, kind, where, act, dated, from_quotation=False)
 
     def _record(
         self,
@@ -242,9 +230,11 @@ class _Reader:
         kind: ChangeType,
         where: str,
         act: ActId | None,
+        dated: tuple[date | None, EffectDateSource],
         *,
         from_quotation: bool,
     ) -> None:
+        effective, source = dated
         self.records.append(
             InstructionRecord(
                 location=location,
@@ -252,6 +242,8 @@ class _Reader:
                 source_ref=where,
                 amended_act=act,
                 from_quotation=from_quotation,
+                effect_date=effective,
+                effect_source=source,
             )
         )
 

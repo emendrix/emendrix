@@ -45,6 +45,25 @@ instruction leaves nothing behind to count: there is no second claim missing fro
 can recompute. The third signal is a measured cross-check rather than ground truth, which is the
 standing reason a gap in it is counted and stated rather than approximated.
 
+**An amending act rarely dates its own instructions.** Every instruction record carries the date
+it takes effect where the act's own text states one: in the clause itself (*"… is deleted with
+effect from 26 June 2026;"*), in the final-provisions article where that article names the
+coordinate the clause was drafted at (*"Article 1, point (1) … shall apply from 10 January
+2025"*), or, failing both, from the act's own date of application. Measured 2026-09-05 with
+[`../scripts/validation/instruction_effect_dates.py`](../scripts/validation/instruction_effect_dates.py)
+over the 84 amending acts whose packages this installation has fetched and the 1 734 instructions
+they yield: one of those three answers is reached for 317 of them (0.183), 1 417 carry no date at
+all, 27 acts are dated in full and 46 yield no date anywhere. Three shapes account for nearly all
+of the gap. Most amending acts enter into force *"on the twentieth day following that of its
+publication"* and never write that day, so there is no act-wide date to fall back on. A deferral
+written as an enumeration (*"The following points of Article 1 … shall apply from 27 June 2019:"*)
+names provisions the reference grammar cannot separate, since it keeps only the first coordinate
+at each depth. And a deferral written as a range (*"Articles 95 to 98"*) names units it does not
+write. In the second and third the reader withdraws the act's own date, for that article and for
+the whole act respectively, rather than applying it to instructions the act deliberately took out
+of it. All of it is counted rather than approximated, and an instruction whose date could not be
+read is treated exactly as it was before the date existed.
+
 **`applies_from` is `unknown` far more often than not.** The dates are machine-tagged but the
 binding that says which provision they govern is prose. It is populated only when the change
 itself moves a date in the act's own application article; otherwise the answer is `unknown`, with
