@@ -160,10 +160,15 @@ scan 'cloudflared' ''
 scan 'kustomize' ''
 scan 'KUBECONFIG' ''
 scan '[Gg]itea' ''
+# The operator's own apex: a private host a clone can neither reach nor audit, so it is allowed
+# nowhere and this scan carries no exclude of any kind.
+scan 'symber\.net' ''
 # The site's own published address, allowed where the deployment configures it, where the
-# documentation tells a reader what to visit, and as the package's `Homepage`.
-scan 'symber\.net' '' ':(exclude)deploy/compose.yaml' ':(exclude)README.md' ':(exclude)docs/' \
-    ':(exclude)pyproject.toml'
+# documentation tells a reader what to visit, and as the package's `Homepage`. It is matched in
+# URL form, because `emendrix.eu` bare is also the import path of the EU adapter package and reads
+# in a hundred tracked files; the address only ever appears with its scheme.
+scan 'https://emendrix\.eu' '' ':(exclude)deploy/compose.yaml' ':(exclude)README.md' \
+    ':(exclude)docs/' ':(exclude)pyproject.toml'
 # The author's name, allowed where authorship is the point and where a review record names the
 # person who signed it, including the published table and the site page generated from it.
 scan 'Martins Erts' '' ':(exclude)LICENSE' ':(exclude)pyproject.toml' ':(exclude)reports/' \

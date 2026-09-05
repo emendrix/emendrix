@@ -97,7 +97,7 @@ services:
       - "--report-dir"
       - "/app/reports/eval"
       - "--site-url"
-      - "https://emendrix.symber.net"
+      - "https://emendrix.eu"
       - "--repo-url"
       - "https://github.com/emendrix/emendrix"
       - "--changelogs-url"

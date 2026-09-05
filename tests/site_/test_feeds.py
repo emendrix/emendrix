@@ -58,14 +58,26 @@ def test_the_global_feed_is_valid_atom_with_one_entry_per_event() -> None:
 
 
 def test_entry_ids_are_permalinks_and_stable_across_builds() -> None:
-    """The id is the address the event was first published at, the act page's fragment, and
-    it survived the event getting a page of its own: minting a fresh id that day would have
-    renotified every subscriber about events none of them missed."""
+    """The id is the act page's fragment under the site base, and the base is the one part of
+    it that can move: it survived the event getting a page of its own, because minting a fresh
+    id that day would have renotified every subscriber about events none of them missed."""
     site = _site()
     assert render_feed(site, None) == render_feed(site, None)
     key = site.acts[0].entries[0].key
     slug = site.acts[0].slug
     assert f"<id>https://example.invalid/site/acts/{slug}/#{key}</id>" in render_feed(site, None)
+
+
+def test_the_site_base_is_the_one_thing_whose_move_reissues_an_entry() -> None:
+    """The id embeds the base by design, so a build at another base mints another id for the
+    same event. That is the whole cost of moving the site, and it is stated on `/feeds/` with
+    its date rather than left to a subscriber to work out from a poll."""
+    site = _site()
+    moved = site.model_copy(update={"site_url": "https://example.invalid/moved"})
+    key = site.acts[0].entries[0].key
+    slug = site.acts[0].slug
+    assert f"<id>https://example.invalid/moved/acts/{slug}/#{key}</id>" in render_feed(moved, None)
+    assert render_feed(moved, None) != render_feed(site, None)
 
 
 def test_the_alternate_link_points_at_the_events_own_page() -> None:
@@ -159,6 +171,21 @@ def test_the_feeds_page_lists_the_global_feed_and_every_watched_act() -> None:
     assert 'href="../feeds/all.xml"' in rendered
     assert f'href="../feeds/{site.acts[0].slug}.xml"' in rendered
     assert "Not legal advice:" in rendered
+
+
+def test_the_feeds_page_dates_the_one_reissue_and_promises_no_other() -> None:
+    """Published copy. The page whose subject is the durability of these ids states the day
+    they moved and what a subscriber paid for it, rather than dropping a claim it cannot
+    make. A reader who was handed every entry twice is owed the reason here.
+
+    The sentence does not spell the hostname, because `test_architecture.py` refuses the string
+    `emendrix.eu` anywhere under `site_/`, that being the import path of the EU adapter, and a
+    reader of this page is already on the domain the sentence is about."""
+    rendered = render_feeds_page(_site())
+    assert "Moving this site to its own domain on 2026-09-05" in rendered
+    assert "saw every entry a second time" in rendered
+    assert "Nothing else reissues an entry." in rendered
+    assert "never reissued" not in rendered
 
 
 def test_without_a_site_url_the_feeds_page_says_so_and_no_feed_is_rendered() -> None:

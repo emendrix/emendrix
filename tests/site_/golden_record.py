@@ -622,4 +622,19 @@ committed entries; none is typed. The page carries no JSON-LD, which is the rule
 schema.org type describes honestly, and its `<h1>`, its lede and its two headings hold none of
 the vocabulary that would make a date something owed, which `test_dates_page.py` enforces word
 by word.
+
+**2026-09-05, later again: the feeds page says its ids moved once, and why.** One file moved,
+`feeds/index.html`, by one line, and it is the lede. An entry id is the address the event is
+published at under the site base, so changing that base reissues every entry in every feed, and
+the page whose subject is the durability of those ids is where a reader is owed the date it
+happened on. The lede is 183 bytes longer for it, the whole of the file's move. It names no
+hostname, `test_architecture.py` refusing the string `emendrix.eu` anywhere under `site_/`, that
+being the import path of the EU adapter, and a reader of this page is on the domain the sentence
+is about. Nothing else in the tree moved: both feeds, `search-index.json`, `sitemap.xml`,
+`robots.txt`, the stylesheet, the script, `icon.svg` and `og.png` are byte-identical, and **no
+`<id>`, permalink or anchor in this tree moved at all**, because this build passes
+`https://example.invalid/site` and that base did not move. The reissue is a fact about the
+deployment's base and not about the golden, which is why a change that renotifies every
+subscriber shows up here as one sentence. No size pin moved with it, the largest page in this
+tree being an event page, and no measured figure is read out of a report onto this page.
 """

@@ -36,7 +36,7 @@ dependencies = [
 # `Homepage` is the generated site rather than the source repository: a reader arriving from a
 # package index wants the changelogs and the measured numbers before they want the code.
 [project.urls]
-Homepage = "https://emendrix.symber.net"
+Homepage = "https://emendrix.eu"
 Repository = "https://github.com/emendrix/emendrix"
 Changelog = "https://github.com/emendrix/emendrix/blob/main/CHANGELOG.md"
 Issues = "https://github.com/emendrix/emendrix/issues"

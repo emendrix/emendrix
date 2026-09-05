@@ -7,15 +7,18 @@ artifact people subscribe to. Every interpolated value goes through `markup.esca
 HTML escaping and is also valid XML escaping for a text node and for a quoted attribute value.
 
 An Atom entry's `<id>` is a promise: reissue it and every reader is notified again. So the id is
-the address the event was first published at, `{site_url}/acts/{slug}/#{entry.key}`, and it never
-changes again, not even the day the site grew a page per event: the act page still carries a card
-at that fragment, so the old address still lands on the right event, and a fresh id minted for
-the new page would have renotified every subscriber about events none of them missed. The entry
-key is the version the event produced, fixed the moment the corpus publishes that consolidation,
-so the id is stable across rebuilds, across re-runs of the loop, and across a change to anything
-else on the page. A `tag:` URI is the other conventional answer and is rejected deliberately: it
-needs a tagging authority, meaning a domain plus a date on which the operator held it, and
-nothing here knows either, while the permalink is just as stable and a reader can paste it.
+the address the event is published at, `{site_url}/acts/{slug}/#{entry.key}`, and the site base is
+the one part of it that can move. Everything else is pinned: the entry key is the version the
+event produced, fixed the moment the corpus publishes that consolidation, so the id is stable
+across rebuilds, across re-runs of the loop, and across a change to anything else on the page,
+including the day the site grew a page per event, when the act page kept its card at that fragment
+and a fresh id would have renotified every subscriber about events none of them missed. Moving the
+base reissues every entry in every feed in a single poll, so `--site-url` carries a promise of its
+own: it is not changed without the page at `/feeds/` saying that it changed and when.
+
+A `tag:` URI is the other conventional answer and is not used. It would hold an id across a base
+move, but it cannot be pasted into a browser, and adopting one would itself reissue every entry
+once, which is the whole cost it exists to save.
 
 `<link rel="alternate">` is a different promise, where the entry's content actually is, and that
 one moves with the content: it names the event's own page, which carries the verbatim text the
@@ -96,7 +99,8 @@ def _stamp(value: date) -> str:
 
 
 def _permalink(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
-    """The `<id>`'s address: the act page, at the event's card. A promise, never reissued."""
+    """The `<id>`'s address: the act page, at the event's card. It follows the site base and
+    moves only when that base moves, which reissues the entry to every subscriber."""
     return f"{site.site_url}/{act_href(act.slug)}#{entry.key}"
 
 
@@ -143,12 +147,13 @@ def _summary(site: SiteInputs, entry: ChangelogEntry) -> str:
 
 
 def _entry_xml(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> str:
-    """One amendment event as one Atom entry. The id never moves; the link follows the content.
+    """One amendment event as one Atom entry. The id follows the site base; the link follows
+    the content.
 
     The title is the event page's own, minus the site's name, composed in `titles` so a reader
     who meets the event in a feed reader and one who meets it in a search result read the same
-    words. A reworded title is not a new event: the id stays what it always was, and only a
-    fresh id would renotify anyone.
+    words. A reworded title is not a new event: at a fixed base the id does not move, and only
+    a fresh id would renotify anyone.
     """
     ident = escape(_permalink(site, act, entry))
     link = escape(_event_link(site, act, entry))
@@ -240,8 +245,10 @@ def render_feeds_page(site: SiteInputs) -> Html:
         Html("<h1>Feeds</h1>"),
         Html(
             '<p class="lede">One Atom feed per watched act, plus one carrying every act. An '
-            "entry appears when an amendment event is recorded, is identified by the permanent "
-            "link to that event, and is never reissued.</p>"
+            "entry appears when an amendment event is recorded and is identified by the "
+            "permanent link to that event. Moving this site to its own domain on 2026-09-05 "
+            "changed those links and reissued every entry once, so a reader subscribed before "
+            "that date saw every entry a second time. Nothing else reissues an entry.</p>"
         ),
     ]
     if site.site_url:

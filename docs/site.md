@@ -269,9 +269,10 @@ link, an entry ID, a canonical address, an `og:image` and a sitemap `<loc>` are 
 definition. Without it no feed file and no `sitemap.xml` is written, `/feeds/` says why, and no
 page carries a canonical, an Open Graph tag or a JSON-LD block at all. All of it or none of it,
 per page: a page carrying `og:title` with no `og:url` renders a preview that is wrong, which is
-worse than a page with no preview. Entry IDs are the address an event was first published at, the
-act page's fragment, and never change, so a rebuild never re-notifies a subscriber; the entry's
-link follows the content to the event's own page.
+worse than a page with no preview. Entry IDs are the address an event is published at, the
+act page's fragment under the site base, so a rebuild at one base never re-notifies a subscriber
+and moving the base reissues every entry once; the entry's link follows the content to the event's
+own page.
 
 It also never prints where the changelog repository lives on the operator's machine. That path is
 somebody's home directory, and a public site is the wrong place for it; the paths it does print

@@ -568,6 +568,31 @@ Named rather than discovered later; the eval report's disagreement list is the l
   reliable multiple, and the spread is what a reader should carry rather than either number.
   Nothing was pushed, no site was rebuilt and no feed was reissued: the corrected entries sit in
   the output repository until the hostname move, so that the feeds reissue exactly once.
+- **The site took its own name on 2026-09-05, and every Atom id moves with it, once.** An entry's
+  `<id>` is the address the event is published at, `{site_url}/acts/{slug}/#{key}`, and
+  `--site-url` is the one absolute base the whole build has: it feeds the entry id and its
+  alternate link, the feed id and its `rel="self"`, the canonical, `og:url`, every JSON-LD `url`,
+  every sitemap `<loc>` and the `Sitemap:` line of `robots.txt`. Pointing it at emendrix.eu moves
+  every one of them, and the first rebuild at the new base reissues them all in one poll.
+  **Counted from the feeds as served on 2026-09-05, before the move: 87 feed documents carrying
+  979 `<id>` elements, of which 87 are the feeds' own ids and 892 are entry ids.** The 892 are 446
+  events counted twice, each carried in its own act's feed and in the feed of every act, so a
+  reader subscribed to the global feed is handed 446 entries a second time and a reader subscribed
+  to one act's feed is handed that act's events again. **The reissue was decided, not
+  discovered.** The alternative was to keep minting ids under the old address for ever, which is
+  what the rule this project established says: an id keeps the address it was published at and a
+  link follows the content, which is why the day the site grew a page per event moved every
+  `rel="alternate"` and not one `<id>`. It was rejected because honouring that rule across a
+  hostname move means carrying a second absolute base in the configuration for ever, and resting a
+  permanent promise on a name the project does not own, where the new name is its own. The
+  redirect this move needs either way is what keeps the older addresses alive: the old address
+  answers `301` to the same path on the new host, permanently and indefinitely, so every link
+  already published and every id already delivered still resolves. The published copy on `/feeds/`
+  states the date and what a subscriber paid rather than quietly dropping a claim it can no longer
+  make, and the module that mints the ids records that the base is the one part of an id that can
+  move. Nothing else about an id moved: the entry key is still the version the event produced, and
+  no event, change, permalink fragment or file name in the output repository was touched by any of
+  it.
 - **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
   cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
   rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure
