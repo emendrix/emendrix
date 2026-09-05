@@ -125,8 +125,8 @@ def _hero(site: SiteInputs) -> list[Html]:
 def _card(act: ActSite, entry: ChangelogEntry, named: str) -> Html:
     """One event, name first: which act moved, by how much, from when, and between which pair.
 
-    The heading carries the act's name and nothing else. The version pair used to sit beside
-    it inside the same heading, which put an identifier at the rank of the thing it
+    The heading carries the act's name and nothing else. The version pair sits outside it,
+    a heading holding both putting an identifier at the rank of the thing it
     identifies; it is now the card's last line, in the mono face at reduced contrast, present
     on every card and one step down. The name is the short label rather than the long form,
     because a card is a row in a list and the long form belongs to the headings of the pages

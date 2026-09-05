@@ -179,10 +179,11 @@ def prose(emitted: EmittedChange, entry: ChangelogEntry) -> list[Html]:
 def applies_line(change: Change) -> Html:
     """`applies from: 2021-05-26`, and the two stated non-answers in the same shape.
 
-    Clock 2's answer, on every change block without exception. A block with no line here would
-    leave the question to the reader, and the reader's own fill-in is the inference
-    `CLAUDE.md` §"Two clocks" forbids; `ApplicabilityUnknown` is a value that reaches the
-    output, never a silence.
+    The application clock's answer, on every change block without exception. A block with no
+    line here would leave the question to the reader, and the reader's own fill-in is the
+    inference this project refuses to make: an application date is published only where it is
+    deterministically readable, and `ApplicabilityUnknown` is a value that reaches the output,
+    never a silence.
 
     The label carries a colon because two of the three values are not dates: without it
     `applies from` reads as a sentence that `unchanged` and `unknown` cannot finish. With it

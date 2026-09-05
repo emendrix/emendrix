@@ -13,9 +13,9 @@ index in, and the print block that undoes several of these all sit downstream.
 Two decisions carry the look of these pages and are worth stating:
 
 - **The timeline is drawn as one.** A rail with a node per event, because an act's history is
-  genuinely a sequence and the heading of each entry is now its date. The events lost the
-  panel, border and radius they used to be boxed in: identical rounded cards say the entries
-  are alike, and what a reader needs to see is where each one sits on the line.
+  genuinely a sequence and the heading of each entry is its date. The events carry no panel,
+  border or radius: identical rounded cards say the entries are alike, and what a reader needs
+  to see is where each one sits on the line.
 - **An index is bounded by what it is at that width.** The act page's index is a `<details>`
   of hundreds of links and is capped everywhere; an event page's is a row of a few dozen that
   costs a few lines, so it is capped only at the width where it becomes a sticky column beside

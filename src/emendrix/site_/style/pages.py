@@ -12,8 +12,8 @@ on 2026-09-03:
 
 - **A card leads with the act's name.** The heading holds the name alone, the counts and the
   date follow as one small line, and the version pair sits last in the mono face at reduced
-  contrast. It used to be one heading holding the name and the version pair together, which
-  put an identifier at the same rank as the thing it identifies.
+  contrast. The name and the version pair are not one heading, which would put an identifier at
+  the same rank as the thing it identifies.
 - **A roster row is two lines, not one chain.** The name and the identifiers on the first, the
   official title and the dated words on the second, so a reader scanning forty rows reads a
   column of names rather than a column of separators.

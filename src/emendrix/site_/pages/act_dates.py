@@ -51,7 +51,9 @@ LEDE: Final = (
 
 The disclaimer half is `history.IS_NOT_A_SCHEDULE`, shared with the cross-act list rather than
 spelled here: the site publishes the dates a machine read out of the text, and reading a date
-as the day something starts to be required is the inference `CLAUDE.md` §"Two clocks" forbids.
+as the day something starts to be required is an inference this project does not make. An
+application date is published only where it is deterministically readable from the act's own
+words, and is `ApplicabilityUnknown` otherwise.
 A reader who wants that answer is pointed at the one line that gives it, on both surfaces, in
 one wording.
 """

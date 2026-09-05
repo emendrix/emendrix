@@ -2,8 +2,8 @@
 
 An event's `<title>`, the sentence a feed reader shows in its list, and nothing else: the count,
 the instrument that made it and the date with its clock. Two surfaces state it, the event page's
-head and the Atom entry, and they used to state it differently, which meant a subscriber and a
-search result could disagree about what an event was. So the words are composed here and both
+head and the Atom entry, and a subscriber and a search result must not be able to disagree about
+what an event was. So the words are composed here and both
 read them.
 
 It is a module of its own rather than a helper on either surface because the two already point
