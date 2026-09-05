@@ -1,26 +1,31 @@
-"""When an amending act's own instructions take effect: the four answers and the clause reader.
+"""When an amending act's own instructions take effect: the five answers and the clause reader.
 
 The date an instruction takes effect is in the amending act's own text, in two representations,
 which is why reading it is two modules rather than more of `read.py` (already at the package's
-size cap). An instruction states its own deferral in **prose**, inside the clause the walk
+size cap), and where the text writes no date at all it is in the act's notice, which is a
+third. An instruction states its own deferral in **prose**, inside the clause the walk
 already builds: `32019R2033` Article 62(14) reads *"… Section 2 (Articles 95 to 98) is deleted
 with effect from 26 June 2026;"*. The act's final-provisions article states one in **markup**,
 where `<DATE ISO="20250110">` is the attribute `eu/dates.py` already reads; that reader is
 `final_provisions.py`, and flattening it into this one would throw away the one date the
 Publications Office tags for exactly this purpose.
 
-Four answers, in this order, and the fourth is a counted gap rather than a guess:
+Five answers, in this order, and the fifth is a counted gap rather than a guess:
 
 1. the clause's own effect date;
 2. the final-provisions article, where it names the coordinate the clause was drafted at;
 3. the act's own date of application, for every instruction the first two do not reach;
-4. nothing, counted as `EffectDateSource.UNREAD`.
+4. the day the act's own CELLAR notice publishes for the act (`notice_dates.py`), where the
+   act's text writes none, which is most amending acts;
+5. nothing, counted as `EffectDateSource.UNREAD`.
 
 **Only a date attached to a coordinate the parser itself wrote may scope that coordinate.**
 A date loose in the act names no instruction and is never attached to one; the act's date of
 application is the one act-wide answer, and `final_provisions.py` withdraws it the moment it
-meets a deferral it cannot attribute. A record with no effect date is claimed exactly as it was
-before this module existed, which is the safe direction of every failure here.
+meets a deferral it cannot attribute. The notice answers only where the act's own words do
+not, and only where nothing in those words was left unread, so a withdrawal the prose reader
+made is never undone by a second source. A record with no effect date is claimed exactly as it
+was before this module existed, which is the safe direction of every failure here.
 """
 
 from __future__ import annotations
@@ -80,11 +85,12 @@ _MARKER: Final = re.compile(r"^\(?([0-9A-Za-z]{1,4})\)?\.?$")
 
 
 class EffectDateSource(StrEnum):
-    """Which of the four answers a record's effect date came from. `UNREAD` is the gap."""
+    """Which of the five answers a record's effect date came from. `UNREAD` is the gap."""
 
     CLAUSE = "clause"
     FINAL_PROVISIONS = "final provisions"
     ACT_DEFAULT = "act default"
+    NOTICE = "notice"
     UNREAD = "unread"
 
 
@@ -111,6 +117,10 @@ class EffectDates(BaseModel):
     default: date | None = Field(
         default=None, description="The act's own date of application, where it states one."
     )
+    published: date | None = Field(
+        default=None,
+        description="The act's own date as its CELLAR notice publishes it, where it does.",
+    )
     deferrals: tuple[Deferral, ...] = ()
     guarded: tuple[ProvisionLocation, ...] = Field(
         default=(),
@@ -122,7 +132,7 @@ class EffectDates(BaseModel):
     )
 
     def for_clause(self, clause: str, source_ref: str) -> tuple[date | None, EffectDateSource]:
-        """The effect date of one instruction, in the four-tier order, and where it came from."""
+        """The effect date of one instruction, in the five-tier order, and where it came from."""
         stated = clause_effect_date(clause)
         if stated is not None:
             return stated, EffectDateSource.CLAUSE
@@ -135,9 +145,14 @@ class EffectDates(BaseModel):
                 return deferred, EffectDateSource.FINAL_PROVISIONS
             if self._doubted(source):
                 return None, EffectDateSource.UNREAD
-        if self.default is None:
-            return None, EffectDateSource.UNREAD
-        return self.default, EffectDateSource.ACT_DEFAULT
+        if self.default is not None:
+            return self.default, EffectDateSource.ACT_DEFAULT
+        if self.published is not None and not self.unread:
+            # A default the prose reader withdrew stays withdrawn: `unread` counts statements
+            # this act makes about its own dates that could not be attributed, and a second
+            # source cannot say which instructions they were about either.
+            return self.published, EffectDateSource.NOTICE
+        return None, EffectDateSource.UNREAD
 
     def _deferred(self, source: ProvisionLocation) -> date | None:
         """The date of the most specific deferral covering `source`, where those agree."""

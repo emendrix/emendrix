@@ -129,6 +129,23 @@ def test_the_signal_note_says_what_the_window_left_out_and_what_it_could_not_dat
     )
 
 
+def test_the_composition_root_hands_the_parse_the_act_s_own_published_dates(
+    source: EuSignalSource,
+) -> None:
+    """`32020R0561` gives its own text no day and its notice publishes one: 24 April 2020.
+
+    The note is where that shows: every one of its instructions is dated now, where the act's
+    own words dated none of them. The notice is fetched here, in the composition root, and
+    reaches the parse as a value.
+    """
+    _, instructions = both(source, "02017R0745-20170505", "02017R0745-20200424")
+    assert instructions.note == (
+        "32020R0561, 1.000 of its instruction clauses read, "
+        "0 dated outside the window, 0 undated and claimed"
+    )
+    assert len(instructions.units) == 9
+
+
 def test_the_same_amending_act_claims_different_units_in_two_windows(
     client: CellarClient,
 ) -> None:

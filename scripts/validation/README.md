@@ -13,10 +13,11 @@ assertions. It is **not** production code and nothing under `src/emendrix/` impo
 a second run of any command below is offline and free.
 
 `instruction_effect_dates.py` is the one script here that does import the package, because what it
-measures *is* the package: how often an amending act's own text says when its instructions take
-effect (`src/emendrix/eu/instructions/effect.py`). It reads through the same client and the same
-disk cache the loop uses, writes nothing, and is offline unless `--fetch` is passed. Its figures
-are quoted in [`../../docs/limitations.md`](../../docs/limitations.md):
+measures *is* the package: how often an amending act says when its instructions take effect
+(`src/emendrix/eu/instructions/effect.py`, and the notice reader beside it). It reads through the
+same client, the same composition root and the same disk cache the loop uses, writes nothing, and
+is offline unless `--fetch` is passed. Its figures are quoted in
+[`../../docs/limitations.md`](../../docs/limitations.md):
 
 ```bash
 uv run python scripts/validation/instruction_effect_dates.py            # every cached act

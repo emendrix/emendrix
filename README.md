@@ -160,7 +160,7 @@ or be quoted without what it does not mean.
 | Quote-fallback rate | 0.000 | 55 changes | The share where the gate replaced the model's prose with a verbatim quotation of the provision after one failed retry. Correct by construction and visibly marked; this is where grounding losses go, and no change is ever dropped. |
 | Explanation faithfulness (sampled) | 0.800 | n = 20, LLM judge + spot review (pending) | Whether the shipped sentences follow from the evidence the writer was given: the prompt's deterministic-facts header and the two capped texts (the header joined the evidence base on 2026-08-09, so earlier rates answer a narrower question and are not comparable). The weakest number here: a sampled judgement by `openrouter:openai/gpt-5.6-sol`, which is a different and stronger model than the explainer but not an independent one. The raw fraction, no confidence interval — at this n an interval would be wider than the number is useful. |
 
-Measured on **2026-09-05** at revision `8cb6d5f`, from [`reports/eval/2026-09-05-8cb6d5f.md`](./reports/eval/2026-09-05-8cb6d5f.md). The deterministic rows cover every transition in the committed corpus (18 of 18 scored); the model rows cover the pinned explanation subset only, because each change in it is one recorded call to a provider.
+Measured on **2026-09-05** at revision `73d375c`, from [`reports/eval/2026-09-05-73d375c.md`](./reports/eval/2026-09-05-73d375c.md). The deterministic rows cover every transition in the committed corpus (18 of 18 scored); the model rows cover the pinned explanation subset only, because each change in it is one recorded call to a provider.
 
 <!-- emendrix:metrics:end -->
 

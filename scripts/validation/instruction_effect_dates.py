@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-"""How often an amending act's own text says when its instructions take effect.
+"""How often an amending act says when its instructions take effect.
 
 One-off validation code, kept so the coverage number behind `eu/instructions/effect.py` is a
 reproducible artifact rather than an assertion. Unlike `trace.py` it imports the package
 instead of reimplementing it, because the thing being measured *is* the package: it reads the
 same `CellarClient`, the same disk cache and the same parser the loop uses, and reports what
-the four-tier read reached over a set of real amending acts.
+the five-tier read reached over a set of real amending acts.
 
 It writes nothing, calls no model and spends nothing. It is offline by default: the cache
 answers or the act is reported as not cached, and there is no path from a miss to a socket
@@ -21,6 +21,12 @@ Usage, from the repository root::
 With no act named the population is every act whose tree notice the disk cache already holds,
 which is the set this machine has fetched through the loop, the eval corpus and the repair
 passes. An act that yields no instruction record is not an amending act and is counted apart.
+
+The dates the act's own notice publishes are read through `eu/signals.py`, the same
+composition root the loop reads them in, so this measures the tier order that ships rather
+than a copy of it. The two counts under the tiers are what the notice could not place: an act
+with a staged date, and an act with an implausible value such as the `1001-01-01` the corpus
+writes for a day a later decision will fix.
 """
 
 from __future__ import annotations
@@ -37,8 +43,14 @@ from emendrix.eu.cache import DiskResponseCache, FixtureMissing, default_cache_d
 from emendrix.eu.cellar import CellarClient
 from emendrix.eu.http import CellarHttp
 from emendrix.eu.identifiers import Celex
-from emendrix.eu.instructions import EffectDateSource, InstructionParse, parse_instructions
+from emendrix.eu.instructions import (
+    ActDates,
+    EffectDateSource,
+    InstructionParse,
+    parse_instructions,
+)
 from emendrix.eu.packages import FormexPackage
+from emendrix.eu.signals import act_dates
 
 CELEX_URL = re.compile(r"/resource/celex/(3\d{4}[A-Z]\d{4})$")
 OBSERVED_ON = date(2026, 9, 5)
@@ -68,8 +80,8 @@ def cached_acts(root: Path) -> list[str]:
     return sorted(found)
 
 
-def read(client: CellarClient, key: str) -> InstructionParse | str:
-    """The instruction parse of one act, or why there is none.
+def read(client: CellarClient, key: str) -> tuple[InstructionParse, ActDates] | str:
+    """The instruction parse of one act and the dates its notice publishes, or why there is none.
 
     A package the cache does not hold is a result to count, not a failure: offline, that is what
     the refusal to reach the network says. Anything else is left to raise.
@@ -77,11 +89,12 @@ def read(client: CellarClient, key: str) -> InstructionParse | str:
     celex = Celex.parse(key)
     try:
         fetched = client.fetch_formex(celex, celex.version, allow_original_fallback=False)
+        dates = act_dates(client, celex)
     except (FixtureMissing, OSError) as error:
         return f"not cached ({type(error).__name__})"
     if not isinstance(fetched, FormexPackage):
         return f"no readable text ({fetched.state})"
-    return parse_instructions(fetched)
+    return parse_instructions(fetched, dates=dates), dates
 
 
 def report(key: str, parse: InstructionParse, *, verbose: bool) -> Counter[str]:
@@ -120,11 +133,14 @@ def main() -> int:
     skipped: Counter[str] = Counter()
     amending = records = dated = 0
     acts_dated = acts_defaulted = 0
+    staged_acts = staged_records = 0
+    rejected_acts = rejected_values = 0
     for key in keys:
-        parse = read(client, key)
-        if isinstance(parse, str):
-            skipped[parse] += 1
+        found = read(client, key)
+        if isinstance(found, str):
+            skipped[found] += 1
             continue
+        parse, dates = found
         if parse.matched == 0:
             skipped["no instruction record"] += 1
             continue
@@ -137,6 +153,12 @@ def main() -> int:
             if any(record.effect_source is EffectDateSource.ACT_DEFAULT for record in parse.records)
             else 0
         )
+        if dates.unplaced:
+            staged_acts += 1
+            staged_records += parse.matched
+        if dates.implausible:
+            rejected_acts += 1
+            rejected_values += len(dates.implausible)
         tiers += report(key, parse, verbose=args.verbose)
     http.close()
 
@@ -150,6 +172,8 @@ def main() -> int:
     print(f"  dated                  {dated} ({dated / records if records else 1.0:.3f})")
     for name, count in sorted(tiers.items()):
         print(f"  {name:22s} {count} ({count / records if records else 0.0:.3f})")
+    print(f"notice unplaced       {staged_acts} acts, {staged_records} records")
+    print(f"notice implausible    {rejected_acts} acts, {rejected_values} values")
     print(f"network calls         {http.network_calls}")
     return 0
 

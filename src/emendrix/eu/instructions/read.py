@@ -1,8 +1,9 @@
 """Reading the instruction list out of an amending act's own markup.
 
-The pattern table, the clause extraction and the walk. What the records mean and what they are
-scored against is `emendrix.eu.instructions` (the package docstring); what a clause *points at*
-is `eu/references.py`.
+The pattern table, the clause extraction and the walk, and nothing else: what the records
+*are* is `model.py`, which is also where the signal built out of them lives, and what the
+records are scored against is `emendrix.eu.instructions` (the package docstring). What a
+clause *points at* is `eu/references.py`.
 """
 
 from __future__ import annotations
@@ -12,13 +13,7 @@ from datetime import date
 from typing import Final
 from xml.etree.ElementTree import Element
 
-from emendrix.core import (
-    ActId,
-    ChangeType,
-    ProvisionLocation,
-    Signal,
-    SignalReport,
-)
+from emendrix.core import ActId, ChangeType, ProvisionLocation
 from emendrix.eu.formex.amending import named_act, quoted_location
 from emendrix.eu.formex.documents import act_documents, documents_of, unit_elements
 from emendrix.eu.formex.locations import annex_segment
@@ -26,17 +21,13 @@ from emendrix.eu.formex.model import CoverageCounter
 from emendrix.eu.formex.text import flat_text
 from emendrix.eu.instructions.effect import EffectDates, EffectDateSource, prose
 from emendrix.eu.instructions.final_provisions import read_effect_dates
-from emendrix.eu.instructions.model import (
-    InstructionParse,
-    InstructionRecord,
-    UnreadInstruction,
-    Window,
-)
+from emendrix.eu.instructions.model import InstructionParse, InstructionRecord, UnreadInstruction
+from emendrix.eu.instructions.notice_dates import ActDates
 from emendrix.eu.packages import FormexPackage
 from emendrix.eu.references import parse_reference, resolve
 from emendrix.eu.xml_ import NOT_WELL_FORMED, fromstring
 
-__all__ = ["AMEND", "INSTRUCTION_VERBS", "instruction_signal", "parse_instructions"]
+__all__ = ["AMEND", "INSTRUCTION_VERBS", "parse_instructions"]
 
 
 AMEND: Final = "amends"
@@ -73,8 +64,15 @@ only the first coordinate at each depth, so a heading left in speaks before the 
 _QUOTED_TAGS: Final = frozenset({"ARTICLE", "PARAG", "INCL.ELEMENT"})
 
 
-def parse_instructions(package: FormexPackage) -> InstructionParse:
-    """Read the instructions of an amending act out of its own Formex package."""
+def parse_instructions(
+    package: FormexPackage, *, dates: ActDates | None = None
+) -> InstructionParse:
+    """Read the instructions of an amending act out of its own Formex package.
+
+    `dates` is what the act's own notice publishes about its dates, a value from the
+    composition root because the notice is a second document and nothing here fetches. Without
+    it the act is dated from its own text alone, which a caller holding no notice can say.
+    """
     documents = act_documents(package, CoverageCounter())
     articles = [
         (unit, named_act(unit))
@@ -83,7 +81,10 @@ def parse_instructions(package: FormexPackage) -> InstructionParse:
         if not is_annex
     ]
     scoped = any(target is not None for _, target in articles)
-    reader = _Reader(package, scoped=scoped, effect=read_effect_dates(unit for unit, _ in articles))
+    effect = read_effect_dates(
+        (unit for unit, _ in articles), published=None if dates is None else dates.default
+    )
+    reader = _Reader(package, scoped=scoped, effect=effect)
     for unit, target in articles:
         reader.read_article(unit, target)
     return InstructionParse(
@@ -92,31 +93,6 @@ def parse_instructions(package: FormexPackage) -> InstructionParse:
         unread=tuple(reader.unread),
         targets=tuple(dict.fromkeys(target for _, target in articles if target is not None)),
         scoped=scoped,
-    )
-
-
-def instruction_signal(
-    parse: InstructionParse,
-    act: ActId,
-    *,
-    window: Window | None = None,
-    note: str | None = None,
-) -> SignalReport:
-    """The instruction-parse signal for one amended act, in corroboration's own shape.
-
-    `window` is the consolidation's own `(after, until]`, passed down from the composition
-    root. Without one the whole act is claimed under the unbounded window, which is what a
-    caller holding no dates can honestly say, and the note counts the nothing it excluded.
-    """
-    claimed = parse.in_window(act, window)
-    head = (
-        note
-        or f"{parse.act.key}: {len(claimed.records)} instructions read, {len(parse.unread)} unread"
-    )
-    return SignalReport(
-        signal=Signal.INSTRUCTION_PARSE,
-        claims=tuple(record.to_claim(amending_act=parse.act) for record in claimed.records),
-        note=f"{head}, {claimed.summary}",
     )
 
 

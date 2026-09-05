@@ -92,9 +92,15 @@ _RANGE: Final = re.compile(r"\b(?:Articles?|Annexes?)\s+(?:[IVXLCDM]+|\d+[a-z]?)
 _TOP_LEVEL: Final = frozenset({LocationCode.AR, LocationCode.AN, LocationCode.APP})
 
 
-def read_effect_dates(articles: Iterable[Element]) -> EffectDates:
-    """What the act's final provisions say, for the act and for the coordinates they name."""
-    reader = _Reader()
+def read_effect_dates(articles: Iterable[Element], *, published: date | None = None) -> EffectDates:
+    """What the act's final provisions say, for the act and for the coordinates they name.
+
+    `published` is the day the act's own notice gives for the act as a whole
+    (`notice_dates.py`), a value passed down from the composition root because the notice is a
+    different document. It rides through untouched: the tier order that decides when it is
+    read at all is `effect.py`, and nothing here consults it.
+    """
+    reader = _Reader(published=published)
     for article in articles:
         if _FINAL_PROVISIONS.search(prose(article)):
             reader.read(article)
@@ -104,7 +110,8 @@ def read_effect_dates(articles: Iterable[Element]) -> EffectDates:
 class _Reader:
     """The walk: the act's own dates, one dated statement at a time."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, published: date | None = None) -> None:
+        self.published = published
         self.application: date | None = None
         self.entry: date | None = None
         self.deferrals: list[Deferral] = []
@@ -118,6 +125,7 @@ class _Reader:
     def result(self) -> EffectDates:
         return EffectDates(
             default=None if self.unread else self.application or self.entry,
+            published=self.published,
             deferrals=tuple(self.deferrals),
             guarded=tuple(dict.fromkeys(self.guarded)),
             unread=self.unread,

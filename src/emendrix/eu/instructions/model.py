@@ -1,7 +1,9 @@
-"""What an instruction parse is: one record, one miss, and the whole read of an act.
+"""What an instruction parse is: one record, one miss, the whole read of an act, its signal.
 
 Split out of the walk that produces them (`read.py`) so the shape this signal publishes can
-be read without reading the markup rules that fill it.
+be read without reading the markup rules that fill it. `instruction_signal` is here for the
+same reason: turning a parse into the report corroboration takes is a statement about the
+shape, not one more rule about the markup.
 """
 
 from __future__ import annotations
@@ -10,7 +12,14 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from emendrix.core import ActId, ChangeType, ProvisionLocation, SignalClaim
+from emendrix.core import (
+    ActId,
+    ChangeType,
+    ProvisionLocation,
+    Signal,
+    SignalClaim,
+    SignalReport,
+)
 from emendrix.eu.instructions.effect import EffectDateSource
 
 __all__ = [
@@ -19,6 +28,7 @@ __all__ = [
     "UnreadInstruction",
     "Window",
     "WindowedInstructions",
+    "instruction_signal",
 ]
 
 type Window = tuple[date | None, date]
@@ -45,11 +55,11 @@ class InstructionRecord(BaseModel):
     )
     effect_date: date | None = Field(
         default=None,
-        description="When this instruction takes effect, read from its own act's text.",
+        description="When this instruction takes effect, read from its own act.",
     )
     effect_source: EffectDateSource = Field(
         default=EffectDateSource.UNREAD,
-        description="Which of the act's own statements the date came from, `unread` for none.",
+        description="Which of the five answers the date came from, `unread` for none.",
     )
 
     @property
@@ -109,7 +119,7 @@ class WindowedInstructions(BaseModel):
         description="Records this act dates outside the window. No window excludes nothing.",
     )
     undated: int = Field(
-        default=0, description="Claimed records the act's own text left with no effect date."
+        default=0, description="Claimed records the five-tier read left with no effect date."
     )
 
     @property
@@ -155,7 +165,7 @@ class InstructionParse(BaseModel):
 
     @property
     def undated(self) -> int:
-        """The counted gap: records the four-tier read left with no date. Never an error."""
+        """The counted gap: records the five-tier read left with no date. Never an error."""
         return self.matched - self.dated
 
     @property
@@ -190,3 +200,28 @@ class InstructionParse(BaseModel):
     def units(self, act: ActId) -> tuple[ProvisionLocation, ...]:
         seen = {record.unit.canonical: record.unit for record in self.for_act(act)}
         return tuple(sorted(seen.values(), key=lambda unit: unit.sort_key))
+
+
+def instruction_signal(
+    parse: InstructionParse,
+    act: ActId,
+    *,
+    window: Window | None = None,
+    note: str | None = None,
+) -> SignalReport:
+    """The instruction-parse signal for one amended act, in corroboration's own shape.
+
+    `window` is the consolidation's own `(after, until]`, passed down from the composition
+    root. Without one the whole act is claimed under the unbounded window, which is what a
+    caller holding no dates can honestly say, and the note counts the nothing it excluded.
+    """
+    claimed = parse.in_window(act, window)
+    head = (
+        note
+        or f"{parse.act.key}: {len(claimed.records)} instructions read, {len(parse.unread)} unread"
+    )
+    return SignalReport(
+        signal=Signal.INSTRUCTION_PARSE,
+        claims=tuple(record.to_claim(amending_act=parse.act) for record in claimed.records),
+        note=f"{head}, {claimed.summary}",
+    )

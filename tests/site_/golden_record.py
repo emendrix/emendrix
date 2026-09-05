@@ -508,4 +508,17 @@ every event page are byte-identical, and so are both feeds, `search-index.json`,
 the stylesheet, the script and both images. No `<id>`, no permalink and no anchor moved, so
 nothing renotifies, and no size pin moved: the pages the three at-scale pins measure are built
 from the toy corpus, whose events name no amending act at all.
+
+**2026-09-05, later again: the act's own dates are read from its notice as well as its text.**
+One file moved, `methodology/index.html`, by one line: the provenance line under the metrics
+table follows the newest report, and the report is a re-score at a new revision. **Not one
+measured figure on the page moved**, because not one moved in the report either: the disputed
+cell, both cross-check cells, localisation, classification and every model-layer cell read
+exactly what they read that morning. The new dating tier reaches 123 records across six of the
+corpus's amending acts and every one of them falls inside the window that folded its act in, so
+no claim is withdrawn and nothing downstream of a claim can move; what changed in the report is
+six signal notes, which no page prints. `sitemap.xml` did not move either, its `lastmod` being
+the report's date and the re-score carrying the same one. Every other page, both feeds,
+`search-index.json`, `robots.txt`, the stylesheet, the script and both images are byte-identical,
+no `<id>`, permalink or anchor moved, so nothing renotifies, and no size pin moved.
 """

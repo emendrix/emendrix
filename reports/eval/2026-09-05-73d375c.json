@@ -1,6 +1,6 @@
 {
   "run_date": "2026-09-05",
-  "revision": "8cb6d5f",
+  "revision": "73d375c",
   "corpus_built_on": "2026-08-06",
   "corpus_transitions_possible": 70,
   "corpus_coverage": 0.2571428571428571,
@@ -209,7 +209,7 @@
               "AN IV",
               "AN V"
             ],
-            "note": "32008R0987: 2 instructions read, 0 unread, 0 dated outside the window, 2 undated and claimed",
+            "note": "32008R0987: 2 instructions read, 0 unread, 0 dated outside the window, 0 undated and claimed",
             "claims": [
               {
                 "location": "AN IV",
@@ -2279,7 +2279,7 @@
               "AR 123",
               "AN IX"
             ],
-            "note": "32020R0561: 26 instructions read, 0 unread, 0 dated outside the window, 26 undated and claimed",
+            "note": "32020R0561: 26 instructions read, 0 unread, 0 dated outside the window, 0 undated and claimed",
             "claims": [
               {
                 "location": "AR 1 PA 2 ALN 2",
@@ -2689,7 +2689,7 @@
             "units": [
               "AR 44"
             ],
-            "note": "32023R0502: 1 instructions read, 0 unread, 0 dated outside the window, 1 undated and claimed",
+            "note": "32023R0502: 1 instructions read, 0 unread, 0 dated outside the window, 0 undated and claimed",
             "claims": [
               {
                 "location": "AR 44 PA 10",
@@ -2885,7 +2885,7 @@
               "AR 122",
               "AR 123"
             ],
-            "note": "32023R0607: 6 instructions read, 0 unread, 0 dated outside the window, 6 undated and claimed",
+            "note": "32023R0607: 6 instructions read, 0 unread, 0 dated outside the window, 0 undated and claimed",
             "claims": [
               {
                 "location": "AR 120 PA 2 ALN 2",
@@ -3691,7 +3691,7 @@
             "units": [
               "AN I"
             ],
-            "note": "32025R2457: 4 instructions read, 0 unread, 0 dated outside the window, 4 undated and claimed",
+            "note": "32025R2457: 4 instructions read, 0 unread, 0 dated outside the window, 0 undated and claimed",
             "claims": [
               {
                 "location": "AN I SCT 10.4.1 PTA (b)",
@@ -4948,7 +4948,7 @@
               "AN VIII",
               "AN XIV"
             ],
-            "note": "32026R1744: 84 instructions read, 0 unread, 0 dated outside the window, 84 undated and claimed",
+            "note": "32026R1744: 84 instructions read, 0 unread, 0 dated outside the window, 0 undated and claimed",
             "claims": [
               {
                 "location": "AR 1 PA 2 PTA (g)",

@@ -7,7 +7,7 @@ fetch layer, the parser and the metadata reader already provide. It is not part 
 publishes no modification metadata has no `SignalSource`, and two `UNAVAILABLE` signals are
 silence, not dissent.
 
-Three decisions, all forced by what the corpus actually does (verified 2026-08-06 against the
+Five decisions, all forced by what the corpus actually does (verified 2026-08-06 against the
 pinned branch notices; `eu/modmeta.py` carries the evidence):
 
 1. **The window is `(date(A), date(B)]`, not "the amending act".** A version pair can fold in
@@ -24,10 +24,14 @@ pinned branch notices; `eu/modmeta.py` carries the evidence):
    in, so the reason is in the output rather than in this file.
 4. **The window goes down to the instruction parse as well.** It already chose the document;
    it now also says which of that document's instructions this pair may claim, because an
-   amending act's orders can be dated years apart and the act is read whole. Only the act's own
-   text dates them (`eu/instructions/effect.py`), never an annotation: the metadata may say
-   where the third signal looks and must never say what it finds there. A record the act dated
+   amending act's orders can be dated years apart and the act is read whole. A record dated
    nowhere is claimed as before.
+5. **The amending act's own dates are read here and passed down as a value.** The act's text
+   usually writes no date at all, and the day it took effect is published in its own tree
+   notice (`eu/instructions/notice_dates.py`). That notice is a document about the amending
+   act, never a modification annotation about the amended one: the metadata signal may say
+   where the third signal looks and must never say what it finds there, and this does not
+   change that. The parse fetches nothing itself, exactly as it reads no clock.
 """
 
 from __future__ import annotations
@@ -36,18 +40,53 @@ from datetime import date
 
 from emendrix.core import ActId, Signal, SignalReport, VersionId
 from emendrix.corroborate.sources import TransitionSignals
-from emendrix.eu.cellar import CellarClient
-from emendrix.eu.identifiers import Celex, celex_of
-from emendrix.eu.instructions import Window, instruction_signal, parse_instructions
+from emendrix.eu.cellar import ABSENT_STATUSES, CellarClient
+from emendrix.eu.http import ACCEPT_TREE_NOTICE
+from emendrix.eu.identifiers import Celex, ResourceRef, celex_of
+from emendrix.eu.instructions import (
+    ActDates,
+    Window,
+    instruction_signal,
+    parse_act_dates,
+    parse_instructions,
+)
 from emendrix.eu.modmeta import ModificationSet, parse_branch_modifications
 from emendrix.eu.modmeta import metadata_signal as build_metadata_signal
 from emendrix.eu.packages import FormexPackage
 
-__all__ = ["EuSignalSource", "instruction_signal_for"]
+__all__ = ["EuSignalSource", "act_dates", "instruction_signal_for"]
+
+
+def act_dates(client: CellarClient, celex: Celex) -> ActDates:
+    """What one act's own CELLAR tree notice publishes about the act's dates.
+
+    The composition root's second read of a document the adapter already fetches for its
+    version inventory, so it answers off the same disk cache and costs no second request in
+    practice.
+
+    An act the corpus has no notice for is dated from its own text alone, and that is a
+    coverage gap like any other. Every other status is the server refusing *us* and fails
+    loudly, exactly as `CellarClient.branch_notice` does on the same endpoint: read as an
+    absent notice it would suppress this act's dates for the life of the process on the
+    strength of one 403, which is a claim about an act made out of a refusal.
+    """
+    response = client.http.get(
+        ResourceRef(system="celex", identifier=celex.value), accept=ACCEPT_TREE_NOTICE
+    )
+    if response.status_code in ABSENT_STATUSES:
+        return ActDates()
+    if not response.ok:
+        raise LookupError(f"no tree notice for {celex}: HTTP {response.status_code}")
+    return parse_act_dates(response.body)
 
 
 def instruction_signal_for(
-    client: CellarClient, celex: Celex, act: ActId, *, window: Window | None = None
+    client: CellarClient,
+    celex: Celex,
+    act: ActId,
+    *,
+    window: Window | None = None,
+    dates: ActDates | None = None,
 ) -> SignalReport:
     """The third signal for one amended act, read out of one amending act's own package.
 
@@ -58,14 +97,16 @@ def instruction_signal_for(
 
     `window` is the consolidation's `(after, until]`, a value from the composition root. A
     caller holding none claims the whole act under the unbounded window, and the note counts
-    what that window excluded either way.
+    what that window excluded either way. `dates` is the amending act's own published dates,
+    read here when a caller does not already hold them.
     """
     fetched = client.fetch_formex(celex, celex.version, allow_original_fallback=False)
     if not isinstance(fetched, FormexPackage):
         return SignalReport.unavailable(
             Signal.INSTRUCTION_PARSE, note=f"{celex} has no readable text: {fetched.state}"
         )
-    parsed = parse_instructions(fetched)
+    published = act_dates(client, celex) if dates is None else dates
+    parsed = parse_instructions(fetched, dates=published)
     return instruction_signal(
         parsed,
         act,
@@ -85,6 +126,7 @@ class EuSignalSource:
         self.client = client
         self._modifications: dict[str, ModificationSet] = {}
         self._dates: dict[str, dict[str, date | None]] = {}
+        self._act_dates: dict[str, ActDates] = {}
 
     def signals_for(
         self, act: ActId, from_version: VersionId, to_version: VersionId
@@ -162,4 +204,15 @@ class EuSignalSource:
                     else f"the window folds in {len(amending)} amending acts: {', '.join(amending)}"
                 ),
             )
-        return instruction_signal_for(self.client, Celex.parse(amending[0]), act, window=window)
+        celex = Celex.parse(amending[0])
+        return instruction_signal_for(
+            self.client, celex, act, window=window, dates=self._published_dates(celex)
+        )
+
+    def _published_dates(self, celex: Celex) -> ActDates:
+        """The amending act's own dates, parsed once per act for the life of the source."""
+        found = self._act_dates.get(celex.value)
+        if found is None:
+            found = act_dates(self.client, celex)
+            self._act_dates[celex.value] = found
+        return found

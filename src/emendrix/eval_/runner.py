@@ -34,6 +34,7 @@ from emendrix.eu.identifiers import Celex, act_id
 from emendrix.eu.instructions import Window, instruction_signal, parse_instructions
 from emendrix.eu.modmeta import ModificationSet, metadata_signal, parse_branch_modifications
 from emendrix.eu.packages import FormexPackage
+from emendrix.eu.signals import act_dates
 from emendrix.eval_.aggregate import EvalMetrics, aggregate
 from emendrix.eval_.corpus import CorpusCase, EvalCorpus
 from emendrix.eval_.judge import FaithfulnessReport
@@ -114,14 +115,15 @@ class CorpusReader:
         """The third signal for one amending act, with its coverage. `None` if it has no text.
 
         `window` is the transition's own `(after, until]`, the same value the metadata signal
-        selects its annotations with, because the shipped signal source scopes both the same
-        way and a harness reading the act whole would score a pipeline nobody runs.
+        selects its annotations with, and `dates` is what that act's own notice publishes about
+        its dates, both read exactly as the shipped signal source reads them: a harness with its
+        own copy of the pipeline scores a pipeline nobody runs.
         """
         parsed = Celex.parse(celex)
         fetched = self.client.fetch_formex(parsed, parsed.version)
         if not isinstance(fetched, FormexPackage):
             return None
-        read = parse_instructions(fetched)
+        read = parse_instructions(fetched, dates=act_dates(self.client, parsed))
         return instruction_signal(read, amended, window=window), read.coverage, len(read.unread)
 
 

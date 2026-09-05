@@ -398,7 +398,10 @@ def test_the_instructions_that_article_does_not_name_carry_no_date(
     client: CellarClient,
 ) -> None:
     """The counted gap: `32024R1860` enters into force on the day of its publication, which is
-    a day its own text never writes, so every instruction but the deferred one is undated."""
+    a day its own text never writes, so every instruction but the deferred one is undated.
+
+    What its notice publishes is a separate read and is asserted in `test_notice_dates.py`;
+    this parse is handed none, which is the act's own text and nothing else."""
     parse = parse_instructions(package(client, MDR_2024_AMENDER, MDR_2024_AMENDER))
     assert parse.dated == 1
     assert parse.undated == parse.matched - 1
@@ -423,10 +426,12 @@ def test_an_act_whose_dates_are_all_about_another_act_dates_no_instruction(
 def test_an_unreadable_effect_date_is_counted_and_the_read_is_unchanged(
     omnibus: InstructionParse,
 ) -> None:
-    """`32026R1744` enters into force twenty days after a publication it does not date.
+    """`32026R1744` enters into force three days after a publication it does not date.
 
-    The whole instruction set is therefore undated, which is a coverage statistic and not an
-    error: the 95 records and the 1.000 clause coverage are exactly what they were.
+    The whole instruction set is therefore undated *from the act's own words*, which is a
+    coverage statistic and not an error: the 95 records and the 1.000 clause coverage are
+    exactly what they were. The day itself is in the act's notice, and dating these 95 from it
+    is `test_notice_dates.py`.
     """
     assert omnibus.matched == 95
     assert omnibus.coverage == 1.0

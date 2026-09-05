@@ -36,11 +36,13 @@ are not handled: an instruction can **delegate** (*"Annexes VI to X … are amen
 with the Annex to this Regulation"*, `32022R0477`, on which the naive parser scores 0.000) and
 can express **ranges**. Both are counted as unread instructions rather than approximated.
 
-**When each instruction takes effect** is read from the same document, in `effect.py` and
-`final_provisions.py`, and rides on the record as `effect_date`. An act's instructions do not
-all take effect on one day, and none of them need take effect on the day the act was published,
-so the date is read where the act states it and is left unread where it does not. `dated` and
-`undated` are that second coverage statistic; `docs/limitations.md` carries its size.
+**When each instruction takes effect** is read in `effect.py` and `final_provisions.py` from the
+act's own text, and in `notice_dates.py` from the day the Publications Office publishes beside
+the act for acts whose text writes none, and rides on the record as `effect_date`. An act's
+instructions do not all take effect on one day, and none of them need take effect on the day the
+act was published, so the date is read where one of those three states it and is left unread
+where none does. `dated` and `undated` are that second coverage statistic; `docs/limitations.md`
+carries its size.
 
 **Which of them one consolidation may claim** is `InstructionParse.in_window`, and it is the
 reason the date is read at all. An act is read once and a consolidation covers `(after,
@@ -65,24 +67,25 @@ from emendrix.eu.instructions.model import (
     UnreadInstruction,
     Window,
     WindowedInstructions,
-)
-from emendrix.eu.instructions.read import (
-    AMEND,
-    INSTRUCTION_VERBS,
     instruction_signal,
-    parse_instructions,
 )
+from emendrix.eu.instructions.notice_dates import ActDates, DateKind, NoticeDate, parse_act_dates
+from emendrix.eu.instructions.read import AMEND, INSTRUCTION_VERBS, parse_instructions
 
 __all__ = [
     "AMEND",
     "INSTRUCTION_VERBS",
+    "ActDates",
+    "DateKind",
     "EffectDateSource",
     "EffectDates",
     "InstructionParse",
     "InstructionRecord",
+    "NoticeDate",
     "UnreadInstruction",
     "Window",
     "WindowedInstructions",
     "instruction_signal",
+    "parse_act_dates",
     "parse_instructions",
 ]

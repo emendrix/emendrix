@@ -222,7 +222,7 @@ Named rather than discovered later; the eval report's disagreement list is the l
   change in the window it shipped in, so the denominator differs, and the right-hand side of both
   pairings the third signal enters is a different set of claims; the question each figure asks is
   unchanged. Both sets are published under their own dates, in
-  `reports/eval/2026-09-04-984347f.md` and `reports/eval/2026-09-05-8cb6d5f.md`, and neither is
+  `reports/eval/2026-09-04-984347f.md` and `reports/eval/2026-09-05-73d375c.md`, and neither is
   adjusted for the other. Localisation does not move in any component, pairing the structural
   diff against the metadata and never consulting the instruction parse; classification, the case
   count, `instruction_unread` and both parser counters do not move, and neither does the
@@ -246,6 +246,79 @@ Named rather than discovered later; the eval report's disagreement list is the l
   show a claim in a window its act dates elsewhere; the note on every committed payload is stale
   by its new counts as well, so the pass that corrects them will rewrite entries whose claims did
   not move.
+- **An amending act's own dates are read from its notice as well as from its text, since
+  2026-09-05.** Most amending acts enter into force *"on the twentieth day following that of its
+  publication"* and never write that day, so the four tiers that read the act's own words had
+  nothing to read and the whole instruction set of such an act carried no date at all. The day is
+  published: the act's own CELLAR notice carries `RESOURCE_LEGAL_DATE_ENTRY-INTO-FORCE`, one
+  element per date, each annotated with a type of date and a comment saying how the Publications
+  Office arrived at it. On `32024R1860` the entry-into-force annotation reads `DATPUB V ART 3`,
+  which is that office recording that it applied the act's own Article 3 to the publication date.
+  That is the twentieth-day arithmetic, already done, by the authority that publishes the act, and
+  reading it is not inference. It is checked against the one thing that can check it: on the same
+  act the notice's application date is 10 January 2025, which is exactly the day the markup reader
+  takes out of `<DATE ISO="20250110">` in that act's Article 3 and attaches to `AR 1 PO 1`. Two
+  independent readings, one answer, and the agreement is asserted in the suite. The tier sits
+  below the act's own words and above nothing, the notice is fetched in the composition root and
+  reaches the parse as a value, and a default the markup reader withdrew stays withdrawn, because
+  a second source cannot say which instructions an unattributable statement was about either.
+  **What the annotation does not say is what the date covers**, and the whole safety of the read
+  turns on that. Measured 2026-09-05 over the 295 tree notices in the disk cache and the 742 dated
+  entries in them, every comment names the provision that *states* the date: on `32021R2117` all
+  five name Article 6, that act's entry-into-force article, while the parts they stage sit in
+  Articles 1, 2 and 3. So an entry marked as partial cannot be resolved onto an instruction
+  coordinate, and an act carrying one publishes no act-wide answer at all rather than a date
+  picked from several. 29 entries carry that mark in the type of date and a disjoint 262 in the
+  comment; the `1001-01-01` that 17 of the notices write for a day a later decision will fix is
+  outside the span an act's dates fall in and is counted rather than read. Of the 168 cached
+  amending acts, 72 carry an entry the notice cannot place, and with them 2 406 of the 4 610
+  instructions; 8 carry an implausible value. Every ambiguity resolves to unread and is counted,
+  exactly as the tiers below it decided: under-scoping leaves a true claim in place, over-scoping
+  deletes one.
+  **The coverage figure moves and it is not the earlier one improving.** Over the disk cache as it
+  stood on 2026-09-05, 168 amending acts and the 4 610 instructions they yield, the five tiers
+  date 1 714 (0.372) where the four that read the act's own words date 585 (0.127) over the same
+  acts and the same instructions; 113 acts are dated in full and 38 yield no date anywhere. The
+  0.183 of 317 over 1 734 published earlier the same day was measured over a smaller cache, 84
+  amending acts against 168, so it is a different denominator and not this figure before it moved.
+  Both are published under their own dates and neither is adjusted for the other.
+  **No published evaluation figure moves at all.** Scored offline from the fixtures, the disputed
+  rate, `metadata_only_units`, both pairings the third signal enters, localisation,
+  classification, `instruction_unread`, the parser counters, the model layer and the flagship all
+  read exactly what they read before, and no floor was touched. What moved is six signal notes:
+  `32008R0987`, `32020R0561`, `32023R0502`, `32023R0607`, `32025R2457` and `32026R1744` now report
+  0 records undated where they reported 2, 26, 1, 6, 4 and 84, because each of those acts has a
+  day and none of the 123 records falls outside the window that folded its act in. A re-score on
+  the same date supersedes the earlier one, so `reports/eval/2026-09-05-8cb6d5f.md` is replaced by
+  `reports/eval/2026-09-05-73d375c.md` rather than joined by it, and the two carry the same
+  figures.
+  **Over the published corpus the tier withdraws nothing, and that is the measurement.** Measured
+  2026-09-05 over the same clone of the corpus as it stood on 2026-08-14, 369 events and 4 588
+  changes carrying 1 309 claims no other signal named: 963 of those claims, across 54 amending
+  acts, gain a date they did not have, and every single one of them falls inside the window it was
+  already claimed in. Not one claim is withdrawn that the act's own text had not already
+  withdrawn. That is what should be expected of a corpus of consolidations, since a consolidation
+  is dated at the day the amendment it folds in took effect, and it is worth publishing as a zero:
+  the replay this scoping exists to stop is caused by acts that stage their orders across later
+  windows, and a staged act is exactly the act whose notice cannot place its dates. The six acts
+  whose thin coverage prompted the tier, `32019R0876`, `32021R2117`, `32024R2809`, `32023R2845`,
+  `32019R0834` and `32019R2033`, read 0.023, 0.078, 0.091, 0.106, 0.000 and 0.776 after it,
+  exactly what they read before. Their notices do carry their dates and every one of them is
+  staged, and a second rule blocks them independently: their final provisions name the instruction
+  article as an exception, so the markup reader guards it and no act-wide date of any provenance
+  may reach the instructions drafted there. Widening either rule to reach them would date
+  instructions the act deliberately took out of its own default, which loses a true claim to gain
+  a number.
+  **The blast radius of the scoping was re-measured while this was counted, and reads larger than
+  it was published at.** Over the same clone, deriving each window from the payload's own version
+  identifiers and each amending act from the payload's own instruction claims, so that all 369
+  events resolve, the window excludes 151 of the 1 309 claims (0.115) across 76 events, where the
+  reading published beside the scoping rule earlier the same day read 85 across 13 events. Nothing
+  in the code differs between the two readings, which are the same question measured over
+  different numbers of resolvable events, and neither is adjusted for the other. Changelogs
+  already published keep the text they were written with and are corrected forward, not rewritten,
+  so the note on every committed payload is stale by its undated count as well, and the pass that
+  corrects them will rewrite entries whose claims did not move.
 - **A touched unit carrying no text was counted substantive, and is counted in its own bucket
   since 2026-09-05.** The corroborator appends one change for every unit another signal named and
   the structural diff never saw, and the diff is the only signal carrying text, so such a change
