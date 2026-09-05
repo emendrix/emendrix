@@ -8,6 +8,7 @@ committed document, and that nothing the model wrote moved on the way.
 from __future__ import annotations
 
 import subprocess
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -20,16 +21,21 @@ from repaired_repo import (
     poisoned_target,
     porcelain,
     restored_unit,
+    signal_for,
     signal_of,
     units_of,
+    with_stale_reason,
 )
 from typer.testing import CliRunner
 
 from emendrix.cli import app
-from emendrix.core import Signal
+from emendrix.core import Signal, VersionId
+from emendrix.explain import NOTHING_TO_EXPLAIN
 from emendrix.output import OutputRepo
 from emendrix.repair import read_targets
-from eu_pins import FIXTURE_DIR, OBSERVED_ON
+from emendrix.repair.cli import window_of
+from emendrix.repair.corroborate import instructions_of, repair
+from eu_pins import FIXTURE_DIR, MDR, OBSERVED_ON
 
 runner = CliRunner()
 WATCHLIST = Path(__file__).resolve().parents[2] / "watchlist.example.toml"
@@ -61,6 +67,59 @@ def run(repo: Path, *extra: str) -> str:
     )
     assert result.exit_code == 0, result.output
     return result.output
+
+
+def test_the_window_the_signal_is_scoped_to_is_read_off_the_payload(spoiled: Path) -> None:
+    """Both bounds come from the two version identifiers the document already names.
+
+    A consolidated identifier is `<celex>-<YYYYMMDD>`, so a repair knows the window it is
+    repairing with no fetch, no version inventory and no clock. An act as published in the
+    Official Journal is the lower bound being absent, not a date of its own.
+    """
+    entry = poisoned_target(spoiled).entry
+    assert window_of(entry) == (date(2017, 5, 5), date(2020, 4, 24))
+    published = entry.model_copy(update={"from_version": VersionId(MDR)})
+    assert window_of(published) == (None, date(2020, 4, 24))
+
+
+def test_a_payload_whose_window_closed_earlier_claims_none_of_the_act_s_instructions(
+    spoiled: Path,
+) -> None:
+    """The window reaches the parse as a value, so moving the payload's dates moves the signal.
+
+    The postponement's orders all take effect on the day it was published, so a consolidation
+    that closed before that day is entitled to none of them, and the same act read the same way
+    claims nothing. Today's date is not an input to either reading.
+    """
+    entry = poisoned_target(spoiled).entry
+    earlier = entry.model_copy(update={"to_version": VersionId("02017R0745-20190101")})
+    assert window_of(earlier) == (date(2017, 5, 5), date(2019, 1, 1))
+
+    scoped = signal_for(earlier, window_of(earlier))
+    assert scoped.available and scoped.claims == ()
+    assert signal_for(entry, window_of(entry)).claims
+
+
+def test_a_change_with_no_text_has_its_stated_reason_restated_rather_than_carried(
+    spoiled: Path,
+) -> None:
+    """The one sentence such a change holds is this project's own, so it is written afresh.
+
+    Nothing was ever asked about a unit with no text, so there is no model prose to preserve.
+    Carrying the stored sentence over would leave a wording this project has since corrected
+    standing on the page for as long as the entry does.
+    """
+    target = with_stale_reason(poisoned_target(spoiled), "an older wording of the same reason")
+    result = repair(target, instructions_of(target.entry))
+    assert result.entry is not None
+
+    restated = [item for item in result.entry.changes if item.change.textless]
+    assert restated
+    assert {item.unexplained for item in restated} == {NOTHING_TO_EXPLAIN}
+    assert {item.unexplained_kind for item in restated} == {"nothing_to_explain"}
+    assert [item.sentences for item in result.entry.changes if not item.change.textless] == [
+        item.sentences for item in target.entry.changes if not item.change.textless
+    ]
 
 
 def test_a_phantom_unit_the_corrected_signal_no_longer_names_is_dropped(spoiled: Path) -> None:

@@ -25,7 +25,10 @@ and it writes nothing at all: no commit, no file, no record.
 `corroboration` recomputes the third signal, the parse of the amending act's own instructions,
 against the entry's stored delta. That is a disk-cache read where the cache holds the package
 and a fetch where it does not, and `--fixture-dir` pins it to a committed fixture set instead.
-It calls no model, spends nothing, and carries every committed explanation over untouched.
+It calls no model, spends nothing, and carries every committed explanation over untouched. The
+consolidation window the signal is scoped to is read off the entry's own version pair
+(`window_of`), so a repair scopes exactly the window that was published and needs neither a
+fetch nor a clock to know which one that is.
 
 `explanations` asks the model again for a change that shipped with no explanation because the
 answer was unusable, rebuilding the prompt from the entry's own stored texts, so it fetches
@@ -49,11 +52,13 @@ import typer
 
 from emendrix.backfill.inputs import celex_of, delay_of, watchlist_at
 from emendrix.eu.http import POLITE_DELAY_ENV, POLITE_DELAY_S, today_utc
+from emendrix.eu.identifiers import ConsolidatedId, parse_identifier
 from emendrix.eu.identifiers import celex_of as celex_for
+from emendrix.eu.instructions import Window
 from emendrix.eu.signals import instruction_signal_for
 from emendrix.explain import CassetteMode, ExplainSettings
 from emendrix.graph.cli import SummaryFormat
-from emendrix.output import resolve_repo_path
+from emendrix.output import ChangelogEntry, resolve_repo_path
 from emendrix.repair import explanations as explain_repair
 from emendrix.repair import unexplained as unexplained_repair
 from emendrix.repair.commit import (
@@ -76,7 +81,7 @@ from emendrix.repair.render import (
 from emendrix.repair.select import for_act, read_targets
 from emendrix.session import adapter_for, deps_for
 
-__all__ = ["app", "corroboration", "explanations", "unexplained"]
+__all__ = ["app", "corroboration", "explanations", "unexplained", "window_of"]
 
 app = typer.Typer(
     name="repair",
@@ -109,6 +114,29 @@ _CHANGES = typer.Option(
     "--limit", min=1, help="Stop after this many changes. Changes are what a call is paid for."
 )
 _CASSETTES = typer.Option("--cassettes", help="How the explain stage meets its cassette store.")
+
+
+def window_of(entry: ChangelogEntry) -> Window | None:
+    """The consolidation window `(after, until]` an entry was published for, read off the entry.
+
+    A consolidated version identifier is `<celex>-<YYYYMMDD>`, so the pair of versions the
+    document already names carries the two dates, and a repair needs no fetch and no clock to
+    know which window it is scoping the third signal to. That is the right source here: it
+    scopes exactly the window that was published, rather than a window recomputed from a
+    version inventory that may have moved since.
+
+    A `from_version` that is not a consolidation has no lower bound, because it is the act as
+    published in the Official Journal and everything annotated up to the later version belongs
+    to the pair. `None` only where `to_version` is not a consolidation either, which is a caller
+    holding no dates at all: the whole act is claimed, and the signal's note counts the nothing
+    the unbounded window excluded.
+    """
+    until = parse_identifier(str(entry.to_version))
+    if not isinstance(until, ConsolidatedId):
+        return None
+    after = parse_identifier(str(entry.from_version))
+    start = after.version_date if isinstance(after, ConsolidatedId) else None
+    return start, until.version_date
 
 
 @app.command("corroboration")
@@ -148,7 +176,13 @@ def corroboration(
             if amender is None:
                 continue
             found = repair(
-                target, instruction_signal_for(adapter.client, celex_for(amender), target.entry.act)
+                target,
+                instruction_signal_for(
+                    adapter.client,
+                    celex_for(amender),
+                    target.entry.act,
+                    window=window_of(target.entry),
+                ),
             )
             results.append(found)
             if limit is not None and sum(1 for item in results if item.would_change) >= limit:

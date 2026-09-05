@@ -148,6 +148,12 @@ def _reattached(entry: ChangelogEntry, merged: Corroboration) -> tuple[EmittedCh
     Keyed by the unit and the occurrence within it, which is the key corroboration itself
     compares on. A unit only one signal saw is disjoint from every unit the diff produced a
     change for, so a key can never move from a change that carries text to one that does not.
+
+    A textless change is the exception, and it is not an exception to carrying prose over,
+    because there is none to carry: nothing was ever asked about it, so the only sentence it
+    holds is this project's own stated reason. That sentence is restated from the constant
+    rather than from the document, so a wording the project has since corrected reaches the
+    entries already published instead of surviving in them.
     """
     committed = changes_by_unit(entry)
     seen: Counter[str] = Counter()
@@ -158,7 +164,9 @@ def _reattached(entry: ChangelogEntry, merged: Corroboration) -> tuple[EmittedCh
         seen[unit] += 1
         found = committed.get(key)
         attached.append(
-            _textless(change) if found is None else found.model_copy(update={"change": change})
+            _textless(change)
+            if found is None or change.textless
+            else found.model_copy(update={"change": change})
         )
     return tuple(attached)
 

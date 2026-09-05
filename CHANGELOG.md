@@ -468,6 +468,34 @@ Named rather than discovered later; the eval report's disagreement list is the l
   readings published on 2026-09-05 for the instruction scoping (85 and 151, then 164, of 1 309):
   those count claims a window withdraws, this counts explanations whose evidence moved. All of
   them are published under their own dates and none is adjusted for another.
+- **The published corpus was rewritten on 2026-09-05, so the entries say what the code produces
+  today.** The corroboration repair walked all 446 committed events and rebuilt the 337 whose
+  third signal can be recomputed from the payload alone, an event qualifying when its committed
+  instruction signal was available and its claims name exactly one amending act. The window that
+  signal is scoped to is read off the event's own version pair, a consolidated identifier being
+  `<celex>-<YYYYMMDD>`, so the pass scopes exactly the window that was published and reads
+  neither a clock nor a version inventory to find out which one that is. **313 claims were
+  withdrawn across 27 events**, every one of them a unit only the unscoped instruction parse
+  ever named, and **6 changes stopped being disputed**. Nothing was added anywhere: no event, no
+  unit, no claim, and no file changed its name, so no permalink and no feed entry id moves. Of
+  the 337, **225 had a claim move and 112 changed only in what the signal's note reports**, that
+  note now carrying the two window counts, so an event whose claims stood still is rewritten by
+  the suffix alone. 1 394 changes with no text had their stated reason restated from the
+  constant rather than carried from the document: nothing was ever asked about such a change, so
+  the only sentence it holds is this project's own, and the wording corrected the same day
+  reaches the events already published instead of standing in them. Every rebuilt event is
+  written at `schema_version` 1.2 with its counts recomputed, `textless` among them. **No model
+  was called and nothing was spent.** The pass reads the amending acts' packages through the
+  shared disk cache and never touches `ExplainSettings`, and the repair record it wrote on each
+  event records zero requests, zero tokens and zero schema repairs. Measured over the whole
+  corpus either side of it:
+  5 261 changes before and 4 948 after, of which 1 804 and 1 491 carry no text (0.343 and 0.301)
+  and 2 865 and 2 558 ship disputed (0.545 and 0.517). **Neither pair is one rate improving.**
+  The right-hand side of each is a different set of claims, the question each figure asks is
+  unchanged, and neither reading is adjusted for the other. The site reads its counts off these
+  documents and is forbidden from recomputing them, so it shows none of this until it is rebuilt
+  from them. The dated entries above are left as they were written, each being true of the day
+  it describes.
 - **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
   cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
   rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure

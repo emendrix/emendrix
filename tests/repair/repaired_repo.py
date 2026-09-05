@@ -31,6 +31,7 @@ from pathlib import Path
 
 from emendrix.core import ActId, ProvisionLocation, Signal, SignalClaim, SignalReport, VersionId
 from emendrix.eu.identifiers import celex_of
+from emendrix.eu.instructions import Window
 from emendrix.eu.signals import instruction_signal_for
 from emendrix.explain import (
     MODEL_FAILED,
@@ -42,6 +43,7 @@ from emendrix.gate import GateOutcome
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry, OutputRepo
 from emendrix.repair import RepairResult, RepairTarget, delta_of, read_targets, rebuild
+from emendrix.repair.cli import window_of
 from emendrix.repair.corroborate import amending_act_of, instructions_of, needs, repair
 from emendrix.session import adapter_for
 from eu_pins import FIXTURE_DIR, OBSERVED_ON
@@ -180,6 +182,28 @@ def restored_unit(target: RepairTarget) -> str:
     return target.entry.changes[0].change.unit.canonical
 
 
+def with_stale_reason(target: RepairTarget, reason: str) -> RepairTarget:
+    """The same entry with an older wording on every change that carries no text.
+
+    The shape of an entry written before this project reworded the one sentence such a change
+    can carry, which is the state a pass over an already-published corpus meets.
+    """
+    changes = tuple(
+        EmittedChange(change=item.change, outcome=item.outcome, unexplained=reason)
+        if item.change.textless
+        else item
+        for item in target.entry.changes
+    )
+    assert any(item.change.textless for item in changes), target.path
+    entry = rebuild(
+        target.entry,
+        delta=delta_of(target.entry),
+        corroboration=target.entry.corroboration,
+        changes=changes,
+    )
+    return RepairTarget(path=target.path, entry=entry)
+
+
 def _misread(target: RepairTarget) -> SignalReport:
     """The committed instruction signal as a parser reading the wrong coordinate would leave it."""
     committed = instructions_of(target.entry)
@@ -232,17 +256,26 @@ def signal_of(entry: ChangelogEntry, signal: Signal) -> tuple[str, ...]:
     return tuple(unit.canonical for unit in report.units_of(signal))
 
 
+def signal_for(entry: ChangelogEntry, window: Window | None) -> SignalReport:
+    """Today's parse of the amending act one entry names, scoped to `window`, offline.
+
+    The window is a value the caller holds, exactly as the command holds one: nothing below
+    here reads a version inventory or a clock to find out which consolidation this is.
+    """
+    amender = amending_act_of(entry)
+    assert amender is not None, entry.to_version
+    with adapter_for(FIXTURE_DIR, OBSERVED_ON) as adapter:
+        return instruction_signal_for(adapter.client, celex_of(amender), entry.act, window=window)
+
+
 def corrected(target: RepairTarget) -> RepairResult:
     """One target repaired against the instruction signal today's parser reads, offline.
 
-    The composition step the shipped command does: resolve the amending act the payload names,
-    parse its pinned package, and hand the signal to a repair that knows no corpus at all.
+    The composition step the shipped command does, window and all: resolve the amending act the
+    payload names, read the consolidation window off the same payload, parse the pinned package
+    under it, and hand the signal to a repair that knows no corpus at all.
     """
-    amender = amending_act_of(target.entry)
-    assert amender is not None, target.path
-    with adapter_for(FIXTURE_DIR, OBSERVED_ON) as adapter:
-        signal = instruction_signal_for(adapter.client, celex_of(amender), target.entry.act)
-    return repair(target, signal)
+    return repair(target, signal_for(target.entry, window_of(target.entry)))
 
 
 def copied(source: Path, destination: Path) -> Path:
