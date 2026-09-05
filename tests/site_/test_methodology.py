@@ -199,3 +199,50 @@ def test_the_character_count_never_becomes_a_row_of_the_measured_table() -> None
     body = rendered.split("<tbody>")[1].split("</tbody>")[0]
     assert body.count("<tr>") == len(metric_rows(site.run))
     assert "characters" not in body
+
+
+def _configured(changelogs_url: str) -> str:
+    """The how-built section of a build that publishes its changelog repository."""
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=latest_report(REPORTS),
+        repo_url="https://example.invalid/emendrix",
+        changelogs_url=changelogs_url,
+    )
+    return render_methodology(site).split("How this site is built")[1]
+
+
+def test_a_published_changelog_repository_states_the_terms_of_both_its_layers() -> None:
+    """A stranger who finds the data through the site learns the terms without leaving.
+
+    Both layers are asserted, because either alone is the failure. The quoted provision texts
+    are the Union's and are not this project's to relicense; only what the loop computed is
+    offered under CC BY 4.0.
+    """
+    section = _configured("https://data.example.invalid/changelogs")
+    assert "© European Union, reused under Commission Decision 2011/833/EU" in section
+    assert "only the versions published in the Official Journal are authentic" in section
+    assert "Creative Commons Attribution 4.0 International (CC BY 4.0)" in section
+    assert "LICENCE-NOTICE.md" in section
+
+
+def test_a_github_changelog_repository_links_the_licence_notice() -> None:
+    """The notice is a path inside that repository, linked where the layout is known."""
+    section = _configured("https://github.com/o/changelogs")
+    assert (
+        '<a href="https://github.com/o/changelogs/blob/main/LICENCE-NOTICE.md">'
+        "<code>LICENCE-NOTICE.md</code></a>" in section
+    )
+
+
+def test_an_unset_build_states_no_licence_for_a_repository_it_does_not_publish() -> None:
+    """The operator's own unpublished repository is theirs to license, so the page says nothing.
+
+    This is also what keeps the licence out of the build with no `--changelogs-url`, which is
+    the one the committed golden tree was rendered from.
+    """
+    rendered = render_methodology(_site())
+    assert "CC BY" not in rendered
+    assert "LICENCE-NOTICE" not in rendered
+    assert "2011/833/EU" not in rendered
