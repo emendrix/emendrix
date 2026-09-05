@@ -8,9 +8,10 @@ know how much to trust a number should find every qualification in one place.
 
 Two rules hold the page together:
 
-- **Every figure renders from the committed report**, through `metric_rows`. The same rows the
-  README publishes, from the same report, so the two cannot disagree; none of them is typed in
-  here, and a number this module could not read out is simply absent.
+- **Every figure is generated, never typed here.** The measured rows come from the committed
+  report through `metric_rows`, the same rows the README publishes, so the two cannot disagree;
+  the corpus rows are rolled up from the committed entries this build renders, through
+  `corpus_rows`. A number neither could produce is simply absent.
 - **No number is quoted without the sentence saying what it is not.** The result and its
   meaning are fields of one frozen row, so the table cannot print half of a measure. Citation
   grounding stays a separate row from explanation faithfulness: one is a deterministic property
@@ -27,6 +28,7 @@ from __future__ import annotations
 
 from emendrix.eval_.metric_rows import metric_rows, synthetic_caveats
 from emendrix.site_.chrome import page
+from emendrix.site_.entries import corpus_rows, counted
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, count, escape, inline, join
@@ -115,8 +117,8 @@ def _headline_sentence(site: SiteInputs) -> Html:
         f"<strong>{pair.micro_f1:.3f}</strong> over {count(pair.cases, 'transition')} against "
         f"labels the legislation publishes about itself — that is agreement with a reference "
         f"set at article-or-annex granularity, and it is not a measure of whether any "
-        f"explanation is good. Every figure below is generated from a committed report; none is "
-        f"typed in by hand."
+        f"explanation is good. Every figure below is generated from a committed artifact, the "
+        f"dated report or the changelog documents themselves; none is typed in by hand."
     )
 
 
@@ -158,11 +160,64 @@ def _metrics(site: SiteInputs) -> list[Html]:
             f'<p class="small muted">Measured on {run.run_date.isoformat()} at revision '
             f"<code>{escape(run.revision)}</code>, from "
             f"{repo_file(site.report_markdown, site.repo_url)}. The deterministic rows cover every "
-            f"transition in the committed corpus ({run.metrics.cases_scored} of "
-            f"{run.metrics.cases} scored); the model rows cover the pinned explanation subset "
-            f"only, because each change in it is one recorded call to a provider.</p>"
+            f"transition in the labelled evaluation corpus ({run.metrics.cases_scored} of "
+            f"{run.metrics.cases} scored), which is a pinned set of transitions and not the "
+            f"corpus counted above; the model rows cover the pinned explanation subset only, "
+            f"because each change in it is one recorded call to a provider.</p>"
         )
     )
+    return lines
+
+
+def _corpus(site: SiteInputs) -> list[Html]:
+    """What the reader is browsing, counted, above the table that scores a labelled subset.
+
+    Above it rather than below because these rates describe the corpus on screen and those
+    below it do not: a reader who met the pinned figures first would carry them onto every
+    page they opened next. Every figure is rolled up at build time from the committed entries
+    this build renders, and each arrives with its own caveat attached, by the same rule the
+    measured table lives under: the result and its meaning are fields of one frozen row, so
+    the table cannot print half of a measure.
+    """
+    counts = site.corpus
+    lines = [Html("<h2>The corpus on this site, counted</h2>")]
+    if counts.changes == 0:
+        lines.append(
+            Html(
+                '<p class="small muted">This build was given no committed changelog entries, so '
+                "there is nothing here to count.</p>"
+            )
+        )
+        return lines
+    lines.extend(
+        (
+            Html(
+                f'<p class="small muted">Counted over the {escape(counted(counts.events, "event"))}'
+                f" and {escape(counted(counts.changes, 'change'))} this site renders, and over "
+                f"nothing else. The measured table below scores emendrix against a small labelled "
+                f"set of transitions instead: a different question over a different denominator, "
+                f"so a figure there is not a better reading of one here, and neither is adjusted "
+                f"for the other.</p>"
+            ),
+            Html('<div class="scroll">'),
+            Html("<table>"),
+            Html(
+                "<thead><tr><th>Over the published corpus</th><th>Result</th><th>n</th>"
+                "<th>What it means — and what it does not</th></tr></thead>"
+            ),
+            Html("<tbody>"),
+        )
+    )
+    lines.extend(
+        Html(
+            f"<tr><td>{inline(row.measure)}</td>"
+            f'<td class="result">{escape(row.result)}</td>'
+            f"<td>{escape(row.n)}</td>"
+            f'<td class="meaning">{inline(row.meaning)}</td></tr>'
+        )
+        for row in corpus_rows(counts)
+    )
+    lines.extend((Html("</tbody>"), Html("</table>"), Html("</div>")))
     return lines
 
 
@@ -251,6 +306,7 @@ def render_methodology(site: SiteInputs) -> Html:
             Html("<h1>Methodology</h1>"),
             Html(f'<p class="lede">{escape(PITCH)}</p>'),
             Html(f'<p class="lede muted">{_headline_sentence(site)}</p>'),
+            *_corpus(site),
             *_metrics(site),
             *_how_it_works(),
             *_how_this_site_is_built(site),

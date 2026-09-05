@@ -535,4 +535,33 @@ signal note, which no page prints. `sitemap.xml` did not move either, its `lastm
 report's date and the re-score carrying the same one. Every other page, both feeds,
 `search-index.json`, `robots.txt`, the stylesheet, the script and both images are byte-identical,
 no `<id>`, permalink or anchor moved, so nothing renotifies, and no size pin moved.
+
+**2026-09-05, later again: the page publishes rates about the corpus it renders, not only about
+the labelled subset.** One file moved, `methodology/index.html`, by fifteen new lines and
+two reworded ones: a section above the metrics table, and one sentence on either side of it.
+The section counts the committed entries the build was handed, at the change rather than at the
+touched unit, so one denominator carries every figure: the share the three sources disagree about,
+broken into the three shapes a disagreement takes, the share carrying no text on either side,
+and the share carrying an explanation, each with its own n and its own sentence saying what it
+does not mean. The golden's corpus is the one event the fixture writes, nine changes, none
+disputed and none textless, so the rates here read `0 (0.000)` and `9 (1.000)` and the three
+shape rows read `0` over `0 disputed changes`. They print unconditionally, zeroes included, for
+the reason the count line does: a table that changed shape between two builds is a table a
+reader has to read twice. **Not one measured figure moved.** The metrics table, its provenance
+line, every model-layer cell and `sitemap.xml`'s `lastmod` read exactly what they read before,
+because nothing in the new section is read out of the report and nothing in the report is read
+out of the entries. The two reworded sentences are the lede's "generated from a committed
+report", now naming the changelog documents beside the dated report, and the caption's "every
+transition in the committed corpus", now "the labelled evaluation corpus", "a pinned set of
+transitions and not the corpus counted above": that was the sentence letting a rate over
+eighteen scored transitions read as a rate about the corpus on screen. Over the published
+corpus as it stood that day, 446 events and 4,948 changes, the same rollup reads 2,558 (0.517)
+disputed, of which 1,034 the comparison read and another source did not list, 1,491 named
+elsewhere with no difference in the text and 33 called different things by every source that
+looked; 1,491 (0.301) carry no text on either side, and 3,389 (0.685) carry an explanation,
+which is 3,389 of the 3,457 carrying text at all (0.980). None of those numbers is on the
+golden, whose corpus is the fixture's one event. Every other page, both feeds,
+`search-index.json`, `robots.txt`, the stylesheet, the script and both images are
+byte-identical, no `<id>`, permalink or anchor moved, so nothing renotifies, and no size pin
+moved: no page the three at-scale pins measure carries a methodology section.
 """

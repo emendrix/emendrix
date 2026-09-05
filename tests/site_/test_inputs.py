@@ -6,13 +6,28 @@ from datetime import date
 from pathlib import Path
 
 import pytest
-from site_entries import unattributed_entry
+from site_entries import (
+    disputed_entry,
+    some_textless_entry,
+    textless_entry,
+    unattributed_entry,
+)
 
-from emendrix.core import ActId, VersionId
+from emendrix.core import (
+    ActId,
+    ChangeType,
+    SignalObservation,
+    SignalSet,
+    SignalStatus,
+    VersionId,
+)
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
+from emendrix.gate import GateOutcome
+from emendrix.graph.report import EmittedSentence
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.clocks import event_dated, sort_date
+from emendrix.site_.entries import corpus_counts, share
 from emendrix.site_.inputs import ActSite, collect_site
 from emendrix.watch.config import Watchlist
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
@@ -287,3 +302,137 @@ def test_the_report_is_named_by_its_file_and_the_committed_convention() -> None:
     assert site.report == "2026-08-11-abc1234.json"
     assert site.report_markdown == "reports/eval/2026-08-11-abc1234.md"
     assert site.acts == () and site.configured is False
+
+
+def _with_signals(entry: ChangelogEntry, signals: SignalSet) -> ChangelogEntry:
+    """The same entry with one set of verdicts on every change, and every change disputed.
+
+    `model_copy` rather than a rebuilt entry, because what is under test is the reading of the
+    verdicts and nothing else: the texts, the locations and the kinds stay exactly as the
+    corroborated toy transition left them.
+    """
+    changes = tuple(
+        emitted.model_copy(
+            update={
+                "change": emitted.change.model_copy(update={"signals": signals, "disputed": True})
+            }
+        )
+        for emitted in entry.changes
+    )
+    return entry.model_copy(update={"changes": changes})
+
+
+def _with_prose(entry: ChangelogEntry) -> ChangelogEntry:
+    """One sentence on every change that carries text, the way the gate hands them over."""
+    changes = tuple(
+        emitted
+        if emitted.change.textless
+        else emitted.model_copy(
+            update={
+                "sentences": (EmittedSentence(text="What changed, in one sentence."),),
+                "outcome": GateOutcome.PASSED,
+            }
+        )
+        for emitted in entry.changes
+    )
+    return entry.model_copy(update={"changes": changes})
+
+
+def test_the_corpus_counts_are_the_entries_the_build_was_given() -> None:
+    """The rates the site publishes about itself come off the documents it renders.
+
+    Asserted against the entries rather than against a literal, and asserted twice: the same
+    run scores the same figures whatever it is handed, so a count that moved with the entries
+    and not with the report is a count derived from the right artifact.
+    """
+    entries = (disputed_entry(), textless_entry())
+    site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries)
+    counts = site.corpus
+    assert counts.events == 2
+    assert counts.changes == sum(len(entry.changes) for entry in entries)
+    assert counts.with_text + counts.textless == counts.changes
+    fewer = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries[:1]
+    )
+    assert fewer.corpus.changes < counts.changes
+    assert fewer.run.metrics.changes == site.run.metrics.changes
+
+
+def test_the_corpus_counts_hold_only_the_events_the_site_renders() -> None:
+    """An unwatched act is on no page, so it is in no rate either: the two agree by construction."""
+    entry = disputed_entry()
+    watchlist = Watchlist.model_validate({"acts": [{"celex": "32016R0679"}]})
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(entry,),
+        watchlist=watchlist,
+    )
+    assert site.corpus.events == 0 and site.corpus.changes == 0
+
+
+def test_a_rate_over_an_empty_corpus_is_a_non_answer_and_never_zero() -> None:
+    """`0.000` would be a measurement nobody made; `None` is what a renderer has to say aloud."""
+    site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"))
+    assert site.corpus.changes == 0
+    assert share(site.corpus.disputed, site.corpus.changes) is None
+    assert share(1, 4) == 0.25
+
+
+def test_every_disputed_change_falls_in_exactly_one_shape() -> None:
+    """The three shapes partition the disputed changes: that is what makes them a breakdown.
+
+    The mixed entry carries both presence shapes at once, a unit the comparison read and a
+    unit only the metadata named, which is the case a partition can get wrong.
+    """
+    counts = corpus_counts((disputed_entry(), textless_entry(), some_textless_entry()))
+    shapes = counts.shapes
+    assert shapes.total == counts.disputed
+    assert shapes.evidenced and shapes.no_text
+    assert shapes.no_text == counts.textless
+
+
+def test_a_change_the_comparison_read_is_evidenced_and_one_it_never_saw_is_not() -> None:
+    """The text-carrying signal is the discriminator, and it is a fact already on the change."""
+    evidenced = corpus_counts((disputed_entry(),)).shapes
+    assert (evidenced.evidenced, evidenced.no_text, evidenced.kind) == (1, 0, 0)
+    nothing = corpus_counts((textless_entry(),)).shapes
+    assert (nothing.evidenced, nothing.kind) == (0, 0)
+    assert nothing.no_text == 2
+
+
+def test_a_disagreement_about_kind_is_counted_as_neither_presence_shape() -> None:
+    """Every source that looked found the provision; what they disagree about is what it is."""
+    both = SignalSet(
+        structural_diff=SignalObservation(
+            status=SignalStatus.OBSERVED, change_types=(ChangeType.MODIFIED,)
+        ),
+        corpus_metadata=SignalObservation(
+            status=SignalStatus.OBSERVED, change_types=(ChangeType.INSERTED,)
+        ),
+    )
+    assert both.disagreement, "the premise of this test, not an assumption in it"
+    entry = _with_signals(disputed_entry(), both)
+    counts = corpus_counts((entry,))
+    assert counts.shapes.kind == counts.disputed == len(entry.changes)
+    assert (counts.shapes.evidenced, counts.shapes.no_text) == (0, 0)
+
+
+def test_an_unavailable_source_is_no_disagreement_and_so_has_no_shape() -> None:
+    """A signal handed nothing to work with has not dissented, and counts as nobody's dispute."""
+    counts = corpus_counts((unattributed_entry(),))
+    assert counts.changes and counts.disputed == 0
+    assert counts.shapes.total == 0
+
+
+def test_a_change_with_no_text_is_never_counted_against_explanation_coverage() -> None:
+    """Coverage over the changes there was something to write about, beside coverage over all.
+
+    Both are published, because a reader browsing sees rows of both kinds, and the narrower
+    one is the honest denominator for a stage that is never asked about an empty evidence set.
+    """
+    counts = corpus_counts((_with_prose(some_textless_entry()),))
+    assert counts.textless == 1
+    assert counts.explained == counts.explained_with_text == counts.with_text
+    assert counts.explained < counts.changes

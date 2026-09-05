@@ -26,7 +26,22 @@
 <main id="content">
 <h1>Methodology</h1>
 <p class="lede">Your regulatory dependencies, with a changelog. emendrix watches EU legislation, computes provision-level diffs when it is amended, and explains what changed in plain English where every sentence cites a provision you can click.</p>
-<p class="lede muted">Finding <em>which</em> provisions an amendment touched scores micro-F1 <strong>0.963</strong> over 17 transitions against labels the legislation publishes about itself — that is agreement with a reference set at article-or-annex granularity, and it is not a measure of whether any explanation is good. Every figure below is generated from a committed report; none is typed in by hand.</p>
+<p class="lede muted">Finding <em>which</em> provisions an amendment touched scores micro-F1 <strong>0.963</strong> over 17 transitions against labels the legislation publishes about itself — that is agreement with a reference set at article-or-annex granularity, and it is not a measure of whether any explanation is good. Every figure below is generated from a committed artifact, the dated report or the changelog documents themselves; none is typed in by hand.</p>
+<h2>The corpus on this site, counted</h2>
+<p class="small muted">Counted over the 1 event and 9 changes this site renders, and over nothing else. The measured table below scores emendrix against a small labelled set of transitions instead: a different question over a different denominator, so a figure there is not a better reading of one here, and neither is adjusted for the other.</p>
+<div class="scroll">
+<table>
+<thead><tr><th>Over the published corpus</th><th>Result</th><th>n</th><th>What it means — and what it does not</th></tr></thead>
+<tbody>
+<tr><td>Changes the sources disagree about</td><td class="result">0 (0.000)</td><td>9 changes</td><td class="meaning">At least one of the three sources emendrix checks named the change and another did not, or two of them named different kinds of change. <code>disputed</code> is a fact about the detectors and not a statement about the law: nothing is dropped for it and nothing is overruled. The three rows below say what each disagreement is.</td></tr>
+<tr><td>…of those, found in the text and not listed elsewhere</td><td class="result">0</td><td>0 disputed changes</td><td class="meaning">The provision&#x27;s own words are on the page, before and after. What disagrees is a reference set&#x27;s granularity: a blanket amendment is annotated once and the provisions it lands on are not enumerated. <strong>Not a change nobody could corroborate.</strong></td></tr>
+<tr><td>…of those, named elsewhere with no difference in the text</td><td class="result">0</td><td>0 disputed changes</td><td class="meaning">Nothing to quote on either side, so the row carries a location and the source that named it. Where neither an amending act nor its notice says when one of its instructions takes effect, that instruction is claimed in every consolidation window the act touches, so some of these are one instruction counted more than once.</td></tr>
+<tr><td>…of those, found by every source that looked, called different things</td><td class="result">0</td><td>0 disputed changes</td><td class="meaning">The outright contradiction of the three: an insertion against a replacement, say. The smallest class in the corpus, and the one worth reading first.</td></tr>
+<tr><td>Changes with no text on either side</td><td class="result">0 (0.000)</td><td>9 changes</td><td class="meaning">Neither a before nor an after text. Such a change exists only because a source other than the text comparison named a provision that comparison did not, so every one of them is also a disagreement above. <strong>Not a change whose text is withheld</strong>: there is none to show, and the row says so instead of disappearing.</td></tr>
+<tr><td>Changes carrying an explanation</td><td class="result">9 (1.000)</td><td>9 changes</td><td class="meaning">Prose that survived the citation gate. Of the 9 changes carrying text at all, 9 (1.000) do; a change with no text is never sent to a model, because there would be no evidence to write about. <strong>Coverage, not quality</strong>: whether the sentences are faithful is the sampled row below, and prose written before a later parser fix corrected the text it describes is left visible rather than quietly withdrawn.</td></tr>
+</tbody>
+</table>
+</div>
 <h2>Measured, not asserted</h2>
 <p class="small muted">Every row carries what it means and what it does not. The rows are the same ones the repository's README publishes, rendered from the same committed report, so the two cannot disagree.</p>
 <div class="scroll">
@@ -43,7 +58,7 @@
 </tbody>
 </table>
 </div>
-<p class="small muted">Measured on 2026-09-05 at revision <code>6097989</code>, from <code>reports/eval/2026-09-05-6097989.md</code>. The deterministic rows cover every transition in the committed corpus (18 of 18 scored); the model rows cover the pinned explanation subset only, because each change in it is one recorded call to a provider.</p>
+<p class="small muted">Measured on 2026-09-05 at revision <code>6097989</code>, from <code>reports/eval/2026-09-05-6097989.md</code>. The deterministic rows cover every transition in the labelled evaluation corpus (18 of 18 scored), which is a pinned set of transitions and not the corpus counted above; the model rows cover the pinned explanation subset only, because each change in it is one recorded call to a provider.</p>
 <h2>How it works</h2>
 <ul class="loop">
 <li><b>1 · Watch</b>A watchlist of acts, matched against the Publications Office notification feed by identifier. Deterministic.</li>

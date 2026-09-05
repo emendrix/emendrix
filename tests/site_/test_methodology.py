@@ -1,9 +1,15 @@
-"""The one page that argues. Every figure on it is the committed report's own.
+"""The one page that argues. Every figure on it is a committed artifact's own.
 
-Two directions matter and both are asserted here: a rate that drifts from the report, and a
-stub's verdict reaching a visitor. The withheld path is built from a report constructed in the
-test body rather than the committed one, so it keeps guarding the machinery whatever the newest
-committed report happens to say.
+Two directions matter and both are asserted here: a rate that drifts from the artifact it came
+out of, and a stub's verdict reaching a visitor. The withheld path is built from a report
+constructed in the test body rather than the committed one, so it keeps guarding the machinery
+whatever the newest committed report happens to say.
+
+The page publishes two sets of figures over two denominators, and which artifact each comes out
+of is asserted separately: the measured rows are the committed report's, the corpus rows are
+rolled up from the committed entries the build renders. A figure of one set standing in for the
+other is the failure these tests exist to catch, and it is why the corpus assertions build a
+site holding events rather than the empty one the rest of the module uses.
 """
 
 from __future__ import annotations
@@ -11,12 +17,15 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
+from site_entries import disputed_entry, some_textless_entry, textless_entry
+
 from emendrix.eval_.judge import FaithfulnessReport
 from emendrix.eval_.metric_rows import metric_rows
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
+from emendrix.site_.entries import corpus_rows
 from emendrix.site_.inputs import SiteInputs, collect_site
-from emendrix.site_.markup import inline
+from emendrix.site_.markup import escape, inline
 from emendrix.site_.pages.methodology import render_methodology
 
 REPO = Path(__file__).resolve().parents[2]
@@ -246,3 +255,93 @@ def test_an_unset_build_states_no_licence_for_a_repository_it_does_not_publish()
     assert "CC BY" not in rendered
     assert "LICENCE-NOTICE" not in rendered
     assert "2011/833/EU" not in rendered
+
+
+def _corpus_site() -> SiteInputs:
+    """A build holding committed events, which is what the corpus rates are counted over.
+
+    Three entries rather than one, because the rates have to be right over a corpus mixing the
+    shapes: a change the comparison read and another source did not list, changes only another
+    source named, and an event carrying both.
+    """
+    return collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=latest_report(REPORTS),
+        entries=(disputed_entry(), textless_entry(), some_textless_entry()),
+    )
+
+
+def test_the_corpus_rates_are_counted_from_the_entries_this_build_renders() -> None:
+    """The figures about the corpus a reader is browsing come off that corpus, not the report.
+
+    Every cell is asserted against what the rollup produced, so a hand-typed number or a
+    figure quietly read out of the eval run would fail here rather than ship.
+    """
+    site = _corpus_site()
+    rendered = render_methodology(site)
+    rows = corpus_rows(site.corpus)
+    assert rows
+    for row in rows:
+        assert escape(row.result) in rendered, row.measure
+        assert escape(row.n) in rendered, row.measure
+        assert inline(row.meaning) in rendered, row.measure
+
+
+def test_the_corpus_rates_and_the_pinned_ones_each_carry_their_own_n() -> None:
+    """Two sets of figures on one page, over different denominators, neither borrowing the other.
+
+    The corpus rows count changes in the committed entries; the measured rows count
+    transitions in the labelled evaluation corpus. A reader can tell which is which because
+    each row states what it was measured over.
+    """
+    site = _corpus_site()
+    rendered = render_methodology(site)
+    assert f"{site.corpus.changes:,} changes" in rendered
+    for row in metric_rows(site.run):
+        assert inline(row.n) in rendered, row.measure
+
+
+def test_the_corpus_figures_come_before_the_pinned_ones() -> None:
+    """They describe what the reader is looking at, so they are not subordinate to a subset."""
+    rendered = render_methodology(_corpus_site())
+    assert rendered.index("The corpus on this site, counted") < rendered.index(
+        "Measured, not asserted"
+    )
+
+
+def test_the_caption_never_lets_the_evaluation_corpus_read_as_the_whole_corpus() -> None:
+    """`the committed corpus` on a page that now counts the committed corpus was two things."""
+    rendered = render_methodology(_corpus_site())
+    assert "every transition in the committed corpus" not in rendered
+    assert "labelled evaluation corpus" in rendered
+    assert "a pinned set of transitions and not the corpus counted above" in rendered
+
+
+def test_the_dispute_rate_is_broken_down_and_the_shapes_add_up_to_it() -> None:
+    """One number invites a comparison that is not like for like; the breakdown is what makes
+    the comparison honest. Every disputed change is in exactly one shape and none is dropped."""
+    site = _corpus_site()
+    counts = site.corpus
+    assert counts.shapes.total == counts.disputed
+    rendered = render_methodology(site)
+    for part in (counts.shapes.evidenced, counts.shapes.no_text, counts.shapes.kind):
+        assert f"{part:,} ({part / counts.disputed:.3f})" in rendered
+    assert f"{counts.disputed:,} disputed changes" in rendered
+
+
+def test_every_corpus_figure_says_what_it_does_not_mean() -> None:
+    """The same rule the measured table lives under: no number without its qualification."""
+    rendered = render_methodology(_corpus_site())
+    assert "a fact about the detectors and not a statement about the law" in rendered
+    assert "<strong>Not a change nobody could corroborate.</strong>" in rendered
+    assert "<strong>Not a change whose text is withheld</strong>" in rendered
+    assert "<strong>Coverage, not quality</strong>" in rendered
+
+
+def test_a_build_with_no_committed_entries_states_that_instead_of_a_rate() -> None:
+    """A rate over no changes is not zero, and `0.000` here would be a measurement nobody made."""
+    rendered = render_methodology(_site())
+    assert "there is nothing here to count" in rendered
+    section = rendered.split("The corpus on this site, counted")[1].split("Measured, not")[0]
+    assert "0.000" not in section

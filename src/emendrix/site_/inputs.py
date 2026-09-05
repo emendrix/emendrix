@@ -7,8 +7,9 @@ watchlist.toml                                        which acts are watched, an
 ```
 
 The same provenance story as the changelog itself: if a number is on a page it was read out
-of the committed report, and if a sentence of legal text is on a page it was read out of a
-changelog document a diff produced from two published versions. Missing inputs are stated,
+of the committed report or counted off the committed changelog documents, and if a sentence of
+legal text is on a page it was read out of a changelog document a diff produced from two
+published versions. Missing inputs are stated,
 not raised: no changelog repository, an empty one, a watched act that has never been amended,
 each is a page that says so.
 
@@ -32,7 +33,10 @@ whatever corpus the loop ran on and holds no corpus knowledge; which URL, if any
 the composition root's business, and an amending act's number and address arrive the same way
 into `amending`, whose model and harvest live in `site_.amending` so that the dependency
 between the two modules runs one way and this one stays inside the size cap. Reading the
-repository and ordering what it holds is `site_.entries`, split off for the same reason.
+repository, ordering what it holds and counting it is `site_.entries`, split off for the same
+reason: `corpus` is that rollup over the events this build renders, and it is where a page gets
+a rate about the corpus a reader is browsing rather than about the report's labelled subset,
+which answers a different question over a different denominator.
 
 No clock: `generated_on` arrives from the CLI boundary like every other date in this project.
 """
@@ -53,7 +57,7 @@ from emendrix.output.json_out import slug
 from emendrix.site_.amending import AmendingAct, collect_amending
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.clocks import EventDate, VersionDates, event_date, sort_date
-from emendrix.site_.entries import sorted_entries
+from emendrix.site_.entries import CorpusCounts, corpus_counts, sorted_entries
 from emendrix.site_.urls import shared_path
 from emendrix.watch.config import Watchlist
 
@@ -183,6 +187,16 @@ class SiteInputs(BaseModel):
             operator_url=self.operator_url,
             contact=self.contact,
         )
+
+    @property
+    def corpus(self) -> CorpusCounts:
+        """The rendered corpus, counted: what a page saying "this many, this often" may claim.
+
+        Derived from `recent`, so the figures describe exactly the corpus on screen: an
+        unwatched act's events are counted nowhere because they are rendered nowhere. Nothing
+        may pass these in, for the same reason nothing may pass in `recent`'s order.
+        """
+        return corpus_counts(entry for _, entry in self.recent)
 
     @property
     def report_markdown(self) -> str:
