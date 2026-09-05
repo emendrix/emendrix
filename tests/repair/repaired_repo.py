@@ -5,7 +5,8 @@ would prove a repair against a document nothing wrote. So this takes the reposit
 command chain produced and puts the defect back into it with the same functions the repair uses
 to take it out.
 
-Three defects, one per repair kind. `poisoned_repo` gives the entry an instruction signal that
+Four defects, one per repair kind and one carrying the evidence repair's three shapes at once.
+`poisoned_repo` gives the entry an instruction signal that
 names a unit nothing else saw and misses one that everything else saw, merged through
 `corroborate` and committed through `OutputRepo`. `unexplained_repo` takes the prose off the
 first few changes and puts each of the counted reasons a change can carry no explanation in its
@@ -13,6 +14,12 @@ place, which is the state the explanation repair has to tell apart. `raw_reason_
 same with the notes a change carried before the curated reasons existed: two of them a library's
 own error text, two of them the house register, so a selector that reached wider than it should
 would be caught by the pair.
+
+`stale_evidence_repo` puts a published entry back into the state two extractor fixes left the
+corpus in: one change whose stored text still runs two blocks together, one unit no version of
+the act has, and one change taken out of the entry that today's parse still finds. Those are the
+three answers a re-derivation can give beyond "unchanged", and one entry carrying all three is
+what makes their counts separable rather than a single total.
 
 A second entry is written into the same act's `CHANGELOG.md` so that "every other entry keeps
 its bytes" is a claim with a neighbour to check it against. Its version identifiers are the only
@@ -29,7 +36,15 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from emendrix.core import ActId, ProvisionLocation, Signal, SignalClaim, SignalReport, VersionId
+from emendrix.core import (
+    ActId,
+    ProvisionLocation,
+    ProvisionText,
+    Signal,
+    SignalClaim,
+    SignalReport,
+    VersionId,
+)
 from emendrix.eu.identifiers import celex_of
 from emendrix.eu.instructions import Window
 from emendrix.eu.signals import instruction_signal_for
@@ -139,6 +154,94 @@ def raw_reason_repo(source: Path, destination: Path) -> Path:
         repository.write(_neighbour(target.entry))
         repository.write(_stripped(target.entry, RAW_REASONS))
     return repository.path
+
+
+STALE = 0
+"""The change whose stored text is put back to what the extractor produced before it was fixed."""
+
+DROPPED = 1
+"""The change taken out of the entry, which today's parse of the same two versions still finds."""
+
+
+def stale_evidence_repo(source: Path, destination: Path) -> Path:
+    """A copy whose one entry carries every shape a re-derivation meets beyond "unchanged".
+
+    Built by putting defects back through the same writer, so the document under test is one
+    the shipped machinery produced and the counts in its header match the changes it holds.
+    """
+    shutil.copytree(source, destination)
+    repository = OutputRepo.open(destination)
+    for target in read_targets(repository.path):
+        repository.write(_neighbour(target.entry))
+        repository.write(_staled(target.entry))
+    return repository.path
+
+
+def stale_target(root: Path) -> RepairTarget:
+    """The one entry of such a repository the evidence repair has something to say about."""
+    found = [target for target in read_targets(root) if target.entry.corroboration is not None]
+    assert len(found) == 1, [str(target.path) for target in found]
+    return found[0]
+
+
+def _staled(entry: ChangelogEntry) -> ChangelogEntry:
+    """The entry as the published corpus holds one: three defects and no provenance at all.
+
+    The digests go with them, because every change published before 2026-09-05 carries none and
+    an entry that kept one would be answering the staleness question the cheap way, which is
+    exactly the way this corpus cannot.
+    """
+    changes = list(entry.changes)
+    changes[STALE] = _run_on(changes[STALE])
+    changes.append(_phantom(changes[STALE]))
+    del changes[DROPPED]
+    return rebuild(
+        entry,
+        delta=delta_of(entry),
+        corroboration=entry.corroboration,
+        changes=tuple(changes),
+        evidence=(),
+    )
+
+
+def with_run_on(target: RepairTarget) -> RepairTarget:
+    """The same entry with one stored text run together and every digest left as recorded.
+
+    The other half of the question: the page shows text the parser no longer produces, and the
+    entry's own record proves the sentences were written about the text it produces now.
+    """
+    changes = list(target.entry.changes)
+    changes[STALE] = _run_on(changes[STALE])
+    entry = rebuild(
+        target.entry,
+        delta=delta_of(target.entry),
+        corroboration=target.entry.corroboration,
+        changes=tuple(changes),
+    )
+    return RepairTarget(path=target.path, entry=entry)
+
+
+def _run_on(item: EmittedChange) -> EmittedChange:
+    """One change's stored text with a line break closed up, as the extractor once left it.
+
+    The after side only, so the pair the model would be shown differs on exactly one side and
+    the change is still a change of the same kind.
+    """
+    after = item.change.after
+    assert after is not None and "\n" in after, "the fixture needs a change with a break in it"
+    joined = ProvisionText(after.replace("\n", "", 1))
+    return item.model_copy(update={"change": item.change.model_copy(update={"after": joined})})
+
+
+def _phantom(item: EmittedChange) -> EmittedChange:
+    """A change at a unit no version of this act has, carrying text and prose all the same.
+
+    The shape a withdrawal has to be told from a correction by: today's parse finds no such
+    change at all, so nothing about it can be re-asked and the entry loses it.
+    """
+    change = item.change
+    provision = change.provision.model_copy(update={"location": PHANTOM})
+    return item.model_copy(update={"change": change.model_copy(update={"provision": provision})})
 
 
 def unexplained_target(root: Path) -> RepairTarget:

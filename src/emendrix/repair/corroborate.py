@@ -40,7 +40,15 @@ from emendrix.repair.entry import (
     shift_between,
 )
 
-__all__ = ["KIND", "amending_act_of", "instructions_of", "needs", "repair", "signals_of"]
+__all__ = [
+    "KIND",
+    "amending_act_of",
+    "instructions_of",
+    "needs",
+    "repair",
+    "signals_of",
+    "textless_change",
+]
 
 KIND = "corroboration"
 """What this repair is called, on the command line and in the record it writes."""
@@ -124,6 +132,22 @@ def repair(target: RepairTarget, instructions: SignalReport | None) -> RepairRes
     )
 
 
+def textless_change(change: Change) -> EmittedChange:
+    """A unit a signal names and the diff never saw: no text, and the stated reason.
+
+    The same shape and the same curated reason the explain stage records against such a change,
+    because that is what it is: a change nothing was ever asked about, and never a gap. Public
+    because every repair that rebuilds a delta meets one, and two spellings of this project's
+    own sentence would be one wording the code no longer produces.
+    """
+    return EmittedChange(
+        change=change,
+        outcome=GateOutcome.UNEXPLAINED,
+        unexplained=NOTHING_TO_EXPLAIN,
+        unexplained_kind=_NOTHING_TO_EXPLAIN_KIND,
+    )
+
+
 # ------------------------------------------------------------------ the pieces
 
 
@@ -164,22 +188,8 @@ def _reattached(entry: ChangelogEntry, merged: Corroboration) -> tuple[EmittedCh
         seen[unit] += 1
         found = committed.get(key)
         attached.append(
-            _textless(change)
+            textless_change(change)
             if found is None or change.textless
             else found.model_copy(update={"change": change})
         )
     return tuple(attached)
-
-
-def _textless(change: Change) -> EmittedChange:
-    """A unit the corrected signal names and the diff never saw: no text, and the stated reason.
-
-    The same shape and the same curated reason the explain stage records against such a change,
-    because that is what it is: a change nothing was ever asked about, and never a gap.
-    """
-    return EmittedChange(
-        change=change,
-        outcome=GateOutcome.UNEXPLAINED,
-        unexplained=NOTHING_TO_EXPLAIN,
-        unexplained_kind=_NOTHING_TO_EXPLAIN_KIND,
-    )

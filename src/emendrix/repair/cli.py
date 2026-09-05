@@ -1,44 +1,41 @@
 """`emendrix repair`: correcting one part of entries that are already committed.
 
 ```bash
-uv run emendrix repair corroboration --dry-run                       # what would move, and no more
-uv run emendrix repair corroboration --output-repo ~/regulatory-changelog
-uv run emendrix repair corroboration --act 32019R2088 --limit 5      # narrower
-uv run emendrix repair explanations --dry-run                        # the selection and the price
-uv run emendrix repair explanations --cassettes live --limit 20      # a tranche of the changes
-uv run emendrix repair unexplained --dry-run                         # notes quoting a library
+uv run emendrix repair corroboration --dry-run                  # what would move, and no more
+uv run emendrix repair explanations --cassettes live --limit 20 # a tranche of the changes
+uv run emendrix repair unexplained --dry-run                    # notes quoting a library
+uv run emendrix repair evidence --dry-run                       # stale evidence, and the price
 ```
 
 This module is the EU composition root for the repair commands: it reads the clock once, here,
 and passes the date down as a value, and it is the one module under `repair/` allowed to know
 that a CELLAR client and a Formex package exist. Everything below it sees the committed document
-and core types only, so the whole package would run over a corpus that is not law. What each
-verb does with a result once it has one is `commit.py`, which is the same in every case.
+and core types only, so the whole package would run over a corpus that is not law.
 
-**A repair is explicitly invoked and is never reached from a resume.** `OutputRepo.holds_finished`
-treats a settled change as settled on purpose, and a repair a backfill could trigger would
-re-address the same entries on every run for ever.
-
-**`--dry-run` is the same promise `backfill` makes and is kept literally.** It reads, it prints,
-and it writes nothing at all: no commit, no file, no record.
+**A repair is explicitly invoked and is never reached from a resume**, because
+`OutputRepo.holds_finished` treats a settled change as settled on purpose. **`--dry-run` reads,
+prints, and writes nothing at all.**
 
 `corroboration` recomputes the third signal, the parse of the amending act's own instructions,
-against the entry's stored delta. That is a disk-cache read where the cache holds the package
-and a fetch where it does not, and `--fixture-dir` pins it to a committed fixture set instead.
-It calls no model, spends nothing, and carries every committed explanation over untouched. The
-consolidation window the signal is scoped to is read off the entry's own version pair
-(`window_of`), so a repair scopes exactly the window that was published and needs neither a
-fetch nor a clock to know which one that is.
+against the entry's stored delta. That is a cache read where the cache holds the package and a
+fetch where it does not, and `--fixture-dir` pins it to a committed fixture set instead. It calls
+no model and carries every committed explanation over untouched. The window the signal is scoped
+to is read off the entry's own version pair (`window_of`), so a repair scopes exactly the window
+that was published and needs neither a fetch nor a clock to know which.
 
 `explanations` asks the model again for a change that shipped with no explanation because the
 answer was unusable, rebuilding the prompt from the entry's own stored texts, so it fetches
-nothing at all. This one spends money: `--limit` counts **changes** rather than entries, because
-a change is what a call is paid for, and `--dry-run` names and prices them before anything is
-sent.
+nothing. It spends money: `--limit` counts **changes**, and `--dry-run` prices them first.
 
 `unexplained` restates a note that quoted the provider library's own error text, which entries
-written before the curated reasons existed carry, and stamps the counted kind that goes with it.
-It reads the committed document and nothing else: no model, no network, no key.
+written before the curated reasons existed carry, and stamps the counted kind beside it. It
+reads the committed document alone: no model, no network, no key.
+
+`evidence` is the one verb that re-parses both versions and re-derives the delta, because the
+defect it addresses is in the stored text itself: an extractor fix corrects the evidence a
+published explanation was written about, and no payload can show that. It carries over every
+explanation whose evidence still reads as published and asks again only where it moved, so
+`--limit` counts changes here too.
 """
 
 from __future__ import annotations
@@ -58,22 +55,26 @@ from emendrix.eu.instructions import Window
 from emendrix.eu.signals import instruction_signal_for
 from emendrix.explain import CassetteMode, ExplainSettings
 from emendrix.graph.cli import SummaryFormat
-from emendrix.output import ChangelogEntry, resolve_repo_path
+from emendrix.output import ChangelogEntry, OutputRepo, resolve_repo_path
+from emendrix.repair import evidence as evidence_repair
 from emendrix.repair import explanations as explain_repair
 from emendrix.repair import unexplained as unexplained_repair
 from emendrix.repair.commit import (
     NO_COORDINATES,
     corroborated_subject,
     explained_subject,
+    rederived_subject,
     repository,
     restated_subject,
     write_all,
 )
 from emendrix.repair.corroborate import KIND, amending_act_of, needs, repair
-from emendrix.repair.entry import RepairResult
+from emendrix.repair.entry import RepairResult, RepairTarget
 from emendrix.repair.pricing import estimate_over, plan
 from emendrix.repair.render import (
     report_estimate,
+    report_pass,
+    report_plan,
     report_results,
     report_selection,
     report_summary,
@@ -81,7 +82,7 @@ from emendrix.repair.render import (
 from emendrix.repair.select import for_act, read_targets
 from emendrix.session import adapter_for, deps_for
 
-__all__ = ["app", "corroboration", "explanations", "unexplained", "window_of"]
+__all__ = ["app", "corroboration", "evidence", "explanations", "unexplained", "window_of"]
 
 app = typer.Typer(
     name="repair",
@@ -139,6 +140,15 @@ def window_of(entry: ChangelogEntry) -> Window | None:
     return start, until.version_date
 
 
+def _opened(
+    watchlist_path: Path, output_repo: Path | None, act: str | None
+) -> tuple[OutputRepo, tuple[RepairTarget, ...]]:
+    """The repository a pass writes into and the entries it walks, opened before it reads one."""
+    repo = repository(resolve_repo_path(output_repo, watchlist_at(watchlist_path).output.repo_path))
+    targets = read_targets(repo.path)
+    return repo, targets if act is None else for_act(targets, celex_of(act))
+
+
 @app.command("corroboration")
 def corroboration(
     watchlist_path: Annotated[Path, _LIST] = _WATCHLIST,
@@ -156,14 +166,9 @@ def corroboration(
     Start with `--dry-run`: it prints what would move, writes nothing and spends nothing. No
     model is called either way, and every committed explanation is carried over untouched.
     """
-    watchlist = watchlist_at(watchlist_path)
-    wanted = None if act is None else celex_of(act)
     stamp = repaired_on.date() if repaired_on is not None else today_utc()
     delay = delay_of(polite_delay_s)
-    repo = repository(resolve_repo_path(output_repo, watchlist.output.repo_path))
-    targets = read_targets(repo.path)
-    if wanted is not None:
-        targets = for_act(targets, wanted)
+    repo, targets = _opened(watchlist_path, output_repo, act)
     results: list[RepairResult] = []
     examined = 0
     with adapter_for(fixture_dir, stamp, polite_delay_s=delay) as adapter:
@@ -212,13 +217,8 @@ def explanations(
     a key unless every prompt it rebuilds is already recorded. Nothing is fetched either way,
     and no sibling explanation is re-asked for.
     """
-    watchlist = watchlist_at(watchlist_path)
-    wanted = None if act is None else celex_of(act)
     stamp = repaired_on.date() if repaired_on is not None else today_utc()
-    repo = repository(resolve_repo_path(output_repo, watchlist.output.repo_path))
-    targets = read_targets(repo.path)
-    if wanted is not None:
-        targets = for_act(targets, wanted)
+    repo, targets = _opened(watchlist_path, output_repo, act)
     kind = explain_repair.KIND
     settings = ExplainSettings.from_env()
     if dry_run:
@@ -261,14 +261,9 @@ def unexplained(
     and leave. No model is called either way, nothing is fetched, and every explanation, every
     verbatim text and every note this project curated is carried over untouched.
     """
-    watchlist = watchlist_at(watchlist_path)
-    wanted = None if act is None else celex_of(act)
     stamp = repaired_on.date() if repaired_on is not None else today_utc()
     kind = unexplained_repair.KIND
-    repo = repository(resolve_repo_path(output_repo, watchlist.output.repo_path))
-    targets = read_targets(repo.path)
-    if wanted is not None:
-        targets = for_act(targets, wanted)
+    repo, targets = _opened(watchlist_path, output_repo, act)
     results: list[RepairResult] = []
     examined = 0
     for target in targets:
@@ -287,3 +282,48 @@ def unexplained(
     if dry_run:
         typer.echo("dry run: nothing written, nothing committed.")
     report_summary(summary, results, kind=kind, examined=examined, written=written)
+
+
+@app.command("evidence")
+def evidence(
+    watchlist_path: Annotated[Path, _LIST] = _WATCHLIST,
+    output_repo: Annotated[Path | None, _REPO] = None,
+    dry_run: Annotated[bool, _DRY] = False,
+    act: Annotated[str | None, _ACT] = None,
+    limit: Annotated[int | None, _CHANGES] = None,
+    cassettes: Annotated[CassetteMode | None, _CASSETTES] = None,
+    fixture_dir: Annotated[Path | None, _FIXTURE] = None,
+    polite_delay_s: Annotated[float | None, _DELAY] = None,
+    repaired_on: Annotated[datetime | None, _REPAIRED] = None,
+    summary: Annotated[SummaryFormat, _SUMMARY] = SummaryFormat.TEXT,
+) -> None:
+    """Rebuild every entry whose stored evidence a later parser fix has corrected.
+
+    Start with `--dry-run`: it re-parses both versions of every entry, names and prices the
+    changes whose evidence moved, builds no engine and spends nothing. A real pass asks about
+    those changes and only those, so it needs `--cassettes live` and a key.
+    """
+    stamp = repaired_on.date() if repaired_on is not None else today_utc()
+    repo, targets = _opened(watchlist_path, output_repo, act)
+    settings = ExplainSettings.from_env()
+    with adapter_for(fixture_dir, stamp, polite_delay_s=delay_of(polite_delay_s)) as adapter:
+        if dry_run:
+            # No engine at all: a process holding no provider client cannot spend, however
+            # much it goes on to read.
+            plans, counts = evidence_repair.plan_over(targets, adapter, settings, limit=limit)
+            report_plan(summary, plans, counts, model_id=settings.model_id)
+            return
+        results, counts = asyncio.run(
+            evidence_repair.repair_all(
+                targets,
+                adapter,
+                deps_for(adapter, stamp, cassettes).engine,
+                render=adapter.render_citation,
+                limit=limit,
+            )
+        )
+    report_results(results)
+    report_pass(counts)
+    kind = evidence_repair.KIND
+    written = write_all(repo, results, kind, stamp, rederived_subject, coordinates_checked=True)
+    report_summary(summary, results, kind=kind, examined=counts.examined, written=written)

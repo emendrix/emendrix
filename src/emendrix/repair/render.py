@@ -26,11 +26,14 @@ from pydantic import BaseModel, ConfigDict, Field
 from emendrix.explain import rate_for
 from emendrix.graph.cli import SummaryFormat
 from emendrix.repair.entry import RepairResult, UnitShift, shift_between
-from emendrix.repair.pricing import Estimate, Selection
+from emendrix.repair.evidence import EntryPlan, PassCounts
+from emendrix.repair.pricing import Estimate, Selection, estimate_over
 
 __all__ = [
     "RepairSummary",
     "report_estimate",
+    "report_pass",
+    "report_plan",
     "report_results",
     "report_selection",
     "report_summary",
@@ -158,3 +161,56 @@ def report_estimate(format_: SummaryFormat, estimate: Estimate) -> Estimate:
     if format_ is SummaryFormat.JSON:
         typer.echo(estimate.model_dump_json(), err=True)
     return estimate
+
+
+def report_pass(counts: PassCounts) -> None:
+    """What a pass could not read, and why it stopped early if it did.
+
+    Printed by both modes and never folded into a total: a transition nobody could re-derive is
+    a coverage gap, and a pass that reports only what it managed to look at reads as a pass over
+    everything.
+    """
+    if counts.underivable:
+        typer.echo(f"{len(counts.underivable)} transitions could not be re-derived today:")
+        for note in counts.underivable:
+            typer.echo(f"  {note}")
+    if counts.stopped:
+        typer.echo(counts.stopped)
+
+
+def report_plan(
+    format_: SummaryFormat, plans: Sequence[EntryPlan], counts: PassCounts, *, model_id: str
+) -> Estimate:
+    """What re-deriving the corpus would correct, and what asking again about it would cost.
+
+    The figures answer different questions and are never summed: a change re-asked is one whose
+    evidence moved, a change added is one today's parse finds and the entry does not, a change
+    withdrawn is one it no longer finds at all, and a change carried is one whose sentences this
+    pass would leave exactly as they are. The corrected are the carried whose stored text moved
+    anyway, which a recorded digest settles without a call, and they cost nothing.
+    """
+    for item in plans:
+        entry, plan = item.target.entry, item.plan
+        typer.echo(
+            f"{entry.act.key}: {entry.from_version} -> {entry.to_version} · "
+            f"{len(plan.reasked)} re-asked · {len(plan.added)} added · "
+            f"{len(plan.withdrawn)} withdrawn · {len(plan.carried)} carried · "
+            f"{len(plan.restored)} texts corrected unasked"
+        )
+        for unit in () if item.selection is None else item.selection.units:
+            typer.echo(f"  {unit}: asked again")
+        for unit in plan.withdrawn:
+            typer.echo(f"  {unit}: withdrawn")
+    typer.echo(
+        f"examined {counts.examined} entries · {len(plans)} would be corrected · "
+        f"{sum(len(item.plan.reasked) for item in plans)} changes re-asked · "
+        f"{sum(len(item.plan.added) for item in plans)} added · "
+        f"{sum(len(item.plan.withdrawn) for item in plans)} withdrawn · "
+        f"{sum(len(item.plan.carried) for item in plans)} carried · "
+        f"{sum(len(item.plan.restored) for item in plans)} texts corrected unasked · "
+        f"{sum(len(item.plan.emptied) for item in plans)} newly with no text on either side"
+    )
+    report_pass(counts)
+    typer.echo("dry run: nothing written, nothing asked, no engine built.")
+    selections = [item.selection for item in plans if item.selection is not None]
+    return report_estimate(format_, estimate_over(selections, model_id=model_id))

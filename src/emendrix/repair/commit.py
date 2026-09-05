@@ -28,6 +28,7 @@ from emendrix.backfill.inputs import repository_at
 from emendrix.output import GitError, OutputRepo
 from emendrix.output.json_out import ChangelogEntry, RepairRecord
 from emendrix.repair import corroborate as corroboration_repair
+from emendrix.repair import evidence as evidence_repair
 from emendrix.repair import explanations as explain_repair
 from emendrix.repair import unexplained as unexplained_repair
 from emendrix.repair.entry import RepairResult, with_record
@@ -37,6 +38,7 @@ __all__ = [
     "Subject",
     "corroborated_subject",
     "explained_subject",
+    "rederived_subject",
     "repository",
     "restated_subject",
     "write_all",
@@ -50,6 +52,13 @@ NO_COORDINATES = (
 
 Subject = Callable[[ChangelogEntry, RepairResult], str]
 """How one repair kind names its commit. The count phrase is the only part that differs."""
+
+_UNMOVED = "The verbatim texts, the sibling explanations and the detection date did not move."
+_REDERIVED = (
+    "The verbatim texts are today's parse of the same two versions; the explanations beside "
+    "the corrected ones and the detection date did not move."
+)
+"""What a subject says did not move. One repair rebuilds the texts and the rest may not."""
 
 
 def repository(path: Path | None) -> OutputRepo:
@@ -73,13 +82,15 @@ def write_all(
     kind: str,
     repaired_on: date,
     subject: Subject,
+    *,
+    coordinates_checked: bool = False,
 ) -> int:
     """Commit each repaired entry on its own, with what the pass did recorded on it.
 
-    `coordinates_checked` is False for every repair mounted here, and it is passed rather than
-    left to a default: none of them holds the two provision trees the coordinate-support sets
-    are computed from, so the check did not run and an unrun check may not read on a published
-    entry as one that passed.
+    `coordinates_checked` defaults to False and is passed rather than assumed: a repair working
+    from the entry's own stored texts holds neither provision tree, so the coordinate-support
+    sets cannot be computed and an unrun check may not read on a published entry as one that
+    passed. The one repair that re-parses both versions does hold them and says so.
     """
     written = 0
     try:
@@ -96,7 +107,7 @@ def write_all(
                     repaired=result.repaired,
                     remaining=result.remaining,
                     usage=result.usage,
-                    coordinates_checked=False,
+                    coordinates_checked=coordinates_checked,
                 ),
             )
             outcome = repo.write(stamped, message=subject(stamped, result))
@@ -124,6 +135,16 @@ def explained_subject(entry: ChangelogEntry, result: RepairResult) -> str:
     return _message(entry, phrase)
 
 
+def rederived_subject(entry: ChangelogEntry, result: RepairResult) -> str:
+    """`32017R0745: 02017R0745-20200424 evidence repaired (2 of 3 changes)`.
+
+    Both counts, and the footer says what did move: this is the one repair that replaces a
+    verbatim text, so a subject promising it had not would be false.
+    """
+    phrase = f"{evidence_repair.KIND} repaired ({result.repaired} of {result.addressed} changes)"
+    return _message(entry, phrase, footer=_REDERIVED)
+
+
 def restated_subject(entry: ChangelogEntry, result: RepairResult) -> str:
     """`32016R1011: 02016R1011-20210213 unexplained notes restated (1 of 2 changes)`.
 
@@ -137,14 +158,10 @@ def restated_subject(entry: ChangelogEntry, result: RepairResult) -> str:
     return _message(entry, phrase)
 
 
-def _message(entry: ChangelogEntry, phrase: str) -> str:
+def _message(entry: ChangelogEntry, phrase: str, *, footer: str = _UNMOVED) -> str:
     """The subject and the one line saying what did not move.
 
     The subject says what was repaired rather than what was emitted, because a reader of
     `git log` would otherwise be told an amendment was detected on the day a correction ran.
     """
-    return (
-        f"{entry.act.key}: {entry.to_version} {phrase}\n"
-        "\n"
-        "The verbatim texts, the sibling explanations and the detection date did not move."
-    )
+    return f"{entry.act.key}: {entry.to_version} {phrase}\n\n{footer}"

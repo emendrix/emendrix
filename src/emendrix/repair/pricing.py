@@ -23,8 +23,9 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from emendrix.core import VersionId
+from emendrix.core import Change, VersionId
 from emendrix.explain import CallUsage, ExplainSettings, build_context, build_prompt, rate_for
+from emendrix.output import ChangelogEntry
 from emendrix.repair.entry import RepairTarget
 from emendrix.repair.explanations import selected
 
@@ -35,6 +36,7 @@ __all__ = [
     "Selection",
     "estimate_over",
     "plan",
+    "selection_for",
     "selection_of",
 ]
 
@@ -84,22 +86,21 @@ class Estimate(BaseModel):
     )
 
 
-def selection_of(
-    target: RepairTarget, settings: ExplainSettings, *, limit: int | None = None
-) -> Selection | None:
-    """One entry's selection with its prompts rebuilt and measured, or None for nothing to do.
+def selection_for(
+    entry: ChangelogEntry, changes: Sequence[Change], settings: ExplainSettings
+) -> Selection:
+    """The prompts a pass would send for these changes of one entry, built and measured.
 
     The prompts are built and thrown away, which is the point of building them: it costs
     nothing and it is the only honest way to say how much text a pass would pay to send.
+
+    The changes are passed in rather than selected here, because which ones a repair addresses
+    is that repair's own question: one reads a counted reason off the payload, another holds
+    the payload against today's parse.
     """
-    entry = target.entry
-    indices = selected(entry)[:limit]
-    if not indices:
-        return None
     chars = 0
     units: list[str] = []
-    for index in indices:
-        change = entry.changes[index].change
+    for change in changes:
         context = build_context(
             change, from_version=entry.from_version, to_version=entry.to_version
         )
@@ -113,6 +114,21 @@ def selection_of(
         units=tuple(units),
         prompt_chars=chars,
     )
+
+
+def selection_of(
+    target: RepairTarget, settings: ExplainSettings, *, limit: int | None = None
+) -> Selection | None:
+    """One entry's selection with its prompts rebuilt and measured, or None for nothing to do.
+
+    The selection is the changes the model failed on, which is what the explanation repair
+    addresses and nothing else.
+    """
+    entry = target.entry
+    indices = selected(entry)[:limit]
+    if not indices:
+        return None
+    return selection_for(entry, [entry.changes[index].change for index in indices], settings)
 
 
 def plan(

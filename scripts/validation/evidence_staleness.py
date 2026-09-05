@@ -33,6 +33,11 @@ the payload states, while what the model was shown is a fact only the run that m
 record. This script never writes a digest onto anything, and an entry that carries none is
 reported as provenance unknown rather than quietly given one.
 
+That rule and the state machine over it live in `emendrix.repair.staleness`, imported here
+rather than repeated, because `emendrix repair evidence` selects the changes it pays to ask
+about with the same comparison. Two notions of "differs", one measuring the reach of a
+correction and one deciding what it costs, would drift within a month.
+
 It writes nothing, calls no model and spends nothing. Offline by default: a package the disk
 cache does not hold is counted as underivable and reported, and there is no path from a miss to
 a socket unless `--fetch` is passed.
@@ -65,7 +70,8 @@ from emendrix.eu.identifiers import Celex
 from emendrix.eu.packages import FormexPackage
 from emendrix.explain import ExplainSettings
 from emendrix.output import ChangelogEntry, EvidenceState, checked, recorded_digests
-from emendrix.output.provenance import ChangeKey, digest_of, digest_of_texts, keys_of
+from emendrix.output.provenance import ChangeKey, digest_of_texts, keys_of
+from emendrix.repair.staleness import stated
 
 OBSERVED_ON = date(2026, 9, 5)
 """Passed in rather than read from a clock, exactly as the CLI boundary passes it."""
@@ -180,15 +186,7 @@ def main() -> int:
         recorded = recorded_digests(entry.evidence)
         witnessed += sum(1 for key in keys_of(changes) if key in recorded)
         unknown += sum(1 for key in keys_of(changes) if key not in recorded)
-        answers = checked(
-            changes,
-            recorded={
-                key: digest_of(change)
-                for key, change in zip(keys_of(changes), changes, strict=True)
-            }
-            | recorded,
-            derived=_derived(entry, trees),
-        )
+        answers = checked(changes, recorded=stated(entry), derived=_derived(entry, trees))
         states.update(answer.state.value for answer in answers)
         differs = [answer for answer in answers if answer.state is EvidenceState.DIFFERS]
         differing_chars += sum(answer.chars for answer in differs)

@@ -496,6 +496,53 @@ Named rather than discovered later; the eval report's disagreement list is the l
   documents and is forbidden from recomputing them, so it shows none of this until it is rebuilt
   from them. The dated entries above are left as they were written, each being true of the day
   it describes.
+- **An explanation written about text a parser fix has since corrected can be asked again, and
+  only that explanation.** `emendrix repair evidence` re-fetches, which its two siblings must
+  never do: `repair explanations` rebuilds its prompt from the committed payload precisely so
+  that it never describes a document the page does not show, and `repair corroboration` never
+  touches stored text at all, so pointed at this defect the first would ask again about the same
+  corrupted text and the second would carry it over. The defect is in the stored evidence, so the
+  verb parses both versions again through the shared disk cache, re-derives the delta, merges it
+  with the two signals the payload already carries, and then decides per change. Evidence that
+  still reads as it was published keeps its sentences, its gate decision and its citations
+  untouched and costs nothing; evidence that moved is asked about again, about the corrected
+  text, and gated against both trees, so this is the one repair whose record can say
+  `coordinates_checked: true`; a change today's delta no longer holds is withdrawn; and one it
+  holds that the entry does not is asked about and counted apart, because the two answer
+  different questions. Which of those a change is, is decided by the comparison
+  `scripts/validation/evidence_staleness.py` already measures the corpus with, lifted into
+  `emendrix.repair.staleness` and imported by the script, because two notions of "differs" would
+  drift within a month. **Three rules bound what a pass will do.** A change the model fails on
+  again keeps its sentences *and* the stored text they were written about, since correcting one
+  without the other would leave a reader prose about one text beside another and would leave the
+  next pass unable to see the change is still stale; it is counted as remaining and never
+  reported as repaired. `--limit` counts changes, and an entry is asked about in full or not
+  started, for the same reason. And a transition today's parse cannot produce is counted, named
+  and left exactly as it is. A digest is written only for a change the pass itself watched a call
+  for, so every sibling keeps the provenance it arrived with, which for the corpus published
+  before 2026-09-05 is none. Where an entry's own digest proves its sentences were written about
+  the text today's parser produces, a stored text that has drifted from it is corrected with no
+  call at all and counted apart from the re-asked.
+  **Measured over the committed corpus on 2026-09-05, before anything was spent**, against a
+  clone at `351bf4c`, the corpus as the corroboration pass of the same day left it. All 446
+  entries re-derived: none of the 17 consolidations the disk cache had been missing refused, so
+  no transition was left unread. Of the 4 948 changes, **557 differ and would be asked about
+  again, across 247 of the 446 transitions**; every other change with text still reads as the
+  evidence it was published with. **No unit was added and none was withdrawn anywhere**, and no
+  change newly carries no text. The prompts a pass would send hold **20 029 173 characters**,
+  about 8 901 855 input and 195 507 output tokens at one call per change, which is
+  **about USD 19.76** at the USD 2.00 and USD 10.00 per million tokens this repository has on
+  file for `openrouter:anthropic/claude-sonnet-5`, checked 2026-08-08. That price is a floor: it
+  counts one call per change and so counts neither the gate's one retry nor a schema repair, and
+  each of those is a further request against the same provider. **This reading is not the one of
+  539 of 5 261 published earlier the same day**, which the validation script took before the
+  corroboration pass withdrew 313 claims and rewrote 337 entries, and which counted 120 changes
+  it could not derive at all; the denominator differs, the underivable are now derived, and
+  neither figure is adjusted for the other. The zeroes for added and withdrawn are not a
+  re-parse finding today's delta unchanged in every respect either: the merge holds today's diff
+  against the signals the payload already carries, so a unit only a signal ever named is
+  re-created exactly as it was published, and what the zeroes say is that the diff itself now
+  finds the same units the published entries hold.
 - **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
   cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
   rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure

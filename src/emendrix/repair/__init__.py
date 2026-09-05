@@ -9,7 +9,10 @@ quoted a neighbouring sentence yesterday finds different words at the same URL t
 So a repair addresses **the thing that is wrong and nothing else**: it reads a committed
 payload, takes it apart, replaces one part of it, and writes it back through `OutputRepo`, which
 replaces the entry in place and keeps every other entry in that act's `CHANGELOG.md`
-byte-identical. Four properties hold for every repair kind, and each is a test:
+byte-identical. One kind re-reads the corpus, because the part that is wrong is the stored text
+itself and no payload can show that; it still replaces that part and nothing else.
+
+Four properties hold for every repair kind, and each is a test:
 
 1. **Round-trip identity.** Taking an entry apart and putting it back unchanged re-serialises to
    the bytes it came from, except for fields the schema has gained since it was written.
@@ -31,6 +34,10 @@ select        which committed entries a repair kind would touch, over a whole re
 corroborate   the deterministic repair: the third signal recomputed
 explanations  the paid repair: a change with no explanation, asked again from its payload
 unexplained   the restating repair: a note that quoted a library, put in the house register
+staleness     whether a change still reads as the evidence its explanation was written about
+rederive      today's parse of a transition already published, and its merged delta
+reask         asking again about the changes whose evidence moved, and splicing the answers
+evidence      the fetching repair: a pass over a repository, to a budget, and what it would cost
 pricing       what a paid repair would address and cost, computed before anything is sent
 render        the table an operator decides from, before anything is written
 commit        opening the repository, committing what moved, and naming the commit

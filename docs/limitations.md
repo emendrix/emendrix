@@ -152,6 +152,19 @@ again, and recorded again the same day when the stored text changed, and neither
 an article coordinate at all. So the zero is the check finding nothing to look at rather than the
 check passing, which is exactly why it only counts and never drops a sentence.
 
+**Correcting a stale explanation is the only thing this project pays for twice, and it is
+bounded by what it can be sure of.** `emendrix repair evidence` re-parses both versions of a
+published transition and asks the model again about the changes whose evidence moved. Three
+limits are worth knowing. A change the model fails on a second time keeps the sentences it has
+and the stored text they were written about, so a reader is never shown prose about one text
+beside another, and the change stays selectable for a later pass; it is counted as remaining and
+is never reported as repaired. A pass with a change budget starts an entry or it does not, and
+never asks about half of one, because a corrected text under an un-re-explained sentence is the
+one state nothing downstream can detect. And a transition whose versions today's parser cannot
+produce, which is a package the cache lacks or a version with no readable English, is counted and
+named and its entry is left exactly as it is: a correction that cannot see the corrected text is
+not attempted.
+
 **Consolidation lags publication by roughly ten days**, and it is not a fixed number (10 days for
 the AI Act, 17 and counting for the MDR). "Amended, consolidation pending" is a persisted,
 exactly-once-resolving state; seeing it is normal, seeing it for a month is a finding.

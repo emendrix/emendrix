@@ -59,6 +59,12 @@ written before that carries none, and the script compares its stored text instea
 two bases separately: what the model was shown is a fact only the run that made the call can
 record, and nothing here writes a digest onto anything.
 
+The rule for reading those two bases in that order lives in `emendrix.repair.staleness` and is
+imported here rather than repeated, because `emendrix repair evidence --dry-run` selects and
+prices the changes it would ask about with the same comparison. This script measures the reach
+of a correction over a whole corpus in one parse per version; the command decides, per entry,
+what a correction would cost and then carries it out.
+
 ## Commands behind the committed reports
 
 Each command writes `results/<name>.txt`; those files are committed and are the measured record.

@@ -72,6 +72,20 @@ the entry's own stored texts and holds neither provision tree, so the gate's coo
 not run; recording it is how an unrun check is kept from reading as one that passed. A change the
 model failed on again keeps the reason it was committed with, word for word.
 
+**A rebuilt entry carries today's parse of the same two versions, and says which explanations
+survived it.** `emendrix repair evidence` is the one repair that re-fetches: it parses both
+versions again, re-derives the delta, and holds every change against what the entry states its
+evidence was. A change whose evidence still reads as published keeps its sentences, its gate
+decision and its citations exactly as they are; one whose evidence moved is asked about again,
+about the corrected text; a change today's delta no longer holds is withdrawn; and one it holds
+that the entry does not is asked about and counted apart, because the two answer different
+questions. The `repairs` entry carries `coordinates_checked: true`, which no other repair can:
+this one holds both provision trees, so the gate's coordinate check actually ran. The act, both
+version identifiers and `detected_on` do not move, so no permalink and no feed id can, and the
+commit subject says the verbatim texts were re-derived rather than promising they did not move.
+A change the model fails on again keeps both its sentences and the stored text they were written
+about, which is one pair rather than two halves of two.
+
 **A note that quoted a library is restated, and one that names an unreachable provider is not.**
 `emendrix repair unexplained` replaces a reason written before the curated ones existed, which
 could be the provider library's own error text, with the sentence the code writes today, and
@@ -127,6 +141,12 @@ exactly as it found it. The 5 261 changes published before 2026-09-05 carry none
 because deriving one from a payload's stored texts would assert that a call nobody witnessed was
 shown them. `scripts/validation/evidence_staleness.py` answers the staleness question for those by
 comparing their stored text against today's parse, and counts the two bases apart.
+
+**A digest that survives a correction is what makes the next one cheap.** Where an entry's own
+record proves its sentences were written about the text today's parser produces, a stored text
+that has since drifted from it is a stale document rather than a stale explanation: the text is
+corrected and nothing is asked or paid for. That case is counted apart from the re-asked, and it
+exists only for entries written from 2026-09-05, the ones that carry a digest at all.
 
 The digest is over the evidence and not over the prompt: a reworded instruction, a moved date in
 the header or a renamed citation key does not make a shipped sentence describe text that is no
