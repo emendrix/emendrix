@@ -28,6 +28,12 @@ class ParserCoverage(BaseModel):
     outside the documented vocabulary is descended through, counted here, and its text still
     reaches the enclosing node. Coverage gaps are counted, never crashed on and never silently
     dropped.
+
+    `undetached_blocks` is the same hatch for the one defect that produces no exception and no
+    unknown tag: an element outside both of `text.py`'s sets that nonetheless holds a block
+    child, whose content is then joined to the sentence it interrupts. That class was closed on
+    2026-09-01 by measurement over the packages committed that day, and nothing holds it closed
+    for a package fetched later, so it is counted on every parse rather than asserted once.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -55,6 +61,12 @@ class ParserCoverage(BaseModel):
     unknown_elements: tuple[tuple[str, int], ...] = Field(
         default=(), description="Tag → count, sorted by tag; empty when the vocabulary held."
     )
+    undetached_blocks: tuple[tuple[str, int], ...] = Field(
+        default=(),
+        description="Tag → count of elements holding a block child while in neither the block "
+        "nor the detached set, so their content joins the text beside it instead of opening a "
+        "line. Empty over the 44 packages committed on 2026-09-01.",
+    )
 
     @property
     def unknown_total(self) -> int:
@@ -65,6 +77,7 @@ class ParserCoverage(BaseModel):
         """True when nothing at all fell outside the parser's vocabulary."""
         return (
             not self.unknown_elements
+            and not self.undetached_blocks
             and not self.unmapped_identifiers
             and not self.documents_unreadable
         )
@@ -83,6 +96,7 @@ class CoverageCounter:
     heading_mismatches: int = 0
     unreadable_dates: int = 0
     unknown: Counter[str] = field(default_factory=Counter)
+    undetached: Counter[str] = field(default_factory=Counter)
 
     def freeze(self) -> ParserCoverage:
         return ParserCoverage(
@@ -95,6 +109,7 @@ class CoverageCounter:
             heading_mismatches=self.heading_mismatches,
             unreadable_dates=self.unreadable_dates,
             unknown_elements=tuple(sorted(self.unknown.items())),
+            undetached_blocks=tuple(sorted(self.undetached.items())),
         )
 
 

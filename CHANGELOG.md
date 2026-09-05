@@ -409,6 +409,65 @@ Named rather than discovered later; the eval report's disagreement list is the l
   is stored on a published document and is read into Markdown, into JSON and into an HTML page
   that escapes what it is given, so only one of the three surfaces would have read a fence as
   anything but two stray characters. The 1 804 stored copies are corrected forward with the counts.
+- **An explanation records what it was shown, from 2026-09-05, and no earlier one is given a
+  record it cannot have earned.** Every stage of this loop is deterministic and free to recompute
+  except the model call, which is paid, non-repeatable and written *about* a particular pair of
+  verbatim texts. The two extractor fixes above moved stored text, so prose written before them
+  describes evidence the pages no longer show, and nothing in a payload said what the writer had
+  been shown: the only way to ask which explanations went stale was to re-parse the whole corpus
+  and diff it against every committed document. A change written from this date carries an
+  `evidence` digest, `sha256` over its canonical location and its two verbatim texts in that
+  order, NUL-separated and UTF-8 encoded, with an absent side tagged apart from an empty one. It
+  digests the **evidence and not the prompt**: a reworded instruction, a moved header date or a
+  renamed citation key does not make a shipped sentence describe text that is no longer there,
+  and a changed verbatim text does. `schema_version` is `1.2` for documents written from this
+  date, because a consumer reading a missing digest as "unchanged" would be wrong about every
+  document published before it; adding the field alone would not have been a bump. **Nothing is
+  retro-fitted.** The digest states what one call was shown, so it is written by the run that made
+  the call and carried over untouched by any repair that does not re-ask, exactly as `detected_on`
+  is; a repair that does re-ask records the one change it asked about and leaves every sibling as
+  it found it. The 5 261 changes already published carry none and read as provenance unknown,
+  which is a counted state in the register of `ApplicabilityUnknown` and not a gap to fill in:
+  deriving one from a payload's own stored texts would assert a fact about a call nobody
+  witnessed.
+- **The join rule the verbatim form rests on is asserted over every committed package, since
+  2026-09-05.** The 2026-09-01 fix rested on a claim measured that day, that `NOTE` and `QUOT.S`
+  were the only tags outside the block set holding a block child inside a unit subtree. Nothing
+  held that true afterwards, and a run-on is not malformed, raises nothing and passes every schema
+  and type check here, so a fixture or a fetched package could reopen the class in silence. The
+  parser now counts, on every parse, any element outside both sets that holds a child either set
+  would break the line before, as `ParserCoverage.undetached_blocks`: a counted coverage gap
+  naming the tag, never an exception, with the text still shipping joined the conservative way an
+  unrecognised tag always is. Both sets count on the inside, not just the block one: a wrapper
+  outside them gets no break of its own, so a `NOTE` sitting first inside it opens on a line
+  nothing has opened and runs into the sentence before it, which is the 2026-09-01 defect wearing
+  one more layer. The invariant reads empty over all 44 committed packages, every parent of a
+  `NOTE` or a `QUOT.S` in them being a block element itself. **The symptom scan beside it ships two
+  rules of the three proposed, and says why.** A bracketed enumerator welded to the full stop,
+  colon or semicolon before it (`added:(i)`) reads 0 over those packages, and two word halves
+  welded at a case change (`CouncilRegulation`, two letters required on each side) reads 0 with an
+  empty allowlist. The wider forms are not shipped and the measurements are the reason: any word
+  character butting against an opening bracket fires 18 673 times, all of it ordinary drafting
+  (`Article 114(3)`, `test(s)`), and any lower-to-upper transition inside a word fires 3 074 times
+  over 34 distinct words, every one of them chemical nomenclature or a unit (`vPvB`, `pH`, `kPa`,
+  `decaBDE`, `mL`), an allowlist that would grow with every re-pinned REACH annex. A guard nobody
+  trusts is worse than no guard.
+- **The stale set is measurable, and the script that measures it is committed.**
+  `scripts/validation/evidence_staleness.py` re-derives both versions of every committed event
+  through today's parser off the shared disk cache, and reports per change whether the evidence
+  matches, differs, or cannot be derived. It calls no model, writes nothing and is offline unless
+  `--fetch` is passed. Run against a clone of the published corpus at `e007d1e`, the corpus as it
+  stood on 2026-09-05: **5 261 changes, of which 4 602 match, 539 differ and 120 cannot be
+  derived**, the last being 17 consolidations the disk cache does not hold. 1 804 of the matches
+  are textless changes, which carry no evidence on either side and so cannot go stale. **240 of
+  the 446 transitions carry at least one differing change**, and those changes hold 137 627 136
+  characters of stored evidence between them, of which 17 616 892 fall inside the 40 000-character
+  prompt cap and would actually be sent. Every change in that reading has unknown provenance, so
+  the left-hand side is the payload's stored text rather than a witnessed digest, and the script
+  counts the two bases apart. This reading answers a different question from the two blast-radius
+  readings published on 2026-09-05 for the instruction scoping (85 and 151, then 164, of 1 309):
+  those count claims a window withdraws, this counts explanations whose evidence moved. All of
+  them are published under their own dates and none is adjusted for another.
 - **A model failure ships as a stated reason, and the verbatim fallback deliberately does not
   cover it.** A live call can fail in ways the pipeline does not control: a timeout, a refusal, a
   rate limit, pydantic-ai's schema-repair budget exhausted. Since 2026-08-31 every such failure

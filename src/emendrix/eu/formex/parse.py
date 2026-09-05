@@ -56,6 +56,7 @@ from emendrix.eu.formex.text import (
     SKIPPED_SUBTREES,
     comparison_text,
     date_mentions,
+    undetached_blocks,
     verbatim_text,
 )
 from emendrix.eu.packages import FormexPackage
@@ -108,6 +109,9 @@ def _unit(element: Element, is_annex: bool, counter: CoverageCounter) -> Provisi
         _cross_check_article(element, number, counter)
         code, value = LocationCode.AR, number
     location = ProvisionLocation(segments=(LocationSegment(code=code, value=value),))
+    # Asked once per unit rather than once per node: the question is about the whole subtree
+    # `verbatim_text` is called on, and a per-node walk would count every ancestor's copy.
+    counter.undetached.update(undetached_blocks(element))
     return _node(element, location, is_annex, counter)
 
 

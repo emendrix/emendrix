@@ -51,6 +51,7 @@ changes. Nothing else is dropped.
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Iterator
 from typing import Final
 from xml.etree.ElementTree import Element
@@ -67,6 +68,7 @@ __all__ = [
     "date_mentions",
     "flat_text",
     "head_text",
+    "undetached_blocks",
     "verbatim_text",
 ]
 
@@ -153,6 +155,11 @@ outside `BLOCK_ELEMENTS` that hold a block child, 1904 times and 346 times, so t
 whole class rather than the two instances that exposed it.
 """
 
+_SEPARATED: Final = BLOCK_ELEMENTS | DETACHED_ELEMENTS
+"""Every tag the walk breaks the line before the content of. The union is the invariant's
+subject: a tag outside it that holds one of these gets no break of its own, so what it holds
+opens a line nothing opened (`undetached_blocks`)."""
+
 _CONTINUED_BY: Final = frozenset({"NO.PARAG", "NO.P", "NO.GR.SEQ", "NO.ITEM"})
 """Enumerators. What follows one shares its line: `1.` and its paragraph are one line."""
 
@@ -205,9 +212,7 @@ def _verbatim_fragments(element: Element) -> list[str]:
         parts.append(element.text)
     for child in element:
         if child.tag not in SKIPPED_SUBTREES:
-            if (child.tag in BLOCK_ELEMENTS or child.tag in DETACHED_ELEMENTS) and _open_line(
-                parts
-            ):
+            if child.tag in _SEPARATED and _open_line(parts):
                 parts.append(_separator(previous, child.tag))
             emitted = len(parts)
             parts.extend(_verbatim_fragments(child))
@@ -216,6 +221,32 @@ def _verbatim_fragments(element: Element) -> list[str]:
             parts.append(child.tail)
             previous = None
     return parts
+
+
+def undetached_blocks(element: Element) -> Counter[str]:
+    """Tags under `element` that hold a block child and are in neither set, tag by tag.
+
+    The invariant the two sets rest on, asked of a document rather than asserted about the
+    corpus. A child of *either* set counts, both getting a break before their content: a wrapper
+    outside them gets none of its own, so its first such child opens a line nothing opened and
+    runs into the text beside it, which is `CouncilRegulation` again. Empty over the 44 packages
+    committed on 2026-09-05, every parent of a `NOTE` or `QUOT.S` in them being a block element.
+    Nothing raises: a tag found here is a counted coverage gap like any other, its text still
+    shipping, joined the conservative way an unrecognised tag always is, and since a run-on
+    passes every schema check in this project the count is what makes it visible at all.
+    """
+    found: Counter[str] = Counter()
+    _collect_undetached(element, found)
+    return found
+
+
+def _collect_undetached(parent: Element, found: Counter[str]) -> None:
+    for child in parent:
+        if child.tag in SKIPPED_SUBTREES:
+            continue
+        if child.tag not in _SEPARATED and any(inner.tag in _SEPARATED for inner in child):
+            found[child.tag] += 1
+        _collect_undetached(child, found)
 
 
 def verbatim_text(element: Element) -> ProvisionText:

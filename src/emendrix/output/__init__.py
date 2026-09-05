@@ -20,6 +20,8 @@ Layout:
 
 - `disclaimer.py`: the not-legal-advice line, in both artifacts' shapes, on every output.
 - `json_out.py`: `ChangelogEntry`, the versioned JSON document and the renderer's input.
+- `counts.py`: the three-way split of the touched units, and every other count on an entry.
+- `provenance.py`: the digest of what one explanation was written about, and its absence.
 - `markdown.py`: one amendment event, with the four properties its format forces.
 - `changelog.py`: the `CHANGELOG.md` file: header, entry markers, newest version first.
 - `git.py`: the git command line, scoped so it cannot touch anything but that repository.
@@ -45,6 +47,16 @@ from emendrix.output.markdown import (
     render_entry,
     render_standalone,
 )
+from emendrix.output.provenance import (
+    DIGEST_PREFIX,
+    EvidenceCheck,
+    EvidenceDigest,
+    EvidenceState,
+    checked,
+    digest_of,
+    evidence_for,
+    recorded_digests,
+)
 from emendrix.output.repo import (
     MARKER_FILE,
     ForeignRepository,
@@ -57,6 +69,7 @@ __all__ = [
     "AUTHOR_EMAIL",
     "AUTHOR_NAME",
     "DIFF_ONLY_NOTE",
+    "DIGEST_PREFIX",
     "MARKDOWN_DISCLAIMER",
     "MARKER",
     "MARKER_FILE",
@@ -66,15 +79,22 @@ __all__ = [
     "TRUNCATION_MARKER",
     "ChangelogEntry",
     "EntryCounts",
+    "EvidenceCheck",
+    "EvidenceDigest",
+    "EvidenceState",
     "ForeignRepository",
     "GitError",
     "NestedRepository",
     "OutputRepo",
     "WriteResult",
     "changelog_text",
+    "checked",
     "diff_only_entry",
+    "digest_of",
     "entries_for",
+    "evidence_for",
     "header_for",
+    "recorded_digests",
     "render_entry",
     "render_standalone",
     "resolve_repo_path",

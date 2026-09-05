@@ -20,8 +20,9 @@ from repaired_repo import (
     restored_unit,
 )
 
-from emendrix.output import OutputRepo, split_entries
+from emendrix.output import OutputRepo, recorded_digests, split_entries
 from emendrix.output.json_out import RepairRecord
+from emendrix.output.provenance import keys_of
 from emendrix.repair import (
     delta_of,
     moved,
@@ -130,6 +131,46 @@ def test_the_run_record_is_carried_over_untouched(spoiled: Path) -> None:
     assert result.entry.explain == target.entry.explain
     assert result.entry.gate == target.entry.gate
     assert result.entry.counts != target.entry.counts
+
+
+def test_the_evidence_digests_are_carried_over_by_a_repair_that_does_not_re_ask(
+    spoiled: Path,
+) -> None:
+    """A digest records what one call was shown, so a pass that asked nothing may not move it.
+
+    Every change still in the entry keeps the value the run that made its call recorded, and
+    nothing else appears: a record naming a change the document no longer holds is a record of
+    nothing, and a change a repair appended is one no call was ever made about, which the entry
+    says by carrying no digest for it rather than by acquiring one.
+    """
+    target = poisoned_target(spoiled)
+    result = corrected(target)
+    assert result.entry is not None
+    before = recorded_digests(target.entry.evidence)
+    after = recorded_digests(result.entry.evidence)
+    assert before, "the fixture repository was written by a run that recorded its evidence"
+    kept = set(keys_of(item.change for item in result.entry.changes))
+    assert set(after) == set(before) & kept
+    assert all(after[key] == before[key] for key in after)
+    appended = set(keys_of(item.change for item in target.entry.changes)) - set(before)
+    assert appended, "the phantom unit is a change no run was ever shown any text for"
+
+
+def test_a_repair_never_invents_a_digest_for_an_entry_that_carries_none(
+    changelog_repo: Path,
+) -> None:
+    """The 5 261 changes published before 2026-09-05 carry none and must stay that way.
+
+    Deriving one from the entry's own stored texts would assert that a call nobody witnessed
+    was shown them, which is the same failure as ticking a review sheet.
+    """
+    entry = read_targets(changelog_repo)[0].entry
+    older = entry.model_copy(update={"evidence": ()})
+    rebuilt = rebuild(
+        older, delta=delta_of(older), corroboration=older.corroboration, changes=older.changes
+    )
+    assert rebuilt.evidence == ()
+    assert not moved(older, rebuilt)
 
 
 def test_detected_on_is_the_date_the_amendment_was_detected(spoiled: Path) -> None:

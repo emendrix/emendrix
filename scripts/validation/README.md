@@ -12,9 +12,9 @@ assertions. It is **not** production code and nothing under `src/emendrix/` impo
 `trace.py` fetches with a 3-second delay and caches every response under `.cache/` (gitignored), so
 a second run of any command below is offline and free.
 
-Two scripts here do import the package, because what they measure *is* the package. Both read
-through the same client, the same composition root and the same disk cache the loop uses, write
-nothing, call no model and are offline unless `--fetch` is passed.
+Three scripts here do import the package, because what they measure *is* the package. All three
+read through the same client, the same composition root and the same disk cache the loop uses,
+write nothing, call no model and are offline unless `--fetch` is passed.
 
 `instruction_effect_dates.py` measures how often an amending act says when its instructions take
 effect (`src/emendrix/eu/instructions/effect.py`, and the two readers beside it). Its figures are
@@ -41,6 +41,23 @@ git clone https://github.com/emendrix/changelogs /tmp/changelogs
 uv run python scripts/validation/instruction_claim_scoping.py /tmp/changelogs
 uv run python scripts/validation/instruction_claim_scoping.py /tmp/changelogs --verbose
 ```
+
+`evidence_staleness.py` measures the one correction in this project that costs money. An
+explanation is written about a particular pair of verbatim texts and cannot be recomputed, so a
+parser fix that moves stored text leaves prose describing evidence the page no longer shows. It
+re-derives both versions of every committed event through today's parser and reports, per change,
+whether the evidence matches, differs, or cannot be derived, plus the transitions affected and how
+many characters the differing changes carry. It wants the same corpus clone:
+
+```bash
+uv run python scripts/validation/evidence_staleness.py /tmp/changelogs
+uv run python scripts/validation/evidence_staleness.py /tmp/changelogs --verbose
+```
+
+An entry written from 2026-09-05 carries an evidence digest and answers this by arithmetic. One
+written before that carries none, and the script compares its stored text instead, counting the
+two bases separately: what the model was shown is a fact only the run that made the call can
+record, and nothing here writes a digest onto anything.
 
 ## Commands behind the committed reports
 

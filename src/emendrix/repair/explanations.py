@@ -20,6 +20,11 @@ every context carries `coordinates_checked=False` and the gate counts nothing ra
 counting every mention of a coordinate as unsupported. And a citation resolves against the
 texts the entry itself carries (`PayloadResolver`) rather than against two whole trees.
 
+**A change asked again records what it was shown, and nothing else does.** The re-ask is a call
+this pass watched, over the texts the payload holds, so an evidence digest for that one change
+states a fact rather than assuming one. Every sibling keeps the provenance it arrived with, and
+an entry that carried none still says so.
+
 **A change that fails again is left exactly as it was found and counted.** Its committed reason
 stays: rewriting it would replace a sentence a reader has already seen with the same sentence
 written today, and stamping a kind onto a change that predates the field is a migration rather
@@ -48,7 +53,8 @@ from emendrix.explain import (
 )
 from emendrix.gate import Resolution, first_round, second_round
 from emendrix.graph.report import CitationRenderer, EmittedChange, build_delta_report
-from emendrix.output import ChangelogEntry
+from emendrix.output import ChangelogEntry, EvidenceDigest, digest_of
+from emendrix.output.provenance import keys_of, merged
 from emendrix.repair.entry import RepairResult, RepairTarget, delta_of, moved, rebuild
 
 __all__ = ["KIND", "PayloadResolver", "needs", "repair", "repair_all", "selected"]
@@ -130,6 +136,7 @@ async def repair(
     detail: list[str] = []
     usage = CallUsage()
     repaired = 0
+    witnessed: list[int] = []
     for index, settled, spent in answers:
         usage = usage.plus(spent)
         unit = entry.changes[index].change.location.canonical
@@ -138,9 +145,14 @@ async def repair(
             continue
         changes[index] = settled
         repaired += 1
+        witnessed.append(index)
         detail.append(f"{unit}: explained")
     rebuilt = rebuild(
-        entry, delta=delta_of(entry), corroboration=entry.corroboration, changes=tuple(changes)
+        entry,
+        delta=delta_of(entry),
+        corroboration=entry.corroboration,
+        changes=tuple(changes),
+        evidence=_witnessed(entry, tuple(changes), witnessed),
     )
     return RepairResult(
         target=target,
@@ -181,6 +193,27 @@ async def repair_all(
 
 
 # ------------------------------------------------------------------ the pieces
+
+
+def _witnessed(
+    entry: ChangelogEntry, changes: tuple[EmittedChange, ...], repaired: Sequence[int]
+) -> tuple[EvidenceDigest, ...]:
+    """The entry's digests, plus one for every change this pass actually asked about again.
+
+    A re-ask is a call this pass watched, over the very texts the payload holds, so recording
+    what it was shown asserts nothing it did not see. Every sibling keeps whatever provenance
+    it had, which for an entry published before the field existed is none.
+    """
+    keys = keys_of(item.change for item in changes)
+    written = tuple(
+        EvidenceDigest(
+            location=keys[index][0],
+            occurrence=keys[index][1],
+            digest=digest_of(changes[index].change),
+        )
+        for index in repaired
+    )
+    return merged(entry.evidence, written)
 
 
 def _context_for(entry: ChangelogEntry, change: Change) -> ExplainContext:

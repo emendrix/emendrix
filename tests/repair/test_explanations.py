@@ -33,7 +33,8 @@ from emendrix.explain import (
     cassette_key,
 )
 from emendrix.gate import GateOutcome
-from emendrix.output import OutputRepo
+from emendrix.output import OutputRepo, digest_of, recorded_digests
+from emendrix.output.provenance import keys_of
 from emendrix.repair import RepairResult, RepairTarget, read_targets
 from emendrix.repair.explanations import KIND, needs, repair, selected
 from eu_pins import OBSERVED_ON
@@ -215,6 +216,54 @@ def test_the_explain_and_gate_blocks_of_the_original_run_do_not_move(unexplained
     assert result.entry.explain == target.entry.explain
     assert result.entry.gate == target.entry.gate
     assert result.entry.detected_on == target.entry.detected_on
+
+
+def test_a_change_asked_again_records_what_it_was_shown_and_its_siblings_do_not(
+    unexplained: Path,
+) -> None:
+    """A re-ask is a call this pass watched, so its digest is a fact rather than a derivation.
+
+    The entries this fixture is built from carry a digest for every change already. What the
+    test holds is the rule: the two changes asked again carry the digest of the texts the
+    prompt was rebuilt from, and every sibling's record is byte-identical to the one it
+    arrived with.
+    """
+    target = unexplained_target(unexplained)
+    result = repaired(target, replaying())
+    assert result.entry is not None
+    before = recorded_digests(target.entry.evidence)
+    after = recorded_digests(result.entry.evidence)
+    asked = {
+        key
+        for index, key in enumerate(keys_of(item.change for item in result.entry.changes))
+        if index in FAILED
+    }
+    assert asked <= set(after)
+    for index in FAILED:
+        change = result.entry.changes[index].change
+        key = keys_of(item.change for item in result.entry.changes)[index]
+        assert after[key] == digest_of(change)
+    assert {key: value for key, value in after.items() if key not in asked} == {
+        key: value for key, value in before.items() if key not in asked
+    }
+
+
+def test_an_entry_that_carried_no_digest_gains_one_only_where_a_call_was_made(
+    unexplained: Path,
+) -> None:
+    """Every change published before 2026-09-05 has unknown provenance and keeps it.
+
+    A pass that re-asks about one of them has watched that one call and may say what it showed.
+    It has watched none of the others, and inventing a digest for those would assert a fact
+    about a call nobody made.
+    """
+    target = unexplained_target(unexplained)
+    older = target.entry.model_copy(update={"evidence": ()})
+    result = repaired(RepairTarget(path=target.path, entry=older), replaying())
+    assert result.entry is not None
+    keys = keys_of(item.change for item in result.entry.changes)
+    recorded = recorded_digests(result.entry.evidence)
+    assert set(recorded) == {keys[index] for index in FAILED}
 
 
 def test_a_cassette_miss_is_not_swallowed(unexplained: Path, tmp_path: Path) -> None:

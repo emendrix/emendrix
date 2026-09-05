@@ -28,7 +28,7 @@ from emendrix.output.json_out import DIFF_ONLY_NOTE, slug
 
 def test_the_document_declares_its_schema_version_and_its_disclaimer() -> None:
     payload = json.loads(toy_entry().to_json())
-    assert payload["schema_version"] == SCHEMA_VERSION == "1.1"
+    assert payload["schema_version"] == SCHEMA_VERSION == "1.2"
     assert payload["disclaimer"] == DISCLAIMER
 
 
@@ -115,18 +115,21 @@ def test_a_unit_with_no_text_is_not_counted_substantive() -> None:
 def test_a_document_written_under_the_earlier_schema_still_reads() -> None:
     """All 446 published documents say `1.0`, and the site is built from them.
 
-    They read back with `textless` at 0 and the `substantive` their own run computed, which is
-    the older question answered under the older name. They are corrected where they are
-    stored, by whatever rewrites them, and never by a renderer recomputing a stored count.
+    They read back with `textless` at 0, the `substantive` their own run computed and no
+    evidence digest at all, which is the older question answered under the older name. They are
+    corrected where they are stored, by whatever rewrites them, and never by a renderer
+    recomputing a stored count or by anything deriving a digest they never carried.
     """
     payload = json.loads(disputed_entry().to_json())
     payload["schema_version"] = "1.0"
     del payload["counts"]["textless"]
+    del payload["evidence"]
     payload["counts"]["substantive"] = payload["counts"]["touched"]
     entry = ChangelogEntry.model_validate(payload)
     assert entry.schema_version == "1.0"
     assert entry.counts.textless == 0
     assert entry.counts.substantive == entry.counts.touched
+    assert entry.evidence == ()
 
 
 def test_a_deferred_unit_counts_as_date_only() -> None:

@@ -30,6 +30,21 @@ article of REACH as modified. The fix is that a verbatim form and a comparison f
 separately and neither is derived from the other, but the risk is a quality risk that scales with
 the age of the act, not a solved problem.
 
+**A missed line break is the quietest defect here, and correcting one costs money.** Two were
+found by reading, on 2026-08-12 and 2026-09-01, and each ran a sentence into the block it
+interrupts: `59Derogation`, `CouncilRegulation`, `the following point is added:(i)`. Such text is
+not malformed, raises nothing and passes every schema and type check in this project. The join
+rule is now an invariant asserted over every committed package, and a tag that reopens it is
+counted as `ParserCoverage.undetached_blocks` rather than silently joined, but the invariant is
+only as wide as the fixtures: a package fetched at run time can carry a tag no fixture holds, and
+the count is what makes that visible. The reason this matters more than a rendering blemish is
+that an explanation is the one thing this pipeline cannot recompute. It is a paid, non-repeatable
+call written about a particular pair of verbatim texts, so a text that moves after the call leaves
+prose describing evidence the page no longer shows. Entries written from 2026-09-05 carry an
+evidence digest and can be asked directly; the 5 261 changes published before that carry none, and
+`scripts/validation/evidence_staleness.py` answers for them by comparing stored text against
+today's parse.
+
 **Blanket amendments make the reference set the silent one.** "…shall be replaced by … throughout
 the text" is one annotation and dozens of touched provisions. Precision against the metadata
 collapses and the diff is the one that is right. Those units are counted as their own class, not

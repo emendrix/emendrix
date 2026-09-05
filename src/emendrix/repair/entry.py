@@ -19,8 +19,9 @@ from emendrix.core import Change, Delta, SignalSet, SignalStatus
 from emendrix.corroborate import CorroborationReport
 from emendrix.explain import CallUsage
 from emendrix.graph.report import EmittedChange, EmittedDelta
-from emendrix.output import ChangelogEntry
+from emendrix.output import ChangelogEntry, EvidenceDigest
 from emendrix.output.json_out import RepairRecord
+from emendrix.output.provenance import keys_of, recorded_digests
 
 __all__ = [
     "RepairResult",
@@ -124,6 +125,7 @@ def rebuild(
     delta: Delta,
     corroboration: CorroborationReport | None,
     changes: tuple[EmittedChange, ...],
+    evidence: tuple[EvidenceDigest, ...] | None = None,
 ) -> ChangelogEntry:
     """A committed entry with some part of it replaced, and `detected_on` carried over.
 
@@ -131,6 +133,13 @@ def rebuild(
     detection. `explain` and `gate` are carried over untouched for the same reason. They record
     what one run did, and no repair retracts a call that was made; what a repair did is a
     `RepairRecord`.
+
+    The evidence digests are carried over by the same rule, and `evidence=None` asks for
+    exactly that. A pass that re-asked the model has itself watched a call and may pass the
+    digests it witnessed; a pass that did not may not invent one, and an entry that carried
+    none still carries none. What is carried is narrowed to the changes still present, so a
+    unit a repair withdrew takes its digest with it rather than leaving a record of a change
+    the document no longer holds.
     """
     shipped = Delta(
         act=delta.act,
@@ -152,8 +161,23 @@ def rebuild(
         ),
         detected_on=entry.detected_on,
         diff_only=entry.diff_only,
+        evidence=_carried(entry.evidence if evidence is None else evidence, changes),
     )
     return rebuilt.model_copy(update={"repairs": entry.repairs})
+
+
+def _carried(
+    evidence: tuple[EvidenceDigest, ...], changes: tuple[EmittedChange, ...]
+) -> tuple[EvidenceDigest, ...]:
+    """The digests that still name a change this entry holds, in the entry's own order."""
+    recorded = recorded_digests(evidence)
+    return tuple(
+        EvidenceDigest(
+            location=location, occurrence=occurrence, digest=recorded[(location, occurrence)]
+        )
+        for location, occurrence in keys_of(item.change for item in changes)
+        if (location, occurrence) in recorded
+    )
 
 
 def moved(before: ChangelogEntry, after: ChangelogEntry) -> bool:

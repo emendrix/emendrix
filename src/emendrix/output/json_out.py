@@ -4,8 +4,9 @@ The second output of the loop: structured JSON for the same content, so other to
 consume it. Because other tools consume it, it carries `schema_version` from the first byte
 and is documented rather than left for a reader to infer from an example.
 
-The counts it carries are derived next door in `counts.py`, which is the module's one real
-seam: this one holds the document and asks for them once.
+The counts it carries are derived next door in `counts.py`, and the evidence digests beside
+them in `provenance.py`; those are the module's two real seams. This one holds the document
+and asks each of them once.
 
 **A `ChangelogEntry` is the unit both renderers consume.** The Markdown renderer
 (`markdown.py`) and this schema are two views of one object, so they cannot drift: a count
@@ -16,7 +17,10 @@ document holds at run level rather than per act: the date the run observed.
 **Nothing here re-derives anything.** The per-change signal provenance is `Change.signals` as
 corroboration left it, the gate flags are `EmittedChange.outcome` and
 `EmittedSentence.fallback` as the gate left them, and the citations were rendered by the
-adapter at emit time. This module counts, wraps and serialises; it does not decide.
+adapter at emit time. This module counts, wraps and serialises; it does not decide. The one
+thing it computes besides the counts is the evidence digest, and only for a run that has just
+made the calls: `ChangelogEntry.of` is told what to record and never works it out for itself,
+which is what keeps a repair from inventing provenance for an entry that has none.
 
 No clock, no network, no corpus: `detected_on` is passed in from the CLI boundary, which is
 what makes two runs of one event produce identical bytes.
@@ -37,6 +41,7 @@ from emendrix.gate import GateOutcome, GateStats
 from emendrix.graph.report import EmittedChange, EmittedDelta, RunReport
 from emendrix.output.counts import EntryCounts, counts_of
 from emendrix.output.disclaimer import DISCLAIMER
+from emendrix.output.provenance import EvidenceDigest, evidence_for
 
 __all__ = [
     "DIFF_ONLY_NOTE",
@@ -50,7 +55,7 @@ __all__ = [
     "slug",
 ]
 
-SCHEMA_VERSION: Final = "1.1"
+SCHEMA_VERSION: Final = "1.2"
 """Bumped whenever a consumer would have to change to keep reading these documents.
 
 `1.0` is the first published shape. A field added with a default is *not* a bump; a field
@@ -58,9 +63,16 @@ removed, renamed or re-meant is. `1.1` re-means one: `substantive` stopped cover
 that carries no text on either side, so summing `substantive + date_only` no longer gives
 `touched`. The new `textless` count is the third term of that sum.
 
+`1.2` says a document may carry `evidence`, and that an entry without it is one whose
+provenance is unknown rather than one whose evidence is unchanged. Adding the field alone
+would not have been a bump, since it has a default; the reading of its absence is one, because
+a consumer that took a missing digest for an unmoved text would be wrong about every document
+published before 2026-09-05.
+
 Documents already published say `1.0` and stay readable, which is why the field's type is a
-union of the two. An entry written under `1.0` reads back with `textless` at 0 and the
-`substantive` its own run computed; it is corrected when something rewrites it, not in bulk.
+union of the three. An entry written under `1.0` reads back with `textless` at 0, the
+`substantive` its own run computed and no evidence at all; it is corrected when something
+rewrites it, not in bulk, and no rewrite ever invents a digest for it.
 """
 
 DIFF_ONLY_NOTE: Final = "diff-only mode: the explain stage did not run for this entry"
@@ -128,7 +140,7 @@ class ChangelogEntry(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    schema_version: Literal["1.0", "1.1"] = SCHEMA_VERSION
+    schema_version: Literal["1.0", "1.1", "1.2"] = SCHEMA_VERSION
     disclaimer: str = DISCLAIMER
     act: ActId
     from_version: VersionId
@@ -149,10 +161,29 @@ class ChangelogEntry(BaseModel):
     repairs: tuple[RepairRecord, ...] = Field(
         default=(), description="Repairs applied after this entry was first written, oldest first."
     )
+    evidence: tuple[EvidenceDigest, ...] = Field(
+        default=(),
+        description="What each change's explanation was written about, digested by the run "
+        "that made the call. Empty means provenance unknown, never evidence unchanged.",
+    )
 
     @classmethod
-    def of(cls, delta: EmittedDelta, *, detected_on: date, diff_only: bool = False) -> Self:
-        """Wrap one emitted delta. The only computation is the counts; everything else rides."""
+    def of(
+        cls,
+        delta: EmittedDelta,
+        *,
+        detected_on: date,
+        diff_only: bool = False,
+        evidence: tuple[EvidenceDigest, ...] = (),
+    ) -> Self:
+        """Wrap one emitted delta. The only computation is the counts; everything else rides.
+
+        `evidence` is passed in rather than derived here, and that is the whole safeguard: this
+        constructor is also how a repair puts a committed entry back together, and an entry
+        whose digests it derived from its own stored texts would claim a fact about a call
+        nobody witnessed. A caller that watched the calls supplies them; every other caller
+        leaves the entry saying its provenance is unknown, which is true.
+        """
         return cls(
             act=delta.act,
             from_version=delta.from_version,
@@ -174,6 +205,7 @@ class ChangelogEntry(BaseModel):
             corroboration=delta.corroboration,
             explain=delta.explain,
             gate=delta.gate,
+            evidence=evidence,
         )
 
     @property
@@ -209,9 +241,23 @@ class ChangelogEntry(BaseModel):
 
 
 def entries_for(report: RunReport) -> tuple[ChangelogEntry, ...]:
-    """Every act's transition in one run of the loop, in the report's order."""
+    """Every act's transition in one run of the loop, in the report's order.
+
+    This is the one place an evidence digest is written, because it is the one place holding
+    the changes the explain stage was handed in the run that handed them over: the `Change`
+    objects here are the objects the prompt was built from, not text read back off a document.
+    A delta with no `explain` block had no model stage at all, so there is nothing whose
+    provenance to record and the entry says so by carrying none.
+    """
     return tuple(
-        ChangelogEntry.of(delta, detected_on=report.observed_on) for delta in report.deltas
+        ChangelogEntry.of(
+            delta,
+            detected_on=report.observed_on,
+            evidence=()
+            if delta.explain is None
+            else evidence_for(emitted.change for emitted in delta.changes),
+        )
+        for delta in report.deltas
     )
 
 
