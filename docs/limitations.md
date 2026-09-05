@@ -48,33 +48,38 @@ standing reason a gap in it is counted and stated rather than approximated.
 **An amending act rarely dates its own instructions, and its notice cannot date the ones it
 stages.** Every instruction record carries the date it takes effect where the act's own text
 states one: in the clause itself (*"… is deleted with effect from 26 June 2026;"*), in the
-final-provisions article where that article names the coordinate the clause was drafted at
-(*"Article 1, point (1) … shall apply from 10 January 2025"*), or, failing both, from the act's
-own date of application. Where the text states none, the day is read from the act's own CELLAR
-notice, which publishes the entry-into-force and application dates the Publications Office
-computed from that same text. Measured 2026-09-05 with
+final-provisions article where that article names the coordinates the clause was drafted at
+(*"Article 1, point (1), and Article 2, point (1), shall apply from 10 January 2025"*, both of
+them), or, failing both, from the act's own date of application. Where the text states none, the
+day is read from the act's own CELLAR notice, which publishes the entry-into-force and
+application dates the Publications Office computed from that same text. Measured 2026-09-05 with
 [`../scripts/validation/instruction_effect_dates.py`](../scripts/validation/instruction_effect_dates.py)
 over the 168 amending acts whose packages this installation has fetched and the 4 610
-instructions they yield: one of those four answers is reached for 1 714 of them (0.372), of which
-the notice supplies 1 129; 2 896 carry no date at all, 113 acts are dated in full and 38 yield no
-date anywhere. Over the same acts and the same instructions the four tiers that read the act's
-own words alone reach 585 (0.127), which is what the notice is worth here. It was 317 of 1 734
-(0.183) when the same script last ran over a smaller cache, and that is a different denominator
-rather than the same figure moving.
+instructions they yield: one of those four answers is reached for 1 956 of them (0.424), of which
+the notice supplies 1 346; 2 654 carry no date at all. It read 1 714 (0.372) over the same acts
+and the same instructions before a statement that writes out every point it defers was read to
+all of them, and 585 (0.127) before the notice was read at all. Each is a reading of a different
+rule over one cache, published under its own date, and none is adjusted for another.
 
-Four shapes account for the gap that remains, and each of them withdraws a date rather than
-guessing one. A deferral written as an enumeration (*"The following points of Article 1 … shall
-apply from 27 June 2019:"*) names provisions the reference grammar cannot separate, since it
-keeps only the first coordinate at each depth, so that article carries no date. A deferral
-written as a range (*"Articles 95 to 98"*) names units it does not write, and takes the act's own
-date away from the whole act. An act whose notice publishes several staged application dates
-publishes no act-wide answer either: the annotation on each names the provision that *states*
-the date and never the provisions the date covers, so nothing places it. And a value outside the
-span an act's dates fall in is counted and never read; `1001-01-01`, which 17 of the 295 cached
-notices write for a day a later decision will fix, is the one this meets. 72 of the 168 acts, and
-2 406 of the 4 610 instructions, are of the third class and 8 acts carry a value of the fourth.
-All of it is counted rather than approximated, and an instruction whose date could not be read is
-claimed exactly as it was before the date existed.
+Three shapes account for the gap that remains, and each of them withdraws a date rather than
+guessing one. A deferral whose points are listed somewhere else (*"The following points of
+Article 1 … shall apply from 27 June 2019:"*, whose points are drafted in the sub-list below it,
+half of them with ranges and other acts inside them) names nothing the reader can separate, so
+that article carries no date. A deferral written as a range (*"Articles 95 to 98"*, and
+*"points (11) to (14)"* one level down) names units it does not write; the first takes the act's
+own date away from the whole act and the second from the article it names. And a value outside
+the span an act's dates fall in is counted and never read; `1001-01-01`, which 17 of the 295
+cached notices write for a day a later decision will fix, is the one this meets, on 8 acts.
+
+An act whose notice publishes several staged application dates publishes no act-wide answer on
+the notice's own account: the annotation on each names the provision that *states* the date and
+never the provisions the date covers, so the notice cannot place its own staging. The act's final
+provisions can, and where every dated statement of the act was read in full and the days they
+attribute cover every day the notice staged, the staging is placed and the act's own entry into
+force stands for the rest. 72 of the 168 acts stage, carrying 2 406 of the 4 610 instructions,
+and reading their statements in full places the staging on 4 of them. All of it is counted
+rather than approximated, and an instruction whose date could not be read is claimed exactly as
+it was before the date existed.
 
 **`applies_from` is `unknown` far more often than not.** The dates are machine-tagged but the
 binding that says which provision they govern is prose. It is populated only when the change

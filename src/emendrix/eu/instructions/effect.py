@@ -47,6 +47,7 @@ __all__ = [
     "EffectDateSource",
     "EffectDates",
     "clause_effect_date",
+    "marker_segment",
     "prose",
     "source_location",
 ]
@@ -229,7 +230,7 @@ def source_location(source_ref: str) -> ProvisionLocation | None:
         return None
     segments = [LocationSegment(code=LocationCode.AR, value=article)]
     for token in tokens[2:]:
-        segment = _marker_segment(token)
+        segment = marker_segment(token)
         if segment is None:
             break
         segments.append(segment)
@@ -243,12 +244,15 @@ def _written_date(matched: re.Match[str]) -> date | None:
         return None
 
 
-def _marker_segment(token: str) -> LocationSegment | None:
+def marker_segment(token: str) -> LocationSegment | None:
     """An enumerator as the instruction walk wrote it, in the grammar's own spelling.
 
     Numbered points are `PO 14` and lettered ones `PTA (g)`, which is what `eu/references.py`
     produces for the same enumerator in prose. The markup vocabulary's `PTI` is not used here,
     because a deferral is only ever compared against a coordinate read out of prose.
+
+    Public because `enumerated.py` folds the same enumerator out of a statement that writes
+    out every point it defers, and two notions of what a coordinate is would not compare.
     """
     matched = _MARKER.fullmatch(token)
     if matched is None:

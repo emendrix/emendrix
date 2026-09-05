@@ -222,7 +222,7 @@ Named rather than discovered later; the eval report's disagreement list is the l
   change in the window it shipped in, so the denominator differs, and the right-hand side of both
   pairings the third signal enters is a different set of claims; the question each figure asks is
   unchanged. Both sets are published under their own dates, in
-  `reports/eval/2026-09-04-984347f.md` and `reports/eval/2026-09-05-73d375c.md`, and neither is
+  `reports/eval/2026-09-04-984347f.md` and `reports/eval/2026-09-05-6097989.md`, and neither is
   adjusted for the other. Localisation does not move in any component, pairing the structural
   diff against the metadata and never consulting the instruction parse; classification, the case
   count, `instruction_unread` and both parser counters do not move, and neither does the
@@ -290,7 +290,7 @@ Named rather than discovered later; the eval report's disagreement list is the l
   0 records undated where they reported 2, 26, 1, 6, 4 and 84, because each of those acts has a
   day and none of the 123 records falls outside the window that folded its act in. A re-score on
   the same date supersedes the earlier one, so `reports/eval/2026-09-05-8cb6d5f.md` is replaced by
-  `reports/eval/2026-09-05-73d375c.md` rather than joined by it, and the two carry the same
+  `reports/eval/2026-09-05-6097989.md` rather than joined by it, and the two carry the same
   figures.
   **Over the published corpus the tier withdraws nothing, and that is the measurement.** Measured
   2026-09-05 over the same clone of the corpus as it stood on 2026-08-14, 369 events and 4 588
@@ -319,6 +319,65 @@ Named rather than discovered later; the eval report's disagreement list is the l
   already published keep the text they were written with and are corrected forward, not rewritten,
   so the note on every committed payload is stale by its undated count as well, and the pass that
   corrects them will rewrite entries whose claims did not move.
+- **A deferral that writes out every point it defers is read to all of them, since 2026-09-05.**
+  An amending act's final provisions state which of its own instructions take effect later, and
+  `32021R2117` Article 6 states four such sentences that between them name twenty coordinates, each
+  one written out: *"Article 1, points (8)(d)(i), (8)(d)(iii), (10)(a)(ii) and (38), shall apply
+  from 1 January 2021"*. The reference grammar keeps the first coordinate at each nesting depth,
+  which is right for an instruction clause pointing at one provision and wrong for a sentence
+  listing several, so that statement resolved to `AR 1 PO 8` and the nineteen others were
+  discarded. The reader then had to guard the whole of Article 1 against its own default, because
+  it could no longer say which part of that article the date covered. **The defect was never the
+  twenty points; it was the blast radius of the doubt.** Article 1 of that act drafts 200
+  instructions and defers 19 of them, and guarding the article took the date away from all 200. A
+  new grammar reads the subject of such a statement as the list it is, strictly: every fragment
+  must parse, nothing may be left over, and a range (*"points (11) to (14)"*), a second act
+  (*"as regards Article 104a of Regulation (EU) No 575/2013"*), a description
+  (*"containing the provisions on own funds"*) or a list written in the sub-list below
+  (*"The following points of Article 1 … :"*) is refused entirely and read exactly as it was
+  before. Nothing is resolved optimistically: this removes an ambiguity rather than starting to
+  guess at one, and every refusal that refused before still refuses, each with a test.
+  **The staged notice is the second half of it.** An act whose notice dates part of it separately
+  publishes no act-wide answer on the notice's own account, because the notice never says which
+  part; that rule was published on 2026-09-05 and stands. It is not the only document that can
+  say. Where every dated statement of the act was read in full and the days those statements
+  attribute to coordinates cover every day the notice staged, the staging is placed and the act's
+  own entry into force stands for the rest. Only a statement read in full may place a day: one
+  read to its first coordinate has left the reader with the same not-knowing the notice has, and
+  two of those do not make an answer. Over the disk cache as it stood on 2026-09-05, 4 of the 72
+  staged acts are placed this way, `32021R2117` among them at 7 December 2021.
+  **The coverage figure moves and it is not the earlier one improving.** Measured 2026-09-05 with
+  `scripts/validation/instruction_effect_dates.py` over the same 168 amending acts and the same
+  4 610 instructions the notice tier was measured over that morning, the tiers date 1 956 (0.424)
+  where they dated 1 714 (0.372), the notice supplying 1 346 where it supplied 1 129. That is one
+  cache read under two rules, not one number improving; both are published under their own dates
+  and neither is adjusted for the other. Of the six acts whose claims repeat across windows,
+  `32021R2117` reads 1.000 where it read 0.078 and `32019R2033` reads 1.000 where it read 0.776;
+  `32019R0876` (0.023), `32023R2845` (0.106), `32024R2809` (0.091) and `32019R0834` (0.000) do not
+  move at all, each of them stating a deferral this grammar refuses, and that is published as
+  measured rather than widened away.
+  **No published evaluation figure moves.** Scored offline from the fixtures, the disputed rate,
+  `metadata_only_units`, both pairings the third signal enters, localisation, classification,
+  `instruction_unread`, the parser counters, the model layer and the flagship all read exactly
+  what they read before, and no floor was touched. What moved is one signal note: `32024R1860`
+  now reports 0 records undated where it reported 13, its Article 3 deferring both the points it
+  names instead of the first, and the day its notice publishes reaching the other 13. A re-score
+  on the same date supersedes the earlier one, so `reports/eval/2026-09-05-73d375c.md` is replaced
+  by `reports/eval/2026-09-05-6097989.md` rather than joined by it, and the two carry the same
+  figures.
+  **The corpus blast radius was re-measured, and the script that measures it is now committed.**
+  `scripts/validation/instruction_claim_scoping.py` takes each event's window from the payload's
+  own version identifiers and each amending act from the payload's own instruction claims, counts
+  the top-level units the third signal alone claimed, and asks which of them the window would
+  exclude today. Run against a clone of the published corpus at `efd21ab`, the corpus as it stood
+  on 2026-08-14, it reproduces **151 of 1 309 (0.115) across 76 events** on the code as it stood
+  before this change, which is the second of the two readings published on 2026-09-05 and not the
+  first. The first, 85 across 13 events, was the same question over a much smaller set of events
+  the measurement of the day could resolve; it stands under its own date and is not corrected
+  here. With the deferral read in full the same script reads **164 of 1 309 (0.125) across 80
+  events**, published under its own date beside both. Changelogs already published keep the text
+  they were written with and are corrected forward, not rewritten, so a page served today may
+  still show a claim in a window its act dates elsewhere.
 - **A touched unit carrying no text was counted substantive, and is counted in its own bucket
   since 2026-09-05.** The corroborator appends one change for every unit another signal named and
   the structural diff never saw, and the diff is the only signal carrying text, so such a change

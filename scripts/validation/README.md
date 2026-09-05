@@ -12,17 +12,34 @@ assertions. It is **not** production code and nothing under `src/emendrix/` impo
 `trace.py` fetches with a 3-second delay and caches every response under `.cache/` (gitignored), so
 a second run of any command below is offline and free.
 
-`instruction_effect_dates.py` is the one script here that does import the package, because what it
-measures *is* the package: how often an amending act says when its instructions take effect
-(`src/emendrix/eu/instructions/effect.py`, and the notice reader beside it). It reads through the
-same client, the same composition root and the same disk cache the loop uses, writes nothing, and
-is offline unless `--fetch` is passed. Its figures are quoted in
-[`../../docs/limitations.md`](../../docs/limitations.md):
+Two scripts here do import the package, because what they measure *is* the package. Both read
+through the same client, the same composition root and the same disk cache the loop uses, write
+nothing, call no model and are offline unless `--fetch` is passed.
+
+`instruction_effect_dates.py` measures how often an amending act says when its instructions take
+effect (`src/emendrix/eu/instructions/effect.py`, and the two readers beside it). Its figures are
+quoted in [`../../docs/limitations.md`](../../docs/limitations.md):
 
 ```bash
 uv run python scripts/validation/instruction_effect_dates.py            # every cached act
 uv run python scripts/validation/instruction_effect_dates.py --fetch    # and the rest
 uv run python scripts/validation/instruction_effect_dates.py --verbose 32019R2033
+uv run python scripts/validation/instruction_effect_dates.py --markup 32021R2117
+```
+
+`--markup` prints an act's final-provisions articles as the package holds them and reads nothing
+else. `tests/fixtures/eu/celex_32021R2117.article6.xml` is that command's output, redirected, so
+the markup a test asserts against was never retyped.
+
+`instruction_claim_scoping.py` measures the other end: how many of the claims already published
+in the changelog corpus the consolidation window takes back. It wants a clone of that corpus,
+which is a separate repository and is never committed here, so a reading is dated by the commit
+of the clone it was taken over:
+
+```bash
+git clone https://github.com/emendrix/changelogs /tmp/changelogs
+uv run python scripts/validation/instruction_claim_scoping.py /tmp/changelogs
+uv run python scripts/validation/instruction_claim_scoping.py /tmp/changelogs --verbose
 ```
 
 ## Commands behind the committed reports

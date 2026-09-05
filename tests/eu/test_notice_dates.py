@@ -286,7 +286,10 @@ def test_a_default_the_act_s_own_text_withdrew_stays_withdrawn() -> None:
         "<DATE ISO='20210628'>28 June 2021</DATE>.</ALINEA><ALINEA>Articles 95 to 98 of this "
         "Regulation shall apply from <DATE ISO='20260626'>26 June 2026</DATE>.</ALINEA></ARTICLE>"
     )
-    found = read_effect_dates([article], published=date(2019, 12, 25))
+    found = read_effect_dates(
+        [article],
+        dates=ActDates(entries=(NoticeDate(value=date(2019, 12, 25), kind=DateKind.APPLICATION),)),
+    )
     assert found.default is None
     assert found.unread == 1
     assert found.published == date(2019, 12, 25)

@@ -17,6 +17,11 @@ Usage, from the repository root::
     uv run python scripts/validation/instruction_effect_dates.py --fetch
     uv run python scripts/validation/instruction_effect_dates.py 32019R2033 32024R1860
     uv run python scripts/validation/instruction_effect_dates.py --verbose 32019R2033
+    uv run python scripts/validation/instruction_effect_dates.py --markup 32021R2117
+
+`--markup` prints the act's final-provisions articles as the package holds them, one element
+per line, and reads nothing else. It is how a statement shape gets into `tests/fixtures/eu/`
+without being retyped: the file committed there is this command's output, redirected.
 
 With no act named the population is every act whose tree notice the disk cache already holds,
 which is the set this machine has fetched through the loop, the eval corpus and the repair
@@ -38,9 +43,12 @@ import sys
 from collections import Counter
 from datetime import date
 from pathlib import Path
+from xml.etree.ElementTree import tostring
 
 from emendrix.eu.cache import DiskResponseCache, FixtureMissing, default_cache_dir
 from emendrix.eu.cellar import CellarClient
+from emendrix.eu.formex.documents import act_documents, documents_of, unit_elements
+from emendrix.eu.formex.model import CoverageCounter
 from emendrix.eu.http import CellarHttp
 from emendrix.eu.identifiers import Celex
 from emendrix.eu.instructions import (
@@ -49,6 +57,8 @@ from emendrix.eu.instructions import (
     InstructionParse,
     parse_instructions,
 )
+from emendrix.eu.instructions.effect import prose
+from emendrix.eu.instructions.final_provisions import FINAL_PROVISIONS
 from emendrix.eu.packages import FormexPackage
 from emendrix.eu.signals import act_dates
 
@@ -78,6 +88,21 @@ def cached_acts(root: Path) -> list[str]:
         if matched is not None:
             found.add(matched.group(1))
     return sorted(found)
+
+
+def markup(client: CellarClient, key: str) -> int:
+    """Print the act's final-provisions articles as the package holds them, and nothing else."""
+    celex = Celex.parse(key)
+    fetched = client.fetch_formex(celex, celex.version, allow_original_fallback=False)
+    if not isinstance(fetched, FormexPackage):
+        print(f"{key}: no readable text ({fetched.state})", file=sys.stderr)
+        return 1
+    documents = act_documents(fetched, CoverageCounter())
+    for document in documents_of(documents):
+        for unit, is_annex in unit_elements(document):
+            if not is_annex and FINAL_PROVISIONS.search(prose(unit)):
+                print(tostring(unit, encoding="unicode"))
+    return 0
 
 
 def read(client: CellarClient, key: str) -> tuple[InstructionParse, ActDates] | str:
@@ -121,6 +146,9 @@ def main() -> int:
     parser.add_argument("acts", nargs="*", help="CELEX identifiers; default: every cached act")
     parser.add_argument("--fetch", action="store_true", help="allow network for uncached packages")
     parser.add_argument("--verbose", action="store_true", help="print every record")
+    parser.add_argument(
+        "--markup", action="store_true", help="print the final-provisions articles and stop"
+    )
     args = parser.parse_args()
 
     root = default_cache_dir() / "cellar"
@@ -128,6 +156,11 @@ def main() -> int:
     cache = DiskResponseCache(root) if args.fetch else OfflineDiskCache(root)
     http = CellarHttp(cache=cache)
     client = CellarClient(http, observed_on=OBSERVED_ON)
+
+    if args.markup:
+        failed = sum(markup(client, key) for key in keys)
+        http.close()
+        return 1 if failed else 0
 
     tiers: Counter[str] = Counter()
     skipped: Counter[str] = Counter()

@@ -521,4 +521,18 @@ six signal notes, which no page prints. `sitemap.xml` did not move either, its `
 the report's date and the re-score carrying the same one. Every other page, both feeds,
 `search-index.json`, `robots.txt`, the stylesheet, the script and both images are byte-identical,
 no `<id>`, permalink or anchor moved, so nothing renotifies, and no size pin moved.
+
+**2026-09-05, later again: an enumerated deferral is read to every point it names.** One file
+moved, `methodology/index.html`, by one line, and it is the same line and the same reason as
+the entry above: the provenance line under the metrics table follows the newest report, and the
+report is a re-score at a new revision. **Not one measured figure on the page moved**, because
+not one moved in the report: the disputed cell, both cross-check cells, localisation,
+classification and every model-layer cell read exactly what they read before. Reading a
+deferral in full dates 242 more instruction records across the cache, and inside the committed
+corpus it reaches one act, `32024R1860`, whose thirteen claimed records now all carry a day and
+all fall in the window that folded the act in; what changed in the report is that one act's
+signal note, which no page prints. `sitemap.xml` did not move either, its `lastmod` being the
+report's date and the re-score carrying the same one. Every other page, both feeds,
+`search-index.json`, `robots.txt`, the stylesheet, the script and both images are byte-identical,
+no `<id>`, permalink or anchor moved, so nothing renotifies, and no size pin moved.
 """

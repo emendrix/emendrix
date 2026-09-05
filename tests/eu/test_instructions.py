@@ -394,17 +394,37 @@ def test_the_deferred_point_of_the_2024_amender_carries_its_tagged_date(
     assert deferred[0].effect_source is EffectDateSource.FINAL_PROVISIONS
 
 
+def test_both_points_of_one_deferral_are_deferred_and_not_only_the_first(
+    client: CellarClient,
+) -> None:
+    """*"Article 1, point (1), and Article 2, point (1), shall apply from 10 January 2025"*.
+
+    Two coordinates, written out, and since 2026-09-05 both of them are read: the reference
+    grammar keeps the first coordinate at each depth, which is right for a clause pointing at
+    one provision and wrong for a sentence listing several. `32024R1860` amends two acts in
+    those two articles and defers one point of each.
+    """
+    parse = parse_instructions(package(client, MDR_2024_AMENDER, MDR_2024_AMENDER))
+    deferred = [
+        record
+        for record in parse.records
+        if record.effect_source is EffectDateSource.FINAL_PROVISIONS
+    ]
+    assert sorted(record.source_ref for record in deferred) == ["AR 001 (1)", "AR 002 (1)"]
+    assert {record.effect_date for record in deferred} == {date(2025, 1, 10)}
+
+
 def test_the_instructions_that_article_does_not_name_carry_no_date(
     client: CellarClient,
 ) -> None:
     """The counted gap: `32024R1860` enters into force on the day of its publication, which is
-    a day its own text never writes, so every instruction but the deferred one is undated.
+    a day its own text never writes, so every instruction but the two deferred ones is undated.
 
     What its notice publishes is a separate read and is asserted in `test_notice_dates.py`;
     this parse is handed none, which is the act's own text and nothing else."""
     parse = parse_instructions(package(client, MDR_2024_AMENDER, MDR_2024_AMENDER))
-    assert parse.dated == 1
-    assert parse.undated == parse.matched - 1
+    assert parse.dated == 2
+    assert parse.undated == parse.matched - 2
     undated = [record for record in parse.records if record.effect_date is None]
     assert {record.effect_source for record in undated} == {EffectDateSource.UNREAD}
 

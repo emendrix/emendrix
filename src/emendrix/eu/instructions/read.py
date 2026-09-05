@@ -81,9 +81,7 @@ def parse_instructions(
         if not is_annex
     ]
     scoped = any(target is not None for _, target in articles)
-    effect = read_effect_dates(
-        (unit for unit, _ in articles), published=None if dates is None else dates.default
-    )
+    effect = read_effect_dates((unit for unit, _ in articles), dates=dates)
     reader = _Reader(package, scoped=scoped, effect=effect)
     for unit, target in articles:
         reader.read_article(unit, target)

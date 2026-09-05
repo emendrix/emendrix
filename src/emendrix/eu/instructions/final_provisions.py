@@ -7,25 +7,35 @@ is a tagged attribute and the deferred instructions are named by coordinate, whi
 reference grammar resolves to `AR 1 PO 1`, the same coordinate the instruction walk writes as
 `AR 001 (1)`. Reading that as a sentence would lose the tag and gain a date format problem.
 
-Three rules carry the safety of the whole read, and all three answer *"nothing"* rather than
+Four rules carry the safety of the whole read, and each answers *"nothing"* rather than
 guessing:
 
 - **The article has to be speaking about the act itself.** A final-provisions article says
   *"This Regulation shall apply from …"*; a scope article says *"This Regulation shall apply to
   intermediary services"* and an instruction article says what another act shall do, in that
   act's own words. Only the first is read, and quoted text is excluded everywhere.
-- **A deferral scopes only the coordinate the grammar resolved.** The grammar keeps the first
-  coordinate at each depth, so *"Article 1, point (1), and Article 2, point (1)"* yields
-  `AR 1 PO 1` and says nothing about Article 2.
-- **Every other unit a deferral names is guarded rather than dated.** Article 2 above carries
-  no date at all, and neither does the whole of Article 1 where the deferral is written as an
-  enumeration the grammar cannot separate (*"The following points of Article 1 … shall apply
-  from 27 June 2019:"*). The act's default would be the wrong answer for part of what those
-  articles drafted and this cannot say which part, so it answers nothing and those instructions
-  are claimed exactly as they were before.
+- **A statement that writes out every point it defers is read to all of them.** The sentence
+  above names two coordinates and both are deferred; `32021R2117` Article 6 names twenty over
+  four sentences and all twenty are. That grammar is `enumerated.py`, and it refuses anything
+  it does not cover in full, which leaves the two rules below in charge of the rest.
+- **Otherwise a deferral scopes only the coordinate the reference grammar resolved**, which
+  keeps the first coordinate at each depth.
+- **Every other unit such a deferral names is guarded rather than dated.** The whole of
+  Article 1 carries no date where the deferral is written as an enumeration this cannot
+  separate (*"The following points of Article 1 … shall apply from 27 June 2019:"*, whose
+  points are listed in a sub-list, half of them with ranges and other acts in them). The act's
+  default would be the wrong answer for part of what that article drafted and this cannot say
+  which part, so it answers nothing and those instructions are claimed exactly as they were
+  before.
 
 The act's default itself is withdrawn only where a dated statement names no unit this can read
 at all, which is doubt with nowhere narrower to put it.
+
+The act's *notice* has its own act-wide answer (`notice_dates.py`), withheld wherever the
+notice dates part of the act separately, because the notice never says which part. This reader
+is the one document that can say: where every dated statement of the act was read in full and
+the days they attribute cover every day the notice staged, the staging is placed and the
+notice's answer stands for the rest. Anything read in part leaves that answer where it was.
 """
 
 from __future__ import annotations
@@ -39,9 +49,11 @@ from xml.etree.ElementTree import Element
 from emendrix.core import LocationCode, LocationSegment, ProvisionLocation
 from emendrix.eu.dates import compact_date
 from emendrix.eu.instructions.effect import QUOTED, Deferral, EffectDates, prose
+from emendrix.eu.instructions.enumerated import read_enumerated
+from emendrix.eu.instructions.notice_dates import ActDates
 from emendrix.eu.references import parse_reference
 
-__all__ = ["read_effect_dates"]
+__all__ = ["FINAL_PROVISIONS", "read_effect_dates"]
 
 _ACT_WIDE: Final = re.compile(
     r"\b(?:this (?:regulation|directive|decision)|it) shall (?:apply|take effect)\s+"
@@ -55,7 +67,7 @@ _ACT_WIDE_FORCE: Final = re.compile(
 )
 """The weaker act-wide answer, read only where the act names no date of application."""
 
-_FINAL_PROVISIONS: Final = re.compile(
+FINAL_PROVISIONS: Final = re.compile(
     f"{_ACT_WIDE.pattern}|{_ACT_WIDE_FORCE.pattern}", re.IGNORECASE
 )
 """What makes an article the final-provisions one: it says when the act itself applies.
@@ -92,17 +104,16 @@ _RANGE: Final = re.compile(r"\b(?:Articles?|Annexes?)\s+(?:[IVXLCDM]+|\d+[a-z]?)
 _TOP_LEVEL: Final = frozenset({LocationCode.AR, LocationCode.AN, LocationCode.APP})
 
 
-def read_effect_dates(articles: Iterable[Element], *, published: date | None = None) -> EffectDates:
+def read_effect_dates(articles: Iterable[Element], *, dates: ActDates | None = None) -> EffectDates:
     """What the act's final provisions say, for the act and for the coordinates they name.
 
-    `published` is the day the act's own notice gives for the act as a whole
-    (`notice_dates.py`), a value passed down from the composition root because the notice is a
-    different document. It rides through untouched: the tier order that decides when it is
-    read at all is `effect.py`, and nothing here consults it.
+    `dates` is the act's own CELLAR notice (`notice_dates.py`), a value passed down from the
+    composition root because the notice is a different document. Only its act-wide answer is
+    taken, and the tier order that decides when that answer is read at all is `effect.py`.
     """
-    reader = _Reader(published=published)
+    reader = _Reader(dates=dates)
     for article in articles:
-        if _FINAL_PROVISIONS.search(prose(article)):
+        if FINAL_PROVISIONS.search(prose(article)):
             reader.read(article)
     return reader.result()
 
@@ -110,12 +121,14 @@ def read_effect_dates(articles: Iterable[Element], *, published: date | None = N
 class _Reader:
     """The walk: the act's own dates, one dated statement at a time."""
 
-    def __init__(self, *, published: date | None = None) -> None:
-        self.published = published
+    def __init__(self, *, dates: ActDates | None = None) -> None:
+        self.dates = dates
         self.application: date | None = None
         self.entry: date | None = None
         self.deferrals: list[Deferral] = []
         self.guarded: list[ProvisionLocation] = []
+        self.placed: set[date] = set()
+        self.partial = 0
         self.unread = 0
 
     def read(self, article: Element) -> None:
@@ -125,26 +138,58 @@ class _Reader:
     def result(self) -> EffectDates:
         return EffectDates(
             default=None if self.unread else self.application or self.entry,
-            published=self.published,
+            published=self._published(),
             deferrals=tuple(self.deferrals),
             guarded=tuple(dict.fromkeys(self.guarded)),
             unread=self.unread,
         )
 
-    def _read(self, text: str, dates: set[date]) -> None:
-        """One dated statement: the act's own date, a deferral, or a doubt about some units."""
+    def _published(self) -> date | None:
+        """The act-wide day its notice publishes, where the notice can place what it staged.
+
+        A notice that dates part of an act separately publishes no act-wide answer on its own,
+        because it never says which part. Where this reader read every dated statement of the
+        act in full, it does say: each staged day is the day of a deferral written out here,
+        so what is left is the rest of the act and the notice's own answer covers it.
+
+        Only a statement read in full may place a day. A statement read to its first
+        coordinate has left the reader not knowing what else that day covers, which is the
+        same not-knowing the notice has, and two of those do not make an answer.
+        """
+        if self.dates is None:
+            return None
+        if self.unread or self.guarded or self.partial:
+            return self.dates.default
+        return self.dates.default_beside(self.placed)
+
+    def _read(self, text: str, tagged: set[date]) -> None:
+        """One dated statement: the act's own date, a deferral, or a doubt about some units.
+
+        `tagged` is what the statement's own `DATE` elements say, not the act's notice.
+        """
         if _RANGE.search(text):
             # "Articles 95 to 98" names two units and means four. Nothing here can say which
             # they are, so the statement dates nothing and takes the act's default with it.
             self.unread += 1
             return
-        stated = dates.pop() if len(dates) == 1 else None
+        stated = tagged.pop() if len(tagged) == 1 else None
         named = _named_units(text)
         if _ACT_WIDE.search(text) or _ACT_WIDE_FORCE.search(text):
             self._act_wide(text, stated, named)
             return
-        if not _DEFERRAL.search(text):
+        deferral = _DEFERRAL.search(text)
+        if deferral is None:
             return
+        if stated is not None:
+            listed = read_enumerated(text[: deferral.start()])
+            if listed is not None:
+                # Every point the statement defers is written out in it, so there is nothing
+                # left to doubt: the rest of the units it names keep the act's own default.
+                self.deferrals.extend(
+                    Deferral(location=where, effective=stated) for where in listed
+                )
+                self.placed.add(stated)
+                return
         where = parse_reference(text)
         deferred = where is not None and where.segments[0].code in _TOP_LEVEL
         container = where.top_level if where is not None and deferred else None
@@ -160,6 +205,7 @@ class _Reader:
                 return
         if where is not None:
             self.deferrals.append(Deferral(location=where, effective=stated))
+            self.partial += 1
 
     def _act_wide(self, text: str, stated: date | None, named: list[ProvisionLocation]) -> None:
         """The act speaking about itself, and any exceptions it names in the same breath.

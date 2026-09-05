@@ -121,11 +121,16 @@ def test_the_signal_note_says_what_the_window_left_out_and_what_it_could_not_dat
     source: EuSignalSource,
 ) -> None:
     """Both counts ride in the payload, so an empty signal and a scoped one are told apart
-    without leaving it. The undated thirteen are claimed, which is why the note names them."""
+    without leaving it.
+
+    Since 2026-09-05 this act has a day for every record: its final provisions write out both
+    the points they defer, so nothing about its own dates is left unattributed and its notice's
+    entry into force stands for the rest. The undated count is the zero it measured.
+    """
     _, instructions = both(source, "02017R0745-20230320", "02017R0745-20240709")
     assert instructions.note == (
         "32024R1860, 1.000 of its instruction clauses read, "
-        "1 dated outside the window, 13 undated and claimed"
+        "1 dated outside the window, 0 undated and claimed"
     )
 
 

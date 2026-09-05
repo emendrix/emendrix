@@ -25,9 +25,14 @@ installation's disk cache then held, and both load-bearing:
    covers.** `32019R0876` carries seven, one of them the sentinel `1001-01-01` that 17 of the
    cached notices write for a day a later decision will fix. Picking the earliest or the latest
    would be the guess the two-clocks rule forbids, so an act carrying any entry this cannot
-   place carries **no** act-wide answer at all and is counted. An instruction left undated is
-   claimed exactly as it was before this module existed, which is the safe direction:
+   place carries **no** act-wide answer of its own and is counted. An instruction left undated
+   is claimed exactly as it was before this module existed, which is the safe direction:
    under-scoping leaves a true claim in place, over-scoping deletes one.
+
+   A second reader can place what this one cannot. The act's final provisions name the
+   coordinates they defer and the day each is deferred to, and where those days cover every
+   day the notice staged, the staging is placed and what is left is the act as a whole:
+   `default_beside` is that, and `default` is it with nothing placed.
 
 A value outside `PLAUSIBLE` is a counted gap and never a date. `1001-01-01` is not a day any
 act applies from, and the test is the value's own implausibility rather than that literal.
@@ -36,6 +41,7 @@ act applies from, and the test is the value's own implausibility rather than tha
 from __future__ import annotations
 
 import re
+from collections.abc import Collection
 from datetime import date
 from enum import StrEnum
 from typing import Final
@@ -126,6 +132,11 @@ class ActDates(BaseModel):
         return tuple(entry for entry in self.entries if not entry.placed)
 
     @property
+    def staged(self) -> tuple[NoticeDate, ...]:
+        """Entries that date part of the act. The notice never says which part."""
+        return tuple(entry for entry in self.entries if entry.staged)
+
+    @property
     def default(self) -> date | None:
         """The one day this notice says the whole act took effect, or nothing at all.
 
@@ -134,7 +145,25 @@ class ActDates(BaseModel):
         own prose. Anything the reader could not place, an implausible value included, takes
         the answer away rather than being reasoned around.
         """
-        if self.implausible or self.unplaced:
+        return self.default_beside(())
+
+    def default_beside(self, placed: Collection[date]) -> date | None:
+        """The same answer, given days a *second* reader has already attributed to coordinates.
+
+        A staged entry withholds the act-wide answer because this notice cannot say what the
+        entry covers. It is not the only document that can say: the act's own final provisions
+        name the coordinates they defer, and where they name every day this notice staged, the
+        staging is placed and what is left is the act as a whole. `placed` is that second
+        reader's days, and an empty one is the notice speaking alone.
+
+        An entry of a kind this module does not know withholds the answer either way. Nothing
+        placed it, and a caller cannot place a date whose meaning is unread.
+        """
+        if self.implausible:
+            return None
+        if any(entry.value not in placed for entry in self.staged):
+            return None
+        if any(not entry.placed and not entry.staged for entry in self.entries):
             return None
         return self._sole(DateKind.APPLICATION) or self._sole(DateKind.ENTRY_INTO_FORCE)
 

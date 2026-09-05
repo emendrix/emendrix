@@ -1,6 +1,6 @@
 {
   "run_date": "2026-09-05",
-  "revision": "73d375c",
+  "revision": "6097989",
   "corpus_built_on": "2026-08-06",
   "corpus_transitions_possible": 70,
   "corpus_coverage": 0.2571428571428571,
@@ -3274,7 +3274,7 @@
               "AR 122",
               "AR 123"
             ],
-            "note": "32024R1860: 13 instructions read, 0 unread, 1 dated outside the window, 13 undated and claimed",
+            "note": "32024R1860: 13 instructions read, 0 unread, 1 dated outside the window, 0 undated and claimed",
             "claims": [
               {
                 "location": "AR 34 PA 1",
