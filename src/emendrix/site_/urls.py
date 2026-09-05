@@ -37,6 +37,7 @@ __all__ = [
     "amendment_href",
     "amendments_href",
     "change_anchor",
+    "dates_href",
     "depth_of",
     "domain_anchor",
     "entry_anchors",
@@ -176,6 +177,16 @@ def shared_path(entry_keys: Iterable[str], canonicals: Iterable[str]) -> tuple[s
         if found in keys:
             return found, canonical
     return None
+
+
+def dates_href() -> str:
+    """The cross-act list of the dates the amended texts name, relative to the site root.
+
+    A function rather than a literal for the reason `amendments_href` is one: the builder, the
+    header bar and the sitemap all need the string, and three spellings of one address is how a
+    page comes to link somewhere the tree never wrote.
+    """
+    return "dates/"
 
 
 def amendments_href() -> str:

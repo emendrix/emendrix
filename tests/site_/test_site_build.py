@@ -88,6 +88,7 @@ def test_the_command_writes_every_surface(tmp_path: Path, changelog_repo: Path) 
         "search-index.json",
         "sitemap.xml",
         "acts/index.html",
+        "dates/index.html",
         "methodology/index.html",
         "about/index.html",
         "feeds/index.html",

@@ -8,7 +8,9 @@ on the canonical string would get wrong at `AR 10`.
 
 The dates the same pass gathers get a third input: neither corpus writes a date, so the two
 above are what proves the empty case, and the present case is a real change with dates patched
-onto it.
+onto it. The cross-act fold over that same input is asserted here rather than beside the page
+that renders it, because it is a reading of the committed record and not a rendering decision;
+what the page does with it is `test_dates_page.py`.
 """
 
 from __future__ import annotations
@@ -23,7 +25,7 @@ from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
-from emendrix.site_.history import dates_named, histories
+from emendrix.site_.history import ahead, cross_act_mentions, dates_named, histories, passed_within
 from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
 from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.texts import text_blocks
@@ -188,3 +190,26 @@ def test_an_act_whose_changes_moved_no_date_names_none() -> None:
     most committed changes move no date and their acts get no list."""
     for act in (_toy(), _scaled()):
         assert dates_named(act) == ()
+
+
+def test_the_cross_act_fold_carries_every_mention_with_its_act() -> None:
+    """One act's list read across the whole site: nothing is merged and nothing is dropped."""
+    site = _dated()
+    found = cross_act_mentions(site)
+    assert [(one.act.act.key, one.mention.on) for one in found] == [
+        ("house-rules", date(2026, 8, 2)),
+        ("house-rules", date(2027, 12, 2)),
+        ("house-rules", date(2027, 12, 2)),
+    ]
+    assert all(one.superseded_by is None for one in found)
+
+
+def test_ahead_is_strict_and_the_recent_window_is_inclusive_at_both_ends() -> None:
+    """A date equal to the build date has arrived, so it is behind it and inside the window."""
+    found = cross_act_mentions(_dated())
+    assert [one.mention.on for one in ahead(found, date(2026, 8, 2))] == [date(2027, 12, 2)] * 2
+    assert [one.mention.on for one in ahead(found, date(2027, 12, 2))] == []
+    assert [one.mention.on for one in passed_within(found, date(2026, 8, 2), 1)] == [
+        date(2026, 8, 2)
+    ]
+    assert passed_within(found, date(2026, 8, 1), 1) == ()

@@ -223,7 +223,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert banned not in text, f"{name}: {banned}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 42036)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 42078)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -324,7 +324,13 @@ page nothing else moved at all.
 16 bytes heavier on 2026-09-05, when the count line started printing the units carrying no text
 on either side as their own bucket. It is one clause of the facts line, `0 with no text`, and
 this event has none of them: the three-way split is what moved, not any number on this page.
-Nothing else on it moved."""
+Nothing else on it moved.
+
+42 bytes heavier on 2026-09-05, later the same day, when the header bar gained a sixth link, to
+the cross-act list of the dates the amended texts name that have not arrived yet. That is the
+whole of the move on this page, `<a href="../../../dates/">Dates ahead</a> ` at this depth, and
+every page in the tree paid the same link at whatever its own depth costs. No measured figure
+moved with it and nothing below the header did."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

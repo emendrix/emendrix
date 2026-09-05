@@ -16,6 +16,7 @@ acts/<slug>/<key>/index.html    one page per event: the changes and the verbatim
 acts/<slug>/<prov>/index.html   one page per touched provision: its history, newest first
 amendments/index.html           every instrument a committed event names, newest first
 amendments/<slug>/index.html    one page per instrument: every watched act it amended
+dates/index.html                every date the amended texts name that is still ahead
 methodology/index.html          what the numbers mean
 about/index.html                who runs the site, and what it does on the reader's machine
 feeds/index.html                what feeds exist
@@ -71,6 +72,7 @@ from emendrix.site_.pages.act import render_act
 from emendrix.site_.pages.acts_index import render_acts_index
 from emendrix.site_.pages.amendment import render_amendment_page
 from emendrix.site_.pages.amendments_index import render_amendments_index
+from emendrix.site_.pages.dates import render_dates
 from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.home import render_home
 from emendrix.site_.pages.methodology import render_methodology
@@ -83,6 +85,7 @@ from emendrix.site_.urls import (
     act_href,
     amendment_href,
     amendments_href,
+    dates_href,
     event_href,
     provision_href,
 )
@@ -139,6 +142,7 @@ def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
         INDEX: search_index_json(site),
         "acts/index.html": render_acts_index(site),
         f"{amendments_href()}index.html": render_amendments_index(site),
+        f"{dates_href()}index.html": render_dates(site),
         "methodology/index.html": render_methodology(site),
         "about/index.html": render_about(site),
         "feeds/index.html": render_feeds_page(site),

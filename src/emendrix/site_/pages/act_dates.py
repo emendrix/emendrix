@@ -29,7 +29,7 @@ from __future__ import annotations
 from typing import Final
 
 from emendrix.site_.clocks import event_date
-from emendrix.site_.history import DateMention
+from emendrix.site_.history import IS_NOT_A_SCHEDULE, MOVED, DateMention
 from emendrix.site_.inputs import ActSite
 from emendrix.site_.markup import Html, count, escape
 from emendrix.site_.urls import event_href, provision_href
@@ -45,15 +45,15 @@ LINK: Final = "Dates named"
 
 LEDE: Final = (
     "Every date an amendment added to or removed from a provision's text, as the parser read "
-    "it, with the provision and the event. This is a list of dates the text contains. Whether "
-    'a provision applies from one of them is stated for each change under "applies from", and '
-    "nowhere else."
+    f"it, with the provision and the event. {IS_NOT_A_SCHEDULE}"
 )
 """What the list is and what it is not, above the list rather than under it.
 
-Two sentences of it are the disclaimer: the site publishes the dates a machine read out of the
-text, and reading a date as the day an obligation starts is the inference `CLAUDE.md`
-§"Two clocks" forbids. A reader who wants that answer is pointed at the one line that gives it.
+The disclaimer half is `history.IS_NOT_A_SCHEDULE`, shared with the cross-act list rather than
+spelled here: the site publishes the dates a machine read out of the text, and reading a date
+as the day something starts to be required is the inference `CLAUDE.md` §"Two clocks" forbids.
+A reader who wants that answer is pointed at the one line that gives it, on both surfaces, in
+one wording.
 """
 
 FOLD_ABOVE: Final = 12
@@ -65,9 +65,6 @@ act whose annexes have been renumbered for a decade carries scores, and a sectio
 the timeline off the page would be a list nobody asked for standing in front of the one they
 did. One number, with the count in the summary so the fold says how much it holds.
 """
-
-_MOVED: Final = {True: "added to", False: "removed from"}
-"""Which direction the date moved, in the two words `DateMention.added` distinguishes."""
 
 
 def dates_section(act: ActSite, mentions: tuple[DateMention, ...], root: str) -> list[Html]:
@@ -83,7 +80,7 @@ def dates_section(act: ActSite, mentions: tuple[DateMention, ...], root: str) ->
     rows = [
         Html(
             f'<li><span class="on">{escape(one.on.isoformat())}</span> '
-            f"{escape(_MOVED[one.added])} "
+            f"{escape(MOVED[one.added])} "
             f'<a href="{escape(root + provision_href(act.slug, one.location.canonical))}">'
             f"{escape(one.location.human)}</a> · "
             f'<a href="{escape(root + event_href(act.slug, one.entry.key))}'

@@ -593,4 +593,33 @@ Both feeds, `search-index.json`, `sitemap.xml`, `robots.txt`, `search.622da217.j
 and `og.png` are byte-identical, no `<id>`, permalink or anchor moved, so nothing renotifies,
 and no size pin moved: the digest is eight hex characters before and after, so every page in
 this tree and in the generated one weighs exactly what it weighed.
+
+**2026-09-05, later again: the site gains a cross-act list of the dates ahead.** Twenty-three
+files moved and one is new. The twenty-two HTML pages of the tree each moved by exactly one
+line, the header bar, which gained a sixth destination between `Amendments` and `Methodology`:
+`<a href="{root}dates/">Dates ahead</a> `, 33 bytes at the root and three more for each
+directory a page sits down. Nothing else on any of them moved, and the largest page in the tree
+is 42 bytes heavier for that reason alone. `sitemap.xml` gained one `<url>` with no `<lastmod>`,
+the answer `about/` already gives and for the same reason: the new page splits its own list at
+the build date, so its content moves with the build rather than with the corpus, and dating it
+by the newest event would tell a crawler it last changed when the corpus did. Both feeds,
+`search-index.json`, `robots.txt`, `icon.svg`, `og.png`, `style.9481cdd6.css` and
+`search.622da217.js` are byte-identical, no `<id>`, permalink or anchor moved, so nothing
+renotifies, and no measured figure moved with any of it.
+
+The new file is `dates/index.html`, 5642 bytes, and on this corpus it is almost entirely its
+own empty states, which is the point of reading it here. The golden's corpus is the MDR
+postponement, one event whose nineteen dates all fall in 2020 and 2021, so every one of them is
+behind the build date of 2026-08-06 and none is inside the ninety days before it: the forward
+list says so in one line, the applies-from block says that none of the six resolved dates falls
+after that day and still prints its caption and its one stated reason, and the folded window of
+what has recently passed is absent with its count stated instead. What is on the page is the
+coverage panel, which is the part that must survive a thin corpus: 9 changes, 0 of them with no
+machine-readable date, 19 mentions all behind, 1 act with a committed event and nothing ahead,
+no hole in the record, and the two ends of the range the date markup produced, 2020-02-25 to
+2021-05-26, shown as read. Every one of those numbers is counted at build time from the
+committed entries; none is typed. The page carries no JSON-LD, which is the rule for a page no
+schema.org type describes honestly, and its `<h1>`, its lede and its two headings hold none of
+the vocabulary that would make a date something owed, which `test_dates_page.py` enforces word
+by word.
 """

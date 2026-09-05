@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 171448)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 171487)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -110,9 +110,15 @@ before the deploy that changed it.
 3200 bytes heavier on 2026-09-05, when the count line started printing the touched units
 carrying no text on either side as their own bucket: sixteen bytes of `0 with no text, ` on
 each of the two hundred event cards this index holds. None of these events carries such a
-unit, so the clause reads zero on every one of them. The split moved, no number did."""
+unit, so the clause reads zero on every one of them. The split moved, no number did.
 
-_TOTAL_BYTES: Final = 2383135
+39 bytes heavier on 2026-09-05, later the same day, when the header bar gained a sixth link, to
+the cross-act list of dates the amended texts name that have not arrived yet. That is the whole
+of it on this page: `<a href="../../dates/">Dates ahead</a> ` at this depth, paid once, with
+nothing below the header moving. Every page on the site pays the same link at whatever its own
+depth costs."""
+
+_TOTAL_BYTES: Final = 2408416
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -194,6 +200,13 @@ carrying no text on either side as their own bucket: sixteen bytes on each of th
 event cards on the index and on each of the two hundred event pages. The provision pages carry
 no count line and did not move. Every event here reads zero in the new bucket, so what grew is
 the sentence and not any count it states.
+
+25 281 bytes heavier on 2026-09-05, later the same day, when the header bar gained its sixth
+link, to the cross-act list of dates ahead: 39 bytes on the index, two directories down, and 42
+on each of the two hundred event pages and the four hundred and one provision pages, which sit
+one deeper and so pay three more for the relative path. It is flat in the number of pages rather
+than in what is on them, no page gained anything below its header, and no measured figure moved
+with it.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

@@ -23,6 +23,7 @@ acts/<celex>/<key>/   one page per event: the changes and the verbatim text
 acts/<celex>/<prov>/  one page per touched provision: its history, newest first
 amendments/           every instrument a committed event names, newest first, grouped by year
 amendments/<celex>/   one page per instrument: every watched act it amended, and what it moved
+dates/                every date in the amended texts that has not arrived yet, nearest first
 about/                who runs the site, and what it does on the reader's machine
 methodology/          the metrics table with its caveats, the loop, the disclaimer in full
 feeds/                what the feeds are and where they are
@@ -152,6 +153,45 @@ name for and no event names gets no row and no page, a declared label not being 
 anything happened. Every event page also carries the events either side of it in its own act's
 history, older first as `rel="prev"`, each named by its dated words, the timeline running
 newest first.
+
+`/dates/` is the one forward-looking page on the site. Everything else here is a record of
+what has already happened; this gathers, across every watched act, the dates an amendment added
+to or removed from a provision's text that fall after the date the build was made for, nearest
+first, each row linking the provision's own history and the change block that moved the date.
+
+Its whole design is a line that must not be crossed. `dates_added` and `dates_removed` are a
+set difference over the source's own `<DATE ISO>` markup inside one provision, so the page knows
+that a date appeared in the text and nothing at all about what the sentence around it does: the
+corpus holds restriction-table cut-offs, one half of a written range, and prohibition dates in
+an annex column, in that one field. *A date was added to this provision's text* is strictly
+weaker than *this provision applies from that date*, and only the weaker claim is in the data.
+The stronger one exists in exactly one field, `applies_from`, and it resolves for well under one
+change in a hundred. So the two are two blocks with two headings rather than one list with a
+caveat, the phrase "applies from" appears only in the block that is clock 2's own answer and in
+the sentence pointing a reader at the applies line on a change, and a test refuses the page if
+the word `deadline`, `obligation`, `requirement`, `schedule` or a dozen others like them ever
+reaches it. There is no countdown, no highlighting of the nearest date and no grouping of
+unrelated acts under a shared calendar day: two drafting teams reaching for the end of a year is
+a coincidence, and a row that gathered them would assert a relationship the corpus does not hold.
+
+Two things on it are counted rather than assumed. A date one amendment put into a provision and
+a later one took back out is the one row a straightforward list renders wrongly, so each row
+carries whatever later committed change of the same act removed that date from that provision,
+and says exactly that. And the page opens the corpus's own coverage before a reader can take the
+list for a complete one: how many committed changes moved no machine-readable date at all, how
+`applies_from` answered across all of them with its stated reasons in the corpus's own words,
+how many mentions are already behind, how many acts have nothing ahead, and the two ends of the
+range the date markup produced, shown as read rather than clipped. Every one of those numbers is
+counted at build time; none is typed into the page. What has already passed is folded to the
+last ninety days, with the remainder counted and the route to it given, because each act's own
+page carries its complete list in full.
+
+"Ahead" means later than the date the build was made for, which arrives on the command line as
+`--generated-on` and is the same date the footer prints on every page. Nothing under the render
+path reads a clock, so two builds of one changelog repository on one date produce identical
+bytes, and a build made on another day divides the list at another date, which the lede says.
+The page carries no `<lastmod>` in the sitemap for the same reason `/about/` carries none: its
+content moves with the build rather than with the corpus.
 
 The roster page says what it covers before it lists anything. The lede counts the acts and
 then says what kinds they are, in words the composition root chose from each CELEX's descriptor

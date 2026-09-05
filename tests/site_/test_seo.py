@@ -242,7 +242,8 @@ def test_an_event_page_offers_its_own_acts_feed_before_the_global_one(site: Path
 def test_the_pages_that_describe_nothing_a_type_names_declare_nothing(site: Path) -> None:
     """A one-rung breadcrumb on a roster restates the URL, and the rest have no type.
 
-    The two rosters, `/acts/` and `/amendments/`, and the three prose pages declare nothing.
+    The two rosters, `/acts/` and `/amendments/`, the list of dates ahead and the three prose
+    pages all declare nothing.
     An amending instrument's own page does declare, since `Legislation` names what it is and
     `legislationChanges` names what it did; `test_amendment_page.py` reads that payload.
     """

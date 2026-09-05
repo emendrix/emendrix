@@ -30,7 +30,12 @@ __all__ = ["disclaimer_html", "nav_links", "page", "repository_links"]
 
 
 def nav_links(depth: int) -> Html:
-    """The header bar: a skip link, the wordmark, the five destinations and the search mount.
+    """The header bar: a skip link, the wordmark, the six destinations and the search mount.
+
+    The order is the decision. The first two are the site's two rosters, of acts and of the
+    instruments that amended them; the third is the only one of the three facing forward, so it
+    sits with them and not among the pages that are about the site rather than about the corpus.
+    Everything after it describes the tool.
 
     The skip link comes first in the source because that is the only thing that makes it
     useful: it is the first stop of a keyboard tab and is off-screen until it takes focus.
@@ -45,6 +50,7 @@ def nav_links(depth: int) -> Html:
         f'<header class="bar"><a class="wordmark" href="{root or "./"}">emendrix</a>'
         f'<nav aria-label="Site"><a href="{root}acts/">All acts</a> '
         f'<a href="{root}amendments/">Amendments</a> '
+        f'<a href="{root}dates/">Dates ahead</a> '
         f'<a href="{root}methodology/">Methodology</a> '
         f'<a href="{root}about/">About</a> '
         f'<a href="{root}feeds/">Feeds</a></nav>'

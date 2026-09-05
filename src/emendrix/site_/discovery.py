@@ -18,7 +18,7 @@ only its `Sitemap:` line, because a crawl policy is about paths. Every `<loc>` i
 `head.canonical_url`, the same function that writes the page's canonical, so a sitemap entry and
 a canonical cannot name two addresses for one page.
 
-Pages only: the six fixed ones, one per act, one per amendment event, one per provision any
+Pages only: the seven fixed ones, one per act, one per amendment event, one per provision any
 event touched and one per amending instrument a committed event names. An event page's
 `<lastmod>` is that event's own `event_dated`, the same clock its feed entry's `<updated>`
 reads, so the two records of one fact cannot disagree. Feeds are advertised by `rel="alternate"` in
@@ -53,6 +53,7 @@ from emendrix.site_.urls import (
     act_href,
     amendment_href,
     amendments_href,
+    dates_href,
     event_href,
     provision_href,
 )
@@ -92,7 +93,7 @@ def robots_txt(site: SiteInputs) -> str:
 def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     """Every page a crawler should know about, with the date its content last moved.
 
-    The six fixed paths are literals, the same site-root-relative paths the page modules are
+    The seven fixed paths are literals, the same site-root-relative paths the page modules are
     rendered under and the builder writes them to. Nothing derives one from the other, so
     `test_discovery.py` compares the sitemap against the built tree in both directions: a path
     that stops matching a file, and a page that gains no entry, both fail there rather than
@@ -100,7 +101,10 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
 
     The about page carries no date at all: its content moves with the build rather than with
     the corpus, and `generated_on` is exactly the value this module refuses to stamp a URL
-    with. That is the same rule an act nothing has happened to yet is under.
+    with. That is the same rule an act nothing has happened to yet is under, and the same
+    answer the dates page gets: it splits its list at the build date, so its content moves
+    with the build too, and dating it by the newest event would say it last changed when the
+    corpus did, which is false.
 
     `max` needs its default: a checkout with a watchlist and an empty changelog repository is a
     real state, and every date here is then `None` except the methodology page's.
@@ -119,6 +123,7 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         ("about/", None),
         ("feeds/", newest),
         (amendments_href(), newest),
+        (dates_href(), None),
     ]
     fixed.extend(
         (act_href(act.slug), event_dated(act.entries[0]) if act.entries else None)
