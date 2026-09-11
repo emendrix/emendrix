@@ -6,6 +6,7 @@ replay the exact bodies CELLAR returned on 2026-08-06.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
@@ -13,12 +14,16 @@ import pytest
 
 from emendrix.eu.cache import DiskResponseCache
 from emendrix.eu.http import (
+    ACCEPT_TREE_NOTICE,
     ACCEPT_ZIP,
     BASE_URL,
+    NOTICE_MAX_AGE_ENV,
+    NOTICE_MAX_AGE_S,
     POLITE_DELAY_ENV,
     POLITE_DELAY_S,
     USER_AGENT,
     CellarHttp,
+    notice_max_age,
     polite_delay,
 )
 from emendrix.eu.identifiers import ResourceRef
@@ -30,9 +35,29 @@ NOT_ACCEPTABLE = (
     b"thrown: [Not found work ['cellar:b93c5306-b410-11f0-b37f-01aa75e...'] + language(s) [eng]"
 )
 
+NOTICE = "/resource/celex/32024R1689"
+
+
+class Clock:
+    """A clock the test owns, so an age is a value to set rather than a wait to sit through."""
+
+    def __init__(self, at: datetime = datetime(2026, 9, 11, 9, 0, tzinfo=UTC)) -> None:
+        self.at = at
+
+    def __call__(self) -> datetime:
+        return self.at
+
+    def advance(self, seconds: float) -> None:
+        self.at += timedelta(seconds=seconds)
+
 
 def make_client(
-    responses: list[httpx.Response], tmp_path: Path, **kwargs: float | int
+    responses: list[httpx.Response],
+    tmp_path: Path,
+    *,
+    now: Clock | None = None,
+    notice_max_age_s: float | None = None,
+    **kwargs: float | int,
 ) -> tuple[CellarHttp, list[httpx.Request]]:
     seen: list[httpx.Request] = []
     queue = list(responses)
@@ -46,6 +71,8 @@ def make_client(
         transport=httpx.MockTransport(handler),
         sleep=lambda _: None,
         polite_delay_s=0.0,
+        now=now if now is not None else Clock(),
+        notice_max_age_s=notice_max_age_s,
         **kwargs,  # type: ignore[arg-type]
     )
     return http, seen
@@ -63,6 +90,20 @@ def test_a_polite_delay_that_is_not_a_wait_is_refused_by_name(value: str) -> Non
     """Reading it as the default instead would be a quiet decision to hammer a public endpoint."""
     with pytest.raises(ValueError, match=POLITE_DELAY_ENV):
         polite_delay(environment={POLITE_DELAY_ENV: value})
+
+
+def test_the_notice_max_age_reads_the_flag_then_the_environment_then_the_default() -> None:
+    """An operator who wants a notice checked more often must be able to say so from outside."""
+    assert notice_max_age(environment={}) == timedelta(seconds=NOTICE_MAX_AGE_S)
+    assert notice_max_age(environment={NOTICE_MAX_AGE_ENV: "60"}) == timedelta(seconds=60)
+    assert notice_max_age(30.0, environment={NOTICE_MAX_AGE_ENV: "60"}) == timedelta(seconds=30)
+
+
+@pytest.mark.parametrize("value", ["slowly", "-1", ""])
+def test_a_notice_max_age_that_is_not_an_age_is_refused_by_name(value: str) -> None:
+    """Falling back to the default would be a quiet decision to read a stale inventory."""
+    with pytest.raises(ValueError, match=NOTICE_MAX_AGE_ENV):
+        notice_max_age(environment={NOTICE_MAX_AGE_ENV: value})
 
 
 def test_it_sends_the_negotiation_headers_and_identifies_itself(tmp_path: Path) -> None:
@@ -87,6 +128,7 @@ def test_https_is_the_base(tmp_path: Path) -> None:
 
 
 def test_the_second_ask_never_leaves_the_machine(tmp_path: Path) -> None:
+    """A version's package is the same bytes forever, and that is why offline replay works."""
     http, seen = make_client([httpx.Response(200, content=b"<NOTICE/>")], tmp_path)
     first = http.get("/resource/celex/32024R1689", accept=ACCEPT_ZIP)
     second = http.get("/resource/celex/32024R1689", accept=ACCEPT_ZIP)
@@ -94,6 +136,63 @@ def test_the_second_ask_never_leaves_the_machine(tmp_path: Path) -> None:
     assert http.network_calls == 1
     assert second.body == first.body
     assert second.from_cache and not first.from_cache
+
+
+def test_a_notice_older_than_its_max_age_is_asked_for_again(tmp_path: Path) -> None:
+    """The resource whose whole job is to report something new may not be cached forever.
+
+    Cached without a life, an act's version inventory becomes a standing claim that the act has
+    no new versions, and every later consolidation of it stays pending against a frozen listing.
+    """
+    clock = Clock()
+    http, seen = make_client(
+        [httpx.Response(200, content=b"<one/>"), httpx.Response(200, content=b"<two/>")],
+        tmp_path,
+        now=clock,
+        notice_max_age_s=3600.0,
+    )
+    first = http.get(NOTICE, accept=ACCEPT_TREE_NOTICE, volatile=True)
+    clock.advance(3601)
+    second = http.get(NOTICE, accept=ACCEPT_TREE_NOTICE, volatile=True)
+    assert first.body == b"<one/>"
+    assert second.body == b"<two/>"
+    assert http.network_calls == 2
+    assert len(seen) == 2
+
+
+def test_a_notice_within_its_max_age_is_still_served_from_the_cache(tmp_path: Path) -> None:
+    """Finite is the point, not short: inside the age this costs a public endpoint nothing."""
+    clock = Clock()
+    http, seen = make_client(
+        [httpx.Response(200, content=b"<one/>"), httpx.Response(200, content=b"<two/>")],
+        tmp_path,
+        now=clock,
+        notice_max_age_s=3600.0,
+    )
+    http.get(NOTICE, accept=ACCEPT_TREE_NOTICE, volatile=True)
+    clock.advance(3599)
+    second = http.get(NOTICE, accept=ACCEPT_TREE_NOTICE, volatile=True)
+    assert second.body == b"<one/>"
+    assert second.from_cache
+    assert http.network_calls == 1
+    assert len(seen) == 1
+
+
+def test_an_immutable_resource_does_not_expire_however_old_its_copy_is(tmp_path: Path) -> None:
+    """The age belongs to the kind of resource asked for, not to the cache it is held in."""
+    clock = Clock()
+    http, seen = make_client(
+        [httpx.Response(200, content=b"<one/>"), httpx.Response(200, content=b"<two/>")],
+        tmp_path,
+        now=clock,
+        notice_max_age_s=1.0,
+    )
+    http.get(NOTICE, accept=ACCEPT_ZIP)
+    clock.advance(86400)
+    second = http.get(NOTICE, accept=ACCEPT_ZIP)
+    assert second.body == b"<one/>"
+    assert http.network_calls == 1
+    assert len(seen) == 1
 
 
 @pytest.mark.parametrize(

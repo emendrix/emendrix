@@ -8,15 +8,19 @@ nowhere, a pair it annotated once, and a pair it annotated twenty-six times.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 
+import httpx
 import pytest
 
 from emendrix.core import ActId, Signal, SignalReport, VersionId
+from emendrix.eu.cache import DiskResponseCache, FixtureResponseCache, cache_key
 from emendrix.eu.cellar import CellarClient
+from emendrix.eu.http import ACCEPT_TREE_NOTICE, BASE_URL, CellarHttp
 from emendrix.eu.identifiers import Celex
-from emendrix.eu.signals import EuSignalSource, instruction_signal_for
-from eu_pins import MDR
+from emendrix.eu.signals import EuSignalSource, act_dates, instruction_signal_for
+from eu_pins import DIGITAL_OMNIBUS, MDR, MDR_POSTPONEMENT, OBSERVED_ON
 
 MDR_ACT = ActId(corpus="eu", key=MDR)
 
@@ -172,3 +176,39 @@ def test_the_same_amending_act_claims_different_units_in_two_windows(
     late_units = {unit.canonical for unit in late.units}
     assert late_units - early_units == {"AR 10a"}
     assert early_units < late_units
+
+
+def test_an_acts_published_dates_are_read_again_once_its_notice_has_aged(
+    fixture_cache: FixtureResponseCache, tmp_path: Path
+) -> None:
+    """`act_dates` reads the inventory's document and carries the inventory's policy.
+
+    Both bodies below are pinned notices, served unedited; what is asserted is which of the two
+    the second read gets. Without a life on the entry it would be the first one forever, for
+    every act whose notice this process had not already refreshed.
+    """
+    bodies = [
+        fixture_cache.get(
+            cache_key("GET", f"{BASE_URL}/resource/celex/{celex}", ACCEPT_TREE_NOTICE, "eng")
+        )
+        for celex in (MDR_POSTPONEMENT, DIGITAL_OMNIBUS)
+    ]
+    assert all(body is not None for body in bodies)
+    queue = [httpx.Response(200, content=body.body) for body in bodies if body is not None]
+    clock = [datetime(2026, 9, 11, 9, 0, tzinfo=UTC)]
+
+    http = CellarHttp(
+        cache=DiskResponseCache(tmp_path),
+        transport=httpx.MockTransport(lambda request: queue.pop(0)),
+        sleep=lambda _: None,
+        polite_delay_s=0.0,
+        now=lambda: clock[0],
+        notice_max_age_s=60.0,
+    )
+    client = CellarClient(http, observed_on=OBSERVED_ON)
+    celex = Celex.parse(MDR_POSTPONEMENT)
+
+    assert act_dates(client, celex).default == date(2020, 4, 24)
+    clock[0] += timedelta(seconds=61)
+    assert act_dates(client, celex).default == date(2026, 7, 27)
+    assert http.network_calls == 2

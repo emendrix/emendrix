@@ -94,12 +94,18 @@ class CellarClient:
     # ------------------------------------------------------------------ notices
 
     def tree_notice(self, celex: Celex) -> TreeNotice:
-        """The act's version inventory (`notice=tree`), parsed."""
+        """The act's version inventory (`notice=tree`), parsed.
+
+        A listing can grow at any time, so a cached one has a life. The memo below is what keeps
+        that affordable: one fetch per act per process, whatever the max age is set to.
+        """
         cached = self._notices.get(celex.value)
         if cached is not None:
             return cached
         response = self.http.get(
-            ResourceRef(system="celex", identifier=celex.value), accept=ACCEPT_TREE_NOTICE
+            ResourceRef(system="celex", identifier=celex.value),
+            accept=ACCEPT_TREE_NOTICE,
+            volatile=True,
         )
         if not response.ok:
             raise LookupError(f"no tree notice for {celex}: HTTP {response.status_code}")
@@ -113,9 +119,15 @@ class CellarClient:
         Interpreted by `modmeta.py`: the modification annotations that are the reference label set
         live in here (`RESOURCE_LEGAL_AMENDED_BY_RESOURCE_LEGAL/ANNOTATION`). This step's job
         is to have the bytes, cached, so that step never touches the network.
+
+        A listing can grow at any time, so a cached one has a life: annotations frozen behind a
+        new version do not silence corroboration, they ship units `disputed` against a reference
+        set that is out of date.
         """
         response = self.http.get(
-            ResourceRef(system="celex", identifier=celex.value), accept=ACCEPT_BRANCH_NOTICE
+            ResourceRef(system="celex", identifier=celex.value),
+            accept=ACCEPT_BRANCH_NOTICE,
+            volatile=True,
         )
         if not response.ok:
             raise LookupError(f"no branch notice for {celex}: HTTP {response.status_code}")

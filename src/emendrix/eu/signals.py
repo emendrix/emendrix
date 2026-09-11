@@ -62,7 +62,8 @@ def act_dates(client: CellarClient, celex: Celex) -> ActDates:
 
     The composition root's second read of a document the adapter already fetches for its
     version inventory, so it answers off the same disk cache and costs no second request in
-    practice.
+    practice. It carries that read's freshness policy for the same reason: a listing can grow at
+    any time, and this one would otherwise stay frozen for an act the client has not refreshed.
 
     An act the corpus has no notice for is dated from its own text alone, and that is a
     coverage gap like any other. Every other status is the server refusing *us* and fails
@@ -71,7 +72,9 @@ def act_dates(client: CellarClient, celex: Celex) -> ActDates:
     strength of one 403, which is a claim about an act made out of a refusal.
     """
     response = client.http.get(
-        ResourceRef(system="celex", identifier=celex.value), accept=ACCEPT_TREE_NOTICE
+        ResourceRef(system="celex", identifier=celex.value),
+        accept=ACCEPT_TREE_NOTICE,
+        volatile=True,
     )
     if response.status_code in ABSENT_STATUSES:
         return ActDates()

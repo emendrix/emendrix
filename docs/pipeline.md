@@ -46,6 +46,13 @@ Four facts about that feed shape the code, and all four were verified against th
   re-checked on every later poll, and emitted once more, as an ordinary version event, when the
   text appears. Never a retry loop, never an exception.
 
+An act's version inventory is a listing rather than a document, so the poller refetches it rather
+than remembering it: a cached notice older than six hours is asked for again, because an entry
+held forever is a standing claim that the act has no new versions and a poll reading one reports
+success while seeing nothing. A feed page is not in the same class, and deliberately so: its URL
+carries the window, and every poll's window ends at midnight this morning, so a cached page is a
+closed window whose contents genuinely cannot change.
+
 The state file (seen entries on a rolling 60 days, the window cursor, the pending list) is written
 by write-tmp-and-rename, so a process killed mid-write leaves the previous state intact; a corrupt
 or foreign-schema file is moved aside and the poll starts from `--since` rather than dying. The
@@ -311,6 +318,13 @@ between network calls is reachable from outside the code: `--polite-delay`, or
 `EMENDRIX_POLITE_DELAY_S` for every command (1 second by default; cache hits never sleep at all).
 A value that is not a non-negative number is refused by name rather than quietly read as the
 default.
+
+The other resource with a policy of its own is a notice, and its policy is the opposite one. An
+act's version inventory and its amendment graph are listings that grow whenever the Publications
+Office consolidates, so a cached one is served for six hours and then asked for again;
+`EMENDRIX_NOTICE_MAX_AGE_S` changes that span, and a value that is not a non-negative number of
+seconds is refused by name here too. A fixture-backed run is exempt before the age is looked at,
+which is why offline replay and every committed figure are unaffected by it.
 
 Ctrl-C is an ordinary way to end a long backfill: the run prints the totals it earned and exits
 `130`, and the transition that was in flight stays out of the ledger so the next run redoes it.

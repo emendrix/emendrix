@@ -183,6 +183,7 @@ class _Answering(CellarHttp):
         *,
         accept: str,
         accept_language: str | None = "eng",
+        volatile: bool = False,
     ) -> CachedResponse:
         entry = ManifestEntry(
             key="",

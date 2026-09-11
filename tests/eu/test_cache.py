@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -146,6 +146,28 @@ def test_a_fixture_cache_cannot_reach_the_network(tmp_path: Path) -> None:
     http = CellarHttp(cache=FixtureResponseCache(tmp_path))
     with pytest.raises(FixtureMissing, match="no fixture for GET"):
         http.get("/resource/celex/32024R1689", accept=ACCEPT_TREE_NOTICE)
+    assert http.network_calls == 0
+
+
+def test_a_pinned_notice_never_expires_however_far_the_clock_has_moved(tmp_path: Path) -> None:
+    """The offline exemption, read before the age is looked at, and the reason it comes first.
+
+    A fixture-backed run whose notices could expire would raise `FixtureMissing` for a document
+    that is pinned, and every reproduction path in the project would break at once. The max age
+    here is zero, which is the harshest policy there is, and the pinned body is still served.
+    """
+    response = _response()
+    (tmp_path / response.entry.file).write_bytes(response.body)
+    write_manifest(tmp_path / "manifest.json", (response.entry,))
+
+    http = CellarHttp(
+        cache=FixtureResponseCache(tmp_path),
+        now=lambda: FETCHED_AT + timedelta(days=365),
+        notice_max_age_s=0.0,
+    )
+    served = http.get(URL, accept=ACCEPT_TREE_NOTICE, volatile=True)
+
+    assert served.body == response.body
     assert http.network_calls == 0
 
 

@@ -97,6 +97,30 @@ def test_the_clock_is_read_in_exactly_one_place() -> None:
     assert offenders(pattern, {"eu/http.py"}) == []
 
 
+def test_a_notice_is_never_fetched_without_a_freshness_policy() -> None:
+    """A notice is a listing about an act and its whole purpose is to change.
+
+    Cached without a life it becomes a standing claim that nothing new exists, and the one
+    resource that reports a new version is then the one frozen hardest. Verified 2026-09-11
+    against a deployment whose poller had not observed a consolidation in six days while every
+    stage of the chain it ran reported success.
+
+    Three reads in the package: the act's version inventory, its amendment graph, and an
+    amending act's own published dates. A fourth is an event worth noticing here.
+    """
+    marker = re.compile(r"accept=ACCEPT_(?:TREE|BRANCH)_NOTICE\b")
+    sites = 0
+    for name, source in modules():
+        lines = source.splitlines()
+        for number, line in enumerate(lines):
+            if not marker.search(line):
+                continue
+            sites += 1
+            request = "\n".join(lines[number : number + 3])
+            assert "volatile=True" in request, f"{name}:{number + 1} reads a notice forever"
+    assert sites == 3
+
+
 def test_the_watch_stage_takes_its_window_rather_than_asking_the_clock() -> None:
     """`poll_once` is deterministic given its inputs, and `watch/cli.py` is the boundary.
 

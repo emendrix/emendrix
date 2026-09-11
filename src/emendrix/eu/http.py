@@ -33,7 +33,7 @@ from __future__ import annotations
 import os
 import time
 from collections.abc import Callable, Mapping
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from types import TracebackType
 from typing import Final, Self
 
@@ -52,11 +52,14 @@ from emendrix.eu.identifiers import ResourceRef
 
 __all__ = [
     "BASE_URL",
+    "NOTICE_MAX_AGE_ENV",
+    "NOTICE_MAX_AGE_S",
     "POLITE_DELAY_ENV",
     "POLITE_DELAY_S",
     "USER_AGENT",
     "CellarHttp",
     "OfflineFetch",
+    "notice_max_age",
     "polite_delay",
     "today_utc",
 ]
@@ -77,6 +80,18 @@ POLITE_DELAY_S: Final = 1.0
 
 POLITE_DELAY_ENV: Final = "EMENDRIX_POLITE_DELAY_S"
 """How an operator turns the delay up without editing code. `polite_delay` reads it."""
+
+NOTICE_MAX_AGE_S: Final = 21600.0
+"""Seconds a notice may be served from cache before it is asked for again.
+
+A notice is a listing about an act and grows whenever the publisher consolidates, so an entry
+for one held without a life is a standing claim that the act has no new versions. Six hours
+rather than an hour because a poll's window ends at midnight this morning and the cursor
+advances by whole days, so a refresh more often than daily buys no detection at all.
+"""
+
+NOTICE_MAX_AGE_ENV: Final = "EMENDRIX_NOTICE_MAX_AGE_S"
+"""How an operator changes it without editing code. `notice_max_age` reads it."""
 
 
 ACCEPT_ZIP: Final = "application/zip"
@@ -130,6 +145,28 @@ def polite_delay(
     return seconds
 
 
+def notice_max_age(
+    flag: float | None = None, *, environment: Mapping[str, str] | None = None
+) -> timedelta:
+    """How long a notice stays fresh: flag > environment > `NOTICE_MAX_AGE_S`.
+
+    Refused by name where it is not a number of seconds, as `polite_delay` refuses one: a value
+    silently not the one configured is how a poller ends up reading a year-old inventory.
+    """
+    if flag is not None:
+        return timedelta(seconds=flag)
+    raw = (environment if environment is not None else os.environ).get(NOTICE_MAX_AGE_ENV)
+    if raw is None:
+        return timedelta(seconds=NOTICE_MAX_AGE_S)
+    try:
+        seconds = float(raw)
+    except ValueError as error:
+        raise ValueError(f"{NOTICE_MAX_AGE_ENV}={raw!r} is not a number of seconds") from error
+    if seconds < 0:
+        raise ValueError(f"{NOTICE_MAX_AGE_ENV}={raw!r} is negative; an age cannot be")
+    return timedelta(seconds=seconds)
+
+
 class CellarHttp:
     """Content-negotiated, cached, retrying GETs against CELLAR.
 
@@ -148,6 +185,7 @@ class CellarHttp:
         max_attempts: int = MAX_ATTEMPTS,
         backoff_s: float = RETRY_BACKOFF_S,
         polite_delay_s: float = POLITE_DELAY_S,
+        notice_max_age_s: float | None = None,
         transport: httpx.BaseTransport | None = None,
         sleep: Callable[[float], None] = time.sleep,
         now: Callable[[], datetime] = _utc_now,
@@ -159,6 +197,9 @@ class CellarHttp:
         self.max_attempts = max_attempts
         self.backoff_s = backoff_s
         self.polite_delay_s = polite_delay_s
+        # Resolved here rather than at the composition root, unlike `polite_delay_s`: the eval
+        # and fixture commands construct a client directly and none should have to know of this.
+        self.notice_max_age = notice_max_age(notice_max_age_s)
         self._transport = transport
         self._sleep = sleep
         self._now = now
@@ -203,16 +244,20 @@ class CellarHttp:
         *,
         accept: str,
         accept_language: str | None = "eng",
+        volatile: bool = False,
     ) -> CachedResponse:
-        """Fetch a resource, from the cache if it is there.
+        """Fetch a resource, from the cache if it is there and still counts.
 
         Returns the response whatever its status: a `404` and a `406` are answers about the
         document, and the caller (`eu/cellar.py`) turns them into first-class states.
+
+        `volatile` marks a resource whose purpose is to change: a hit for one older than
+        `notice_max_age` is a miss, and everything else is served from any hit as before.
         """
         url = self.url_for(target)
         key = cache_key("GET", url, accept, accept_language)
         cached = self.cache.get(key)
-        if cached is not None:
+        if cached is not None and not self._expired(cached, volatile=volatile):
             return cached
         if self.cache.offline:
             raise FixtureMissing(
@@ -223,6 +268,15 @@ class CellarHttp:
         response = self._fetch(url, key=key, accept=accept, accept_language=accept_language)
         self.cache.store(response)
         return response
+
+    def _expired(self, cached: CachedResponse, *, volatile: bool) -> bool:
+        """Whether a hit is too old to answer with. Offline is exempt before the age is read."""
+        if not volatile or self.cache.offline:
+            return False
+        fetched = cached.entry.fetched_at
+        if fetched.tzinfo is None:
+            return True  # not comparable with a zoned stamp, and asking again is the safe answer
+        return fetched < self._now() - self.notice_max_age
 
     def _fetch(
         self, url: str, *, key: str, accept: str, accept_language: str | None

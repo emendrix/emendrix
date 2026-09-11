@@ -13,9 +13,9 @@ import httpx
 import pytest
 
 from emendrix.core import ConsolidationPending, EnglishUnavailable, VersionId
-from emendrix.eu.cache import CachedResponse, FixtureResponseCache
+from emendrix.eu.cache import CachedResponse, FixtureResponseCache, cache_key
 from emendrix.eu.cellar import CellarClient
-from emendrix.eu.http import CellarHttp
+from emendrix.eu.http import ACCEPT_TREE_NOTICE, BASE_URL, CellarHttp
 from emendrix.eu.identifiers import Celex
 from emendrix.eu.packages import FormexPackage
 from eu_pins import AI_ACT, AI_ACT_V1, AI_ACT_V2, MDR, OBSERVED_ON, REACH
@@ -208,6 +208,15 @@ def test_the_fallback_is_only_for_the_first_consolidation(client: CellarClient) 
     assert client.fetch_formex(Celex.parse(MDR), later.version) is not None
 
 
+def pinned_notice(fixture_cache: FixtureResponseCache, celex: str) -> bytes:
+    """One act's tree notice exactly as it was pinned, for a transport to answer with."""
+    found = fixture_cache.get(
+        cache_key("GET", f"{BASE_URL}/resource/celex/{celex}", ACCEPT_TREE_NOTICE, "eng")
+    )
+    assert found is not None, celex
+    return found.body
+
+
 class _PassThroughCache:
     """Reads the pinned notices, but sends every *document* request to the (mocked) transport.
 
@@ -232,6 +241,35 @@ class _PassThroughCache:
         return None
 
 
+def test_one_notice_fetch_per_act_per_process_whatever_the_max_age(
+    fixture_cache: FixtureResponseCache,
+) -> None:
+    """The memo is what makes a short max age affordable, and this is what pins it.
+
+    A cache that is not offline and a max age of zero is the harshest policy there is; an act's
+    inventory is still asked for once for the life of the process, and the answer is reused.
+    """
+    notice = pinned_notice(fixture_cache, MDR)
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, content=notice)
+
+    http = CellarHttp(
+        cache=_PassThroughCache(fixture_cache),
+        transport=httpx.MockTransport(handler),
+        sleep=lambda _: None,
+        polite_delay_s=0.0,
+        notice_max_age_s=0.0,
+    )
+    client = CellarClient(http, observed_on=OBSERVED_ON)
+
+    assert client.tree_notice(Celex.parse(MDR)) == client.tree_notice(Celex.parse(MDR))
+    assert http.network_calls == 1
+    assert len(seen) == 1
+
+
 def test_a_server_refusal_is_never_read_as_a_fact_about_the_corpus(
     fixture_cache: FixtureResponseCache,
 ) -> None:
@@ -239,10 +277,15 @@ def test_a_server_refusal_is_never_read_as_a_fact_about_the_corpus(
 
     Persisting `EnglishUnavailable` because a public endpoint throttled a long eval run would be
     a false statement about an act, which is exactly the failure this project cannot afford.
+
+    The cache here is not offline, so the act's inventory is re-read before the document is
+    asked for and the transport answers that with the notice as pinned.
     """
+    notice = pinned_notice(fixture_cache, MDR)
 
     def handler(request: httpx.Request) -> httpx.Response:
-        assert "fmx4" in str(request.url)
+        if "fmx4" not in str(request.url):
+            return httpx.Response(200, content=notice)
         return httpx.Response(429, content=b"slow down")
 
     http = CellarHttp(
