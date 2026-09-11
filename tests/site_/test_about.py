@@ -1,8 +1,10 @@
 """The page that says who runs the site, and the rule that it names nobody by default.
 
 Rendered directly rather than through the built tree, because the whole point of the operator
-fields is that the committed build passes none of them: the configured shapes exist only in a
-string a test asks for. What the shipped tree carries is asserted over the golden instead.
+fields and of the poller's record is that the committed build passes none of them: the
+configured shapes exist only in a string a test asks for. What the shipped tree carries is
+asserted over the golden instead, and that the flag reaches the page at all is asserted through
+the shipped command in `test_site_build.py`.
 """
 
 from __future__ import annotations
@@ -19,12 +21,15 @@ from emendrix.site_.inputs import collect_site
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.about import render_about
 from emendrix.site_.pitch import SCOPE
+from emendrix.site_.polled import PolledState
 
 OBSERVED = date(2026, 8, 9)
 
 OPERATOR = "A. Person"
 OPERATOR_URL = "https://example.invalid/who"
 CONTACT = "hello@example.invalid"
+
+POLLED = PolledState(checked_through=date(2026, 9, 11), waiting=3, waiting_since=date(2026, 9, 3))
 
 
 def _about(
@@ -33,6 +38,7 @@ def _about(
     operator_url: str = "",
     contact: str = "",
     kinds: tuple[tuple[str, int], ...] = (),
+    polled: PolledState | None = None,
 ) -> str:
     site = collect_site(
         generated_on=OBSERVED,
@@ -42,6 +48,7 @@ def _about(
         operator_url=operator_url,
         contact=contact,
         kinds=kinds,
+        polled=polled,
     )
     return render_about(site)
 
@@ -150,3 +157,53 @@ def test_the_page_promises_no_tracking_without_saying_the_word_a_second_time() -
     rendered = _about()
     assert rendered.count("analytics") == 1
     assert "sets no cookies, counts no readers" in rendered
+
+
+def test_the_state_file_gives_the_page_the_date_the_corpus_was_read_through() -> None:
+    """Two sentences a deployment cannot fudge: the cursor the poller reached, and what has
+    been announced since without its text arriving. The first says "published up to" because
+    that is what the cursor means; a run time would be a different and unsupported claim."""
+    rendered = _about(polled=POLLED)
+    assert "<h2>Who runs it</h2>" in rendered
+    assert "The corpus was last checked for changes published up to 2026-09-11." in rendered
+    assert (
+        "3 consolidations have been announced and are waiting for their text, "
+        "the oldest first seen on 2026-09-03." in rendered
+    )
+    assert "stale" not in rendered and "healthy" not in rendered
+
+
+def test_one_waiting_consolidation_reads_as_one_rather_than_as_a_plural() -> None:
+    """A page of one should not read as a rendering accident, and it dates the one it has."""
+    rendered = _about(
+        polled=PolledState(
+            checked_through=date(2026, 9, 11), waiting=1, waiting_since=date(2026, 9, 10)
+        )
+    )
+    assert (
+        "1 consolidation has been announced and is waiting for its text, "
+        "first seen on 2026-09-10." in rendered
+    )
+
+
+def test_nothing_waiting_prints_the_cursor_and_no_second_sentence() -> None:
+    """The quiet answer is the normal one and it still says how far the corpus was read."""
+    rendered = _about(polled=PolledState(checked_through=date(2026, 9, 11)))
+    assert "published up to 2026-09-11." in rendered
+    assert "waiting for" not in rendered
+
+
+def test_a_build_handed_no_state_file_renders_the_page_it_renders_today() -> None:
+    """The flag is optional, so a clone, a fresh checkout and any deployment that does not
+    pass it get exactly the page they got before it existed. A record the poller wrote before
+    closing its first window is the same answer, byte for byte."""
+    plain = _about()
+    assert "<h2>Who runs it</h2>" not in plain
+    assert "last checked" not in plain
+    assert _about(polled=PolledState()) == plain
+    assert _about(operator=OPERATOR, polled=PolledState()) == _about(operator=OPERATOR)
+
+
+def test_the_polling_sentences_leave_the_disclaimer_alone() -> None:
+    """The footer carries it here as everywhere, exactly once, whatever the section holds."""
+    assert text_of(_about(polled=POLLED)).count(escape(DISCLAIMER)) == 1

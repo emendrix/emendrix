@@ -7,9 +7,8 @@ from datetime import date
 from helpers import text_of
 
 from emendrix import DISCLAIMER
-from emendrix.site_.chrome import nav_links, page
+from emendrix.site_.chrome import PageChrome, nav_links, page
 from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
-from emendrix.site_.inputs import PageChrome
 from emendrix.site_.markup import Html, escape
 
 GENERATED = date(2026, 8, 9)

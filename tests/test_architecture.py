@@ -240,9 +240,13 @@ def test_only_two_modules_run_a_subprocess() -> None:
 def test_the_site_is_generated_and_not_fetched() -> None:
     """The published site is a rendering of committed artifacts; that is why it can be static.
 
-    `site_/cli.py` is the composition root: it names the one sanctioned clock read, resolves
-    where the changelog repository lives, and is the one module allowed to know which corpus
-    publishes document URLs. Every other module in the package is a pure function of the
+    Two exemptions, one module each. `site_/boundary.py` is the one module allowed to know
+    which corpus publishes document URLs: everything it exports turns an identifier the
+    changelog repository recorded into a label or an address. `site_/cli.py` is the composition
+    root: it names the one sanctioned clock read, resolves where the changelog repository
+    lives, and reads the deployment facts a page cannot infer. The clock lives in the corpus
+    package, so the root spells `emendrix.eu` in exactly one import, which is pinned here as
+    the clock's and nothing else's. Every other module in the package is a pure function of the
     artifacts it is handed. No page can therefore show a figure it did not read out of a
     committed file, which is a property of the imports rather than a promise.
 
@@ -252,11 +256,16 @@ def test_the_site_is_generated_and_not_fetched() -> None:
     import rule here plus `tests/site_/test_site_build.py`, which builds the whole site over
     the toy corpus, not law at all, through the same functions.
     """
+    clock = "from emendrix.eu.http import today_utc"
     for name, source in modules():
-        if not name.startswith("site_/") or name == "site_/cli.py":
+        if not name.startswith("site_/"):
             continue
-        assert "emendrix.eu" not in source, name
-        assert "today_utc" not in source, name
+        if name != "site_/boundary.py":
+            assert "emendrix.eu" not in source.replace(clock, ""), name
+        if name != "site_/cli.py":
+            assert "today_utc" not in source, name
+    root = [source for name, source in modules() if name == "site_/cli.py"]
+    assert [source.count(clock) for source in root] == [1]
 
 
 def test_a_repair_reaches_the_corpus_only_from_its_own_command_line() -> None:

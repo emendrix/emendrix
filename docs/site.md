@@ -24,7 +24,7 @@ acts/<celex>/<prov>/  one page per touched provision: its history, newest first
 amendments/           every instrument a committed event names, newest first, grouped by year
 amendments/<celex>/   one page per instrument: every watched act it amended, and what it moved
 dates/                every date in the amended texts that has not arrived yet, nearest first
-about/                who runs the site, and what it does on the reader's machine
+about/                who runs the site, how current the corpus is, and what it does here
 methodology/          the metrics table with its caveats, the loop, the disclaimer in full
 feeds/                what the feeds are and where they are
 feeds/all.xml         every amendment event, as Atom
@@ -290,6 +290,29 @@ at all. The ref is `main` rather than the evaluation report's own revision, sinc
 records the revision of the tree it scored and the report is committed after it. An event page's
 link is to the changelog file and never to a heading inside it: that host derives heading anchors
 from heading text, so a deeper link would break silently the day a heading is reworded.
+
+## `--operator`, `--contact` and `--watch-state`: the facts only a deployment has
+
+Four flags carry things no committed artifact can know, and each renders on its own or not at all.
+`--operator` and `--operator-url` name whoever runs this instance, `--contact` is an address a
+reader may write to, and a build given none of them renders `/about/` without its "Who runs it"
+section rather than with a placeholder where a person should be.
+
+`--watch-state` is the fourth and points at the file the poller keeps its own record in, the path
+`emendrix watch --state-file` names and, in the reference deployment, the file on the `state`
+volume. With it `/about/` says two things it cannot otherwise know: the date the corpus was last
+checked for changes published up to, and how many consolidations have been announced whose text is
+not published yet, with the date the oldest of them was first seen. That is the difference between
+a corpus that is quiet and one that has stopped, and it is the reader's to judge: the page states
+the two facts and draws no verdict from them.
+
+**The date is a cursor, not a run time.** Every poll reads a window ending at midnight that
+morning, so what the file records is how far the corpus has been read, which is what the sentence
+says. A missing, unreadable or foreign-schema file is not an error: the build says nothing about
+polling and writes the page it writes without the flag, because a site that goes down over a
+courtesy is worse than a page with one fewer sentence. Nothing is imported from the poller to read
+it, the site being a rendering of documents somebody else wrote; the file's shape is pinned by a
+test that builds a real state file and reads it back.
 
 ## The honesty rule, made structural
 

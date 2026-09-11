@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
@@ -24,8 +24,9 @@ from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_ import collect_site, write_site
-from emendrix.site_.cli import _eurlex_urls, _version_dates
+from emendrix.site_.boundary import eurlex_urls, version_dates
 from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
+from emendrix.watch.state import PendingConsolidation, WatchState
 from eu_pins import OBSERVED_ON
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -54,7 +55,7 @@ def _eu_entry(
 
 def test_version_dates_read_the_consolidated_versions_own_tag() -> None:
     entry = _eu_entry("02017R0745-20200424")
-    assert _version_dates((entry,)) == {(entry.act, entry.to_version): date(2020, 4, 24)}
+    assert version_dates((entry,)) == {(entry.act, entry.to_version): date(2020, 4, 24)}
 
 
 def test_version_dates_skip_what_no_tag_answers() -> None:
@@ -62,7 +63,7 @@ def test_version_dates_skip_what_no_tag_answers() -> None:
     oj_act = _eu_entry("32017R0745")
     other_corpus = _toy_entry()
     unreadable = _eu_entry("not-a-version")
-    assert _version_dates((oj_act, other_corpus, unreadable)) == {}
+    assert version_dates((oj_act, other_corpus, unreadable)) == {}
 
 
 def test_the_eurlex_url_ranks_by_the_version_date_not_the_detection_date() -> None:
@@ -70,7 +71,7 @@ def test_the_eurlex_url_ranks_by_the_version_date_not_the_detection_date() -> No
     newest = _eu_entry("02017R0745-20200424", in_force=(date(2020, 4, 24),))
     backfilled = _eu_entry("02017R0745-20170505", detected_on=date(2026, 8, 13))
     entries = (newest, backfilled)
-    (url,) = _eurlex_urls(entries, _version_dates(entries)).values()
+    (url,) = eurlex_urls(entries, version_dates(entries)).values()
     assert "02017R0745-20200424" in url
 
 
@@ -175,6 +176,59 @@ def test_two_builds_of_one_set_of_artifacts_are_byte_identical(
 ) -> None:
     first = _tree(build(tmp_path / "a", changelog_repo))
     second = _tree(build(tmp_path / "b", changelog_repo))
+    assert first == second
+
+
+def _watch_state(path: Path) -> Path:
+    """A state file as the poller writes one, two windows and one consolidation short of text."""
+    state = WatchState(
+        last_window_end=datetime(2026, 9, 11, 0, 0, 0),
+        pending=(
+            PendingConsolidation(
+                act_key="eu:32017R0745",
+                celex="32017R0745",
+                version="02017R0745-20260719",
+                first_seen=date(2026, 9, 3),
+                last_checked=date(2026, 9, 11),
+            ),
+        ),
+    )
+    path.write_text(state.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def test_a_state_file_on_the_command_line_reaches_the_about_page(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """The whole path, from the flag to the sentence: a deployment mounts the file the poller
+    writes and the page says how far the corpus has been read. Without the flag the page says
+    nothing at all, which is what a clone and a fresh checkout get."""
+    state = _watch_state(tmp_path / "watch-state.json")
+    out = build(tmp_path / "site", changelog_repo, "--watch-state", str(state))
+    about = (out / "about" / "index.html").read_text(encoding="utf-8")
+    assert "The corpus was last checked for changes published up to 2026-09-11." in about
+    assert "1 consolidation has been announced and is waiting for its text" in about
+    quiet = build(tmp_path / "quiet", changelog_repo)
+    assert "last checked" not in (quiet / "about" / "index.html").read_text(encoding="utf-8")
+
+
+def test_a_state_file_that_is_not_there_builds_the_site_anyway(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """Handed a path with nothing behind it the build says nothing rather than failing: the
+    site is the last thing that should go down because a volume was mounted late."""
+    out = build(tmp_path / "site", changelog_repo, "--watch-state", str(tmp_path / "absent.json"))
+    assert "last checked" not in (out / "about" / "index.html").read_text(encoding="utf-8")
+
+
+def test_two_builds_with_a_state_file_are_byte_identical_too(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """The file is read once at the boundary and passed down as a value, so it buys the site
+    no clock and no second reading."""
+    state = _watch_state(tmp_path / "watch-state.json")
+    first = _tree(build(tmp_path / "a", changelog_repo, "--watch-state", str(state)))
+    second = _tree(build(tmp_path / "b", changelog_repo, "--watch-state", str(state)))
     assert first == second
 
 

@@ -81,11 +81,16 @@ services:
   # the footer names each in plain words rather than rendering a dead link.
   # The watchlist is read from `/work/watchlist.toml`, the default relative to the image's
   # `WORKDIR`, which is the file mounted below.
+  # `--watch-state` points at the file the poller keeps its own record in, on the same volume
+  # the poller writes it to and mounted read-only here: with it the about page says the date the
+  # corpus was last checked and how many consolidations are waiting for their text. A build that
+  # finds nothing there says nothing about polling and writes every other page unchanged.
   page:
     image: ghcr.io/emendrix/emendrix:0.1.0
     volumes:
       - changelogs:/work/changelogs:ro
       - site:/work/site
+      - state:/home/emendrix/.local/share:ro
       - ./watchlist.toml:/work/watchlist.toml:ro
     command:
       - "site"
@@ -102,6 +107,8 @@ services:
       - "https://github.com/emendrix/emendrix"
       - "--changelogs-url"
       - "https://github.com/emendrix/changelogs"
+      - "--watch-state"
+      - "/home/emendrix/.local/share/emendrix/watch-state.json"
 
 volumes:
   changelogs:  # the output git repository: yours, never pushed by emendrix

@@ -15,18 +15,49 @@ index remain the whole navigation. `generated_on` is a parameter, never a clock 
 The stylesheet and the script are linked under the names `fingerprint` computes from their own
 bytes, the same names `build.py` writes them to, so a cached asset can never be a page's stale
 one. The icon is linked by its fixed name for the reason that module gives.
+
+`PageChrome`, what the shell is handed, is defined here beside the shell that reads it. A build
+fills one from `SiteInputs`, so this module needs nothing from `inputs` and the two can be read
+in either order.
 """
 
 from __future__ import annotations
 
+from datetime import date
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from emendrix import DISCLAIMER
 from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
 from emendrix.site_.head import head_metadata
-from emendrix.site_.inputs import PageChrome
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.urls import depth_of, up
 
-__all__ = ["disclaimer_html", "nav_links", "page", "repository_links"]
+__all__ = ["PageChrome", "disclaimer_html", "nav_links", "page", "repository_links"]
+
+
+class PageChrome(BaseModel):
+    """The site-wide facts every page's shell renders, whatever the page is about.
+
+    Gathered into one frozen model because `page` below had reached ten keyword arguments,
+    and its own docstring named an eleventh as the signal to gather rather than grow. It lives
+    beside the shell it describes, and `inputs` builds one from what a build was given; the
+    dependency runs that one way, so neither module needs the other to be read first.
+
+    `operator`, `operator_url` and `contact` are deployment facts like `site_url`: they arrive
+    on the command line and nothing about them is committed, so a build that names nobody is
+    the normal state and every page that reads them says nothing rather than something blank.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    generated_on: date = Field(description="Passed in at the CLI boundary; never clock-read.")
+    repo_url: str = Field(default="", description="Public home of the source, or ''.")
+    changelogs_url: str = Field(default="", description="Public home of the changelog data, or ''.")
+    site_url: str = Field(default="", description="Absolute base for feeds, or '' for none.")
+    operator: str = Field(default="", description="Who runs this instance, or '' for nobody named.")
+    operator_url: str = Field(default="", description="Public page of the operator, or ''.")
+    contact: str = Field(default="", description="Address readers may write to, or ''.")
 
 
 def nav_links(depth: int) -> Html:

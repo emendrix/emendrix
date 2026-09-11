@@ -24,6 +24,10 @@ directory and a public site is the last place it belongs, so `configured` record
 there was one; the report is named by its file name and the committed convention, which is the
 same string in a container and in a checkout.
 
+`polled` is a deployment fact of the same kind as the operator's name: a reading of the file
+the poller on this instance writes, done at the CLI boundary and passed in as a value, so no
+module below here knows that a poller exists or what it keeps.
+
 `eurlex_url` and `published_url` are plain strings resolved at the CLI boundary, and they are
 two different documents: the newest version an act has been consolidated to, which only a
 recorded event can name, and the act as it was published, which is a reading of the act's own
@@ -56,14 +60,15 @@ from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import slug
 from emendrix.site_.amending import AmendingAct, collect_amending
 from emendrix.site_.attribution import unattributed
+from emendrix.site_.chrome import PageChrome
 from emendrix.site_.clocks import EventDate, VersionDates, event_date, sort_date
 from emendrix.site_.entries import CorpusCounts, corpus_counts, sorted_entries
+from emendrix.site_.polled import PolledState
 from emendrix.site_.urls import shared_path
 from emendrix.watch.config import Watchlist
 
 __all__ = [
     "ActSite",
-    "PageChrome",
     "SiteInputs",
     "collect_site",
 ]
@@ -118,30 +123,6 @@ class ActSite(BaseModel):
         return None if entry is None else event_date(entry)
 
 
-class PageChrome(BaseModel):
-    """The site-wide facts every page's shell renders, whatever the page is about.
-
-    Gathered into one frozen model because `chrome.page` had reached ten keyword arguments,
-    and its own docstring named an eleventh as the signal to gather rather than grow. It lives
-    here rather than in `chrome` because `seo` reads this module and `chrome` reads `seo`, so
-    this is the one place both can import it from without a cycle.
-
-    `operator`, `operator_url` and `contact` are deployment facts like `site_url`: they arrive
-    on the command line and nothing about them is committed, so a build that names nobody is
-    the normal state and every page that reads them says nothing rather than something blank.
-    """
-
-    model_config = ConfigDict(frozen=True)
-
-    generated_on: date = Field(description="Passed in at the CLI boundary; never clock-read.")
-    repo_url: str = Field(default="", description="Public home of the source, or ''.")
-    changelogs_url: str = Field(default="", description="Public home of the changelog data, or ''.")
-    site_url: str = Field(default="", description="Absolute base for feeds, or '' for none.")
-    operator: str = Field(default="", description="Who runs this instance, or '' for nobody named.")
-    operator_url: str = Field(default="", description="Public page of the operator, or ''.")
-    contact: str = Field(default="", description="Address readers may write to, or ''.")
-
-
 class SiteInputs(BaseModel):
     """Everything the site renders, resolved. Frozen, so no renderer can rebind a field."""
 
@@ -174,6 +155,11 @@ class SiteInputs(BaseModel):
     operator: str = Field(default="", description="Who runs this instance, or '' for nobody named.")
     operator_url: str = Field(default="", description="Public page of the operator, or ''.")
     contact: str = Field(default="", description="Address readers may write to, or ''.")
+    polled: PolledState | None = Field(
+        default=None,
+        description="What the poller last did, when a deployment handed the build its state "
+        "file. None where it handed it none, and the pages that would speak for it stay quiet.",
+    )
 
     @property
     def chrome(self) -> PageChrome:
@@ -218,6 +204,7 @@ def collect_site(
     operator: str = "",
     operator_url: str = "",
     contact: str = "",
+    polled: PolledState | None = None,
     eurlex_urls: dict[str, str] | None = None,
     published_urls: Mapping[str, str] | None = None,
     kinds: tuple[tuple[str, int], ...] = (),
@@ -324,4 +311,5 @@ def collect_site(
         operator=operator,
         operator_url=operator_url,
         contact=contact,
+        polled=polled,
     )
