@@ -150,8 +150,15 @@ def render_events(result: PollResult, watched: int) -> str:
         f"({watched} watched) · {stats.duplicates} already seen",
         f"{len(result.events)} events · {stats.suppressed} suppressed as already reported · "
         f"{stats.pending_checked} pending re-checked, {stats.pending_resolved} resolved",
-        "",
     ]
+    # Per-row waiting lines are printed below, and a reader of ninety watched acts scrolls past
+    # them; the headline is what says the oldest has been waiting longer than the lag allows.
+    if stats.pending_waiting:
+        lines.append(
+            f"{stats.pending_waiting} still waiting for text · oldest first seen "
+            f"{stats.pending_oldest_days} day(s) ago"
+        )
+    lines.append("")
     for event in result.events:
         lines.extend(_event_lines(event))
     if not result.events:

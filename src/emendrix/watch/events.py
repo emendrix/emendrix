@@ -88,8 +88,19 @@ class PollStats(BaseModel):
     duplicates: int = Field(default=0, description="Entries already seen in an earlier window.")
     matched: int = Field(default=0, description="Entries naming a watched act.")
     suppressed: int = Field(default=0, description="Matches whose event had already been sent.")
-    pending_checked: int = 0
-    pending_resolved: int = 0
+    pending_checked: int = Field(
+        default=0, description="Consolidations re-checked: the pending list as it stood before."
+    )
+    pending_resolved: int = Field(
+        default=0, description="Those re-checked consolidations whose text was fetchable this time."
+    )
+    pending_waiting: int = Field(
+        default=0, description="Consolidations still unresolved after this poll."
+    )
+    pending_oldest_days: int = Field(
+        default=0,
+        description="Days since the oldest unresolved consolidation was first seen; 0 if none.",
+    )
     truncated: bool = Field(
         default=False,
         description="The window was not read to its end; the cursor stopped where the feed did.",

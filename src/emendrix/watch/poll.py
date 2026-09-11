@@ -33,11 +33,17 @@ Pending records are re-checked **before** the window is walked, so an act whose 
 arrived is reported even on a poll that finds nothing new in the feed. When one resolves it
 emits a single ordinary version event and leaves the pending list: amended-then-consolidated is
 reported exactly twice, never once and never on every poll in between.
+
+A record that never resolves looks like a healthy poll in every other counter: the window is
+read, the cursor advances and the run exits successfully. So the stats carry how many records
+are still waiting once the poll is done and how old the oldest of them is, which is the only
+number that separates a corpus with nothing new from one nothing new is reaching.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
+from collections.abc import Iterable
+from datetime import date, datetime
 
 from emendrix.core import (
     ActId,
@@ -128,6 +134,17 @@ def _why_pending(wanted: VersionId | None, descriptors: list[VersionDescriptor])
     if wanted is None:
         return "the corpus lists no version of this act at all"
     return f"{wanted} is not among the {len(descriptors)} versions the corpus lists"
+
+
+def _waiting_age(rows: Iterable[PendingConsolidation], *, on: date) -> int:
+    """Days since the oldest of these rows was first seen, or 0 when there are none.
+
+    `on` is the window's observation date, a value handed in at the CLI boundary, so nothing
+    here reads a clock. A row first seen after `on` counts 0: an age is a duration, and a
+    negative one would be a report about the caller rather than a fact about the corpus.
+    """
+    ages = [(on - row.first_seen).days for row in rows]
+    return max((age for age in ages if age > 0), default=0)
 
 
 def _pending(
@@ -276,9 +293,12 @@ def poll_once(
         event = resolver.resolve(hit.watched, hit.version, window, hit.identifier)
         run.record(event, hit.watched, None)
 
+    # The waiting counts are about the state this poll persists, not the one it started from:
+    # `pending_checked` is what it looked at, `pending_waiting` what is still stuck after it did.
+    persisted = run.state()
     return PollResult(
         events=tuple(run.events),
-        state=run.state(),
+        state=persisted,
         stats=PollStats(
             entries=len(entries),
             duplicates=run.duplicates,
@@ -286,6 +306,8 @@ def poll_once(
             suppressed=run.suppressed,
             pending_checked=len(state.pending),
             pending_resolved=run.resolved,
+            pending_waiting=len(persisted.pending),
+            pending_oldest_days=_waiting_age(persisted.pending, on=window.observed_on),
             truncated=covered_to is not None,
         ),
     )

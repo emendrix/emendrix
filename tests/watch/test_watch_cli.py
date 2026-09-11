@@ -14,13 +14,23 @@ from typer.testing import CliRunner
 
 from emendrix import DISCLAIMER
 from emendrix.cli import app
+from emendrix.watch.cli import render_events
+from emendrix.watch.events import PollResult, PollStats
 from emendrix.watch.source import DEFAULT_LOOKBACK_DAYS, OVERLAP, window_start
-from emendrix.watch.state import load_state
+from emendrix.watch.state import PendingConsolidation, WatchState, load_state
 from eu_pins import AI_ACT, AI_ACT_V1, AI_ACT_V2, FIXTURE_DIR
 
 runner = CliRunner()
 
 WINDOW = ("--since", "2026-08-05T10:00:00", "--until", "2026-08-05T10:05:00")
+WAITING = PendingConsolidation(
+    act_key=f"eu:{AI_ACT}",
+    celex=AI_ACT,
+    version=AI_ACT_V2,
+    first_seen=date(2026, 9, 3),
+    last_checked=date(2026, 9, 11),
+    checks=8,
+)
 
 
 def watchlist_file(tmp_path: Path, *celexes: str) -> Path:
@@ -126,3 +136,27 @@ def test_the_observation_date_is_stamped_on_the_states_it_writes(tmp_path: Path)
     payload = json.loads(run(tmp_path, *WINDOW, "--json"))
     stamped = date.fromisoformat(payload["events"][0]["observed_on"])
     assert stamped.year >= 2026
+
+
+def test_a_report_with_nothing_waiting_reads_exactly_as_it_always_has() -> None:
+    """The waiting headline is conditional, and this is the output it may not touch."""
+    assert render_events(PollResult(state=WatchState()), 1) == "\n".join(
+        [
+            "0 notifications · 0 naming a watched act (1 watched) · 0 already seen",
+            "0 events · 0 suppressed as already reported · 0 pending re-checked, 0 resolved",
+            "",
+            "nothing new.",
+            "",
+            DISCLAIMER,
+        ]
+    )
+
+
+def test_the_report_leads_with_how_long_the_oldest_consolidation_has_waited() -> None:
+    result = PollResult(
+        state=WatchState(pending=(WAITING,)),
+        stats=PollStats(pending_checked=1, pending_waiting=1, pending_oldest_days=8),
+    )
+    lines = render_events(result, 1).splitlines()
+    assert lines[2] == "1 still waiting for text · oldest first seen 8 day(s) ago"
+    assert any(line.startswith(f"? still waiting  eu:{AI_ACT}") for line in lines)

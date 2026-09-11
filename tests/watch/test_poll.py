@@ -295,3 +295,77 @@ def test_both_identifier_forms_of_one_version_reach_the_same_event(scheme: str) 
     value = AI_ACT_V2 if scheme == "celex" else "2024R1689/20260727"
     (event,) = poll((entry(value, scheme),), inventory(*AVAILABLE)).events
     assert event.new_version == AI_ACT_V2
+
+
+# ------------------------------------------------------------- how long it waits
+
+
+def window_on(day: date) -> PollWindow:
+    """A one-day window observed on `day`; the poller's only notion of "now" is this value."""
+    return PollWindow(
+        start=datetime.combine(day - timedelta(days=1), datetime.min.time()),
+        end=datetime.combine(day, datetime.min.time()),
+        observed_on=day,
+    )
+
+
+def test_a_consolidation_that_does_not_arrive_is_counted_and_aged() -> None:
+    """A poll against a corpus that has stopped growing succeeds in every other counter."""
+    first = poll((entry(AI_ACT_V2),), inventory((AI_ACT, ("ENG",))))
+    assert (first.stats.pending_waiting, first.stats.pending_oldest_days) == (1, 0)
+
+    later = poll(
+        (),
+        inventory((AI_ACT, ("ENG",))),
+        state=first.state,
+        window=window_on(TODAY + timedelta(days=8)),
+    )
+    assert (later.stats.pending_waiting, later.stats.pending_oldest_days) == (1, 8)
+    assert later.state.pending[0].first_seen == TODAY
+
+
+def test_a_resolved_consolidation_leaves_nothing_waiting() -> None:
+    waiting = poll((entry(AI_ACT_V2),), inventory((AI_ACT, ("ENG",))))
+    resolved = poll((), inventory(*AVAILABLE), state=waiting.state, window=NEXT_WINDOW)
+    assert resolved.stats.pending_resolved == 1
+    assert (resolved.stats.pending_waiting, resolved.stats.pending_oldest_days) == (0, 0)
+
+
+def test_the_oldest_of_several_waiting_consolidations_sets_the_age() -> None:
+    watchlist = Watchlist(acts=(WatchedAct(celex=AI_ACT), WatchedAct(celex=MDR)))
+    first = poll((entry(AI_ACT_V2),), inventory((AI_ACT, ("ENG",))), watchlist=watchlist)
+    second = poll(
+        (entry(MDR),),
+        inventory((AI_ACT, ("ENG",))),
+        state=first.state,
+        window=window_on(TODAY + timedelta(days=5)),
+        watchlist=watchlist,
+    )
+    assert second.stats.pending_waiting == 2
+    assert second.stats.pending_oldest_days == 5
+
+
+def test_a_poll_with_nothing_waiting_reports_zeroes() -> None:
+    """The shape a healthy deployment holds, and what any alarm on these numbers reads."""
+    quiet = poll((), inventory(*AVAILABLE))
+    assert (quiet.stats.pending_waiting, quiet.stats.pending_oldest_days) == (0, 0)
+    found = poll((entry(AI_ACT_V2),), inventory(*AVAILABLE))
+    assert (found.stats.pending_waiting, found.stats.pending_oldest_days) == (0, 0)
+
+
+def test_what_was_checked_and_what_is_still_waiting_are_different_numbers() -> None:
+    """One counts the list the poll looked at, the other the list it persisted."""
+    watchlist = Watchlist(
+        acts=(WatchedAct(celex=AI_ACT), WatchedAct(celex=MDR), WatchedAct(celex="32022R2065"))
+    )
+    first = poll((entry(AI_ACT_V2),), inventory((AI_ACT, ("ENG",))), watchlist=watchlist)
+    second = poll(
+        (entry(MDR), entry("32022R2065")),
+        inventory(*AVAILABLE),
+        state=first.state,
+        window=NEXT_WINDOW,
+        watchlist=watchlist,
+    )
+    assert (second.stats.pending_checked, second.stats.pending_resolved) == (1, 1)
+    assert second.stats.pending_waiting == 2
+    assert [row.celex for row in second.state.pending] == [MDR, "32022R2065"]
