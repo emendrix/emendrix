@@ -10,6 +10,7 @@ og.png                          the link-preview card, the one binary published
 robots.txt                      the crawl policy, and where the sitemap is
 search-index.json               what that script fetches, prebuilt
 sitemap.xml                     every page, with the date its content last moved
+sitemap_index.xml               the one address a search engine is given, naming the sitemap
 acts/index.html                 the roster
 acts/<slug>/index.html          one page per watched act: its timeline and index
 acts/<slug>/<key>/index.html    one page per event: the changes and the verbatim text
@@ -29,8 +30,8 @@ relative to it, and the script reads the index back from the root it was handed;
 them and every page below the root loads nothing. The first two carry a digest of their own
 bytes in the name, and `fingerprint` is the module that says why; both names are read from
 there rather than spelled again here, so what a page links and what this table writes cannot
-be two strings. `robots.txt` and `sitemap.xml` sit at the root because that is the only place a
-crawler looks for either.
+be two strings. `robots.txt`, `sitemap.xml` and `sitemap_index.xml` sit at the root because
+that is the only place a crawler looks for any of them.
 
 The feeds and the sitemap are the one conditional, and it is one rule rather than two: a feed's
 links and a sitemap's locations are both absolute, so without a site URL `render_feed` and
@@ -61,7 +62,14 @@ from pathlib import Path
 
 from emendrix.site_.amending import resolve
 from emendrix.site_.assets import icon_svg, og_png, search_js
-from emendrix.site_.discovery import ROBOTS, SITEMAP, robots_txt, sitemap_xml
+from emendrix.site_.discovery import (
+    ROBOTS,
+    SITEMAP,
+    SITEMAP_INDEX,
+    robots_txt,
+    sitemap_index_xml,
+    sitemap_xml,
+)
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
 from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
 from emendrix.site_.history import histories
@@ -157,6 +165,7 @@ def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
         )
     if site.site_url:
         files[SITEMAP] = sitemap_xml(site)
+        files[SITEMAP_INDEX] = sitemap_index_xml(site)
         files[feed_path(None)] = render_feed(site, None)
         for act in site.acts:
             files[feed_path(act)] = render_feed(site, act)

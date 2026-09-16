@@ -1,8 +1,8 @@
 """The two files written for crawlers rather than for readers.
 
-`robots.txt` states the crawl policy and points at the sitemap; `sitemap.xml` lists every page
-the site publishes, with the date each one's content last moved. Neither is a page: no shell, no
-navigation, no disclaimer.
+`robots.txt` states the crawl policy and points at `sitemap_index.xml`, which names
+`sitemap.xml`, which lists every page the site publishes with the date each one's content last
+moved. None of the three is a page: no shell, no navigation, no disclaimer.
 
 Both are assembled as strings rather than through an XML library, for the reason the feeds give:
 two builds of one repository state have to produce identical bytes, and a serialiser free to
@@ -41,6 +41,7 @@ different namespace that no sitemap parser recognises as a sitemap. It must not 
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date
 
 from emendrix.site_.clocks import event_dated
@@ -58,11 +59,21 @@ from emendrix.site_.urls import (
     provision_href,
 )
 
-__all__ = ["ROBOTS", "SITEMAP", "robots_txt", "sitemap_xml"]
+__all__ = [
+    "ROBOTS",
+    "SITEMAP",
+    "SITEMAP_INDEX",
+    "robots_txt",
+    "sitemap_index_xml",
+    "sitemap_xml",
+]
 
 ROBOTS = "robots.txt"
 SITEMAP = "sitemap.xml"
-"""Where the builder writes each file. Both sit at the site root, which is where crawlers look."""
+SITEMAP_INDEX = "sitemap_index.xml"
+"""Where the builder writes each file. All three sit at the site root, which is where a crawler
+looks, and `robots.txt` names the index rather than the sitemap: one address a search engine
+holds, behind which the sitemap may be split or renamed without that address ever moving."""
 
 _NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 """The sitemap namespace name. `http://`, and see the module docstring for why it stays."""
@@ -86,8 +97,25 @@ def robots_txt(site: SiteInputs) -> str:
     """
     lines = ["User-agent: *", "Allow: /"]
     if site.site_url:
-        lines.extend(("", f"Sitemap: {canonical_url(site.site_url, SITEMAP)}"))
+        lines.extend(("", f"Sitemap: {canonical_url(site.site_url, SITEMAP_INDEX)}"))
     return "\n".join(lines) + "\n"
+
+
+def _moved(dates: Iterable[date | None], built: date) -> date | None:
+    """The newest of these dates the build can stand behind, or `None` when there is none.
+
+    `<lastmod>` says when a page's content last moved, and content cannot move after the build
+    that wrote it. `event_dated` reads clock 1, the day an amendment takes effect, which a
+    consolidation is routinely notified before, so the newest date a page has is not always one
+    this build can claim. Such a date is left out rather than clamped to the build date, which
+    is the value this module refuses to stamp a URL with: a crawler handed a `<lastmod>` in the
+    future either discards it or stops trusting the field across the whole sitemap, and an
+    omission is what an act with no events already gets.
+
+    The default is what a page whose every date is ahead of the build falls back to, and what
+    a checkout with a watchlist and an empty changelog repository produces for all of them.
+    """
+    return max((value for value in dates if value is not None and value <= built), default=None)
 
 
 def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
@@ -106,8 +134,9 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     with the build too, and dating it by the newest event would say it last changed when the
     corpus did, which is false.
 
-    `max` needs its default: a checkout with a watchlist and an empty changelog repository is a
-    real state, and every date here is then `None` except the methodology page's.
+    Every date goes through `_moved`, which is where the rule that a page cannot have moved
+    after the build that wrote it lives, and which supplies the `None` a page with no date it
+    can stand behind gets.
 
     An act's date is its newest entry's, whatever that entry is: `<lastmod>` answers when the
     page's content last moved, and an event no amending act is named for moved it like any
@@ -115,39 +144,39 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     skips exactly those events, and must not be read here: a crawler told the page was stale
     would be told a lie the human-facing date rule exists to prevent, not to cause.
     """
-    newest = max((event_dated(entry) for _, entry in site.recent), default=None)
+    built = site.generated_on
+    newest = _moved((event_dated(entry) for _, entry in site.recent), built)
     fixed: list[tuple[str, date | None]] = [
         ("", newest),
         ("acts/", newest),
-        ("methodology/", site.run.run_date),
+        ("methodology/", _moved((site.run.run_date,), built)),
         ("about/", None),
         ("feeds/", newest),
         (amendments_href(), newest),
         (dates_href(), None),
     ]
     fixed.extend(
-        (act_href(act.slug), event_dated(act.entries[0]) if act.entries else None)
+        (act_href(act.slug), _moved((event_dated(entry) for entry in act.entries), built))
         for act in site.acts
     )
     fixed.extend(
-        (event_href(act.slug, entry.key), event_dated(entry))
+        (event_href(act.slug, entry.key), _moved((event_dated(entry),), built))
         for act in site.acts
         for entry in act.entries
     )
-    # A provision's page is dated by its newest step, which is the newest event that touched
-    # it: the page is a rendering of those events and moves exactly when one of them does.
+    # A provision's page is dated by the newest event that touched it: the page is a rendering
+    # of those events and moves exactly when one of them does.
     fixed.extend(
         (
             provision_href(act.slug, history.location.canonical),
-            event_dated(history.steps[0].entry),
+            _moved((event_dated(step.entry) for step in history.steps), built),
         )
         for act in site.acts
         for history in histories(act)
     )
-    # An instrument's page is dated by its newest event, the first pair the inversion holds:
-    # the page is a rendering of those events and moves exactly when one of them does.
+    # An instrument's page is dated by the newest event attributed to it, for the same reason.
     fixed.extend(
-        (amendment_href(key), event_dated(amended[0][1]))
+        (amendment_href(key), _moved((event_dated(entry) for _, entry in amended), built))
         for key, amended in amended_by(site).items()
     )
     return tuple(fixed)
@@ -180,4 +209,31 @@ def sitemap_xml(site: SiteInputs) -> str:
         Html("</urlset>"),
         Html(""),
     ]
+    return join(lines, "\n")
+
+
+def sitemap_index_xml(site: SiteInputs) -> str:
+    """The index, newline-terminated: one entry, naming the sitemap written beside it.
+
+    An index is what a search engine is given to remember, and the file behind it can grow,
+    split or be renamed without the submitted address moving. One entry today is not a
+    degenerate index: it is the indirection itself that is the point, and a second sitemap
+    joins it here rather than anywhere a crawler has to be told about.
+
+    `<lastmod>` is the newest date the sitemap it names publishes, which is when that file's
+    contents last moved under the same rule every entry in it is dated by. A sitemap with no
+    dated entry at all carries none, for the reason `_moved` gives.
+    """
+    if not site.site_url:
+        raise ValueError(_UNCONFIGURED)
+    lines = [
+        Html('<?xml version="1.0" encoding="utf-8"?>'),
+        Html(f'<sitemapindex xmlns="{_NAMESPACE}">'),
+        Html("<sitemap>"),
+        Html(f"<loc>{escape(canonical_url(site.site_url, SITEMAP))}</loc>"),
+    ]
+    newest = _moved((dated for _, dated in _entries(site)), site.generated_on)
+    if newest is not None:
+        lines.append(Html(f"<lastmod>{escape(newest.isoformat())}</lastmod>"))
+    lines.extend((Html("</sitemap>"), Html("</sitemapindex>"), Html("")))
     return join(lines, "\n")

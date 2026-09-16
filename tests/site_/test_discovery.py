@@ -20,12 +20,18 @@ from xml.etree import ElementTree
 
 import pytest
 from helpers import REPORTS, SITE_URL, WATCHLIST, build, runner
-from site_entries import unattributed_entry
+from site_entries import attributed_entry, unattributed_entry
 
 from emendrix.cli import app
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
-from emendrix.site_.discovery import robots_txt, sitemap_xml
+from emendrix.output import ChangelogEntry
+from emendrix.site_.discovery import (
+    SITEMAP_INDEX,
+    robots_txt,
+    sitemap_index_xml,
+    sitemap_xml,
+)
 from emendrix.site_.history import histories
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.urls import provision_href
@@ -34,8 +40,13 @@ from eu_pins import OBSERVED_ON
 SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
 ATOM_NS = "{http://www.w3.org/2005/Atom}"
 
-UNUSED_DATE = date(2019, 3, 4)
-"""A build date that is no event date and no report date, so a `lastmod` cannot equal it by luck."""
+UNUSED_DATE = date(2027, 3, 4)
+"""A build date equal to no event date and no report date, so a `lastmod` cannot equal it by luck.
+
+Later than every date the committed artifacts carry, because a build cannot stand behind a date
+that is ahead of it: dated before them, the sitemap would correctly drop every `<lastmod>` and
+each assertion below would hold over an empty field rather than over the dates it names.
+"""
 
 
 @pytest.fixture(scope="module")
@@ -67,10 +78,33 @@ def _addresses(site: Path) -> set[str]:
 def _empty_site(*, site_url: str = SITE_URL) -> SiteInputs:
     """A watched-nothing site: no acts, no events, and the newest committed report."""
     return SiteInputs(
-        generated_on=OBSERVED_ON,
+        generated_on=UNUSED_DATE,
         run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
         report="r.json",
         site_url=site_url,
+    )
+
+
+def _blocks(document: str, tag: str) -> list[tuple[str, str | None]]:
+    """Every `<url>` or `<sitemap>` in a rendered document as `(loc, lastmod or None)`."""
+    root = ElementTree.fromstring(document)
+    found = []
+    for block in root.findall(f"{SITEMAP_NS}{tag}"):
+        loc = block.findtext(f"{SITEMAP_NS}loc")
+        assert loc is not None
+        found.append((loc, block.findtext(f"{SITEMAP_NS}lastmod")))
+    assert found
+    return found
+
+
+def _dated(entries: tuple[ChangelogEntry, ...], built: date) -> SiteInputs:
+    """A site of exactly these events, built on `built`, with a base address."""
+    return collect_site(
+        generated_on=built,
+        run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
+        report=Path("r.json"),
+        entries=entries,
+        site_url=SITE_URL,
     )
 
 
@@ -149,9 +183,14 @@ def test_every_published_lastmod_is_an_iso_date(site: Path) -> None:
             assert date.fromisoformat(lastmod).isoformat() == lastmod, loc
 
 
-def test_the_methodology_page_is_dated_by_the_report_its_figures_came_from(site: Path) -> None:
+def test_the_methodology_page_is_dated_by_the_report_its_figures_came_from(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """Built on a date the report precedes, which is the order a real build runs in: a report
+    is committed before the build that renders its figures, never after it."""
     run = EvalRun.model_validate_json(latest_report(REPORTS).read_bytes())
-    dates = dict(_urls(site))
+    out = build(tmp_path / "site", changelog_repo, "--generated-on", UNUSED_DATE.isoformat())
+    dates = dict(_urls(out))
     assert dates[f"{SITE_URL}/methodology/"] == run.run_date.isoformat()
 
 
@@ -192,13 +231,7 @@ def test_a_provision_page_is_listed_and_dated_by_the_newest_event_that_touched_i
     """
     entry = unattributed_entry()
     older = entry.model_copy(update={"detected_on": entry.detected_on - timedelta(days=1)})
-    inputs = collect_site(
-        generated_on=UNUSED_DATE,
-        run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
-        report=Path("r.json"),
-        entries=(entry, older),
-        site_url=SITE_URL,
-    )
+    inputs = _dated((entry, older), UNUSED_DATE)
     act = inputs.acts[0]
     listed = {
         block.split("<loc>")[1].split("</loc>")[0]: block
@@ -218,13 +251,7 @@ def test_an_act_with_only_unnamed_events_still_dates_its_page() -> None:
     amending act moved it like any other; only the human-facing "newest amendment" line
     skips such events. A crawler told this page never changed would be told a lie."""
     entry = unattributed_entry()
-    inputs = collect_site(
-        generated_on=OBSERVED_ON,
-        run=EvalRun.model_validate_json(latest_report(REPORTS).read_bytes()),
-        report=Path("r.json"),
-        entries=(entry,),
-        site_url=SITE_URL,
-    )
+    inputs = _dated((entry,), UNUSED_DATE)
     assert inputs.acts[0].dated is None
     rendered = sitemap_xml(inputs)
     slug = inputs.acts[0].slug
@@ -300,7 +327,10 @@ def test_the_crawl_policy_is_written_on_every_build_and_allows_everything(
 def test_the_sitemap_line_appears_only_with_a_base_address_and_is_absolute(
     site: Path, tmp_path: Path, changelog_repo: Path
 ) -> None:
-    assert f"Sitemap: {SITE_URL}/sitemap.xml\n" in (site / "robots.txt").read_text(encoding="utf-8")
+    """The line names the index, which is the address a crawler is meant to keep."""
+    assert f"Sitemap: {SITE_URL}/{SITEMAP_INDEX}\n" in (site / "robots.txt").read_text(
+        encoding="utf-8"
+    )
     bare = _bare(tmp_path / "bare", changelog_repo)
     assert "Sitemap" not in (bare / "robots.txt").read_text(encoding="utf-8")
 
@@ -350,3 +380,88 @@ def test_a_site_with_no_events_at_all_still_has_a_sitemap() -> None:
         f"{SITE_URL}/dates/",
     ]
     assert document.count("<lastmod>") == 1
+
+
+# ------------------------------------------------------ a date the build cannot vouch for
+
+
+def test_a_date_a_text_only_starts_to_apply_on_reaches_no_lastmod() -> None:
+    """`event_dated` reads clock 1, the day an amendment takes effect, and a consolidation is
+    notified before it applies. A page's content cannot have moved after the build that wrote
+    it, so such a date is omitted rather than published: a crawler handed a `<lastmod>` in the
+    future either discards it or stops trusting the field across the whole sitemap, and the
+    omission is the same answer an act with no events gets.
+    """
+    built = OBSERVED_ON
+    ahead = built + timedelta(days=30)
+    entry = attributed_entry().model_copy(update={"in_force": (ahead,)})
+    document = sitemap_xml(_dated((entry,), built))
+    assert ahead.isoformat() not in document
+    for loc, lastmod in _blocks(document, "url"):
+        if lastmod is not None:
+            assert date.fromisoformat(lastmod) <= built, loc
+
+
+def test_a_page_is_dated_by_the_newest_event_the_build_can_vouch_for() -> None:
+    """Two events on one act, one in force before the build and one only after it.
+
+    The page has moved, so dropping its date entirely would tell a crawler less than the
+    corpus knows. It keeps the newest date the build can stand behind instead.
+    """
+    built = OBSERVED_ON
+    settled = built - timedelta(days=10)
+    entry = attributed_entry()
+    inputs = _dated(
+        (
+            entry.model_copy(update={"in_force": (built + timedelta(days=30),)}),
+            entry.model_copy(update={"in_force": (settled,)}),
+        ),
+        built,
+    )
+    dates = dict(_blocks(sitemap_xml(inputs), "url"))
+    assert dates[f"{SITE_URL}/acts/{inputs.acts[0].slug}/"] == settled.isoformat()
+
+
+# ------------------------------------------------------------------ the sitemap index
+
+
+def test_the_index_names_the_sitemap_and_nothing_else() -> None:
+    """One entry point for a crawler, and the sitemap it names is the one the build writes."""
+    document = sitemap_index_xml(_empty_site())
+    root = ElementTree.fromstring(document)
+    assert root.tag == f"{SITEMAP_NS}sitemapindex"
+    assert [loc for loc, _ in _blocks(document, "sitemap")] == [f"{SITE_URL}/sitemap.xml"]
+
+
+def test_the_index_is_dated_by_the_newest_date_the_sitemap_publishes() -> None:
+    """The index says when the sitemap it names last moved, and that is the newest date in it."""
+    inputs = _dated((attributed_entry(),), OBSERVED_ON)
+    newest = max(
+        date.fromisoformat(lastmod)
+        for _, lastmod in _blocks(sitemap_xml(inputs), "url")
+        if lastmod is not None
+    )
+    assert dict(_blocks(sitemap_index_xml(inputs), "sitemap")) == {
+        f"{SITE_URL}/sitemap.xml": newest.isoformat()
+    }
+
+
+def test_the_index_is_written_beside_the_sitemap_and_only_with_a_base_address(
+    site: Path, tmp_path: Path, changelog_repo: Path
+) -> None:
+    """A location is absolute in an index exactly as it is in a sitemap, so the two travel."""
+    assert (site / SITEMAP_INDEX).exists()
+    assert not (_bare(tmp_path / "bare", changelog_repo) / SITEMAP_INDEX).exists()
+
+
+def test_rendering_an_index_without_a_base_address_refuses() -> None:
+    with pytest.raises(ValueError, match="needs a site URL"):
+        sitemap_index_xml(_empty_site(site_url=""))
+
+
+def test_the_crawl_policy_points_a_crawler_at_the_index(site: Path) -> None:
+    """One entry point rather than two: the index names the sitemap, so naming both here
+    would publish the same file under two addresses and invite a crawler to fetch it twice."""
+    text = (site / "robots.txt").read_text(encoding="utf-8")
+    assert f"Sitemap: {SITE_URL}/{SITEMAP_INDEX}\n" in text
+    assert text.count("Sitemap:") == 1

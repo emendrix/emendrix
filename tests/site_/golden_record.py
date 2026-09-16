@@ -637,4 +637,14 @@ is about. Nothing else in the tree moved: both feeds, `search-index.json`, `site
 deployment's base and not about the golden, which is why a change that renotifies every
 subscriber shows up here as one sentence. No size pin moved with it, the largest page in this
 tree being an event page, and no measured figure is read out of a report onto this page.
+
+Read again on 2026-09-16, when the site gained a sitemap index and stopped publishing a
+`<lastmod>` the build cannot stand behind. Three files moved and no page or feed did.
+`sitemap_index.xml` is new and names `sitemap.xml`; `robots.txt` points a crawler at the index
+instead of the sitemap, so the address a search engine keeps no longer names the file that may
+one day be split. `sitemap.xml` lost the methodology page's `<lastmod>`, because this tree is
+built for 2026-08-06 from a report dated 2026-09-05, and a build cannot say a page moved on a
+day that is ahead of it. That inversion is a property of the pinned build date rather than of
+the rule: on a deployment, where the build date is the day the build ran, a committed report
+always precedes it and the date is published as before. No measured figure moved with them.
 """

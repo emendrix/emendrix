@@ -29,8 +29,9 @@ methodology/          the metrics table with its caveats, the loop, the disclaim
 feeds/                what the feeds are and where they are
 feeds/all.xml         every amendment event, as Atom
 feeds/<celex>.xml     one act's events, for a reader who watches only that act
-robots.txt            what crawlers may read, and where the sitemap is
+robots.txt            what crawlers may read, and where the sitemap index is
 sitemap.xml           every page, with the date its content last moved
+sitemap_index.xml     the one address a search engine is given, naming the sitemap
 search-index.json     act and instrument names, aliases, CELEX numbers and touched provisions
 search.<digest>.js    the one script; style.<digest>.css is the one stylesheet
 icon.svg              the favicon; og.png is the link-preview card
@@ -60,14 +61,24 @@ replaces the directory whole do it.
 Four things about that tree are not visible in the listing. Every page states its own canonical
 address, so the two ways a static host serves one page, with and without the `index.html`, do not
 read as two pages. Every page advertises the feeds that cover it in its `<head>`, so a reader's
-feed reader finds them from a visit rather than from the feeds page. `sitemap.xml` and that whole
-head block, canonical, Open Graph, Twitter card and JSON-LD alike, need an absolute address and
-are omitted entirely without `--site-url`, which is the rule the feeds already follow; `robots.txt`
-and the favicon link need no base and are written either way, so the only thing `robots.txt` loses
-is its `Sitemap:` line. And every `<lastmod>` comes from the corpus, an act's newest event or the
-report's run date, never from the build clock, so a rebuild that changed nothing tells a crawler
-nothing changed, and an act nothing has happened to yet carries no `<lastmod>` at all rather than
-a guessed one.
+feed reader finds them from a visit rather than from the feeds page. `sitemap.xml`, `sitemap_index.xml` and
+that whole head block, canonical, Open Graph, Twitter card and JSON-LD alike, need an absolute
+address and are omitted entirely without `--site-url`, which is the rule the feeds already follow;
+`robots.txt` and the favicon link need no base and are written either way, so the only thing
+`robots.txt` loses is its `Sitemap:` line. That line names the index rather than the sitemap, and
+the index names the sitemap: one address for a search engine to keep, behind which the sitemap may
+be split or renamed without the submitted address moving. And every `<lastmod>` comes from the
+corpus, an act's newest event or the report's run date, never from the build clock, so a rebuild
+that changed nothing tells a crawler nothing changed, and an act nothing has happened to yet
+carries no `<lastmod>` at all rather than a guessed one.
+
+No `<lastmod>` is ever later than the date the build was made for. An act's newest event is dated
+by the day its changes take effect, and a consolidation is routinely notified before it applies,
+so the corpus can hand the sitemap a date that has not arrived. A page's content cannot have moved
+after the build that wrote it, so such a date is left out and the newest date the build can stand
+behind is published instead; where a page has none, it carries no `<lastmod>`, which is the answer
+a quiet act already gets. Clamping to the build date would be worse than omitting: it would stamp
+every affected URL with the one value this file refuses to put in a `<lastmod>`.
 
 The evidence is on the site rather than behind a link out of it, one page per event. An act's
 own page is the timeline: a card per event with the facts and the anchor every feed entry was
@@ -266,8 +277,8 @@ planned.
 
 `--site-url` is the one fact the generator cannot infer, and everything absolute needs it: an Atom
 link, an entry ID, a canonical address, an `og:image` and a sitemap `<loc>` are all absolute by
-definition. Without it no feed file and no `sitemap.xml` is written, `/feeds/` says why, and no
-page carries a canonical, an Open Graph tag or a JSON-LD block at all. All of it or none of it,
+definition. Without it no feed file, no `sitemap.xml` and no `sitemap_index.xml` is written, `/feeds/` says
+why, and no page carries a canonical, an Open Graph tag or a JSON-LD block at all. All of it or none of it,
 per page: a page carrying `og:title` with no `og:url` renders a preview that is wrong, which is
 worse than a page with no preview. Entry IDs are the address an event is published at, the
 act page's fragment under the site base, so a rebuild at one base never re-notifies a subscriber

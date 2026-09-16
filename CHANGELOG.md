@@ -781,3 +781,23 @@ Named rather than discovered later; the eval report's disagreement list is the l
   too. Every number is published as measured, under its own date, none is adjusted for another,
   and every verdict stands against the question it answered.
 
+
+- **A `<lastmod>` in the future was published until 2026-09-16, and a sitemap index is served
+  from that date.** `event_dated` reads the day an amendment takes effect, and a consolidation is
+  routinely notified before it applies, so the corpus hands the sitemap dates that have not
+  arrived. Counted on the sitemap as served on 2026-09-16: 13 of 3380 locations carried a
+  `<lastmod>` ahead of the build that wrote them, dated 2026-09-21 and 2026-10-01, and four of
+  those were the home page, the roster, the feeds page and the amendments index, which take the
+  newest date on the site. A page's content cannot have moved after the build that wrote it, so
+  such a date is now left out and the newest date the build can stand behind is published in its
+  place; where a page has none, it carries no `<lastmod>`, which is the answer a quiet act already
+  gets. Clamping to the build date was rejected: it would stamp the affected URLs with the one
+  value the sitemap refuses to publish, and a rebuild that changed nothing would tell a crawler
+  the whole site had. **This is not a crawler having rejected the sitemap.** The file validated
+  against the published schema on either side of the change and was read whole by other crawlers
+  throughout; a date ahead of the reader is a field a crawler discards, and a sitemap it distrusts
+  the field across, never a document it fails to parse. Alongside it, `sitemap_index.xml` is now
+  written beside `sitemap.xml` and `robots.txt` names the index instead: one address for a search
+  engine to keep, behind which the sitemap may be split or renamed without that address moving.
+  No deterministic figure moved and no page or feed did; the golden moves by three files, the two
+  discovery files and the new index.
