@@ -27,12 +27,14 @@ from emendrix.output import ChangelogEntry
 from emendrix.site_.amending import AmendingAct, amenders
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import Amended
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.act_event import render_event_summary
 from emendrix.site_.seo import amendment_json_ld
 from emendrix.site_.titles import SUFFIX
+from emendrix.site_.trail import amending_trail
 from emendrix.site_.urls import act_href, amendment_href, entry_anchors, event_href, up
 
 __all__ = ["render_amendment_page"]
@@ -63,7 +65,13 @@ def _grouped(amended: Amended) -> list[tuple[ActSite, list[ChangelogEntry]]]:
 
 def _header(instrument: AmendingAct, acts: int, events: int) -> list[Html]:
     """The instrument's names, its identifier, what it did, and where the official text is."""
-    lines = [Html(f"<h1>{escape(instrument.short)}</h1>")]
+    lines = masthead(
+        "amending",
+        amending_trail(instrument),
+        _DEPTH,
+        Html("Amending act"),
+        escape(instrument.short),
+    )
     if instrument.number and instrument.number != instrument.short:
         lines.append(Html(f'<p class="official">{escape(instrument.number)}</p>'))
     if instrument.title:
@@ -148,6 +156,7 @@ def render_amendment_page(site: SiteInputs, instrument: AmendingAct, amended: Am
         body=join(lines, "\n"),
         path=amendment_href(instrument.key),
         chrome=site.chrome,
+        section="amendments/",
         # The site-wide feed alone, whatever the instrument moved: one feed per amended act
         # would advertise sixteen of them on the page of an instrument that touched sixteen,
         # and a reader who wants one act's feed is one click from the act's own page.

@@ -6,21 +6,22 @@ It is a constant in Python rather than a checked-in `.css` asset so that the one
 builder copies verbatim stays the search script, and so a stylesheet change is reviewed as a
 diff in the same package as the markup it styles.
 
-It became a package on 2026-09-03, when the sheet outgrew the ~300-line module cap. The seam
-is one file per concern, concatenated in cascade order: `fonts` (the `@font-face` rules and
-their metric-matched fallbacks), `tokens` (the two palettes, the two faces, the type scale,
-the shell, the measures and the spacing steps), `base` (reset, body, headings, links, code,
-the shared text classes, the header bar, search, the footer, the disclaimer and the focus
-ring), `pages` (home, the acts roster, methodology), `timeline` (the act, event and amendment
-pages as documents: header lines, the two columns and the sidebar, the rail, the event card,
-the act's dates list and the pager), `evidence` (one change: the block and its heading, the
-touched index, the disagreement badge, the gathered rows with no text, the diff and verbatim
-blocks, tables) and `media` (print and forced colours). A rule in a later module may rely on
-an earlier one and never the reverse, which is what makes the order a contract rather than a
-preference. A class used by more than one page family lives in `base`; a class one page owns
-lives with that page. `timeline` was split off `evidence` on 2026-09-05, when gathering an
-event's changes with no text to show needed rules that module had no room for under the cap,
-and `media` on 2026-09-18, when forced colours joined print.
+It became a package on 2026-09-03, when the sheet outgrew the ~300-line module cap. The seam is
+one file per concern, concatenated in cascade order: `fonts` (the `@font-face` rules and their
+metric-matched fallbacks), `tokens` (the two palettes, the two faces, the type scale, the
+shell, the measures and the spacing steps), `base` (reset, body, headings, links, code, the
+shared text classes, the header bar, search, the footer, the disclaimer and the focus ring),
+`identity` (the masthead every page below home opens with, its caption and trail, and the
+header bar's current section), `pages` (home, the acts roster, methodology), `timeline` (the
+act, event and amendment pages as documents: header lines, the two columns and the sidebar, the
+rail, the event card, the act's dates list and the pager), `evidence` (one change: the block
+and its heading, the touched index, the disagreement badge, the gathered rows with no text, the
+diff and verbatim blocks, tables) and `media` (print and forced colours). A rule in a later
+module may rely on an earlier one and never the reverse, which is what makes the order a
+contract rather than a preference. A class used by more than one page family lives in `base`; a
+class one page owns lives with that page. `timeline` was split off `evidence` on 2026-09-05,
+when gathering an event's changes with no text to show needed rules that module had no room for
+under the cap, and `media` on 2026-09-18, when forced colours joined print.
 
 This text is minted, not escaped. It is the repository's own writing, not anything a legal
 document or a model produced, so it never passes through `markup.escape`; nothing in it is
@@ -60,6 +61,7 @@ from typing import Final
 from emendrix.site_.style.base import BASE
 from emendrix.site_.style.evidence import EVIDENCE
 from emendrix.site_.style.fonts import FONTS_CSS
+from emendrix.site_.style.identity import IDENTITY
 from emendrix.site_.style.media import MEDIA
 from emendrix.site_.style.pages import PAGES
 from emendrix.site_.style.timeline import TIMELINE
@@ -67,6 +69,6 @@ from emendrix.site_.style.tokens import TOKENS
 
 __all__ = ["STYLE"]
 
-STYLE: Final = FONTS_CSS + TOKENS + BASE + PAGES + TIMELINE + EVIDENCE + MEDIA
+STYLE: Final = FONTS_CSS + TOKENS + BASE + IDENTITY + PAGES + TIMELINE + EVIDENCE + MEDIA
 """The whole sheet, in cascade order. `build.py` writes exactly this, and `fingerprint`
 names the file from these bytes so a page never loads a cached sheet from another build."""

@@ -45,20 +45,29 @@ def test_the_disclaimer_says_not_legal_advice_once_with_its_lead_in_bold() -> No
 def test_the_header_carries_the_six_destinations_in_one_order() -> None:
     """Two rosters, the list of dates ahead, the two prose pages and the feeds.
 
-    Pinned as one string because the order is the decision: `Amendments` sits beside `All
+    Pinned as one string because the order is the decision: `Amending acts` sits beside `All
     acts` because the two are the site's two rosters, and a reader who has just met an
-    instrument's name on an event page looks for it next to where the acts are. `Dates ahead`
+    amending act's name on a version page looks for it next to where the acts are. `Dates ahead`
     follows them because it is the third view of the corpus and the only one facing forward;
     everything after it is about the site rather than about the corpus.
     """
     assert (
         '<nav aria-label="Site"><a href="acts/">All acts</a> '
-        '<a href="amendments/">Amendments</a> '
+        '<a href="amendments/">Amending acts</a> '
         '<a href="dates/">Dates ahead</a> '
         '<a href="methodology/">Methodology</a> '
         '<a href="about/">About</a> '
         '<a href="feeds/">Feeds</a></nav>' in nav_links(0)
     )
+
+
+def test_the_header_marks_the_section_a_page_belongs_to_and_only_that_one() -> None:
+    """An act, a version and a provision all sit under `acts/`, so the roster link is marked;
+    a page in no section, home or the not-found page, marks nothing."""
+    marked = nav_links(2, "acts/")
+    assert marked.count('aria-current="page"') == 1
+    assert '<a href="../../acts/" aria-current="page">All acts</a>' in marked
+    assert 'aria-current="page"' not in nav_links(0)
 
 
 def test_the_footer_links_the_about_page_from_whatever_depth_the_page_sits_at() -> None:

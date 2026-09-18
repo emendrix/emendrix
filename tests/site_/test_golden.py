@@ -231,7 +231,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 42078)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 42542)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -338,7 +338,17 @@ Nothing else on it moved.
 the cross-act list of the dates the amended texts name that have not arrived yet. That is the
 whole of the move on this page, `<a href="../../../dates/">Dates ahead</a> ` at this depth, and
 every page in the tree paid the same link at whatever its own depth costs. No measured figure
-moved with it and nothing below the header did."""
+moved with it and nothing below the header did.
+
+464 bytes heavier on 2026-09-18, when every page below home began by saying what it is and where
+it sits. This page opens with a masthead: a four-rung breadcrumb ending on the version's own
+name, a caption naming the page a version and linking its act, and an H1 that is the version,
+`Version in force 24 April 2020` with the date inside `<time>`, where it was the act's name. The
+card opening under it no longer prints the date as an H2, the H1 now saying it, which gives 30
+bytes back. The header bar marks `All acts` as the current section and says `Amending acts`
+where it said `Amendments`, and the JSON-LD breadcrumb names the version by those same words
+instead of its pair of version codes, a few bytes shorter. No anchor, no id and no measured
+figure moved, and nothing inside a `<details>` did."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

@@ -208,11 +208,14 @@ def test_a_quiet_act_gets_no_index_of_nothing() -> None:
 
 def test_a_quiet_act_does_not_repeat_its_name_as_an_official_title() -> None:
     """No entry has been recorded, so no official title is known; saying the label twice
-    would present a watchlist name as the title the legislation publishes for itself."""
+    would present a watchlist name as the title the legislation publishes for itself. The label
+    is printed twice, as the heading and as the trail's own rung, and never a third time."""
     rendered = _quiet()
-    assert rendered.count("GDPR</") == 1
+    assert rendered.count("GDPR</") == 2
+    assert "<h1>GDPR</h1>" in rendered
+    assert '<li aria-current="page">GDPR</li>' in rendered
     assert 'class="official"' not in rendered
-    assert "<title>GDPR: every amendment — emendrix</title>" in rendered
+    assert "<title>GDPR: every version and what changed — emendrix</title>" in rendered
 
 
 def test_a_long_name_heads_the_page_and_the_label_stays_on_the_facts_line() -> None:
@@ -238,10 +241,10 @@ def test_a_long_name_heads_the_page_and_the_label_stays_on_the_facts_line() -> N
     assert "<h1>General Data Protection Regulation</h1>" in rendered
     assert '<p class="facts">GDPR · <code>32016R0679</code>' in rendered
     assert (
-        "<title>General Data Protection Regulation (GDPR): every amendment — emendrix</title>"
-        in rendered
+        "<title>General Data Protection Regulation (GDPR): every version and what changed "
+        "— emendrix</title>" in rendered
     )
-    assert "seen for General Data Protection Regulation." in rendered
+    assert "recorded for General Data Protection Regulation." in rendered
     assert 'class="official"' not in rendered
 
 
@@ -340,7 +343,9 @@ def test_the_header_states_the_act_before_it_offers_anything_to_do() -> None:
         site_url="https://example.invalid/site",
     )
     rendered = render_act(site, site.acts[0])
-    assert rendered.index("<h1>") < rendered.index('<p class="official">')
+    masthead = rendered.split('<header class="masthead masthead--act">')[1].split("</header>")[0]
+    assert "<h1>" in masthead
+    assert rendered.index("</header>\n<p") < rendered.index('<p class="official">')
     assert rendered.index('<p class="official">') < rendered.index('<p class="facts">')
     assert rendered.index('<p class="facts">') < rendered.index('<p class="links">')
     links = rendered.split('<p class="links">')[1].split("</p>")[0]

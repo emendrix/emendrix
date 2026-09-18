@@ -151,19 +151,22 @@ def test_each_step_id_is_the_anchor_the_event_page_publishes_for_that_change() -
 
 def test_the_header_names_the_act_the_coordinate_and_how_much_history_there_is() -> None:
     rendered, act, history = _page(_entry(2), _entry(1))
-    assert f"<h1>{history.location.human}</h1>" in rendered
+    heading = history.steps[0].change.heading
+    assert f"<h1>{history.location.human} · {heading}</h1>" in rendered
     assert act.headline in rendered
-    assert 'href="../"' in rendered
-    assert "2 changes recorded across 2 events, newest first." in rendered
+    assert f'<p class="caption">Provision history · <a href="../">{act.label}</a></p>' in rendered
+    assert "2 changes recorded across 2 versions, newest first." in rendered
 
 
 def test_the_official_heading_of_the_newest_step_is_printed_verbatim() -> None:
     """The provision's own title in the consolidated text, which can move with the text: the
-    newest one is shown and the earlier ones stay visible in the diffs on the event pages."""
+    newest one is shown and the earlier ones stay visible in the diffs on the event pages. It
+    joins the coordinate in the heading, and is not printed a second time under it."""
     rendered, _, history = _page(_entry(1))
     heading = history.steps[0].change.heading
     assert heading
-    assert f'<p class="official">{heading}</p>' in rendered
+    assert f"<h1>{history.location.human} · {heading}</h1>" in rendered
+    assert '<p class="official">' not in rendered
 
 
 def test_a_title_that_only_repeats_the_coordinate_is_not_printed_under_it() -> None:
@@ -186,6 +189,7 @@ def test_a_title_that_only_repeats_the_coordinate_is_not_printed_under_it() -> N
         }
     )
     rendered, _, _ = _page(shouted)
+    assert f"<h1>{first.location.human}</h1>" in rendered
     assert '<p class="official">' not in rendered
 
 

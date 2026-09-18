@@ -34,13 +34,14 @@ from emendrix.site_.amending import AmendingAct
 from emendrix.site_.head import SITE_NAME, canonical_url
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html
-from emendrix.site_.urls import (
-    act_href,
-    amendment_href,
-    amendments_href,
-    event_href,
-    provision_href,
+from emendrix.site_.trail import (
+    Rung,
+    act_trail,
+    amending_trail,
+    provision_trail,
+    version_trail,
 )
+from emendrix.site_.urls import act_href, amendment_href, event_href, provision_href
 
 __all__ = [
     "act_json_ld",
@@ -52,16 +53,6 @@ __all__ = [
 
 _SCHEMA: Final = "https://schema.org"
 """The `https` spelling, never `http`: the site publishes no `http://` string anywhere."""
-
-_ACTS_INDEX: Final = "acts/"
-"""The roster's own path, which is also the directory `act_href` puts every act page under.
-
-Named here for the breadcrumb's middle rung; `test_seo.py` pins it to a file the build wrote,
-so the two cannot drift apart silently.
-"""
-
-_INSTRUMENTS: Final = "Amending instruments"
-"""The middle rung of an amendment page's breadcrumb, and that index page's own heading."""
 
 
 def _ld_block(payload: object) -> Html:
@@ -101,19 +92,24 @@ def website_json_ld(site: SiteInputs, *, description: str) -> Html:
     return _ld_block(payload)
 
 
-def _breadcrumb(rungs: tuple[tuple[str, str], ...]) -> dict[str, object]:
-    """One `BreadcrumbList` from `(name, absolute url)` pairs in trail order.
+def _breadcrumb(site_url: str, rungs: tuple[Rung, ...]) -> dict[str, object]:
+    """One `BreadcrumbList` from a page's trail, each rung made absolute under `site_url`.
 
-    Shared by every page whose breadcrumb is the URL trail itself, so a rung's position and
-    its address are computed in one place however many rungs the URL actually has, and no
-    page can invent a rung its address does not carry.
+    The rungs come from `trail`, the same ones the visible breadcrumb prints, so the trail a
+    search result shows and the one a reader sees on the page are one trail. A rung's position
+    and its address are computed here once however many rungs the page has.
     """
     return {
         "@context": _SCHEMA,
         "@type": "BreadcrumbList",
         "itemListElement": [
-            {"@type": "ListItem", "position": position, "name": name, "item": item}
-            for position, (name, item) in enumerate(rungs, start=1)
+            {
+                "@type": "ListItem",
+                "position": position,
+                "name": rung.name,
+                "item": canonical_url(site_url, rung.path),
+            }
+            for position, rung in enumerate(rungs, start=1)
         ],
     }
 
@@ -167,11 +163,9 @@ def act_json_ld(site: SiteInputs, act: ActSite, *, title: str, description: str)
     earns a real search result: the trail a reader sees under the link. It is three rungs deep
     because that is how deep the site is here, and no rung is invented.
     """
-    home = canonical_url(site.site_url, "")
-    roster = canonical_url(site.site_url, _ACTS_INDEX)
     here = canonical_url(site.site_url, act_href(act.slug))
     payload: list[dict[str, object]] = [
-        _breadcrumb(((SITE_NAME, home), ("All watched acts", roster), (act.label, here))),
+        _breadcrumb(site.site_url, act_trail(act)),
         _webpage(here, title=title, description=description, about=_legislation(act)),
     ]
     return _ld_block(payload)
@@ -180,24 +174,19 @@ def act_json_ld(site: SiteInputs, act: ActSite, *, title: str, description: str)
 def event_json_ld(
     site: SiteInputs, act: ActSite, entry: ChangelogEntry, *, title: str, description: str
 ) -> Html:
-    """One event page's breadcrumb trail and the page itself. Four rungs, because the site is
-    four deep here: home, the roster, the act, this event, the same no-invented-rung rule
-    `act_json_ld` holds at three.
+    """One version page's breadcrumb trail and the page itself. Four rungs, because the site is
+    four deep here: home, the roster, the act, this version, the same no-invented-rung rule
+    `act_json_ld` holds at three. The fourth rung is the version's human name, `Version in
+    force 1 April 2025`, the words its heading uses, rather than its pair of version codes.
 
     `about` is the same `Legislation` the act page names, because this page still describes
     that act; which transition it describes is stated by the fourth rung and by
     `title`/`description`, and schema.org has no honest type for one amendment event, so no
     machine-readable field pretends to one.
     """
-    home = canonical_url(site.site_url, "")
-    roster = canonical_url(site.site_url, _ACTS_INDEX)
-    act_page = canonical_url(site.site_url, act_href(act.slug))
     here = canonical_url(site.site_url, event_href(act.slug, entry.key))
-    event = f"{entry.from_version} → {entry.to_version}"
     payload: list[dict[str, object]] = [
-        _breadcrumb(
-            ((SITE_NAME, home), ("All watched acts", roster), (act.label, act_page), (event, here))
-        ),
+        _breadcrumb(site.site_url, version_trail(act, entry)),
         _webpage(here, title=title, description=description, about=_legislation(act)),
     ]
     return _ld_block(payload)
@@ -223,8 +212,6 @@ def amendment_json_ld(
     reader cannot see it. `alternateName` carries the official number only where it is not
     already the name, the same omission `_legislation` makes for an act's short label.
     """
-    home = canonical_url(site.site_url, "")
-    index = canonical_url(site.site_url, amendments_href())
     here = canonical_url(site.site_url, amendment_href(instrument.key))
     about: dict[str, object] = {
         "@type": "Legislation",
@@ -237,7 +224,7 @@ def amendment_json_ld(
         about["sameAs"] = instrument.eurlex_url
     about["legislationChanges"] = [_legislation(act) for act in amended]
     payload: list[dict[str, object]] = [
-        _breadcrumb(((SITE_NAME, home), (_INSTRUMENTS, index), (instrument.short, here))),
+        _breadcrumb(site.site_url, amending_trail(instrument)),
         _webpage(here, title=title, description=description, about=about),
     ]
     return _ld_block(payload)
@@ -262,21 +249,11 @@ def provision_json_ld(
     2026-08-05), no date, and no identifier outside this corpus's location vocabulary, so
     nothing else is claimed for it.
     """
-    home = canonical_url(site.site_url, "")
-    roster = canonical_url(site.site_url, _ACTS_INDEX)
-    act_page = canonical_url(site.site_url, act_href(act.slug))
     here = canonical_url(site.site_url, provision_href(act.slug, location.canonical))
     about = _legislation(act)
     about["hasPart"] = {"@type": "Legislation", "name": location.human}
     payload: list[dict[str, object]] = [
-        _breadcrumb(
-            (
-                (SITE_NAME, home),
-                ("All watched acts", roster),
-                (act.label, act_page),
-                (location.human, here),
-            )
-        ),
+        _breadcrumb(site.site_url, provision_trail(act, location)),
         _webpage(here, title=title, description=description, about=about),
     ]
     return _ld_block(payload)

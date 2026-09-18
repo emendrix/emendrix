@@ -34,6 +34,7 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.gate import GateOutcome
 from emendrix.graph.report import EmittedChange, EmittedDelta, EmittedSentence
 from emendrix.output import ChangelogEntry, diff_only_entry
+from emendrix.site_.clocks import version_heading
 from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.event import render_event_page
@@ -99,20 +100,26 @@ def test_the_page_names_its_act_and_links_back_to_the_timeline() -> None:
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     rendered = _page(entry)
-    assert f"<h1>{site.acts[0].headline}</h1>" in rendered
+    assert f"<h1>{version_heading(entry)}</h1>" in rendered
+    assert f"<h1>{site.acts[0].headline}</h1>" not in rendered
     assert f'href="../../../acts/{site.acts[0].slug}/"' in rendered
-    assert "every event for this act" in rendered
+    assert "every version of this act" in rendered
 
 
-def test_a_long_name_heads_the_page_and_the_label_opens_the_facts_line() -> None:
-    """The act page's rule, held on the event page: the long form is the H1, and the short
-    label a reader may have searched for stays visible beside the key."""
+def test_a_long_name_opens_the_facts_line_and_the_label_names_the_act_in_the_caption() -> None:
+    """The version's heading is its own, so the act is named twice under it instead: by the
+    short label in the caption, linked back to the act, and by the long form on the facts line
+    beside the key."""
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     act = site.acts[0].model_copy(update={"long_name": "House Rules of Flat 3B"})
     rendered = _rendered(site, act, act.entries[0])
-    assert "<h1>House Rules of Flat 3B</h1>" in rendered
-    assert f'<p class="facts">{act.label} · <code>{act.act.key}</code>' in rendered
+    assert "<h1>House Rules of Flat 3B</h1>" not in rendered
+    assert (
+        f'<p class="caption">Version · <a href="../../../acts/{act.slug}/">{act.label}</a></p>'
+        in rendered
+    )
+    assert f'<p class="facts">House Rules of Flat 3B · <code>{act.act.key}</code>' in rendered
     assert f"<title>{act.label}: " in rendered
     assert 'content="House Rules of Flat 3B: 4 provisions changed, detected' in rendered
 
@@ -411,11 +418,22 @@ def test_an_event_the_explain_stage_never_ran_for_keeps_its_own_sentence() -> No
     assert "passed its citation check" not in rendered
 
 
+def _card(**update: object) -> str:
+    """One event's opening as the act page's card prints it, its entry patched to order."""
+    from emendrix.site_.pages.facts import event_header
+
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED).model_copy(update=update)
+    return "\n".join(event_header(entry, (), full=False))
+
+
 def test_the_event_is_headed_by_its_date_and_the_dates_line_carries_the_other_clock() -> None:
-    """The H1 names the act, the H2 the date the event's own clock answers with, and the line
-    below states the clock the heading did not, never the one it did."""
+    """The H1 is the version by the date its own clock answers with, and the line below states
+    the clock the heading did not, never the one it did. The act page's card says the same
+    date in the ISO form, as its H2."""
     rendered = _headed(in_force=(date(2024, 6, 1),))
-    assert "<h2>in force 2024-06-01</h2>" in rendered
+    assert '<h1>Version in force <time datetime="2024-06-01">1 June 2024</time></h1>' in rendered
+    assert "<h2>in force" not in rendered
+    assert "<h2>in force 2024-06-01</h2>" in _card(in_force=(date(2024, 6, 1),))
     assert '<p class="facts">detected 2026-08-09</p>' in rendered
     # The title and the meta description name the dated words too, and should. What must not
     # happen is the line under the heading restating the heading.
@@ -426,7 +444,8 @@ def test_an_event_with_no_in_force_date_is_headed_by_detection_and_says_so_below
     """The heading names the only clock there is, so the line below is what is missing rather
     than the detection date a second time."""
     rendered = _headed(in_force=())
-    assert "<h2>detected 2026-08-09</h2>" in rendered
+    assert '<h1>Version detected <time datetime="2026-08-09">9 August 2026</time></h1>' in rendered
+    assert "<h2>detected 2026-08-09</h2>" in _card(in_force=())
     assert '<p class="facts">in force not stated</p>' in rendered
     assert '<p class="facts">detected' not in rendered
 
@@ -435,7 +454,8 @@ def test_an_event_with_several_in_force_dates_lists_them_all_below_its_heading()
     """The heading can name only one date. Where the corpus states more, the line below is the
     whole set, which is more than the heading said and so is not a repetition of it."""
     rendered = _headed(in_force=(date(2024, 6, 1), date(2025, 1, 2)))
-    assert "<h2>in force 2025-01-02</h2>" in rendered
+    assert '<h1>Version in force <time datetime="2025-01-02">2 January 2025</time></h1>' in rendered
+    assert "<h2>in force 2025-01-02</h2>" in _card(in_force=(date(2024, 6, 1), date(2025, 1, 2)))
     assert '<p class="facts">in force 2024-06-01, 2025-01-02 · detected 2026-08-09</p>' in rendered
 
 
@@ -444,7 +464,7 @@ def test_the_event_page_names_the_act_and_the_version_pair_under_the_heading() -
     stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
     site = _site(stated)
     rendered = _rendered(site, site.acts[0], site.acts[0].entries[0])
-    assert f"<h1>{site.acts[0].headline}</h1>" in rendered
+    assert f"<h1>{version_heading(stated)}</h1>" in rendered
     assert (
         f'<p class="ident"><code>{stated.from_version} → {stated.to_version}</code></p>' in rendered
     )

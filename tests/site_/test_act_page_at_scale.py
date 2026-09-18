@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 171487)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 171792)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -116,9 +116,16 @@ unit, so the clause reads zero on every one of them. The split moved, no number 
 the cross-act list of dates the amended texts name that have not arrived yet. That is the whole
 of it on this page: `<a href="../../dates/">Dates ahead</a> ` at this depth, paid once, with
 nothing below the header moving. Every page on the site pays the same link at whatever its own
-depth costs."""
+depth costs.
 
-_TOTAL_BYTES: Final = 2408416
+305 bytes heavier on 2026-09-18, when every page below home began by saying what it is. The act
+page opens with a masthead: a breadcrumb of three rungs, the last this act unlinked, a caption
+naming the page an act, and the H1 it already had, now inside a sectioning header. The header
+bar marks `All acts` as the current section and says `Amending acts` where it said
+`Amendments`, and the title says the page holds every version and what changed rather than every
+amendment. Nothing on the two hundred cards moved, and no anchor or id did."""
+
+_TOTAL_BYTES: Final = 2658215
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -207,6 +214,17 @@ on each of the two hundred event pages and the four hundred and one provision pa
 one deeper and so pay three more for the relative path. It is flat in the number of pages rather
 than in what is on them, no page gained anything below its header, and no measured figure moved
 with it.
+
+249 799 bytes heavier on 2026-09-18, when every page below home gained a masthead: a breadcrumb,
+a caption naming the kind of page, and a heading of the page's own, with the header bar marking
+the current section and renamed `Amending acts`. The index pays the 305 above. Each of the two
+hundred version pages pays 458 to 470: a four-rung trail ending on the version's name, a caption
+linking the act, and an H1 that is the version by its date in words inside `<time>` where it
+was the act's name, less the date heading the card opening no longer repeats under it; the
+spread is the length of a month's name. Each of the 401 provision pages pays 385 to 396: a
+four-rung trail and a caption linking the act; a title the source gives joins the coordinate
+in the H1 rather than taking a line of its own. No anchor or id moved and no measured figure
+moved with it.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

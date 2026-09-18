@@ -30,6 +30,7 @@ from emendrix.eval_.metric_rows import metric_rows, synthetic_caveats
 from emendrix.site_.chrome import page
 from emendrix.site_.entries import corpus_rows, counted
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, count, escape, inline, join
 from emendrix.site_.pitch import PITCH
@@ -303,7 +304,7 @@ def render_methodology(site: SiteInputs) -> Html:
     """The whole argument, in order. Deterministic: same inputs, same bytes."""
     body = join(
         (
-            Html("<h1>Methodology</h1>"),
+            *page_masthead("prose", "About this site", "Methodology", _PATH),
             Html(f'<p class="lede">{escape(PITCH)}</p>'),
             Html(f'<p class="lede muted">{_headline_sentence(site)}</p>'),
             *_corpus(site),
@@ -322,5 +323,6 @@ def render_methodology(site: SiteInputs) -> Html:
         body=body,
         path=_PATH,
         chrome=site.chrome,
+        section=_PATH,
         feeds=((feed_path(None), feed_title(None)),),
     )

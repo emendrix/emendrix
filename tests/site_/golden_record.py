@@ -660,4 +660,23 @@ moved to the new ink, ground and link values, and `og.png` was redrawn in the ne
 and the site's own sans. No feed, no `search-index.json`, no `sitemap.xml`, no `robots.txt` and
 no script moved, no size pin moved because a digest name is the same length as the one it
 replaces, and no measured figure moved with any of them.
+
+Read again on 2026-09-18, later the same day, when every page below home began by saying what
+it is and where it sits. All 23 HTML pages moved. Every one gained the stylesheet's new name,
+`style.981166cb.css` replacing `style.26242efc.css`, which now carries the masthead, caption,
+breadcrumb and current-section rules and their print and forced-colours overrides, and every
+header bar says `Amending acts` where it said `Amendments`. The 22 pages below home open with a
+masthead, `<header class="masthead masthead--{kind}">` holding a breadcrumb, a caption and the
+H1, and all but the not-found page mark their section in the header bar with
+`aria-current="page"`. The four act pages carry `Act · {domain}` and title themselves by every
+version and what changed rather than every amendment; the version page's H1 is `Version in force
+24 April 2020` where it was the act's name, its card opening no longer repeats the date as an
+H2, and its JSON-LD breadcrumb names that version by the same words where it named the pair of
+version codes; each of the nine provision pages joins its stored heading to the coordinate in
+the H1 where the heading says more, and counts versions where it counted events. The amending
+act's roster is headed and titled `Amending acts` and its JSON-LD rung on the amending act's
+page moved with it. The not-found page has a masthead and no breadcrumb. **No `id=`, anchor,
+feed or feed id moved**: both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
+`robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical. The largest
+page grew by 464 bytes and `_LARGEST_PAGE` moved with it, and no measured figure moved.
 """

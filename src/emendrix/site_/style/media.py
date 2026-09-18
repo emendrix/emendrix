@@ -60,6 +60,9 @@ MEDIA: Final = """\
      so they stay, and nothing is redeclared for them: the screen rules already underline an
      insertion and strike a deletion, which is what a printer with no colour reads. */
   a { color: inherit; }
+  /* The band is a tint and costs ink; its top rule is what says where the page begins. */
+  .masthead { background: none; box-shadow: none; clip-path: none; border-image: none;
+              border-top: 2px solid currentColor; }
 }
 /* Forced colours replace every colour with the reader's own, and a mark drawn only as a
    background vanishes. So every boundary that is the information becomes `CanvasText`, and the
@@ -75,5 +78,9 @@ MEDIA: Final = """\
     { background: CanvasText; }
   .diff ins { text-decoration: underline; }
   .diff del { text-decoration: line-through; }
+  /* The caption's shape is a fill, so it is drawn as a ring the system palette keeps. */
+  .caption::before { background: Canvas; border-color: CanvasText; forced-color-adjust: none; }
+  .masthead { border-image: none; border-top-color: CanvasText; }
+  header.bar nav a[aria-current="page"] { border-bottom-color: CanvasText; }
 }
 """

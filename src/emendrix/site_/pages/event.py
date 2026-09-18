@@ -9,9 +9,9 @@ rendered here, because this act's provision pages show the same blocks and a dif
 enough to be worth computing once.
 
 The header names the act and links back to its timeline rather than repeating the act page's
-own header: the event's own date is this page's second-level heading, with the version pair
-below it, both rendered by the shared card opening, and the act's full identity lives one link
-up where it has always been.
+own header: the version's own date is this page's heading, and the version pair sits below it
+in the shared card opening, which prints no date heading of its own here. The act's full
+identity lives one link up where it has always been.
 """
 
 from __future__ import annotations
@@ -19,8 +19,9 @@ from __future__ import annotations
 from emendrix.output import ChangelogEntry
 from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.chrome import page
-from emendrix.site_.clocks import event_date
+from emendrix.site_.clocks import event_date, version_heading
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, count, escape, join
@@ -28,6 +29,7 @@ from emendrix.site_.pages.act_event import render_event
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import event_json_ld
 from emendrix.site_.titles import event_title
+from emendrix.site_.trail import version_trail
 from emendrix.site_.untouched import (
     UNTOUCHED_CARD,
     all_textless,
@@ -47,31 +49,35 @@ which `test_urls.py` pins.
 """
 
 
-def _header(act: ActSite) -> list[Html]:
-    """Which act this event belongs to, and the way back to its timeline.
+def _header(act: ActSite, entry: ChangelogEntry) -> list[Html]:
+    """Which version this is, which act it belongs to, and the way back to its timeline.
 
-    The H1 is the act's headline and the short label opens the facts line when the two
-    differ, mirroring the act page, so a reader who knows the act by its initialism still
-    sees it. The facts are the act page's identifying ones, minus what only makes sense over
-    a whole history: no feed link (the head advertises both feeds already, and the timeline is
-    where a reader decides to subscribe) and no "newest amendment" line, which is a fact about
-    the act rather than about this event.
+    The H1 is the version's own name, its date with its clock, and never the act's heading,
+    which is one link up: a version page that carried its act's H1 could not be told from the
+    act page by its heading. The caption names the page a version and links the act by its
+    short label, and the trail says the same thing as a path.
+
+    The facts line keeps the act's identifying facts under the masthead, minus what only makes
+    sense over a whole history: no feed link (the head advertises both feeds already, and the
+    timeline is where a reader decides to subscribe) and no "newest amendment" line, which is a
+    fact about the act rather than about this version. The act's long form opens it where the
+    watchlist gives one, since the caption names the act by its short label.
     """
     facts: list[Html] = []
     if act.headline != act.label:
-        facts.append(escape(act.label))
+        facts.append(escape(act.headline))
+    act_page = escape(up(_DEPTH) + act_href(act.slug))
     facts.extend(
         (
             Html(f"<code>{escape(act.act.key)}</code>"),
-            Html(
-                f'<a href="{escape(up(_DEPTH) + act_href(act.slug))}">every event for this act</a>'
-            ),
+            Html(f'<a href="{act_page}">every version of this act</a>'),
         )
     )
     if act.eurlex_url:
         facts.append(Html(f'<a class="nowrap" href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
+    caption = Html(f'Version · <a href="{act_page}">{escape(act.label)}</a>')
     return [
-        Html(f"<h1>{escape(act.headline)}</h1>"),
+        *masthead("version", version_trail(act, entry), _DEPTH, caption, version_heading(entry)),
         Html(f'<p class="facts">{join(facts, " · ")}</p>'),
     ]
 
@@ -168,7 +174,7 @@ def render_event_page(
     acts = amenders(site.amending, entry)
     body = join(
         (
-            *_header(act),
+            *_header(act, entry),
             *_instruments(site, act, entry),
             *render_event(entry, anchors, texts, acts, site.changelogs_url),
             *_pager(act, entry),
@@ -205,6 +211,7 @@ def render_event_page(
         body=body,
         path=event_href(act.slug, entry.key),
         chrome=site.chrome,
+        section="acts/",
         # The act's own feed leads, for the reason the act page gives: a reader subscribing
         # from an event of this act is asking for this act.
         feeds=((feed_path(act), feed_title(act)), (feed_path(None), feed_title(None))),

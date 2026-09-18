@@ -57,6 +57,7 @@ from emendrix.site_.history import (
     cross_act_mentions,
     passed_within,
 )
+from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.urls import (
@@ -297,7 +298,9 @@ def render_dates(site: SiteInputs) -> Html:
     )
     body = join(
         (
-            Html("<h1>Dates ahead in the amended texts</h1>"),
+            *page_masthead(
+                "prose", "Across all watched acts", "Dates ahead in the amended texts", _PATH
+            ),
             Html(f'<p class="lede">{escape(lede)}</p>'),
             Html(f'<p class="small muted">{escape(split)}</p>'),
             *_applies_block(site, found, root),
@@ -319,5 +322,6 @@ def render_dates(site: SiteInputs) -> Html:
         body=body,
         path=_PATH,
         chrome=site.chrome,
+        section=_PATH,
         feeds=((feed_path(None), feed_title(None)),),
     )

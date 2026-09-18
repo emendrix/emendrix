@@ -30,20 +30,19 @@ was last checked lives in the poller's own state file and reaches no committed a
 
 from __future__ import annotations
 
-from emendrix.core import ChangeType, ProvisionLocation
-from emendrix.output import ChangelogEntry
 from emendrix.site_.amending import amenders
 from emendrix.site_.chrome import page
-from emendrix.site_.clocks import event_dated
 from emendrix.site_.feeds import feed_path, feed_title
-from emendrix.site_.history import DateMention, dates_named
+from emendrix.site_.history import dates_named
+from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape, join
-from emendrix.site_.pages.act_dates import ANCHOR, LINK, dates_section
+from emendrix.site_.pages.act_dates import dates_section
 from emendrix.site_.pages.act_event import render_event_summary
-from emendrix.site_.pages.prose import pill
+from emendrix.site_.pages.act_index import ACT_DEPTH, event_link, sidebar
 from emendrix.site_.seo import act_json_ld
-from emendrix.site_.urls import act_href, domain_anchor, event_href, provision_href, up
+from emendrix.site_.trail import act_trail
+from emendrix.site_.urls import act_href, domain_anchor, up
 
 __all__ = ["render_act"]
 
@@ -70,84 +69,8 @@ _QUIET_TAIL = "A quiet act is a real answer."
 _RELATED = 6
 """How many neighbours the related line names before it stops and links the group instead."""
 
-_DEPTH = 2
-"""`acts/<slug>/index.html`: every internal link on this page climbs two directories first.
-
-A literal, because the page's own path is `act_href(act.slug)` and that is not known until
-`render_act` has an act. It is the same number as `depth_of(act_href(slug))` for any slug, and
-`test_urls.py` pins the two equal.
-"""
-
-
-def _event_link(act: ActSite, entry: ChangelogEntry) -> str:
-    """Where one event's own page is, from any link on this act's page.
-
-    Computed in one place because three parts of the page link there, the timeline card, the
-    amendments list and the provision index, and three independent constructions is how one
-    of them drifts from `_DEPTH`.
-    """
-    return up(_DEPTH) + event_href(act.slug, entry.key)
-
-
-def _provisions(act: ActSite) -> list[Html]:
-    """Every provision this act's watched history touched, in document order.
-
-    Sorted by `ProvisionLocation.sort_key` rather than by the canonical string, so `AR 10`
-    follows `AR 9` and `AN II` follows `AN I`. The link goes to that coordinate's own page,
-    which is its whole history newest first; it pointed at the newest change on the event page
-    holding it until those pages existed, and the anchor was standing in for the history the
-    index has always been asking about.
-    """
-    locations: dict[str, ProvisionLocation] = {}
-    kinds: dict[str, list[ChangeType]] = {}
-    for entry in act.entries:
-        for emitted in entry.changes:
-            key = emitted.change.location.canonical
-            locations.setdefault(key, emitted.change.location)
-            seen = kinds.setdefault(key, [])
-            if emitted.change.change_type not in seen:
-                seen.append(emitted.change.change_type)
-    lines = [Html("<h2>Touched provisions</h2>"), Html("<ul>")]
-    for location in sorted(locations.values(), key=lambda item: item.sort_key):
-        key = location.canonical
-        pills = join((pill(kind) for kind in kinds[key]), " ")
-        href = escape(up(_DEPTH) + provision_href(act.slug, key))
-        lines.append(Html(f'<li><a href="{href}">{escape(location.human)}</a> {pills}</li>'))
-    lines.append(Html("</ul>"))
-    return lines
-
-
-def _sidebar(act: ActSite, mentions: tuple[DateMention, ...]) -> Html:
-    """The index: provisions and events, each a plain link into an event page. No script.
-
-    The lists sit inside a `<details open>` so a narrow screen can fold the whole index away
-    with the browser's own control, which needs no JavaScript. The element carrying the class
-    is on the outside, because that is the one the layout makes sticky on a wide screen.
-
-    The dates section is a link rather than a list: it is one section with one heading, and
-    the index carries it only when the page has one, so the link cannot point at nothing.
-    """
-    lines = [
-        Html('<aside class="sidebar">'),
-        Html("<details open><summary>Index of this act</summary>"),
-        *_provisions(act),
-        Html("<h2>Amendments</h2>"),
-        Html("<ul>"),
-    ]
-    lines.extend(
-        Html(
-            f'<li><a href="{escape(_event_link(act, entry))}">'
-            f"{escape(str(entry.from_version))} → "
-            f'{escape(str(entry.to_version))}</a> <span class="small muted">'
-            f"{event_dated(entry).isoformat()}</span></li>"
-        )
-        for entry in act.entries
-    )
-    lines.append(Html("</ul>"))
-    if mentions:
-        lines.append(Html(f'<p class="small"><a href="#{ANCHOR}">{escape(LINK)}</a></p>'))
-    lines.extend((Html("</details>"), Html("</aside>")))
-    return join(lines, "\n")
+_DEPTH = ACT_DEPTH
+"""Where the act page sits, the one number this module and its index share."""
 
 
 def _quiet_words(act: ActSite, site: SiteInputs) -> str:
@@ -214,8 +137,10 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     The feed's own module says where a feed lives, rather than this page spelling the path a
     second time: the two agreeing today is not the same as their being unable to disagree.
 
-    The H1 is the act's headline, the long form where the watchlist gives one, and the short
-    label then opens the facts line so it stays on the page beside the key. The official
+    The H1 is the act's headline, the long form where the watchlist gives one, in a masthead
+    whose caption says the page is an act and names its domain, which is the only kind the
+    inputs carry: `ActSite` has no per-act legal type, and printing one would be inventing it.
+    The short label then opens the facts line so it stays on the page beside the key. The official
     title is rendered whole. The cut at `output.markdown.TITLE_CAP` belongs to a changelog
     heading and to the acts index, where the title is one item in a list; this is the one
     page whose job is to be the act, and the words a title carries past its first hundred
@@ -259,7 +184,8 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
                 f'<span class="nowrap">on EUR-Lex</span></a>'
             )
         )
-    header = [Html(f"<h1>{escape(act.headline)}</h1>")]
+    caption = escape(f"Act · {act.domain}" if act.domain else "Act")
+    header = masthead("act", act_trail(act), _DEPTH, caption, escape(act.headline))
     if title != act.headline and title != act.label:
         header.append(Html(f'<p class="official">{escape(title)}</p>'))
     header.append(Html(f'<p class="facts">{join(facts, " · ")}</p>'))
@@ -274,7 +200,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     timeline: list[Html] = [Html('<section class="timeline">')]
     for entry in act.entries:
         timeline.extend(
-            render_event_summary(entry, _event_link(act, entry), amenders(site.amending, entry))
+            render_event_summary(entry, event_link(act, entry), amenders(site.amending, entry))
         )
     if not act.entries:
         timeline.append(Html(f'<p class="none">{escape(_quiet_words(act, site))}</p>'))
@@ -285,7 +211,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     columns = (
         (
             Html('<div class="layout">'),
-            _sidebar(act, mentions),
+            sidebar(act, mentions),
             *timeline,
             *dates_section(act, mentions, up(_DEPTH)),
             Html("</div>"),
@@ -297,9 +223,9 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     # The title names the act the way a person types it and says what the page holds; the
     # short label rides along in brackets so a search for the initialism still reads right.
     named = f"{act.headline} ({act.label})" if act.headline != act.label else act.label
-    title = f"{named}: every amendment — emendrix"
+    title = f"{named}: every version and what changed — emendrix"
     description = (
-        f"Every amendment emendrix has seen for {act.headline}. Each event's own page carries "
+        f"Every version emendrix has recorded for {act.headline}. Each event's own page carries "
         "the provision text before and after each change."
     )
     return page(
@@ -308,6 +234,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
         body=body,
         path=act_href(act.slug),
         chrome=site.chrome,
+        section="acts/",
         # The act's own feed leads, because a reader subscribing from this page is asking for
         # this act; the global one follows so the offer is never only the narrow one.
         feeds=((feed_path(act), feed_title(act)), (feed_path(None), feed_title(None))),

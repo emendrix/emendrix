@@ -27,6 +27,7 @@ from __future__ import annotations
 
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, join
 from emendrix.site_.urls import depth_of, up
@@ -42,7 +43,8 @@ def render_not_found(site: SiteInputs) -> Html:
     """The not-found page. Deterministic: same inputs, same bytes, no clock, no network."""
     root = up(_DEPTH)
     lines = [
-        Html("<h1>Page not found</h1>"),
+        # No trail: an address that matches nothing has no place in the tree to show.
+        *masthead("prose", (), _DEPTH, Html("Error 404"), Html("Page not found")),
         Html(
             '<p class="lede muted">This address does not match anything the site publishes. '
             "An act's own page carries its whole watched history, every amendment event on it "

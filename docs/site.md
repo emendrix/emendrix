@@ -21,8 +21,8 @@ acts/index.html       every watched act, grouped by the domain the watchlist giv
 acts/<celex>/         one page per act: the whole watched history, newest first, as cards
 acts/<celex>/<key>/   one page per event: the changes and the verbatim text
 acts/<celex>/<prov>/  one page per touched provision: its history, newest first
-amendments/           every instrument a committed event names, newest first, grouped by year
-amendments/<celex>/   one page per instrument: every watched act it amended, and what it moved
+amendments/           every amending act a committed event names, newest first, grouped by year
+amendments/<celex>/   one page per amending act: every watched act it amended, and what it moved
 dates/                every date in the amended texts that has not arrived yet, nearest first
 about/                who runs the site, how current the corpus is, and what it does here
 methodology/          the metrics table with its caveats, the loop, the disclaimer in full
@@ -270,6 +270,50 @@ page keeps every one in place under the label "no amending act named" with one s
 what it means, and the feeds keep every one with the same fact leading the summary. Nothing is
 dropped: the difference in the published text is real and stays shown; what the pipeline did not
 establish is which act, if any, caused it, and no page claims more than that.
+
+## Every page says what it is and where it sits
+
+A reader who lands cold from a search result or a feed on a deep page has, until the page tells
+them, no idea whether they are looking at an act, one version of it or one provision's history.
+So **every page below home opens with a masthead**, `<header class="masthead masthead--{kind}">`
+inside `<main>`, holding three things in order: a breadcrumb, a caption naming the kind of page,
+and the page's own heading. Home keeps its hero, which is its identity, and has no masthead.
+
+| Kind | Pages | Caption | Heading |
+|---|---|---|---|
+| `act` | `acts/<celex>/` | `Act · {domain}`, or `Act` with no domain | the act's name |
+| `version` | `acts/<celex>/<key>/` | `Version · {act}`, the act linked | `Version in force 1 April 2025`, or `Version detected …` |
+| `provision` | `acts/<celex>/<prov>/` | `Provision history · {act}`, the act linked | `Annex II · {its heading}`, the heading only where it says more than the coordinate |
+| `amending` | `amendments/<celex>/` | `Amending act` | the amending act's short name |
+| `index` | `acts/`, `amendments/` | `Index` | `All watched acts`, `Amending acts` |
+| `prose` | `dates/`, `methodology/`, `about/`, `feeds/`, `404.html` | what the page is about | its own heading |
+
+The first four kinds are the objects a reader moves between, and each gets a band tinted in its
+own colour with a shape before the caption; the rosters and the pages about the site share a
+neutral rule. The caption always says the kind in words, so the colour and the shape are never
+the only carriers. The not-found page prints no breadcrumb, an address that matches nothing
+having no place in the tree.
+
+**One trail, two renderings.** `site_/trail.py` builds each page type's trail once, as names and
+site-root-relative paths. `identity.py` renders it as the visible breadcrumb, every rung a
+relative link but the last, which is the page itself, unlinked and marked
+`aria-current="page"`; on a phone the sheet shows only the parent rung, as a way back. `seo.py`
+renders the same rungs as the JSON-LD `BreadcrumbList` a search engine prints under a result. A
+test holds the two equal on every page that has both, so a reader and a crawler cannot be told
+two different trails.
+
+**The header bar marks the section a page belongs to** with `aria-current="page"`, by weight and
+an underline rather than by colour alone: act, version and provision pages mark `All acts`,
+amending-act pages and their roster mark `Amending acts`, and each page about the site marks
+itself. Home and the not-found page mark nothing.
+
+**Pages speak the reader's vocabulary; the stored one does not change.** On a page, an event is a
+*version*, named by its date and the clock that date answers to, and an instrument is an
+*amending act*. Headings and crumbs write a date as `1 April 2025` inside
+`<time datetime="2025-04-01">`, built from a fixed month table and never from the locale. The ISO
+form stays wherever a machine reads it: every `<title>`, every feed title and entry, the
+`datetime` attribute and the committed changelogs. The JSON, the Markdown, the metrics and the
+code keep `event`, `instrument` and `disputed`.
 
 ## No backend, and that is the more interesting decision
 

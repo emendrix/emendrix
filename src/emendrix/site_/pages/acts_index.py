@@ -43,9 +43,11 @@ from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pitch import SCOPE, scope_holds
+from emendrix.site_.trail import ACTS_ROSTER
 from emendrix.site_.urls import act_href, depth_of, domain_anchor, up
 
 __all__ = ["render_acts_index"]
@@ -150,7 +152,7 @@ def render_acts_index(site: SiteInputs) -> Html:
     events = sum(len(act.entries) for act in site.acts)
     unnamed = sum(1 for act in site.acts for entry in act.entries if unattributed(entry))
     lines = [
-        Html("<h1>All watched acts</h1>"),
+        *page_masthead("index", "Index", ACTS_ROSTER, _PATH),
         Html(
             f'<p class="lede muted">{escape(count(len(site.acts), "act"))} watched'
             f"{escape(_kinds_clause(site.kinds))}. "
@@ -167,7 +169,7 @@ def render_acts_index(site: SiteInputs) -> Html:
         lines.extend(_row(site, act) for act in acts)
         lines.append(Html("</ul>"))
     return page(
-        title="All watched acts — emendrix",
+        title=f"{ACTS_ROSTER} — emendrix",
         description=(
             "Every act emendrix watches, grouped by the domain the watchlist declares, with "
             "when each one's newest amendment came into force or was detected."
@@ -175,5 +177,6 @@ def render_acts_index(site: SiteInputs) -> Html:
         body=join(lines, "\n"),
         path=_PATH,
         chrome=site.chrome,
+        section=_PATH,
         feeds=((feed_path(None), feed_title(None)),),
     )

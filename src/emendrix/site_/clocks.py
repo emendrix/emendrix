@@ -14,13 +14,57 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import date
+from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix.core import ActId, VersionId
 from emendrix.output import ChangelogEntry
+from emendrix.site_.markup import Html
 
-__all__ = ["EventDate", "VersionDates", "event_date", "event_dated", "sort_date"]
+__all__ = [
+    "EventDate",
+    "VersionDates",
+    "event_date",
+    "event_dated",
+    "human_date",
+    "sort_date",
+    "time_html",
+    "version_heading",
+    "version_name",
+]
+
+_MONTHS: Final = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+)
+"""A fixed tuple rather than `strftime("%B")`, whose month names follow the build machine's
+locale: a page must be the same bytes wherever it is built."""
+
+
+def human_date(on: date) -> str:
+    """`1 April 2025`: the form a heading, a crumb or a card says a date in.
+
+    Headings are read by people, so they carry the date as a person writes it. The ISO form
+    stays in every machine position, titles, feeds and the `datetime` attribute beside this,
+    so a title and a heading state one fact in two registers and never two facts.
+    """
+    return f"{on.day} {_MONTHS[on.month - 1]} {on.year}"
+
+
+def time_html(on: date) -> Html:
+    """The human date inside `<time>`, its `datetime` the ISO form a machine reads."""
+    return Html(f'<time datetime="{on.isoformat()}">{human_date(on)}</time>')
 
 
 def event_dated(entry: ChangelogEntry) -> date:
@@ -82,8 +126,17 @@ class EventDate(BaseModel):
         gives: two renderings of one fact that describe it differently are how a caveat
         gets softened in one of them.
         """
-        clock = "in force" if self.in_force else "detected"
-        return f"{clock} {self.on.isoformat()}"
+        return f"{self.clock} {self.on.isoformat()}"
+
+    @property
+    def clock(self) -> str:
+        """Which clock answered, in the two words every dated line names it by."""
+        return "in force" if self.in_force else "detected"
+
+    @property
+    def human(self) -> str:
+        """`in force 1 April 2025`: `words` in the form a heading is read in, same clock."""
+        return f"{self.clock} {human_date(self.on)}"
 
 
 def event_date(entry: ChangelogEntry) -> EventDate:
@@ -95,3 +148,19 @@ def event_date(entry: ChangelogEntry) -> EventDate:
     detection date cannot be written by a renderer that forgot the second branch.
     """
     return EventDate(on=event_dated(entry), in_force=bool(entry.in_force))
+
+
+def version_name(entry: ChangelogEntry) -> str:
+    """What a reader calls one version: `Version in force 1 April 2025`.
+
+    `Version detected 12 August 2026` where no in-force date is known, because the clock is
+    part of the name: a detection date named as the version's own would date the law by the
+    day emendrix ran. It is the version page's heading and its last breadcrumb rung.
+    """
+    return f"Version {event_date(entry).human}"
+
+
+def version_heading(entry: ChangelogEntry) -> Html:
+    """`version_name` with its date inside `<time>`, for the heading that prints it."""
+    dated = event_date(entry)
+    return Html(f"Version {dated.clock} {time_html(dated.on)}")

@@ -20,11 +20,12 @@ The step ids **are** those anchors. Nothing new is minted, so a link that worked
 page works here, a coordinate an event touched twice is two steps with two distinct ids, and
 the pages can be read against each other without either side running its own counter.
 
-The provision's own title is the newest step's `heading`, printed verbatim under the coordinate
-where the consolidated text carries one that says more than the coordinate already does. A
-heading can change with the text, and the earlier ones are visible in the diffs on the event
-pages; showing one title here and saying which step it belongs to is the honest reading, where a
-list of every title a provision has ever had would be a second history nobody asked for.
+The provision's own title is the newest step's `heading`, printed verbatim beside the
+coordinate in the page's heading where the consolidated text carries one that says more than
+the coordinate already does. A heading can change with the text, and the earlier ones are
+visible in the diffs on the event pages; showing one title here and saying which step it belongs
+to is the honest reading, where a list of every title a provision has ever had would be a second
+history nobody asked for.
 """
 
 from __future__ import annotations
@@ -36,6 +37,7 @@ from emendrix.site_.clocks import event_date
 from emendrix.site_.dispute import dispute_note
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.history import ProvisionHistory, ProvisionStep
+from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, count, escape, join
@@ -43,6 +45,7 @@ from emendrix.site_.pages.prose import applies_line, dates_line, permalink, pill
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import provision_json_ld
 from emendrix.site_.titles import SUFFIX
+from emendrix.site_.trail import provision_trail
 from emendrix.site_.urls import provision_href, up
 
 __all__ = ["render_provision_page"]
@@ -60,16 +63,17 @@ _OLDER = "text before / after, on the event page →"
 
 
 def _header(act: ActSite, history: ProvisionHistory) -> list[Html]:
-    """The coordinate, the act it belongs to, its title, and how much history there is.
+    """The coordinate and its subject, the act it belongs to, and how much history there is.
 
     The H1 is the coordinate in its human form, `Annex XVII` rather than `AN XVII`, because
     that is what a reader types and what the act's own text calls it; the canonical string is
-    in the address. The act is named on the facts line rather than in the heading, since the
-    reader followed a link from that act and the page below is entirely about one of its parts.
+    in the address. The caption names the page a provision history and links the act, since
+    the page below is entirely about one of that act's parts.
 
-    The provision's own title is printed only when it says something the H1 does not, the rule
+    The provision's own title joins the H1, `Annex II · Substances or products causing
+    allergies or intolerances`, only when it says something the coordinate does not, the rule
     `pages/act.py` prints an act's official title under: the Formex title of an annex is often
-    the words `ANNEX IX` and printing that under `Annex IX` reads as a rendering accident. The
+    the words `ANNEX IX`, and `Annex IX · ANNEX IX` reads as a rendering accident. The
     comparison folds case and whitespace and changes nothing: the title that is printed is the
     stored one, character for character.
     """
@@ -77,24 +81,27 @@ def _header(act: ActSite, history: ProvisionHistory) -> list[Html]:
     facts = [
         escape(act.headline),
         Html(f"<code>{escape(act.act.key)}</code>"),
-        Html('<a href="../">every event for this act</a>'),
+        Html('<a href="../">every version of this act</a>'),
     ]
     if act.eurlex_url:
         facts.append(Html(f'<a class="nowrap" href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
-    lines = [
-        Html(f"<h1>{escape(history.location.human)}</h1>"),
-        Html(f'<p class="facts">{join(facts, " · ")}</p>'),
-    ]
+    named = history.location.human
     heading = history.steps[0].change.heading
-    if heading and heading.casefold().split() != history.location.human.casefold().split():
-        lines.append(Html(f'<p class="official">{escape(heading)}</p>'))
-    lines.append(
+    subject = (
+        f"{named} · {heading}"
+        if heading and heading.casefold().split() != named.casefold().split()
+        else named
+    )
+    caption = Html(f'Provision history · <a href="../">{escape(act.label)}</a>')
+    trail = provision_trail(act, history.location)
+    return [
+        *masthead("provision", trail, _DEPTH, caption, escape(subject)),
+        Html(f'<p class="facts">{join(facts, " · ")}</p>'),
         Html(
             f'<p class="facts">{escape(count(len(history.steps), "change"))} recorded across '
-            f"{escape(count(events, 'event'))}, newest first.</p>"
-        )
-    )
-    return lines
+            f"{escape(count(events, 'version'))}, newest first.</p>"
+        ),
+    ]
 
 
 def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> list[Html]:
@@ -198,6 +205,7 @@ def render_provision_page(
         body=body,
         path=provision_href(act.slug, history.location.canonical),
         chrome=site.chrome,
+        section="acts/",
         # The act's own feed leads, for the reason the act page gives: a reader subscribing
         # from one of its provisions is asking for this act. There is no feed of one
         # provision, and nothing here pretends there is.

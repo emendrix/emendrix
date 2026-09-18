@@ -21,9 +21,11 @@ from emendrix.site_.amending import resolve
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.instruments import Amended, amended_by
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.trail import AMENDING_ROSTER
 from emendrix.site_.urls import amendment_href, amendments_href, depth_of, up
 
 __all__ = ["render_amendments_index"]
@@ -66,7 +68,7 @@ def render_amendments_index(site: SiteInputs) -> Html:
         years.setdefault(event_date(amended[0][1]).on.year, []).append(_row(site, key, amended))
     events = sum(len(amended) for amended in found.values())
     lines = [
-        Html("<h1>Amending instruments</h1>"),
+        *page_masthead("index", "Index", AMENDING_ROSTER, _PATH),
         Html(
             f'<p class="lede muted">{escape(count(len(found), "instrument"))} named by a '
             f"committed event, between them {escape(count(events, 'amendment event'))} on the "
@@ -81,7 +83,7 @@ def render_amendments_index(site: SiteInputs) -> Html:
         lines.extend(years[year])
         lines.append(Html("</ul>"))
     return page(
-        title="Amending instruments — emendrix",
+        title=f"{AMENDING_ROSTER} — emendrix",
         description=(
             "Every instrument a committed event names as having amended a watched act, newest "
             "first, with how many acts each one moved and when."
@@ -89,5 +91,6 @@ def render_amendments_index(site: SiteInputs) -> Html:
         body=join(lines, "\n"),
         path=_PATH,
         chrome=site.chrome,
+        section=_PATH,
         feeds=((feed_path(None), feed_title(None)),),
     )

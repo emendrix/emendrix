@@ -47,6 +47,7 @@ from emendrix.site_.amending import amenders
 from emendrix.site_.attribution import UNATTRIBUTED_FEED_LEAD, unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_dated
+from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.titles import event_words
@@ -242,7 +243,7 @@ def _feed_list(site: SiteInputs) -> list[Html]:
 def render_feeds_page(site: SiteInputs) -> Html:
     """The short page that lists the feeds. Same inputs, same bytes, no clock, no network."""
     lines = [
-        Html("<h1>Feeds</h1>"),
+        *page_masthead("prose", "About this site", "Feeds", _PATH),
         Html(
             '<p class="lede">One Atom feed per watched act, plus one carrying every act. An '
             "entry appears when an amendment event is recorded and is identified by the "
@@ -264,5 +265,6 @@ def render_feeds_page(site: SiteInputs) -> Html:
         body=join(lines, "\n"),
         path=_PATH,
         chrome=site.chrome,
+        section=_PATH,
         feeds=((feed_path(None), feed_title(None)),),
     )

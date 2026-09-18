@@ -33,6 +33,7 @@ from __future__ import annotations
 
 from emendrix.site_.chrome import PageChrome, page, repository_links
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pitch import PITCH, SCOPE, scope_holds
@@ -170,7 +171,7 @@ def render_about(site: SiteInputs) -> Html:
     source, changelogs = repository_links(chrome)
     body = join(
         (
-            Html("<h1>About emendrix</h1>"),
+            *page_masthead("prose", "About this site", "About emendrix", _PATH),
             Html(f'<p class="lede">{escape(PITCH)}</p>'),
             Html("<h2>What it is</h2>"),
             Html(f"<p>{escape(_WHAT_IT_IS)}</p>"),
@@ -202,5 +203,6 @@ def render_about(site: SiteInputs) -> Html:
         body=body,
         path=_PATH,
         chrome=chrome,
+        section=_PATH,
         feeds=((feed_path(None), feed_title(None)),),
     )

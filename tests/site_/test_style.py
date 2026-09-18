@@ -300,9 +300,9 @@ def test_a_diff_mark_says_which_it_is_without_its_tint() -> None:
 
 
 def test_the_modules_are_concatenated_in_cascade_order() -> None:
-    """Faces, tokens, the shell, the pages, the page furniture, the evidence, other media.
+    """Faces, tokens, the shell, page identity, the pages, the furniture, evidence, other media.
 
-    The package is seven `Final` strings joined in one place, so what can drift is the order
+    The package is eight `Final` strings joined in one place, so what can drift is the order
     they are joined in, and the order is a contract: a rule in a later module may rely on an
     earlier one and never the reverse. One selector from each module, in the order they must
     appear, is the cheapest way to hold it. The `@font-face` rules come first because they
@@ -311,7 +311,8 @@ def test_the_modules_are_concatenated_in_cascade_order() -> None:
     """
     assert STYLE.index("@font-face") < STYLE.index("--bg:")
     assert STYLE.index("--bg:") < STYLE.index("header.bar")
-    assert STYLE.index("header.bar") < STYLE.index(".cardrow")
+    assert STYLE.index("header.bar") < STYLE.index(".masthead {")
+    assert STYLE.index(".masthead {") < STYLE.index(".cardrow")
     assert STYLE.index(".cardrow") < STYLE.index(".timeline")
     assert STYLE.index(".timeline") < STYLE.index(".chg {")
     assert STYLE.index(".chg {") < STYLE.index("@media print")

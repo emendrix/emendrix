@@ -34,6 +34,9 @@ def test_it_is_a_whole_page_with_the_shell_and_the_disclaimer(site: Path) -> Non
     """The point of shipping one at all is the way back: the header bar and the search box."""
     text = (site / "404.html").read_text(encoding="utf-8")
     assert "<h1>Page not found</h1>" in text
+    # An address that matches nothing has no place in the tree, so the masthead has no trail.
+    assert '<header class="masthead masthead--prose">' in text
+    assert 'class="trail"' not in text
     assert '<header class="bar">' in text
     assert '<div id="search" data-root="">' in text
     assert "Not legal advice" in text

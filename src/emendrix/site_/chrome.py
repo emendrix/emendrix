@@ -24,6 +24,7 @@ in either order.
 from __future__ import annotations
 
 from datetime import date
+from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -60,13 +61,29 @@ class PageChrome(BaseModel):
     contact: str = Field(default="", description="Address readers may write to, or ''.")
 
 
-def nav_links(depth: int) -> Html:
+_SECTIONS: Final[tuple[tuple[str, str], ...]] = (
+    ("acts/", "All acts"),
+    ("amendments/", "Amending acts"),
+    ("dates/", "Dates ahead"),
+    ("methodology/", "Methodology"),
+    ("about/", "About"),
+    ("feeds/", "Feeds"),
+)
+"""The header bar's destinations as `(path, name)`, in the order the bar prints them."""
+
+
+def nav_links(depth: int, section: str = "") -> Html:
     """The header bar: a skip link, the wordmark, the six destinations and the search mount.
 
     The order is the decision. The first two are the site's two rosters, of acts and of the
-    instruments that amended them; the third is the only one of the three facing forward, so it
-    sits with them and not among the pages that are about the site rather than about the corpus.
-    Everything after it describes the tool.
+    amending acts that changed them; the third is the only one of the three facing forward, so
+    it sits with them and not among the pages that are about the site rather than about the
+    corpus. Everything after it describes the tool.
+
+    `section` is the path of the destination the page belongs to, and that link alone carries
+    `aria-current="page"`: an act, a version and a provision all sit under `acts/`, an amending
+    act under `amendments/`. The sheet marks it by weight and an underline, never by colour
+    alone. Home and the not-found page belong to no section and pass nothing.
 
     The skip link comes first in the source because that is the only thing that makes it
     useful: it is the first stop of a keyboard tab and is off-screen until it takes focus.
@@ -76,15 +93,15 @@ def nav_links(depth: int) -> Html:
     two landmarks of the same name and leave a screen reader to guess which is which.
     """
     root = up(depth)
+    current = ' aria-current="page"'
+    links = " ".join(
+        f'<a href="{root}{path}"{current if path == section else ""}>{name}</a>'
+        for path, name in _SECTIONS
+    )
     return Html(
         f'<a class="skip" href="#content">Skip to content</a>'
         f'<header class="bar"><a class="wordmark" href="{root or "./"}">emendrix</a>'
-        f'<nav aria-label="Site"><a href="{root}acts/">All acts</a> '
-        f'<a href="{root}amendments/">Amendments</a> '
-        f'<a href="{root}dates/">Dates ahead</a> '
-        f'<a href="{root}methodology/">Methodology</a> '
-        f'<a href="{root}about/">About</a> '
-        f'<a href="{root}feeds/">Feeds</a></nav>'
+        f'<nav aria-label="Site">{links}</nav>'
         f'<div id="search" data-root="{root}"></div></header>'
     )
 
@@ -160,6 +177,7 @@ def page(
     noindex: bool = False,
     feeds: tuple[tuple[str, str], ...] = (),
     structured: Html | None = None,
+    section: str = "",
 ) -> Html:
     """One complete document: head, header bar, the caller's body, footer. Newline-terminated.
 
@@ -173,6 +191,7 @@ def page(
 
     `feeds` and `structured` are what the page declares about itself: the Atom feeds it
     advertises as `(path, title)` pairs, and its JSON-LD block. Both default to nothing.
+    `section` is the header-bar destination the page belongs to, which `nav_links` marks.
 
     Everything site-wide, the build date, the public repository URLs and the site's one
     absolute address, arrives gathered in `chrome`: the signature once carried each as its own
@@ -208,7 +227,7 @@ def page(
             Html(f'<script defer src="{root}{SCRIPT}"></script>'),
             Html("</head>"),
             Html("<body>"),
-            nav_links(depth),
+            nav_links(depth, section),
             Html('<main id="content">'),
             body,
             Html("</main>"),

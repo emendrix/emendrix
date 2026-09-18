@@ -33,6 +33,8 @@ ALTERNATE = re.compile(
 )
 OG_URL = re.compile(r'<meta property="og:url" content="([^"]*)">')
 OG_IMAGE = re.compile(r'<meta property="og:image" content="([^"]*)">')
+VERSION_NAME = re.compile(r"Version (in force|detected) [1-9][0-9]? [A-Z][a-z]+ [0-9]{4}")
+"""A version's reader-facing name: its clock and its date in words, never its codes."""
 LD = re.compile(r'<script type="application/ld\+json">\n(.*?)\n</script>', re.DOTALL)
 
 
@@ -228,6 +230,19 @@ def test_an_event_page_carries_its_four_rung_breadcrumb_and_the_page_itself(site
         watched = _watched(page.parent.parent.name)
         _assert_legislation_names_the_act(described["about"], watched)
         assert items[2]["name"] == watched.name, page
+        # The fourth rung is the page by its reader's name, the words its heading opens with:
+        # a version by its clock and date, never its pair of codes, and a provision by its
+        # coordinate, which the heading may follow with the provision's own title.
+        heading = re.search(r"<h1>(.*?)</h1>", page.read_text(encoding="utf-8"))
+        assert heading is not None, page
+        words = re.sub(r"<[^>]+>", "", heading.group(1))
+        # A version's directory is its entry key, a consolidated-version code starting `0`;
+        # a provision's is a location slug, which starts with a letter.
+        if page.parent.name[0].isdigit():
+            assert VERSION_NAME.fullmatch(items[3]["name"]), page
+            assert words == items[3]["name"], page
+        else:
+            assert words.split(" · ")[0] == items[3]["name"], page
 
 
 def test_an_event_page_offers_its_own_acts_feed_before_the_global_one(site: Path) -> None:

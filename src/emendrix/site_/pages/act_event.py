@@ -263,7 +263,7 @@ def render_event(
     that repository lives on the operator's machine is never printed either way; the path it
     does print is the stable one inside the repository.
     """
-    lines = event_header(entry, acts, full=True)
+    lines = event_header(entry, acts, full=True, heading=False)
     if any(emitted.change.disputed for emitted in entry.changes):
         lines.append(Html(f'<p class="small muted">{escape(_THREE_SOURCES)}</p>'))
     shown: list[Html] = []

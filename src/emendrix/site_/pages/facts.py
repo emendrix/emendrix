@@ -144,7 +144,9 @@ def event_facts(entry: ChangelogEntry) -> list[Html]:
     ]
 
 
-def event_header(entry: ChangelogEntry, acts: tuple[AmendingAct, ...], *, full: bool) -> list[Html]:
+def event_header(
+    entry: ChangelogEntry, acts: tuple[AmendingAct, ...], *, full: bool, heading: bool = True
+) -> list[Html]:
     """The article's opening, shared by the card and the event page: id, date, versions, facts.
 
     The `id` is the fragment every feed entry's `<id>` was minted from, so both surfaces must
@@ -156,19 +158,28 @@ def event_header(entry: ChangelogEntry, acts: tuple[AmendingAct, ...], *, full: 
     named, because that is what a reader knows the event by; `full` is the event's own page
     rather than the card, and is what lets the official titles through. The facts line carries
     both clocks, so the record of when this happened is whole whichever the heading named.
+
+    `heading` is off on the version's own page, whose H1 already says the date with its clock:
+    the same words again as an H2 under it would be the page saying one fact twice. The
+    no-amending-act label the heading carries then opens a line of its own, so it is not lost.
     """
     versions = f"<code>{escape(str(entry.from_version))} → {escape(str(entry.to_version))}</code>"
-    # The bare pill, no colour modifier: the label is a fact about the corpus's records, and
-    # the palette spends colour on diffs, disputes and links only (`style/tokens.py`).
+    # The bare pill, no colour modifier: the palette gives a hue only to links, an alert, a kind
+    # of change and a page type (`style/tokens.py`), and a fact about the records is none of them.
     unnamed = unattributed(entry)
-    marker = f' <span class="pill">{escape(UNATTRIBUTED_LABEL)}</span>' if unnamed else ""
-    lines = [
-        Html(f'<article class="event" id="{escape(entry.key)}">'),
-        Html(f"<h2>{escape(event_date(entry).words)}{marker}</h2>"),
-        Html(f'<p class="ident">{versions}</p>'),
-        *amending_lines(acts, full=full),
-        *event_facts(entry),
-    ]
+    pill = f' <span class="pill">{escape(UNATTRIBUTED_LABEL)}</span>' if unnamed else ""
+    lines = [Html(f'<article class="event" id="{escape(entry.key)}">')]
+    if heading:
+        lines.append(Html(f"<h2>{escape(event_date(entry).words)}{pill}</h2>"))
+    elif pill:
+        lines.append(Html(f'<p class="facts">{pill.strip()}</p>'))
+    lines.extend(
+        (
+            Html(f'<p class="ident">{versions}</p>'),
+            *amending_lines(acts, full=full),
+            *event_facts(entry),
+        )
+    )
     if unnamed:
         lines.append(Html(f'<p class="small muted">{escape(UNATTRIBUTED_NOTE)}</p>'))
     if untouched(entry):
