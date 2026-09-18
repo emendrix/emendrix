@@ -23,7 +23,7 @@ acts/<celex>/<key>/   one page per version: its masthead, the changes and the ve
 acts/<celex>/<prov>/  one page per touched provision: its history, newest first
 amendments/           every amending act a committed event names, newest first, grouped by year
 amendments/<celex>/   one page per amending act: every watched act it amended, and what it moved
-dates/                every date in the amended texts that has not arrived yet, nearest first
+dates/                every date in the amended texts that has not arrived yet, by sector, nearest first
 about/                who runs the site, how current the corpus is, and what it does here
 methodology/          the metrics table with its caveats, the loop, the glossary of the site's words
 feeds/                what the feeds are and where they are, by sector
@@ -296,6 +296,25 @@ what has already happened; this gathers, across every watched act, the dates an 
 to or removed from a provision's text that fall after the date the build was made for, nearest
 first, each row linking the provision's own history and the change block that moved the date.
 
+The list is gathered by sector first and by year second, because a reader usually arrives
+asking what their own sector's texts name. A sector is the watchlist's `domain`, grouped and
+ordered by `sectors.py`, the one grouping the acts roster uses, so `Other` comes last on both
+pages and an act never sits in two different places. A jump list of the sectors that have rows
+opens the list, each with its number of rows, and each sector heading carries the id
+`dates-{anchor}`, prefixed so it never collides with the roster's bare sector ids. Inside a
+sector the rows keep their date order, one heading per year present, and each row is the same
+sentence it always was. The order of the page is the lede first, which says what the list is and
+is not, then the applies-from block, then the list, then the coverage panel `What this is a view
+of`, which carries the build date and the reasons no applies-from date could be read as well as
+the counts below. Content first and diagnostics after it; nothing was cut to get there.
+
+A year heading more than a hundred years after the build year (`dates_list.FAR_YEARS`) reads,
+for example, `2404 as the source's date markup reads it`, the qualifier linking the panel's
+sentence that states the range of readings (`#date-range`). The row stays under its own year
+and is counted like any other: a reading that far out is not a plausible date on its face, so
+the heading says whose reading it is rather than letting it stand as a claim about that year,
+and nothing is bucketed, clipped or folded.
+
 Its whole design is a line that must not be crossed. `dates_added` and `dates_removed` are a
 set difference over the source's own `<DATE ISO>` markup inside one provision, so the page knows
 that a date appeared in the text and nothing at all about what the sentence around it does: the
@@ -314,11 +333,11 @@ a coincidence, and a row that gathered them would assert a relationship the corp
 Two things on it are counted rather than assumed. A date one amendment put into a provision and
 a later one took back out is the one row a straightforward list renders wrongly, so each row
 carries whatever later committed change of the same act removed that date from that provision,
-and says exactly that. And the page opens the corpus's own coverage before a reader can take the
-list for a complete one: how many committed changes moved no machine-readable date at all, how
-`applies_from` answered across all of them with its stated reasons in the corpus's own words,
-how many mentions are already behind, how many acts have nothing ahead, and the two ends of the
-range the date markup produced, shown as read rather than clipped. Every one of those numbers is
+and says exactly that. And the panel under the list opens the corpus's own coverage, so a reader
+does not take the list for a complete one: how many committed changes moved no machine-readable
+date at all, how `applies_from` answered across all of them with its stated reasons in the
+corpus's own words, how many mentions are already behind, how many acts have nothing ahead, and
+the two ends of the range the date markup produced, shown as read rather than clipped. Every one of those numbers is
 counted at build time; none is typed into the page. What has already passed is folded to the
 last ninety days, with the remainder counted and the route to it given, because each act's own
 page carries its complete list in full.

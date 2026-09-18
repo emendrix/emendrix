@@ -5,7 +5,8 @@ with no text to show needed rules that module had no room for. The seam is the o
 halves always had: this is the page a reader is standing on, its identifying lines, its two
 columns and the sticky index in the left one, the rail an act's history is drawn as, the card
 each version is listed as, the masthead a version's own page opens with, the list of dates an
-act's text names, and the pager between versions. What follows in `evidence` is one change and
+act's text names (and the cross-act list on Dates ahead, which shares its rows and adds sector
+and year headings), and the pager between versions. What follows in `evidence` is one change and
 the text it quotes. A rule here may be relied on by one there and never the reverse, which is
 what makes the order a contract: the event page's `.event-layout` variant, the sticky column it
 puts the in-page index in, and the print block that undoes several of these all sit downstream.
@@ -191,6 +192,18 @@ TIMELINE: Final = """\
 .dates-named ul { list-style: none; margin: 0; padding: 0; font-size: var(--text-meta); }
 .dates-named li { padding: .2rem 0; }
 .dates-named .on { font-weight: 600; font-variant-numeric: tabular-nums lining-nums; }
+/* Dates ahead gathers its list by sector, then by year. A sector is a heading a reader jumps
+   to from the list above it, so it opens under a rule; the year beneath it is a marker in the
+   body size, and a far year's qualifier is set quieter than the year it qualifies. */
+.dates-named .sectors ul { margin: 0 0 var(--space-4); }
+.dates-named .sectors li { padding: 0; }
+.dates-named h3 { margin: var(--space-4) 0 var(--space-2); padding-top: var(--space-3);
+                  border-top: 1px solid var(--rule); scroll-margin-top: var(--space-3); }
+.dates-named h4 { font-family: var(--sans); font-size: var(--text-body); font-weight: 600;
+                  line-height: 1.3; color: var(--fg); margin: var(--space-3) 0 var(--space-1);
+                  font-variant-numeric: tabular-nums lining-nums; }
+.dates-named h3 + h4 { margin-top: 0; }
+.dates-named h4 .small { font-weight: 400; margin-left: var(--space-2); }
 /* One watched act on an amending instrument's page: its own heading, then the rail of events
    that instrument produced there. The heading carries the act, so it is set as a page heading
    rather than as a card's. */

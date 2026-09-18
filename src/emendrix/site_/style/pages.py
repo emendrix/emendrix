@@ -77,6 +77,8 @@ td.meaning { color: var(--muted); }
 .caveats { margin: var(--space-3) 0 0; padding-left: 1.1rem; font-size: var(--text-meta);
            color: var(--muted); }
 .caveats li { margin: .3rem 0; max-width: var(--measure); }
+/* A list of caveats can sit between two paragraphs, which own only the space below them. */
+.caveats + p { margin-top: var(--space-3); }
 .loop { list-style: none; display: grid; gap: .75rem; padding: 0; margin: var(--space-3) 0;
         grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
 .loop li { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius);

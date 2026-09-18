@@ -755,4 +755,21 @@ on any page, checked file by file against the tree before it. Both feeds, `searc
 `sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the fonts, `icon.svg` and `og.png` are
 byte-identical, and every version and provision page moved in its two asset names alone.
 `_LARGEST_PAGE` did not move, and no measured figure moved.
+
+Read again on 2026-09-18, later still, when Dates ahead began gathering its list by sector. All
+23 HTML pages moved for the stylesheet's new name, `style.b628d73d.css` replacing
+`style.f2708177.css`, which adds the sector and year headings of that list and a gap between a
+caveat list and the paragraph after it, and nothing else.
+One page moved in its markup, `dates/index.html`, and only in order: the sentence naming the
+build date left the top of the page and now opens `What this is a view of`, the one line of
+reasons no applies-from date could be read (`3 · the text changed beyond its dates, …`) left
+the applies-from block and sits in the panel after the sentence counting those changes, and the
+panel's range sentence gained `id="date-range"`, which a far year's heading links. No row's
+words and no count changed, and every sentence that moved kept its words. The fixture names no
+date after its build date, so its list is still the one `No date the committed texts name falls
+after 2026-08-06.` line and shows neither the sector jump list nor a sector heading; the
+grouping is asserted over the toy corpus in `test_dates_page.py`. **No `id=` moved or went.**
+Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the script,
+the fonts, `icon.svg` and `og.png` are byte-identical. `_LARGEST_PAGE` did not move, and no
+measured figure moved.
 """

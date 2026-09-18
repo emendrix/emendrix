@@ -34,6 +34,7 @@ from emendrix.site_.date_coverage import applies_ahead, coverage
 from emendrix.site_.history import ahead, cross_act_mentions, passed_within
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.pages.dates import RECENT_DAYS, render_dates
+from emendrix.site_.pages.dates_list import FAR_YEARS, QUALIFIER, RANGE_ANCHOR
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -229,6 +230,28 @@ def test_the_two_kinds_of_date_are_two_blocks_and_only_one_says_applies_from() -
     assert "applies from this date" not in rendered[listing:]
 
 
+def test_the_content_comes_before_the_coverage_and_nothing_was_cut() -> None:
+    """The lede first, then the applies block, the list and the panel. The reasons no date could
+    be read and the build date moved into the panel with their words unchanged."""
+    site = _site()
+    rendered = _mentions(site)
+    lede = rendered.index('<p class="lede">')
+    applies = rendered.index("<h2>Dates a change applies from</h2>")
+    listing = rendered.index("<h2>Dates the amended texts name</h2>")
+    panel = rendered.index("<h2>What this is a view of</h2>")
+    past = rendered.index("<h2>Dates that have passed</h2>")
+    assert lede < applies < listing < panel < past
+    inside = rendered[panel:past]
+    found = coverage(site, cross_act_mentions(site))
+    assert found.unknown_reasons
+    assert rendered.count('<ul class="caveats">') == 1
+    assert '<ul class="caveats">' in inside
+    for reason, number in found.unknown_reasons:
+        assert f"<li>{number:,} · {reason}</li>" in inside
+    assert rendered.count("is the date this build was made for") == 1
+    assert f"{BUILT_ON.isoformat()} is the date this build was made for" in inside
+
+
 def test_the_applies_from_block_renders_its_caption_when_no_such_date_is_ahead() -> None:
     """Deleting the empty block would drop the page's own demonstration of the distinction on
     exactly the build where the list below it stands alone."""
@@ -251,8 +274,70 @@ def test_a_superseded_row_says_what_the_later_change_did_and_links_it() -> None:
 
 
 def test_every_year_present_gets_its_own_heading_and_none_is_folded_away() -> None:
-    rendered = _mentions(_site())
-    assert re.findall(r"<h3>(\d{4})</h3>", rendered) == ["2027", "2030"]
+    """With no domain declared both acts sit under `Other`, and its years follow in order."""
+    listing = _mentions(_site()).split("<h2>Dates the amended texts name</h2>")[1]
+    assert re.findall(r"<h3[^>]*>([^<]+)</h3>", listing) == ["Other"]
+    assert re.findall(r"<h4>(\d{4})</h4>", listing) == ["2027", "2030"]
+
+
+def _in_sectors(site: SiteInputs, sectors: dict[str, str]) -> SiteInputs:
+    """The same site with each named act given a watchlist domain, which is a label, not law."""
+    acts = tuple(
+        act.model_copy(update={"domain": sectors.get(act.act.key, "")}) for act in site.acts
+    )
+    return site.model_copy(update={"acts": acts})
+
+
+def _sector_bodies(rendered: str) -> list[tuple[str, str]]:
+    """Each sector heading of the forward list, with the markup under it up to the next one."""
+    listing = rendered.split("<h2>Dates the amended texts name</h2>")[1]
+    listing = listing.split("<h2>What this is a view of</h2>")[0]
+    return re.findall(r"<h3[^>]*>([^<]+)</h3>(.*?)(?=<h3|$)", listing, re.DOTALL)
+
+
+def _sections(rendered: str) -> list[tuple[str, list[str]]]:
+    """Each sector heading of the forward list, with the year headings under it."""
+    return [(name, re.findall(r"<h4>(\d{4})", body)) for name, body in _sector_bodies(rendered)]
+
+
+def test_the_list_is_grouped_by_sector_in_the_rosters_order_then_by_year() -> None:
+    """Sectors in `sector_key` order, `Other` last, and inside each the date order survives."""
+    site = _in_sectors(_site(), {"alpha": "Chemicals", "beta": "Agri-food"})
+    assert _sections(_mentions(site)) == [("Agri-food", ["2027"]), ("Chemicals", ["2027", "2030"])]
+    site = _in_sectors(_site(), {"beta": "Chemicals"})
+    assert _sections(_mentions(site)) == [("Chemicals", ["2027"]), ("Other", ["2027", "2030"])]
+
+
+def test_the_sector_nav_counts_the_rows_and_every_link_lands_on_a_heading() -> None:
+    """Exactly the sectors that have rows, each with its number of rows, in the list's order."""
+    site = _in_sectors(_site(), {"alpha": "Chemicals", "beta": "Agri-food"})
+    rendered = _mentions(site)
+    nav = rendered.split('<nav class="sectors" aria-label="Sectors on this page">')[1]
+    nav = nav.split("</nav>")[0]
+    listed = re.findall(r'<a href="#([^"]+)">([^<]+)</a> <span class="small">(\d+)</span>', nav)
+    assert [(name, int(n)) for _, name, n in listed] == [("Agri-food", 1), ("Chemicals", 3)]
+    per_sector = {name: len(_rows(part)) for name, part in _sector_bodies(rendered)}
+    assert per_sector == {"Agri-food": 1, "Chemicals": 3}
+    for anchor, _, _ in listed:
+        assert anchor.startswith("dates-")
+        assert rendered.count(f'id="{anchor}"') == 1, anchor
+
+
+def test_a_reading_past_a_century_out_keeps_its_row_and_its_heading_says_whose_it_is() -> None:
+    """The far end is published as measured: the row stays under its own year, and only the
+    heading is qualified, linking the sentence that states the range the markup produced."""
+    far = date(BUILT_ON.year + FAR_YEARS + 1, 4, 4)
+    edge = date(BUILT_ON.year + FAR_YEARS, 4, 4)
+    extra = _event(BETA, "beta-2", "beta-1", date(2026, 4, 4), {0: ((far, edge), ())})
+    rendered = _mentions(_site(*_entries(), extra))
+    qualified = f'<h4>{far.year} <span class="small"><a href="#{RANGE_ANCHOR}">{QUALIFIER}'
+    assert qualified.replace("'", "&#x27;") in rendered
+    assert f"<h4>{edge.year}</h4>" in rendered
+    rows = _forward_rows(rendered)
+    assert sum(far.isoformat() in one for one in rows) == 1
+    assert sum(edge.isoformat() in one for one in rows) == 1
+    assert rendered.count(f'id="{RANGE_ANCHOR}"') == 1
+    assert f"readings from {LONG_PASSED.isoformat()} to {far.isoformat()}" in rendered
 
 
 def test_a_corpus_with_nothing_ahead_says_so_and_still_publishes_the_panel() -> None:
