@@ -133,8 +133,9 @@ def test_a_quiet_act_links_the_act_as_published_and_says_which_document_it_is() 
     """Two labels, because the newest consolidation and the act as published are two
     documents; an act with events shows the first and never offers the second."""
     published = _quiet(published="https://eur-lex.europa.eu/x")
-    assert '<a href="https://eur-lex.europa.eu/x">as published, ' in published
-    assert ">on EUR-Lex</span></a>" in published
+    assert (
+        '<a class="ext" href="https://eur-lex.europa.eu/x">as published, on EUR-Lex<' in published
+    )
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = collect_site(
         generated_on=OBSERVED,
@@ -145,9 +146,7 @@ def test_a_quiet_act_links_the_act_as_published_and_says_which_document_it_is() 
         published_urls={"house-rules": "https://eur-lex.europa.eu/x"},
     )
     rendered = render_act(site, site.acts[0])
-    assert '<a class="nowrap" href="https://eur-lex.europa.eu/consolidated">on EUR-Lex</a>' in (
-        rendered
-    )
+    assert '<a class="ext" href="https://eur-lex.europa.eu/consolidated">on EUR-Lex<' in rendered
     assert "as published" not in rendered
 
 

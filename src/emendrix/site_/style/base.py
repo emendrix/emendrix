@@ -90,9 +90,11 @@ code, .id {
 .quoted { color: var(--muted); }
 .none { color: var(--muted); }
 /* A link that leaves the site says so with a drawn arrow; its words for a screen reader are
-   in the markup (`outbound.py`). */
+   in the markup (`outbound.py`). A drawn glyph is also read out unless its alternative text is
+   empty (`/ ""`); each is declared twice, so a browser without that syntax keeps the glyph. */
 .ext { white-space: nowrap; }
-.ext::after { content: "\\2197"; display: inline-block; margin-left: .12em; font-size: .85em;
+.ext::after { content: "\\2197"; content: "\\2197" / ""; display: inline-block;
+              margin-left: .12em; font-size: .85em;
               text-decoration: none; }
 /* Off-screen until it takes focus, then placed over the header rather than moving it, so
    arriving at the page shifts nothing. It is the first focusable element on every page. */
@@ -192,11 +194,14 @@ header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; 
   header.bar { gap: var(--space-2); padding-top: var(--space-1); padding-bottom: var(--space-2); }
   .wordmark { flex: none; }
   /* One row that scrolls sideways to the screen's edge, faded at its end so the cut reads as
-     more to come. */
+     more to come. The fade is a fixed 2.5rem and the row's end padding as wide, so the last
+     link scrolls clear of it at full contrast. A scroll box clips a focus ring, so the row
+     keeps 5px of room on the other three sides and gives it back in margin. */
   header.bar nav {
     flex: 1 1 0; min-width: 0; flex-wrap: nowrap; overflow-x: auto; gap: 0 var(--space-3);
-    scrollbar-width: none; margin-right: calc(-1 * var(--gutter)); padding-right: var(--gutter);
-    mask-image: linear-gradient(to right, black 80%, transparent);
+    scrollbar-width: none; margin: -5px calc(-1 * var(--gutter)) -5px -5px;
+    padding: 5px 2.5rem 5px 5px;
+    mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent);
   }
   header.bar nav a { white-space: nowrap; padding: .75rem 0; }
   #search { flex: 1 1 100%; margin-left: 0; }

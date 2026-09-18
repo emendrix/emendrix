@@ -190,8 +190,8 @@ def test_the_index_lists_every_instrument_with_a_page_under_the_year_of_its_newe
     rendered = render_amendments_index(site)
     assert "<h1>Amending acts</h1>" in rendered
     assert "<title>Amending acts — emendrix</title>" in rendered
-    assert "1 amending act named by a committed event" in rendered
-    assert "2 amendment events" in rendered
+    assert "1 amending act named by a recorded version" in rendered
+    assert "2 versions of the watched acts" in rendered
     assert f'<a href="../amendments/{AMENDMENT.key}/">' in rendered
     assert "<h2>2026</h2>" in rendered
     assert rendered.split('<ul class="roster">')[1].split("</ul>")[0].count("<li>") == 1

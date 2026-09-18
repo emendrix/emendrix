@@ -191,9 +191,12 @@ number rendered from the CELEX by the numbering convention in force for its year
 at the CLI boundary, which is the one place in the site generator allowed to know what a CELEX
 is. **An amending act is named one way and goes one place**: `Made by X` on a version and
 `Amended by X` on a provision's step both link X's page on this site, the key follows as a small
-identifier, and EUR-Lex follows that as a secondary link. Those EUR-Lex links, and the one on
-an amending act's own page, are written by `site_/outbound.py`, drawn with an arrow by the sheet
-and announced to a screen reader as external, so they cannot look like internal ones. Where a committed document
+identifier, and EUR-Lex follows that as a secondary link. Every link to EUR-Lex on the site,
+these, the one on an amending act's own page, an act's and a provision history's own and the
+disclaimer's, is written by `site_/outbound.py`, drawn with an arrow by the sheet and announced
+to a screen reader as external, so none can look like an internal one. The arrow carries empty
+alternative text, as every glyph the sheet draws in place of a word does, so it is not read out
+after the words that already say it. Where a committed document
 recorded the amending act's official title, the version's masthead prints it verbatim as its
 lede and the version card prints it uncut under the line. None of it is authored: a label is a
 label, a number is mechanical and reversible, and a title is the corpus's own words.
@@ -397,7 +400,7 @@ them. The commonest shape is the act as published set against its own first cons
 no amending act can exist yet. The site derives the class at build time from the committed
 document's own fields (`site_/attribution.py`) and says the fact rather than a cause: the front
 page leaves these events out of "Latest versions" and counts the exclusion in words, the acts
-index counts them apart from the amendment events and never answers a date fact with one, the act
+index counts them apart from the versions naming an amending act and never answers a date fact with one, the act
 page keeps every one in place under the label "no amending act named" with one sentence saying
 what it means, and the feeds keep every one with the same fact leading the summary. Nothing is
 dropped: the difference in the published text is real and stays shown; what the pipeline did not
@@ -438,8 +441,9 @@ two different trails.
 an underline rather than by colour alone: act, version and provision pages mark `All acts`,
 amending-act pages and their roster mark `Amending acts`, and each page about the site marks
 itself. Home and the not-found page mark nothing. On a phone (up to 40rem) the wordmark heads
-the bar, the six section links sit in one row below it that scrolls sideways, faded at its end
-so the cut reads as more to come, and search takes the row under that. Nothing is folded behind
+the bar, the six section links sit in one row beside it that scrolls sideways, faded over its
+last 2.5rem so the cut reads as more to come, with as much padding at its end so the last link
+scrolls clear of the fade, and search takes the row under that. Nothing is folded behind
 a menu: a menu would need a script to open, and it would hide the site's structure.
 
 **Pages speak the reader's vocabulary; the stored one does not change.** On a page, an event is a

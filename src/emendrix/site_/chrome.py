@@ -32,6 +32,7 @@ from emendrix import DISCLAIMER
 from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
 from emendrix.site_.head import head_metadata
 from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.outbound import external
 from emendrix.site_.urls import depth_of, up
 
 __all__ = ["PageChrome", "disclaimer_html", "nav_links", "page", "repository_links"]
@@ -60,6 +61,9 @@ class PageChrome(BaseModel):
     operator_url: str = Field(default="", description="Public page of the operator, or ''.")
     contact: str = Field(default="", description="Address readers may write to, or ''.")
 
+
+_EURLEX: Final = "https://eur-lex.europa.eu/"
+"""Where the disclaimer sends a reader for the official text: EUR-Lex's front page."""
 
 _SECTIONS: Final[tuple[tuple[str, str], ...]] = (
     ("acts/", "All acts"),
@@ -138,8 +142,7 @@ def disclaimer_html() -> Html:
     lead, rest = DISCLAIMER.split(": ", 1)
     return Html(
         f'<p class="disclaimer"><strong>{escape(lead)}:</strong> {escape(rest)} '
-        'Read the official consolidated text on <a href="https://eur-lex.europa.eu/">'
-        "EUR-Lex</a>.</p>"
+        f"Read the official consolidated text {external(_EURLEX, 'on EUR-Lex')}.</p>"
     )
 
 

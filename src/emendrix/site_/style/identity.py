@@ -64,7 +64,8 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
   list-style: none; padding: 0; margin: 0 0 var(--space-4);
   font-size: var(--text-meta); line-height: 1.5; color: var(--muted);
 }
-.trail li + li::before { content: "\\203A"; margin-right: .45rem; color: var(--muted); }
+.trail li + li::before { content: "\\203A"; content: "\\203A" / ""; margin-right: .45rem;
+                         color: var(--muted); }
 .trail a { color: var(--muted); text-decoration-color: var(--edge); }
 .trail a:hover { color: var(--link); text-decoration-color: currentColor; }
 .trail [aria-current="page"] { color: var(--fg); }
@@ -92,7 +93,8 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
 @media (max-width: 40rem) {
   .trail li { display: none; }
   .trail li:nth-last-child(2) { display: block; }
-  .trail li:nth-last-child(2)::before { content: "\\2190"; margin-right: .35rem; }
+  .trail li:nth-last-child(2)::before { content: "\\2190"; content: "\\2190" / "";
+                                        margin-right: .35rem; }
   .trail ol { margin-bottom: var(--space-3); }
   .masthead { padding: var(--space-3) 0 var(--space-4); }
 }

@@ -141,9 +141,9 @@ def _row(site: SiteInputs, act: ActSite) -> Html:
 def render_acts_index(site: SiteInputs) -> Html:
     """The roster page. Deterministic: same inputs, same bytes, no clock, no network.
 
-    The lede counts the events no amending act is named for apart from the amendment events,
-    and prints both numbers even when either is zero: one figure covering both would call
-    every recorded event an amendment, which is the claim the split exists to stop.
+    The lede counts the versions naming no amending act apart from those naming one, and
+    prints both numbers even when either is zero: one figure covering both would call every
+    recorded version an amendment, which is the claim the split exists to stop.
     """
     events = sum(len(act.entries) for act in site.acts)
     unnamed = sum(1 for act in site.acts for entry in act.entries if unattributed(entry))
@@ -152,9 +152,8 @@ def render_acts_index(site: SiteInputs) -> Html:
         Html(
             f'<p class="lede muted">{escape(count(len(site.acts), "act"))} watched'
             f"{escape(_kinds_clause(site.kinds))}. "
-            f"{escape(count(events - unnamed, 'amendment event'))} recorded, plus "
-            f"{escape(count(unnamed, 'event'))} naming no amending act. Grouping comes from "
-            f"the watchlist; nothing here is inferred.</p>"
+            f"Versions recorded: {events - unnamed} naming an amending act, {unnamed} naming "
+            f"none. Grouping comes from the watchlist; nothing here is inferred.</p>"
         ),
     ]
     if scope_holds(site.kinds):

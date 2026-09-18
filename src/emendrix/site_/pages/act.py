@@ -39,6 +39,7 @@ from emendrix.site_.history import dates_named
 from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.outbound import external
 from emendrix.site_.pages.act_dates import dates_section
 from emendrix.site_.pages.act_index import ACT_DEPTH, event_link, sidebar
 from emendrix.site_.pages.version_card import version_card
@@ -182,14 +183,9 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
         href = escape(up(_DEPTH) + feed_path(act))
         links.append(Html(f'<a href="{href}">Atom feed</a>'))
     if act.eurlex_url:
-        links.append(Html(f'<a class="nowrap" href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
+        links.append(external(act.eurlex_url, "on EUR-Lex"))
     elif act.published_url:
-        links.append(
-            Html(
-                f'<a href="{escape(act.published_url)}">as published, '
-                f'<span class="nowrap">on EUR-Lex</span></a>'
-            )
-        )
+        links.append(external(act.published_url, "as published, on EUR-Lex"))
     caption = escape(f"Act · {act.domain}" if act.domain else "Act")
     header = masthead("act", act_trail(act), _DEPTH, caption, escape(act.headline))
     if title != act.headline and title != act.label:

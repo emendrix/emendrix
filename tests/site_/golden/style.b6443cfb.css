@@ -201,9 +201,11 @@ code, .id {
 .quoted { color: var(--muted); }
 .none { color: var(--muted); }
 /* A link that leaves the site says so with a drawn arrow; its words for a screen reader are
-   in the markup (`outbound.py`). */
+   in the markup (`outbound.py`). A drawn glyph is also read out unless its alternative text is
+   empty (`/ ""`); each is declared twice, so a browser without that syntax keeps the glyph. */
 .ext { white-space: nowrap; }
-.ext::after { content: "\2197"; display: inline-block; margin-left: .12em; font-size: .85em;
+.ext::after { content: "\2197"; content: "\2197" / ""; display: inline-block;
+              margin-left: .12em; font-size: .85em;
               text-decoration: none; }
 /* Off-screen until it takes focus, then placed over the header rather than moving it, so
    arriving at the page shifts nothing. It is the first focusable element on every page. */
@@ -303,11 +305,14 @@ header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; 
   header.bar { gap: var(--space-2); padding-top: var(--space-1); padding-bottom: var(--space-2); }
   .wordmark { flex: none; }
   /* One row that scrolls sideways to the screen's edge, faded at its end so the cut reads as
-     more to come. */
+     more to come. The fade is a fixed 2.5rem and the row's end padding as wide, so the last
+     link scrolls clear of it at full contrast. A scroll box clips a focus ring, so the row
+     keeps 5px of room on the other three sides and gives it back in margin. */
   header.bar nav {
     flex: 1 1 0; min-width: 0; flex-wrap: nowrap; overflow-x: auto; gap: 0 var(--space-3);
-    scrollbar-width: none; margin-right: calc(-1 * var(--gutter)); padding-right: var(--gutter);
-    mask-image: linear-gradient(to right, black 80%, transparent);
+    scrollbar-width: none; margin: -5px calc(-1 * var(--gutter)) -5px -5px;
+    padding: 5px 2.5rem 5px 5px;
+    mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent);
   }
   header.bar nav a { white-space: nowrap; padding: .75rem 0; }
   #search { flex: 1 1 100%; margin-left: 0; }
@@ -378,7 +383,8 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
   list-style: none; padding: 0; margin: 0 0 var(--space-4);
   font-size: var(--text-meta); line-height: 1.5; color: var(--muted);
 }
-.trail li + li::before { content: "\203A"; margin-right: .45rem; color: var(--muted); }
+.trail li + li::before { content: "\203A"; content: "\203A" / ""; margin-right: .45rem;
+                         color: var(--muted); }
 .trail a { color: var(--muted); text-decoration-color: var(--edge); }
 .trail a:hover { color: var(--link); text-decoration-color: currentColor; }
 .trail [aria-current="page"] { color: var(--fg); }
@@ -406,7 +412,8 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
 @media (max-width: 40rem) {
   .trail li { display: none; }
   .trail li:nth-last-child(2) { display: block; }
-  .trail li:nth-last-child(2)::before { content: "\2190"; margin-right: .35rem; }
+  .trail li:nth-last-child(2)::before { content: "\2190"; content: "\2190" / "";
+                                        margin-right: .35rem; }
   .trail ol { margin-bottom: var(--space-3); }
   .masthead { padding: var(--space-3) 0 var(--space-4); }
 }
@@ -458,7 +465,9 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
 /* Home: a version card led by its act, then the stat strip after the list. */
 .cardrow { padding: var(--space-3) 0 var(--space-4); border-top: 1px solid var(--rule); }
 .cardrow:last-of-type { border-bottom: 1px solid var(--rule); }
-.cardrow .caption { margin-bottom: .1rem; --type: var(--type-act); }
+/* Two stacked links, the act and its version: the gap keeps a 24px target around each
+   (WCAG 2.5.8), which the caption's own line box is too short to give. */
+.cardrow .caption { margin-bottom: var(--space-2); --type: var(--type-act); }
 .cardrow .caption::before { border-radius: 1px; }
 .cardrow h3 { font-size: var(--text-h3); margin: 0 0 var(--space-1); }
 .cardrow .made { font-size: var(--text-meta); color: var(--muted); margin-bottom: var(--space-2); }
@@ -828,8 +837,8 @@ a.loc { color: inherit; font-weight: 600; }
                      border-radius: 50%; margin-right: .5rem; background: var(--type-version);
                      border: 1px solid var(--type-version); }
 .context a { font-weight: 600; }
-.context a[href="#changes-index"]::before { content: "\2191"; margin-right: .3rem;
-                                            display: inline-block; }
+.context a[href="#changes-index"]::before { content: "\2191"; content: "\2191" / "";
+                                            margin-right: .3rem; display: inline-block; }
 .version-masthead + .context { margin-top: calc(-1 * var(--space-5)); }
 /* Anything the page scrolls to, a fragment or a focused link, lands below the bar rather
    than under it; a change's own margin then clears its highlight. */
@@ -1053,5 +1062,8 @@ th { font-size: var(--text-label); font-weight: 600; color: var(--muted); }
   .caption::before, .context p::before
     { background: Canvas; border-color: CanvasText; forced-color-adjust: none; }
   .masthead { border-image: none; border-top-color: CanvasText; }
+  /* A transparent border is painted in the system colour too, so every other item's is
+     drawn as the ground and only the current one stays underlined. */
+  header.bar nav a { border-bottom-color: Canvas; }
   header.bar nav a[aria-current="page"] { border-bottom-color: CanvasText; }
 }

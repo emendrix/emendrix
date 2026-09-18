@@ -365,18 +365,16 @@ def test_the_index_calls_a_detection_date_detected() -> None:
 
 def test_the_index_counts_events_naming_no_amending_act_apart() -> None:
     """Both numbers always render, zeros included: one figure over both kinds would call
-    every recorded event an amendment."""
+    every recorded version an amendment."""
     unnamed = unattributed_entry().model_copy(update={"to_version": VersionId("v9")})
     entries = (_entry().model_copy(update={"in_force": (date(2024, 6, 1),)}), unnamed)
     site = collect_site(generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries)
     rendered = render_acts_index(site)
-    assert "1 amendment event recorded, plus 1 event naming no amending act." in rendered
+    assert "Versions recorded: 1 naming an amending act, 1 naming none." in rendered
     bare = collect_site(
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(_entry(),)
     )
-    assert "1 amendment event recorded, plus 0 events naming no amending act." in render_acts_index(
-        bare
-    )
+    assert "Versions recorded: 1 naming an amending act, 0 naming none." in render_acts_index(bare)
 
 
 def test_the_index_row_for_an_act_with_only_unnamed_events_says_so() -> None:

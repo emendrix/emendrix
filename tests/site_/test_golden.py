@@ -138,6 +138,20 @@ def test_external_links_leave_only_for_eur_lex_or_the_configured_repositories(
             assert ok, f"{page}: {link}"
 
 
+def test_every_link_to_eur_lex_says_it_leaves_the_site(site: Path) -> None:
+    """Checked 2026-09-18 over a production-shaped build: the act page's own EUR-Lex link, the
+    provision page's and the disclaimer's on every page were plain anchors, so a reader got the
+    cue on a citation and not on the link beside it that goes to the same site."""
+    seen = 0
+    for page in _pages(site):
+        for anchor in re.findall(
+            r'<a [^>]*href="https://eur-lex[^"]*"[^>]*>', page.read_text(encoding="utf-8")
+        ):
+            assert anchor.startswith('<a class="ext" '), f"{page}: {anchor}"
+            seen += 1
+    assert seen
+
+
 def test_every_citation_url_matches_the_verified_eur_lex_format(site: Path) -> None:
     """Pattern check, offline: the shape verified against the endpoint, not a request to it."""
     seen = 0
@@ -231,7 +245,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 48960)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49029)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -376,7 +390,12 @@ place. Its nine changes pass the six that give a page an index, so it gains the 
 keyed to the same threshold: 208 bytes of context bar under the masthead, naming the Medical
 Devices Regulation as a link to its page, `Version in force 24 April 2020` and `Index`; 19 bytes
 of `id="changes-index"` on the index; and 63 bytes of `↑ Index` closing each of the nine change
-blocks, 567 in all. No anchor moved, no id went, and nothing inside a `<details>` did."""
+blocks, 567 in all. No anchor moved, no id went, and nothing inside a `<details>` did.
+
+69 bytes heavier on 2026-09-18, later again, when the disclaimer's EUR-Lex link started saying
+it leaves the site, as every citation already did: 12 bytes of `class="ext"` and 57 of the
+visually hidden ` (external, EUR-Lex)` its screen-reader words live in. Every page on the site
+gained the same 69 bytes in its footer. Nothing else on this page moved."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

@@ -31,6 +31,7 @@ import pytest
 from emendrix.site_.fingerprint import FONTS
 from emendrix.site_.style import STYLE
 from emendrix.site_.style.base import BASE
+from emendrix.site_.style.pages import PAGES
 
 _DARK = "@media (prefers-color-scheme: dark)"
 """Where the light palette stops and the override begins. Both blocks name the same tokens."""
@@ -450,6 +451,40 @@ def test_a_phone_keeps_the_whole_site_navigation_on_one_row_that_scrolls() -> No
     assert "flex-wrap: nowrap;" in nav
     assert "overflow-x: auto;" in nav
     assert "display: none" not in phone
+
+
+def test_a_phone_nav_row_ends_at_full_contrast_and_keeps_room_for_a_focus_ring() -> None:
+    """The fade was 20% of the row's width, wider than the row's end padding, so the last link
+    stayed faded when scrolled fully into view, and the scroll box clipped the top and bottom of
+    a focused link's ring (a 390px phone, 2026-09-18)."""
+    phone = BASE.split("@media (max-width: 40rem) {")[1]
+    nav = phone.split("header.bar nav {")[1].split("}")[0]
+    assert "black calc(100% - 2.5rem), transparent" in nav
+    assert "padding: 5px 2.5rem 5px 5px;" in nav
+
+
+def test_forced_colours_underline_only_the_current_section() -> None:
+    """A transparent border is painted in the system colour under forced colours, which drew
+    the current-section underline under every item of the header bar (2026-09-18)."""
+    _, _, forced = STYLE.partition(_FORCED)
+    assert "header.bar nav a { border-bottom-color: Canvas; }" in forced
+    assert forced.index("header.bar nav a {") < forced.index("header.bar nav a[aria-current")
+
+
+@pytest.mark.parametrize("glyph", ["2191", "2197", "203A", "2190"])
+def test_a_glyph_the_sheet_draws_in_place_of_a_word_is_not_read_out(glyph: str) -> None:
+    """Generated content joins an accessible name, so the context bar's link read as `↑ Index`
+    and every outbound link ended in `↗` after its spoken cue (Chrome's accessibility tree,
+    2026-09-18). Each is declared bare first for a browser without the alt-text syntax."""
+    assert f'content: "\\{glyph}"; content: "\\{glyph}" / "";' in STYLE
+
+
+def test_a_home_card_keeps_its_act_and_its_version_links_apart_by_a_touch_target() -> None:
+    """The act caption and the version heading are two links stacked on a home card. With the
+    caption a tenth of a rem above the heading, the space around the act link measured 21.4px
+    where WCAG 2.5.8 asks for 24px (Lighthouse `target-size`, 2026-09-18)."""
+    caption = PAGES.split(".cardrow .caption {")[1].split("}")[0]
+    assert "margin-bottom: var(--space-2);" in caption
 
 
 def test_the_act_grid_places_its_index_by_name_so_the_markup_can_lead_with_the_timeline() -> None:

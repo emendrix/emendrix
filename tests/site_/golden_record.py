@@ -788,4 +788,23 @@ went**, and every fragment the new links name resolves on its own page. Both fee
 `icon.svg` and `og.png` are byte-identical, and every other page moved in its stylesheet name
 alone. `_LARGEST_PAGE` moves by 794 bytes, all of it on the MDR version page, and no measured
 figure moved.
+
+Read again on 2026-09-18, later still, after the whole site was checked in a browser against
+production-shaped content. All 23 HTML pages moved, each for two reasons: the stylesheet's new
+name, `style.b6443cfb.css` replacing `style.881d1c06.css`, and the disclaimer's EUR-Lex link,
+which now carries the outbound cue every citation already had (`class="ext"`, the drawn arrow
+and ` (external, EUR-Lex)` for a screen reader) and reads `on EUR-Lex` as its words. The sheet
+gives its four drawn glyphs, the context bar's up arrow, the outbound arrow, the trail's
+separator and a phone trail's left arrow, empty alternative text so they are not read out,
+spaces a home card's act link from its version link to a 24px target, lets a phone's header row
+end at full contrast with room for a focus ring, and draws only the current section's underline
+under forced colours. Fifteen pages moved in their markup besides. The four act pages and the
+nine MDR provision pages route their own `on EUR-Lex` link through the same cue, where it was a
+plain anchor. The acts roster's lede counts versions, `Versions recorded: 1 naming an amending
+act, 0 naming none.`, where it counted amendment events, and the amending-acts roster's says `1
+amending act named by a recorded version, between them 1 version of the watched acts. Newest
+first, by the newest version each one made.` **No `id=` moved or went.** Both feeds,
+`search-index.json`, `sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the script, the fonts,
+`icon.svg` and `og.png` are byte-identical. `_LARGEST_PAGE` moves by 69 bytes, the footer's, and
+no measured figure moved.
 """

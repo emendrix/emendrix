@@ -61,8 +61,8 @@ EVIDENCE: Final = """\
                      border-radius: 50%; margin-right: .5rem; background: var(--type-version);
                      border: 1px solid var(--type-version); }
 .context a { font-weight: 600; }
-.context a[href="#changes-index"]::before { content: "\\2191"; margin-right: .3rem;
-                                            display: inline-block; }
+.context a[href="#changes-index"]::before { content: "\\2191"; content: "\\2191" / "";
+                                            margin-right: .3rem; display: inline-block; }
 .version-masthead + .context { margin-top: calc(-1 * var(--space-5)); }
 /* Anything the page scrolls to, a fragment or a focused link, lands below the bar rather
    than under it; a change's own margin then clears its highlight. */

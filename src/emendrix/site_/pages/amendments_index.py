@@ -102,8 +102,8 @@ def render_amendments_index(site: SiteInputs) -> Html:
         *page_masthead("index", "Index", AMENDING_ROSTER, _PATH),
         Html(
             f'<p class="lede muted">{escape(count(len(found), "amending act"))} named by a '
-            f"committed event, between them {escape(count(events, 'amendment event'))} on the "
-            f"watched acts. Newest first by the newest event each one produced.</p>"
+            f"recorded version, between them {escape(count(events, 'version'))} of the watched "
+            f"acts. Newest first, by the newest version each one made.</p>"
         ),
     ]
     if not found:

@@ -88,6 +88,9 @@ MEDIA: Final = """\
   .caption::before, .context p::before
     { background: Canvas; border-color: CanvasText; forced-color-adjust: none; }
   .masthead { border-image: none; border-top-color: CanvasText; }
+  /* A transparent border is painted in the system colour too, so every other item's is
+     drawn as the ground and only the current one stays underlined. */
+  header.bar nav a { border-bottom-color: Canvas; }
   header.bar nav a[aria-current="page"] { border-bottom-color: CanvasText; }
 }
 """

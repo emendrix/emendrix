@@ -33,7 +33,9 @@ PAGES: Final = """\
 /* Home: a version card led by its act, then the stat strip after the list. */
 .cardrow { padding: var(--space-3) 0 var(--space-4); border-top: 1px solid var(--rule); }
 .cardrow:last-of-type { border-bottom: 1px solid var(--rule); }
-.cardrow .caption { margin-bottom: .1rem; --type: var(--type-act); }
+/* Two stacked links, the act and its version: the gap keeps a 24px target around each
+   (WCAG 2.5.8), which the caption's own line box is too short to give. */
+.cardrow .caption { margin-bottom: var(--space-2); --type: var(--type-act); }
 .cardrow .caption::before { border-radius: 1px; }
 .cardrow h3 { font-size: var(--text-h3); margin: 0 0 var(--space-1); }
 .cardrow .made { font-size: var(--text-meta); color: var(--muted); margin-bottom: var(--space-2); }

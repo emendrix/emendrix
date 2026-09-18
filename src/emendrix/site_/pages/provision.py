@@ -42,6 +42,7 @@ from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.outbound import external
 from emendrix.site_.pages.prose import applies_line, dates_line, differ_note, permalink, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import provision_json_ld
@@ -86,7 +87,7 @@ def _header(act: ActSite, history: ProvisionHistory) -> list[Html]:
         Html('<a href="../">every version of this act</a>'),
     ]
     if act.eurlex_url:
-        facts.append(Html(f'<a class="nowrap" href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
+        facts.append(external(act.eurlex_url, "on EUR-Lex"))
     named = history.location.human
     heading = history.steps[0].change.heading
     subject = (

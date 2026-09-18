@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 177195)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 177264)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -155,9 +155,14 @@ newest amendment in words inside `<time>`, `detected <time datetime="…">…</t
 printed the ISO date bare. Moving the index after the timeline in the markup, so a phone reads
 the versions first, is byte-neutral: the same lines in another order. None of these events has
 the six changes a version page needs before it carries an index, a context bar or a way back to
-the index from each change, so no event page moved."""
+the index from each change, so no event page moved.
 
-_TOTAL_BYTES: Final = 3164817
+69 bytes heavier on 2026-09-18, later again, when the disclaimer's EUR-Lex link started
+carrying the outbound cue every citation already had: `class="ext"` and a visually hidden
+` (external, EUR-Lex)`. It is the footer's cost on every page and nothing else; this act has no
+EUR-Lex address of its own, so its facts line did not move."""
+
+_TOTAL_BYTES: Final = 3206355
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -294,6 +299,10 @@ page's facts line dates the newest amendment inside `<time>`, and its index move
 timeline in the markup at no cost in bytes. No version here reaches the six changes that give
 a version page its index, context bar and `↑ Index` links, so no version page moved. No anchor or
 id moved and no measured figure moved with it.
+
+41 538 bytes heavier on 2026-09-18, later again: 69 bytes on each of the 602 pages, the
+disclaimer's EUR-Lex link gaining the outbound cue's class and its spoken words, and nothing
+else. No anchor or id moved and no measured figure moved with it.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
