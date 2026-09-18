@@ -163,6 +163,8 @@ TIMELINE: Final = """\
 .version-masthead .ident, .version-masthead .instruments { font-size: var(--text-meta);
                                                            color: var(--muted); max-width: 80ch; }
 .version-masthead .ident code { color: var(--fg); }
+/* Why a version's code can carry a date it is not in force from, under the codes it explains. */
+.version-masthead .ident .note { display: block; margin-top: var(--space-1); }
 .summary {
   display: grid;
   gap: 0 var(--space-5);

@@ -83,8 +83,7 @@ GLOSSARY: Final[tuple[tuple[str, str, str], ...]] = (
         "own amendment metadata, and the amending act's instructions. Where they do not agree "
         "about a change, it is shown with what each source said, and none is dropped or "
         "overruled. It is a statement about the sources, not about the law. The measured table "
-        "above counts the same thing under its measure's name, \"Disputed changes (signals "
-        'disagree)".',
+        "above counts the same thing, in its row on changes where the signals disagree.",
     ),
     (
         "not-in-every-list",
@@ -137,14 +136,16 @@ GLOSSARY: Final[tuple[tuple[str, str, str], ...]] = (
         "Applies from",
         "The date a change applies from, printed only where it can be read without "
         "interpretation from a date change in the act's own text. Otherwise the change says "
-        '"unchanged" or "unknown", with the reason where one is recorded.',
+        '"no date changed", where its text moved no date, or "not readable", with the reason '
+        "where one is recorded.",
     ),
     (
         "consolidated-version",
         "Consolidated version",
         "An act's text with its amendments folded in, as EUR-Lex publishes it, identified by a "
-        "code such as 02011R1169-20250401. On a version page v1 is the previous version and v2 "
-        "this one, and the explanations cite them that way.",
+        "code such as 02011R1169-20250401, whose date is the one EUR-Lex gives that text. On a "
+        "version page v1 is the previous version and v2 this one, and the explanations cite "
+        "them that way.",
     ),
 )
 """(id, term, definition), in reading order: the objects, the kinds of change, the split of a

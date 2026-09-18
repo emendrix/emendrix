@@ -122,8 +122,8 @@ to diff inline, because an inline rendering of a rewrite is noise wearing the cl
 comparison. The stored text is never touched: the diff is a comparison-time rendering, the same
 category as the whitespace handling inside the comparison functions.
 
-Every change heading, and the index entry that points at it, carries a figure such as `+1,204
-−318`: the characters the comparison below it marked inserted and deleted, or for a provision
+Every change, and the index entry that points at it, carries a figure such as `+1,204
+−318`, opening the facts line under the change's heading on an event page: the characters the comparison below it marked inserted and deleted, or for a provision
 compared line by line the characters in the lines that changed. It is measured on that one
 comparison rather than computed again, it is labelled `characters` wherever it is totalled, and
 it is **not a measure of legal effect**, which the methodology page states in full; the index
@@ -145,8 +145,8 @@ that carried it, which is the form the citation gate resolves and the eval harne
 
 The same changes are published a second way, under the provision. `acts/<celex>/<prov>/` is one
 coordinate's whole history, newest first: a step per event that touched it, each with the date
-and its clock, the change type, the instrument that made it, the applies-from line and the
-sentences that survived the gate. The path segment is the slug of the canonical location string
+and its clock, linked to that version's page, the change type, the instrument that made it, the
+applies-from line and the sentences that survived the gate. The path segment is the slug of the canonical location string
 (`ar-6`, `an-xvii`, and `an` or `tit` for a change keyed to a whole annex or title), never a
 human reading of it, because a second numbering for one coordinate is a second thing to keep in
 step and the corpus writes both `AN 4` and `AN IV`. **The newest step carries its verbatim text
@@ -208,8 +208,11 @@ A version appears in two places and is drawn two ways. **On its own page it has 
 placing the version in its act's history (`Version 5 of 5 recorded for FIC Regulation, the
 newest.`), a dates line that states the clock the heading did not name (`First seen by emendrix
 on 4 September 2026, …; that is not a legal date.`, or `In force date not stated.`), the tally,
-and, small and secondary, the two consolidated versions with `v1` and `v2` named once, which is
-the only place the citation mapping is printed. Then the `What changed` H2 opens the changes, so
+and, small and secondary, the two consolidated versions with `v1` and `v2` named once. Where a
+version the page names is coded with a date other than its in-force date (the FIC version coded
+20180101 is in force from 31 December 2015), a note under the codes says what the code's date
+is; the coded date is the one the composition root resolved, never read out of the code by a
+page. Then the `What changed` H2 opens the changes, so
 the page's outline reads version, what changed, each change. **In a list it is a card**
 (`pages/version_card.py`): the version's name as its one link, `Made by` and the official title,
 the tally without the per-shape tags, and the identifiers. The act's timeline sets the cards as
@@ -229,12 +232,58 @@ once guaranteed is kept by printing the total always and the sources-differ tag 
 count is not zero. Every number is the committed document's own. One link follows the tags,
 `What these mean →`, to the glossary.
 
-**The word "disputed" is not printed in a count any more.** It is the stored field's name and
-correct in the JSON, the metrics and the code, but on a page with a not-legal-advice disclaimer
-a newcomer reads it as a claim about the law, where it is a claim about emendrix's three
-sources. Pages say `where sources differ`. The methodology table keeps its row `Disputed changes
-(signals disagree)`, rendered from the evaluation report's own wording that the README shares,
-and the glossary says that row counts the same thing.
+**No page says "disputed".** It is the stored field's name and correct in the JSON, the metrics,
+the code and the committed changelog's Markdown, but on a page with a not-legal-advice
+disclaimer a newcomer reads it as a claim about the law, where it is a claim about emendrix's
+three sources. Pages say **sources differ**, and never `disputed`, `contested` or `conflict`,
+in any visible text or `<title>`; `tests/site_/test_vocabulary.py` asserts it over the golden
+tree and the scale tree. **One stated exception**: the methodology page's measured table keeps
+its row `Disputed changes (signals disagree)`, label and meaning, because both are rendered from
+the evaluation report's own metric rows that the README's published table shares. The glossary
+says that row counts the same thing without printing the word again. The one stored reason the
+explain stage records for a change with no text names the stored word, so the site prints that
+reason in its own words; every other stored reason is printed as written.
+
+## One change: its heading, where its sources differ, and who is speaking
+
+A change block (`pages/act_event.py`, and the step of a provision page, `pages/provision.py`,
+both through `pages/prose.py`) is read in this order:
+
+- **The heading leads with what a reader scans for**: the coordinate, linked to its provision's
+  history, then the provision's title, then the kind of change as a tag in sentence case
+  (`Modified`, `Inserted`, `Deleted`, `Renumbered`, `Deferred`), each kind with its own colour
+  and a glyph or border style, then the `§` permalink. A screen reader names it `Art. 1 Subject
+  matter, Modified`. A provision step's heading is the version's name, linked to the version's
+  page, then the tag, then the characters on the newest step only.
+- **A facts line**: on a version page the characters that moved, then `Applies from:` with a
+  date, `no date changed` (the changelog's `unchanged` read as "the provision did not change")
+  or `not readable` with its reason and a `why` link to `#applies-from`.
+- **Where the sources differ**, the shape's tag with a small `What this means` link beside it to
+  `methodology/#sources-differ` (the tag itself is never a link), then the lead and the detail.
+  Three shapes, each with its own tag, lead and weight:
+
+  | Shape | Tag | Lead | Weight |
+  |---|---|---|---|
+  | found in the text, another source did not list it | `Not in every list` | `Found in the text, but not every source lists it` | neutral provenance |
+  | named by a source, no text to show | `No text found` | `A source lists it, but there is no text to show` | neutral provenance, dashed |
+  | the sources named different kinds | `Kinds differ` | `The sources name different kinds of change` | the alert colour, `≠`, double border |
+
+  Only the contradiction takes the alert colour: most changes where sources differ are the first
+  shape, and an alarm on each of them made the whole site read as unreliable. The block carries
+  the shape as a class, `differ-text`, `differ-none` or `differ-kind`, on the version page and on
+  a provision step alike, so one change is graded one way wherever it is shown.
+- **Two registers.** The model's sentences sit under a label, `Explanation, written by a model
+  and checked against the cited text`, in the sans at the largest size on the block, behind a
+  rule. The citations follow once, and where a label in them names `v1` or `v2` the line under
+  them says `v1 is the previous version, v2 this one.` The law's words are behind a `<details>`
+  whose summary reads `Text from EUR-Lex, before and after` (`Text from EUR-Lex` for one side):
+  the serif, on a panel, held to the legal measure. **Its sides are named** above the text,
+  `Previous version, in force 31 December 2015` and `this version, in force 1 April 2025`, each
+  with its consolidation code beside it as a small identifier, and marked with the `−`/`+` and
+  tint the text below uses; a one-sided change reads `Inserted in this version` or `Deleted in
+  this version, from`. The previous version is dated by the recorded version that produced it,
+  and named by its role alone where none did. On a version of fewer than six changes the text is
+  open; a longer version, which has an index, keeps it closed.
 
 **The glossary** is the last section of the methodology page, `Words this site uses`, at
 `methodology/#glossary`, with an `id` on every term (`#sources-differ`, `#dates-only`,

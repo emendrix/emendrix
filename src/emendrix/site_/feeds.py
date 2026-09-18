@@ -114,9 +114,9 @@ def _summary(site: SiteInputs, entry: ChangelogEntry) -> str:
     """The counts as the document records them, the in-force dates, and the disclaimer.
 
     Every number is read off `entry.counts`, which the emit stage computed; nothing here
-    recounts anything. A disputed change is counted in the open, in the same sentence as the
-    rest, because a feed that quietly reported only the undisputed ones would be the one
-    place on this site where a disagreement disappears. An event no amending act is named
+    recounts anything. A change where the sources differ is counted in the open, in the same
+    sentence as the rest, because a feed that quietly reported only the others would be the
+    one place on this site where a disagreement disappears. An event no amending act is named
     for keeps its entry whole and says so first, for the same reason: the feed carries every
     event, worded as what it is. An event that touched nothing states the finding as a
     sentence rather than a row of zeros: a subscriber told nothing changed has learned
@@ -140,7 +140,8 @@ def _summary(site: SiteInputs, entry: ChangelogEntry) -> str:
     counted = (
         UNTOUCHED_SENTENCE
         if untouched(entry)
-        else f"{count(counts.touched, 'provision')} touched: {split}, {counts.disputed} disputed."
+        else f"{count(counts.touched, 'provision')} touched: {split}, "
+        f"{counts.disputed} where sources differ."
     )
     numbers = ", ".join(act.number or act.key for act in amenders(site.amending, entry))
     made_by = f" Amended by {numbers}." if numbers else ""

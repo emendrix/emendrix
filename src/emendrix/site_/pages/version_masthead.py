@@ -20,7 +20,7 @@ from __future__ import annotations
 from emendrix.output import ChangelogEntry
 from emendrix.site_.amending import AmendingAct, made_by, official_titles
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, UNATTRIBUTED_NOTE, unattributed
-from emendrix.site_.clocks import event_date, time_html
+from emendrix.site_.clocks import event_date, human_date, time_html
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, escape, join
@@ -74,6 +74,44 @@ def _dates(entry: ChangelogEntry) -> Html | None:
             "version; that is not a legal date."
         )
     return Html(f'<p class="dates">{" ".join(sentences)}</p>') if sentences else None
+
+
+_CODED = (
+    "The date in a version's code is the date EUR-Lex gives that consolidated text, which can "
+    "differ from its in-force date: "
+)
+"""The note's lead, printed only where a version this page names is coded with another date."""
+
+
+def _coded(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> Html:
+    """Why a version's code can carry a date it is not in force from, where one here does.
+
+    Both versions this page compares are checked: the previous one against the in-force date
+    of the recorded version that produced it, this one against its own. A version with no
+    in-force date recorded, or whose code no date was resolved for, is left alone, since there
+    is then nothing to set side by side. The coded date is the one the composition root
+    resolved and is printed as the code writes it, never read back out of the code here.
+    """
+    produced = next(
+        (other for other in act.entries if other.to_version == entry.from_version), None
+    )
+    sides = (
+        ("the previous version", entry.from_version, produced),
+        ("this version", entry.to_version, entry),
+    )
+    clauses = []
+    for name, version, source in sides:
+        coded = site.version_dates.get((entry.act, version))
+        if source is None or coded is None or not source.in_force:
+            continue
+        in_force = event_date(source).on
+        if in_force != coded:
+            clauses.append(
+                f"{name}, coded {coded.strftime('%Y%m%d')}, is in force from {human_date(in_force)}"
+            )
+    if not clauses:
+        return Html("")
+    return Html(f'<span class="note">{escape(_CODED + "; ".join(clauses))}.</span>')
 
 
 def _instruments(site: SiteInputs, act: ActSite, acts: tuple[AmendingAct, ...]) -> list[Html]:
@@ -184,7 +222,7 @@ def version_masthead(
                 f'<p class="ident">Consolidated versions <code class="id">'
                 f'{escape(str(entry.from_version))}</code> → <code class="id">'
                 f"{escape(str(entry.to_version))}</code>. v1 is the previous version, v2 this "
-                "one.</p>"
+                f"one.{_coded(site, act, entry)}</p>"
             ),
             *_instruments(site, act, acts),
             Html("</div>"),

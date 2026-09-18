@@ -33,17 +33,19 @@ from __future__ import annotations
 from emendrix.site_.amending import amenders, made_by
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, unattributed
 from emendrix.site_.chrome import page
-from emendrix.site_.clocks import event_date
-from emendrix.site_.dispute import dispute_note
+from emendrix.site_.clocks import version_heading
+from emendrix.site_.diffview import summary_words
+from emendrix.site_.dispute import SHAPE_CLASS, dispute_shape
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.history import ProvisionHistory, ProvisionStep
 from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, count, escape, join
-from emendrix.site_.pages.prose import applies_line, dates_line, permalink, pill, prose
+from emendrix.site_.pages.prose import applies_line, dates_line, differ_note, permalink, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import provision_json_ld
+from emendrix.site_.tags import SPOKEN_COMMA, kind_tag
 from emendrix.site_.titles import SUFFIX
 from emendrix.site_.trail import provision_trail
 from emendrix.site_.urls import provision_href, up
@@ -58,7 +60,7 @@ location to exist, and it is the same number as `depth_of(provision_href(slug, c
 any pair, which `test_urls.py` pins.
 """
 
-_OLDER = "text before / after, on the event page →"
+_OLDER = "Text from EUR-Lex, on this version's page →"
 """The older step's one link. It promises the block, not a page, because that is where it lands."""
 
 
@@ -107,12 +109,12 @@ def _header(act: ActSite, history: ProvisionHistory) -> list[Html]:
 def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> list[Html]:
     """One event's change to this provision: when, by what, what it says, and the evidence.
 
-    The heading is the date with its clock and the change type, the two facts that place a step
-    in a history; the instrument follows, linked to its own page, because the reader scanning a
-    provision's history is asking which instrument did each thing. An event that names none says
-    so with the label the rest of the site uses for that class, in place of the instrument
-    line, rather than with the sentence behind it: on a page of many steps that sentence would
-    be repeated per step, and it is one link away on each event's own page.
+    The heading is the version, named by its date and clock and linked to its own page, then
+    the change type as a tag; the instrument follows, linked to its own page, because the reader
+    scanning a provision's history is asking which instrument did each thing. An event that
+    names none says so with the label the rest of the site uses for that class, in place of the
+    instrument line, rather than with the sentence behind it: on a page of many steps that
+    sentence would be repeated per step, and it is one link away on each event's own page.
 
     `text` is the evidence for the newest step and `None` for every other one. The newest opens
     its `<details>`, because a reader arriving from a search for this provision wants the
@@ -122,40 +124,35 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     reason: the count is measured on a rendered comparison, and an older step's comparison is
     rendered on the event page, which is where that step's count is printed.
 
-    The dates line sits under the applies line, in the order and for the reason a change block
-    on the event page carries the two: which dates the step moved is a different question from
-    whether one of them is the date the provision applies from.
+    Where the sources differ, the step carries the shape as a class and states it with the same
+    tag and note a version page gives the same change, so the two pages grade it alike. The
+    dates line sits under the applies line, in the order and for the reason a change block on
+    the event page carries the two.
 
     The heading closes with the same permalink a change block carries on its event page, and
     on the same anchor, so one change can be handed to somebody from either view of it.
     """
     entry = step.entry
     change = step.change
-    magnitude = magnitude_html(text) if text is not None else Html("")
+    magnitude = Html(f" {magnitude_html(text)}") if text is not None else Html("")
+    graded = f" {SHAPE_CLASS[dispute_shape(change.signals)]}" if change.disputed else ""
     lines = [
-        Html(f'<article class="chg step" id="{escape(step.anchor)}">'),
+        Html(f'<article class="chg step{graded}" id="{escape(step.anchor)}">'),
         Html(
-            f"<h2>{escape(event_date(entry).words)} "
-            f"{pill(change.change_type, disputed=change.disputed)}"
-            f"{magnitude}{permalink(step.anchor)}</h2>"
+            f'<h2><a href="../{escape(entry.key)}/">{version_heading(entry)}</a>{SPOKEN_COMMA} '
+            f"{kind_tag(change.change_type)}{magnitude}{permalink(step.anchor)}</h2>"
         ),
     ]
     acts = amenders(site.amending, entry)
     lines.extend(made_by(acts, up(_DEPTH), verb="Amended by"))
     if not acts and unattributed(entry):
         lines.append(Html(f'<p class="amending">{escape(UNATTRIBUTED_LABEL)}</p>'))
-    lines.append(applies_line(change))
+    lines.append(applies_line(change, up(_DEPTH)))
     dates = dates_line(change)
     if dates is not None:
         lines.append(dates)
     if change.disputed:
-        note = dispute_note(change.signals)
-        lines.append(
-            Html(
-                f'<p class="disputed"><strong>{escape(note.lead)}</strong> — '
-                f"{escape(note.detail)}</p>"
-            )
-        )
+        lines.extend(differ_note(change.signals, up(_DEPTH)))
     lines.extend(prose(entry.changes[step.index], entry))
     if text is None:
         lines.append(
@@ -167,7 +164,7 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     else:
         lines.extend(
             (
-                Html("<details open><summary>text before / after</summary>"),
+                Html(f"<details open><summary>{escape(summary_words(change))}</summary>"),
                 text.html,
                 Html("</details>"),
             )

@@ -1,11 +1,12 @@
-"""Saying that the three sources disagree, in the words a first-time reader already has.
+"""Saying where the three sources differ, in the words a first-time reader already has.
 
 `disputed` is the project's vocabulary and it is correct where it lives: in the JSON, in the
 metrics and in `core`. On a page carrying a not-legal-advice disclaimer it is also the worst
 available ambiguity, because a newcomer reads "this legal change is disputed" where the tool
 means "its three detectors disagree about it". That invites a reader to think emendrix is
 making a claim about the law when it is making a claim about itself. So the site spells the
-claim out and the stored vocabulary does not move.
+claim out and the stored vocabulary does not move: no page says the stored word, and the
+umbrella a reader meets is "sources differ".
 
 Four rules hold this module together:
 
@@ -22,14 +23,15 @@ Four rules hold this module together:
   that as one source not seeing the change would be false. Every observing source is named
   there, including one that saw the change and named no kind, so the count of sources in the
   sentence is always the count that looked.
-- **One word covered three findings until 2026-09-05, and now three leads do.** A provision
-  whose words the comparison read and quoted, which another source merely did not enumerate,
-  is not the finding a provision nothing could show at all is, and neither is the outright
-  contradiction about kind. Which shape a disagreement has is read from `entries`, the same
-  question the published rates are counted by, so the lead over one change, the tally over
-  a version and the methodology table cannot tell three stories. **Nothing is graded
-  away**: all three still ship, still carry `disputed` in the JSON and still count in the rate,
-  and every lead still opens on the words `Sources disagree`.
+- **Three findings, three leads, and every lead describes the sources, never the law.** A
+  provision whose words the comparison read and quoted, which another source merely did not
+  enumerate, is not the finding a provision nothing could show at all is, and neither is the
+  outright contradiction about kind. Which shape a disagreement has is read from `entries`,
+  the same question the published rates are counted by, so the lead over one change, the tally
+  over a version and the methodology table cannot tell three stories. **Nothing is graded
+  away**: all three still ship, still carry `disputed` in the JSON and still count in the rate.
+  No lead uses the words `disputed`, `contested` or `conflict`, each of which reads as a claim
+  about the law.
 
 The reader-facing names are the only place the three signals are translated for a page. They
 describe what each source *is* rather than what the code calls it: a comparison of the two
@@ -48,7 +50,6 @@ from emendrix.site_.markup import count
 from emendrix.site_.untouched import TEXTLESS_TAIL
 
 __all__ = [
-    "DISPUTED_GLOSS",
     "QUIET_NOTE",
     "SHAPE_CLASS",
     "DisputeNote",
@@ -57,25 +58,6 @@ __all__ = [
     "named_by",
     "quiet_heading",
 ]
-
-DISPUTED_GLOSS: Final = (
-    "A change marked disputed is one the three sources emendrix checks disagree about. It is "
-    "shown rather than dropped, and it says nothing about the law: it is a fact about the "
-    "sources. They disagree in more than one way, and each change says which: whether its own "
-    "words are on the page, whether there are none to show, or whether the sources that looked "
-    "named different kinds of change."
-)
-"""What the word means, for a page that prints a count of them rather than one of them.
-
-The event page primes a reader with the sentence naming the three sources and then gives each
-disagreement its own note through `dispute_note`, and the methodology page explains the same
-thing where the loop is described. A count on a card has room for neither, and `36 disputed`
-beside `36 provisions` reads as a defect rate to somebody who has met no other page, so this
-is the one sentence that travels with a count. It restates the same claim those two make and
-adds nothing to it: the stored vocabulary still does not move. The closing sentence is the
-one thing it adds, and it is a pointer rather than a claim: the count covers three findings
-and the pages that print one of them say which it is.
-"""
 
 _SOURCE: Final[dict[Signal, str]] = {
     Signal.STRUCTURAL_DIFF: "the text comparison",
@@ -92,28 +74,28 @@ _UNSEEN: Final[dict[Signal, str]] = {
 """How each signal says it did not see the change. One clause per source, because the natural
 negative differs: metadata lists, instructions mention, and a comparison finds a difference."""
 
-_EVIDENCED_LEAD: Final = "Sources disagree about what is listed, not about the text"
+_EVIDENCED_LEAD: Final = "Found in the text, but not every source lists it"
 """The change the comparison read and quoted, which another source did not enumerate.
 
 The words the provision gained and lost are on the page directly below this line, so the lead
-says what the disagreement is actually about: a reference set's granularity. A blanket
-amendment is annotated once and the provisions it lands on are not enumerated, and this is
-what that looks like one change at a time. It is a footnote about a reference set and not a
-warning about the text, and it still opens on `Sources disagree`.
+says what the difference is actually about: a reference set's granularity. A blanket amendment
+is annotated once and the provisions it lands on are not enumerated, and this is what that
+looks like one change at a time. It is a footnote about a reference set and not a warning
+about the text, which is why its tag takes the neutral provenance look.
 """
 
-_TEXTLESS_LEAD: Final = "Sources disagree, and there is no text on either side"
+_TEXTLESS_LEAD: Final = "A source lists it, but there is no text to show"
 """The unit another source named and the comparison never saw, so nothing can be shown for it.
 
 Said in the lead rather than left to the row below, because a reader who opens one of these
-finds no words at all, and a lead that promised a disagreement about text would be promising
+finds no words at all, and a lead that promised a difference in text would be promising
 evidence that does not exist. `diffview` says the same thing inside the row, in the
 changelog's own sentence.
 """
 
-_KIND_LEAD: Final = "Sources disagree about the kind of change"
+_KIND_LEAD: Final = "The sources name different kinds of change"
 """The outright contradiction: every source that looked found the provision and they named
-different things. The loudest of the three, and the only one this pass left exactly as it was."""
+different things. The only one of the three whose tag takes the alert colour."""
 
 _LEADS: Final[dict[str, str]] = {
     "evidenced": _EVIDENCED_LEAD,
@@ -129,25 +111,22 @@ would then see: a lead about text over a change the tally filed under no text.
 """
 
 SHAPE_CLASS: Final[dict[str, str]] = {
-    "evidenced": "disp-text",
-    "no_text": "disp-none",
-    "kind": "disp-kind",
+    "evidenced": "differ-text",
+    "no_text": "differ-none",
+    "kind": "differ-kind",
 }
-"""Each shape as the class its change block carries, which is what grades the badge.
+"""Each shape as the class its change block carries, on the version page and the provision page.
 
-Weight and border tell the three apart: the sheet spends colour only on meaning, and all three
-of these keep the one alert colour for now. The class rides on the block, and the sheet
-reaches the badge through it, because the pill itself is minted in `pages/prose.py` for four
-callers and three of them are not a change block at all. **It is the event page's block that
-carries it today**: a provision page states the same change with the same lead and the plain
-disputed pill, so the two pages grade a disagreement in words alike and in weight only on one
-of them. Grading both means giving the pill the shape and passing it at every call site.
+Both pages grade a difference alike, in words by the lead and in weight by this class and the
+shape's tag: the two presence shapes take the neutral provenance look and only `differ-kind`,
+the contradiction, takes the alert colour, with a glyph and a heavier border so the colour is
+never the grade on its own. The class names are internal and deliberately free of the stored
+word, so it does not linger in the markup either.
 """
 
 QUIET_NOTE: Final = (
     "Each row carries the provision and the source that named it, and opens in place from the "
-    "§ link at its end. None was dropped and every one still counts in the disputed total "
-    "above."
+    "§ link at its end. None was dropped and every one still counts where sources differ above."
 )
 """What the collapsed list is and how to open one of it, said above the rows themselves.
 
@@ -178,7 +157,7 @@ def dispute_shape(signals: SignalSet) -> str:
     """Which of the three shapes one disagreement has, for a change that carries one.
 
     Delegated to the rollup that counts the published rates rather than decided again here.
-    Two answers to this question would let a badge, a tally and a table disagree with one
+    Two answers to this question would let a tag, a tally and a table disagree with one
     another about the same change, which is the whole failure this grading exists to end.
 
     Only meaningful for a change that ships `disputed`; on a set the sources agree about it

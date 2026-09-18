@@ -26,8 +26,9 @@ from __future__ import annotations
 from emendrix.output import ChangelogEntry
 from emendrix.site_.magnitude import magnitude_html, weight_class
 from emendrix.site_.markup import Html, count, escape
-from emendrix.site_.pages.prose import pill
+from emendrix.site_.pages.prose import title_span
 from emendrix.site_.pages.texts import RenderedText
+from emendrix.site_.tags import kind_tag
 
 __all__ = ["INDEX_ABOVE", "touched"]
 
@@ -49,8 +50,12 @@ def touched(
 
     `anchors` is the page's own fragment per change, handed in rather than recomputed, so the
     index and the blocks point at the same ids by construction. `texts` arrives the same way
-    and for the same reason: the pill, the count and the weight beside a link are all the same
+    and for the same reason: the kind, the count and the weight beside a link are all the same
     values the block itself prints, so the map and the page cannot disagree about a change.
+
+    Each link names the provision's title after its coordinate where the change carries one,
+    whole in the markup; the sheet cuts it to one line with an ellipsis, so nothing is cut from
+    the text a screen reader or a search engine reads.
 
     The count opens the list because at the width where it stands as a column beside the
     changes it needs a label of its own: a bare column of coordinates says what it holds only
@@ -77,12 +82,12 @@ def touched(
     ]
     for emitted, anchor, text in zip(entry.changes, anchors, texts, strict=True):
         change = emitted.change
+        title = title_span(change)
         lines.append(
             Html(
                 f'<li class="{escape(weight_class(text))}">'
-                f'<a href="#{escape(anchor)}">{escape(change.location.human)}</a> '
-                f"{pill(change.change_type, disputed=change.disputed)} "
-                f"{magnitude_html(text)}</li>"
+                f'<a href="#{escape(anchor)}"><span class="loc">{escape(change.location.human)}'
+                f"</span>{title}</a> {kind_tag(change.change_type)} {magnitude_html(text)}</li>"
             )
         )
     lines.extend((Html("</ol>"), Html("</nav>")))

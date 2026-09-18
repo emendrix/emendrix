@@ -17,7 +17,6 @@ from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
-from emendrix.site_.dispute import DISPUTED_GLOSS
 from emendrix.site_.inputs import collect_site
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.acts_index import render_acts_index
@@ -173,7 +172,7 @@ def test_a_card_for_an_event_with_no_text_anywhere_says_what_the_count_counts() 
     rendered = render_home(site)
     assert rendered.count('<article class="cardrow">') == 1
     assert "2 provisions named with no text to show by " in rendered
-    assert "2 disputed changes" in rendered
+    assert '<span class="tag tag--differ">2 where sources differ</span>' in rendered
 
 
 def test_home_excludes_events_naming_no_amending_act_and_says_how_many() -> None:
@@ -384,11 +383,11 @@ def test_every_act_on_the_index_links_its_page() -> None:
     assert f'href="../acts/{site.acts[0].slug}/"' in rendered
 
 
-def test_a_disputed_count_never_stands_without_the_sentence_saying_what_it_means() -> None:
-    """`36 provisions, 36 disputed` reads as a failure rate to a reader who has met no other
-    page. The count stays, because the mark is the project's own promise not to drop the
-    change; what travels with it is the sentence saying the disagreement is between the
-    sources and not about the law.
+def test_a_count_where_sources_differ_never_stands_without_the_link_to_what_it_means() -> None:
+    """`36 provisions, 36 …` reads as a failure rate to a reader who has met no other page. The
+    count stays, because it is the project's own promise not to drop the change; it is a tag in
+    the neutral look, and the link beside it goes to the definition saying the difference is
+    between the sources and not about the law. No gloss is printed above the list.
     """
     site = collect_site(
         generated_on=OBSERVED,
@@ -398,14 +397,15 @@ def test_a_disputed_count_never_stands_without_the_sentence_saying_what_it_means
         configured=True,
     )
     rendered = render_home(site)
-    assert rendered.count(escape(DISPUTED_GLOSS)) == 2
-    assert f'<span class="disp" title="{escape(DISPUTED_GLOSS)}">1 disputed change</span>' in (
-        rendered
-    )
+    assert (
+        '<span class="tag tag--differ">1 where sources differ</span><a class="define" '
+        'href="methodology/#sources-differ">What this means</a>'
+    ) in rendered
+    assert "disputed" not in rendered.lower()
 
 
-def test_a_home_page_with_nothing_disputed_carries_neither_the_gloss_nor_the_span() -> None:
-    """A sentence explaining a mark that is nowhere on the page reads as a warning about it."""
+def test_a_home_page_where_no_sources_differ_carries_neither_the_tag_nor_its_link() -> None:
+    """A link explaining a mark that is nowhere on the page reads as a warning about it."""
     site = collect_site(
         generated_on=OBSERVED,
         run=_run(),
@@ -415,7 +415,8 @@ def test_a_home_page_with_nothing_disputed_carries_neither_the_gloss_nor_the_spa
     )
     rendered = render_home(site)
     assert "disputed" not in rendered
-    assert 'class="disp"' not in rendered
+    assert "tag--differ" not in rendered
+    assert "#sources-differ" not in rendered
 
 
 def test_a_card_names_the_instrument_beside_the_count_it_is_a_count_of() -> None:

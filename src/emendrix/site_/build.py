@@ -129,7 +129,7 @@ def act_pages(site: SiteInputs, act: ActSite) -> dict[str, str]:
     however many pages carry it. That is the whole reason the cache exists: the texts are the
     expensive part of this tree by orders of magnitude.
     """
-    blocks = {entry.key: text_blocks(entry) for entry in act.entries}
+    blocks = {entry.key: text_blocks(entry, act.entries) for entry in act.entries}
     files: dict[str, str] = {f"{act_href(act.slug)}index.html": render_act(site, act)}
     for entry in act.entries:
         files[f"{event_href(act.slug, entry.key)}index.html"] = render_event_page(

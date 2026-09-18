@@ -48,7 +48,7 @@ from emendrix.site_.worddiff import (
     compare,
 )
 
-__all__ = ["Rendered", "render_texts"]
+__all__ = ["Rendered", "Sides", "render_texts", "summary_words"]
 
 _NO_TEXT = (
     "No text on either side: this unit was named by a signal that carries no text, and only "
@@ -59,6 +59,20 @@ _NO_TEXT = (
 Two renderings of one fact must not describe it differently, so this matches
 `output.markdown`'s line rather than paraphrasing it.
 """
+
+
+class Sides(BaseModel):
+    """What the two sides of a comparison are called, in the reader's words, codes beside them.
+
+    By role, `Previous version` and `this version`, with the dates each is in force from where
+    the caller knows them: this module sees one entry and never the act's history, so it names
+    no date of its own. The consolidation codes are printed beside each name as identifiers.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    before: str = Field(default="Previous version", description="The older side's name.")
+    after: str = Field(default="this version", description="The newer side's name.")
 
 
 class Rendered(BaseModel):
@@ -86,12 +100,18 @@ class Rendered(BaseModel):
     )
 
 
-def _verbatim(label: str, text: str, extra_class: str = "") -> Html:
+def _side(which: Literal["before", "after"], name: str, code: object) -> Html:
+    """One named side and its consolidation code: `Previous version, in force … 02011R1169-…`."""
+    return Html(
+        f'<span class="side-{which}">{escape(name)}</span> '
+        f'<code class="id">{escape(str(code))}</code>'
+    )
+
+
+def _verbatim(label: Html, text: str, extra_class: str = "") -> Html:
     """One stored text, labelled, whitespace intact. `pre-wrap` does the wrapping."""
     suffix = f" {extra_class}" if extra_class else ""
-    return Html(
-        f'<p class="lbl">{escape(label)}</p><pre class="verbatim{suffix}">{escape(text)}</pre>'
-    )
+    return Html(f'<p class="lbl">{label}</p><pre class="verbatim{suffix}">{escape(text)}</pre>')
 
 
 CONTEXT: Final[dict[Granularity, int]] = {"word": 40, "line": 3}
@@ -134,7 +154,7 @@ def _kept(text: str, granularity: Granularity) -> Html:
     )
 
 
-def _unified(comparison: Comparison, entry: ChangelogEntry) -> Html:
+def _unified(comparison: Comparison, entry: ChangelogEntry, sides: Sides) -> Html:
     """One block carrying both texts, with what went and what arrived marked.
 
     Each span is followed by the separator the diff recorded for it rather than by a blanket
@@ -155,8 +175,8 @@ def _unified(comparison: Comparison, entry: ChangelogEntry) -> Html:
         if index < len(spans) - 1:
             parts.append(escape(span.sep))
     label = Html(
-        f'<p class="lbl"><code>{escape(str(entry.from_version))}</code> → '
-        f"<code>{escape(str(entry.to_version))}</code></p>"
+        f'<p class="lbl">{_side("before", sides.before, entry.from_version)} → '
+        f"{_side('after', sides.after, entry.to_version)}</p>"
     )
     # Said, not left to be inferred. At line granularity a whole row is marked because one
     # cell in it moved, and a reader who assumed word granularity would read the untouched
@@ -176,13 +196,13 @@ def _unified(comparison: Comparison, entry: ChangelogEntry) -> Html:
     return join((label, Html(f'<p class="diff">{join(parts, "")}</p>')), "\n")
 
 
-def _stacked(before: str, after: str, entry: ChangelogEntry) -> Html:
+def _stacked(before: str, after: str, entry: ChangelogEntry, sides: Sides) -> Html:
     """Both texts whole, one above the other, said to be too different to compare inline."""
     return join(
         (
             Html('<p class="none">texts differ too much for an inline diff; shown separately</p>'),
-            _verbatim(f"before ({entry.from_version})", before),
-            _verbatim(f"after ({entry.to_version})", after),
+            _verbatim(_side("before", sides.before, entry.from_version), before),
+            _verbatim(_side("after", sides.after, entry.to_version), after),
         ),
         "\n",
     )
@@ -197,8 +217,22 @@ def _characters(comparison: Comparison, kind: Literal["deleted", "inserted"]) ->
     return sum(len(span.text) for span in comparison.spans if span.kind == kind)
 
 
-def render_texts(change: Change, entry: ChangelogEntry) -> Rendered:
-    """Whatever evidence the change carries, in the most legible honest form, and its size."""
+def summary_words(change: Change) -> str:
+    """What the `<details>` holding a change's evidence says it holds: EUR-Lex's text."""
+    if change.before is not None and change.after is not None:
+        return "Text from EUR-Lex, before and after"
+    if change.before is not None or change.after is not None:
+        return "Text from EUR-Lex"
+    return "Text from EUR-Lex: none to show"
+
+
+def render_texts(change: Change, entry: ChangelogEntry, sides: Sides | None = None) -> Rendered:
+    """Whatever evidence the change carries, in the most legible honest form, and its size.
+
+    `sides` names the two versions compared, by role and where the caller knows it by date;
+    without one they are named by role alone.
+    """
+    named = sides or Sides()
     before, after = change.before, change.after
     if before is not None and after is not None:
         # One comparison, used for all three questions: whether the unified view is worth
@@ -207,7 +241,11 @@ def render_texts(change: Change, entry: ChangelogEntry) -> Rendered:
         comparison = compare(before, after)
         unified = comparison.ratio >= SIMILARITY_FLOOR
         return Rendered(
-            html=_unified(comparison, entry) if unified else _stacked(before, after, entry),
+            html=(
+                _unified(comparison, entry, named)
+                if unified
+                else _stacked(before, after, entry, named)
+            ),
             inserted=_characters(comparison, "inserted"),
             deleted=_characters(comparison, "deleted"),
             granularity=comparison.granularity,
@@ -217,12 +255,16 @@ def render_texts(change: Change, entry: ChangelogEntry) -> Rendered:
     # was measured in.
     if after is not None:
         return Rendered(
-            html=_verbatim(f"inserted text ({entry.to_version})", after, "ins"),
+            html=_verbatim(
+                _side("after", "Inserted in this version", entry.to_version), after, "ins"
+            ),
             inserted=len(after),
         )
     if before is not None:
         return Rendered(
-            html=_verbatim(f"deleted text ({entry.from_version})", before, "del"),
+            html=_verbatim(
+                _side("before", "Deleted in this version, from", entry.from_version), before, "del"
+            ),
             deleted=len(before),
         )
     return Rendered(html=Html(f'<p class="none">{escape(_NO_TEXT)}</p>'))

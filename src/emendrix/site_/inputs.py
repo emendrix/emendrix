@@ -139,9 +139,9 @@ class SiteInputs(BaseModel):
     )
     amending: Mapping[str, AmendingAct] = Field(
         default_factory=dict,
-        description="Every amending act a committed change names, by key, sorted by key. The "
-        "one mapping here, so the one field a caller could write into and the reason these "
-        "inputs are not hashable; every renderer is a pure function of what it is handed.",
+        description="Every amending act a committed change names, by key, sorted by key. With "
+        "`version_dates`, a mapping a caller could write into and the reason these inputs are "
+        "not hashable; every renderer is a pure function of what it is handed.",
     )
     kinds: tuple[tuple[str, int], ...] = Field(
         default=(),
@@ -155,6 +155,11 @@ class SiteInputs(BaseModel):
     operator: str = Field(default="", description="Who runs this instance, or '' for nobody named.")
     operator_url: str = Field(default="", description="Public page of the operator, or ''.")
     contact: str = Field(default="", description="Address readers may write to, or ''.")
+    version_dates: VersionDates = Field(
+        default_factory=dict,
+        description="The date each consolidated version is coded with, where the composition "
+        "root resolved one: what a version page states beside an in-force date that differs.",
+    )
     polled: PolledState | None = Field(
         default=None,
         description="What the poller last did, when a deployment handed the build its state "
@@ -218,8 +223,8 @@ def collect_site(
     (a quiet act is a real answer), unwatched entries do not appear at all. Without one,
     the changelog repository is the roster.
 
-    `version_dates` is consumed here, ordering `entries` and `recent`, and never stored:
-    once the lists are resolved there is nothing left for a renderer to ask it.
+    `version_dates` orders `entries` and `recent` here, and is kept for the one question a
+    renderer still asks of it: whether a version's coded date is its in-force date.
 
     `amending_numbers` and `amending_urls` are keyed by the amending act's own key and hold what
     the composition root rendered from an identifier this module may not read; an act nothing
@@ -312,4 +317,5 @@ def collect_site(
         operator_url=operator_url,
         contact=contact,
         polled=polled,
+        version_dates=dates,
     )

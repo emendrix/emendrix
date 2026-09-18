@@ -149,8 +149,9 @@ def test_a_summary_counts_the_units_with_no_text_beside_the_other_two() -> None:
     """The same three-way split the version's tags print, read off the same stored counts, so
     a feed and a page cannot give one version two different totals."""
     summary, _ = _summary_of(some_textless_entry())
-    assert "5 provisions touched: 4 substantive, 0 date-only, 1 with no text, 1 disputed." in (
-        summary
+    assert (
+        "5 provisions touched: 4 substantive, 0 date-only, 1 with no text, "
+        "1 where sources differ." in summary
     )
 
 
@@ -160,7 +161,7 @@ def test_an_event_with_no_text_anywhere_says_so_and_keeps_its_id() -> None:
     what would renotify a subscriber, is the permalink it always was."""
     entry = textless_entry()
     summary, ident = _summary_of(entry)
-    assert "2 provisions touched: none with text to show, 2 disputed." in summary
+    assert "2 provisions touched: none with text to show, 2 where sources differ." in summary
     assert "0 substantive" not in summary
     assert ident.startswith("https://example.invalid/site/acts/")
     assert ident.endswith(f"#{entry.key}")

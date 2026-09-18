@@ -18,7 +18,7 @@
 <meta property="og:image:alt" content="emendrix: provision-level changelogs for EU legislation">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../style.85cf7e26.css">
+<link rel="stylesheet" href="../style.58a4dd0c.css">
 <script defer src="../search.622da217.js"></script>
 </head>
 <body>
@@ -37,10 +37,10 @@
 <table>
 <thead><tr><th>Over the published corpus</th><th>Result</th><th>n</th><th>What it means — and what it does not</th></tr></thead>
 <tbody>
-<tr><td>Changes the sources disagree about</td><td class="result">0 (0.000)</td><td>9 changes</td><td class="meaning">At least one of the three sources emendrix checks named the change and another did not, or two of them named different kinds of change. <code>disputed</code> is a fact about the detectors and not a statement about the law: nothing is dropped for it and nothing is overruled. The three rows below say what each disagreement is.</td></tr>
-<tr><td>…of those, found in the text and not listed elsewhere</td><td class="result">0</td><td>0 disputed changes</td><td class="meaning">The provision&#x27;s own words are on the page, before and after. What disagrees is a reference set&#x27;s granularity: a blanket amendment is annotated once and the provisions it lands on are not enumerated. <strong>Not a change nobody could corroborate.</strong></td></tr>
-<tr><td>…of those, named elsewhere with no difference in the text</td><td class="result">0</td><td>0 disputed changes</td><td class="meaning">Nothing to quote on either side, so the row carries a location and the source that named it. Where neither an amending act nor its notice says when one of its instructions takes effect, that instruction is claimed in every consolidation window the act touches, so some of these are one instruction counted more than once.</td></tr>
-<tr><td>…of those, found by every source that looked, called different things</td><td class="result">0</td><td>0 disputed changes</td><td class="meaning">The outright contradiction of the three: an insertion against a replacement, say. The smallest class in the corpus, and the one worth reading first.</td></tr>
+<tr><td>Changes where sources differ</td><td class="result">0 (0.000)</td><td>9 changes</td><td class="meaning">At least one of the three sources emendrix checks named the change and another did not, or two of them named different kinds of change. It is a fact about the detectors and not a statement about the law: nothing is dropped for it and nothing is overruled. The three rows below say how the sources differ each time.</td></tr>
+<tr><td>…of those, not in every list: found in the text, not listed elsewhere</td><td class="result">0</td><td>0 changes where sources differ</td><td class="meaning">The provision&#x27;s own words are on the page, before and after. What disagrees is a reference set&#x27;s granularity: a blanket amendment is annotated once and the provisions it lands on are not enumerated. <strong>Not a change nobody could corroborate.</strong></td></tr>
+<tr><td>…of those, no text found: named elsewhere, no difference in the text</td><td class="result">0</td><td>0 changes where sources differ</td><td class="meaning">Nothing to quote on either side, so the row carries a location and the source that named it. Where neither an amending act nor its notice says when one of its instructions takes effect, that instruction is claimed in every consolidation window the act touches, so some of these are one instruction counted more than once.</td></tr>
+<tr><td>…of those, kinds differ: every source that looked named another kind</td><td class="result">0</td><td>0 changes where sources differ</td><td class="meaning">The outright contradiction of the three: an insertion against a replacement, say. The smallest class in the corpus, and the one worth reading first.</td></tr>
 <tr><td>Changes with no text on either side</td><td class="result">0 (0.000)</td><td>9 changes</td><td class="meaning">Neither a before nor an after text. Such a change exists only because a source other than the text comparison named a provision that comparison did not, so every one of them is also a disagreement above. <strong>Not a change whose text is withheld</strong>: there is none to show, and the row says so instead of disappearing.</td></tr>
 <tr><td>Changes carrying an explanation</td><td class="result">9 (1.000)</td><td>9 changes</td><td class="meaning">Prose that survived the citation gate. Of the 9 changes carrying text at all, 9 (1.000) do; a change with no text is never sent to a model, because there would be no evidence to write about. <strong>Coverage, not quality</strong>: whether the sentences are faithful is the sampled row below, and prose written before a later parser fix corrected the text it describes is left visible rather than quietly withdrawn.</td></tr>
 </tbody>
@@ -71,7 +71,7 @@
 <li><b>4 · Explain</b>The only model call in the loop, constrained to the two verbatim texts it is handed. It never decides what changed.</li>
 <li><b>5 · Gate</b>Every citation must resolve to a provision that was offered, or the sentence is replaced by a verbatim quotation. Deterministic.</li>
 </ul>
-<p class="small muted">Between <b>Delta</b> and <b>Explain</b> the changes are corroborated against two independent signals — the corpus's own modification metadata and a parse of the amending act's instruction prose — and anything they disagree about ships marked <em>disputed</em> rather than dropped. After <b>Gate</b> the result is committed to a git repository as Markdown and JSON. Every stage except <b>Explain</b> is deterministic Python.</p>
+<p class="small muted">Between <b>Delta</b> and <b>Explain</b> the changes are corroborated against two independent signals — the corpus's own modification metadata and a parse of the amending act's instruction prose — and any change the sources differ on is shown as such, with what each said, rather than dropped. After <b>Gate</b> the result is committed to a git repository as Markdown and JSON. Every stage except <b>Explain</b> is deterministic Python.</p>
 <h2 id="built">How this site is built</h2>
 <p>A directory of static files, generated by <code>emendrix site build</code> from artifacts committed in the emendrix repository and in a changelog repository the operator owns: the changelog documents this tool wrote and the dated evaluation report it was scored against. Where that repository lives is deliberately not printed here.</p>
 <p>Every page is a rendering of things already committed, so the site can answer no question its inputs do not already contain, which is what makes <em>no number here lacks provenance</em> structural rather than aspirational. Two builds of one repository state produce the same bytes: nothing on the site reads a clock, reaches the network, or calls a model. One small script adds search; no link leaves the site except to EUR-Lex and the repositories this page names.</p>
@@ -101,7 +101,7 @@
 <dt id="without-text">Without text</dt>
 <dd>A provision the EU&#x27;s amendment metadata or the amending act&#x27;s instructions named and the comparison of the two texts did not find, so there is no text on either side to show. It is still listed, with the source that named it.</dd>
 <dt id="sources-differ">Where sources differ</dt>
-<dd>Each change is checked against three sources: a comparison of the two texts, the EU&#x27;s own amendment metadata, and the amending act&#x27;s instructions. Where they do not agree about a change, it is shown with what each source said, and none is dropped or overruled. It is a statement about the sources, not about the law. The measured table above counts the same thing under its measure&#x27;s name, &quot;Disputed changes (signals disagree)&quot;.</dd>
+<dd>Each change is checked against three sources: a comparison of the two texts, the EU&#x27;s own amendment metadata, and the amending act&#x27;s instructions. Where they do not agree about a change, it is shown with what each source said, and none is dropped or overruled. It is a statement about the sources, not about the law. The measured table above counts the same thing, in its row on changes where the signals disagree.</dd>
 <dt id="not-in-every-list">Not in every list</dt>
 <dd>Found in the text, but not every source lists it. The comparison read the change and its text is shown; it does not mean the text is in doubt, only that another source did not enumerate this provision.</dd>
 <dt id="no-text-found">No text found</dt>
@@ -117,9 +117,9 @@
 <dt id="first-seen">First seen, or detected</dt>
 <dd>The day emendrix first recorded the version. It is a fact about when this tool ran, not a legal date, and it names a version only where no in-force date is recorded.</dd>
 <dt id="applies-from">Applies from</dt>
-<dd>The date a change applies from, printed only where it can be read without interpretation from a date change in the act&#x27;s own text. Otherwise the change says &quot;unchanged&quot; or &quot;unknown&quot;, with the reason where one is recorded.</dd>
+<dd>The date a change applies from, printed only where it can be read without interpretation from a date change in the act&#x27;s own text. Otherwise the change says &quot;no date changed&quot;, where its text moved no date, or &quot;not readable&quot;, with the reason where one is recorded.</dd>
 <dt id="consolidated-version">Consolidated version</dt>
-<dd>An act&#x27;s text with its amendments folded in, as EUR-Lex publishes it, identified by a code such as 02011R1169-20250401. On a version page v1 is the previous version and v2 this one, and the explanations cite them that way.</dd>
+<dd>An act&#x27;s text with its amendments folded in, as EUR-Lex publishes it, identified by a code such as 02011R1169-20250401, whose date is the one EUR-Lex gives that text. On a version page v1 is the previous version and v2 this one, and the explanations cite them that way.</dd>
 </dl>
 </main>
 <footer>

@@ -200,24 +200,6 @@ code, .id {
 .ident { font-size: var(--text-meta); color: var(--muted); }
 .quoted { color: var(--muted); }
 .none { color: var(--muted); }
-/* The pill's whole content is a boundary and a word, so its border is `--edge` and not the
-   hairline the rest of the sheet draws with. Tags, which share that rule, are in `tags`. */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  padding: .12rem .45rem;
-  border: 1px solid var(--edge);
-  border-radius: var(--radius);
-  background: var(--panel);
-  color: var(--fg);
-  font: 600 var(--text-label)/1.25 var(--sans);
-  letter-spacing: .02em;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.pill.ins { color: var(--kind-inserted); background: var(--kind-inserted-tint);
-            border-color: var(--kind-inserted); }
-.pill.disp { background: transparent; border-color: var(--alert); color: var(--alert); }
 /* A link that leaves the site says so with a drawn arrow; its words for a screen reader are
    in the markup (`outbound.py`). */
 .ext { white-space: nowrap; }
@@ -464,6 +446,8 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
 .tag--substantive, .tag--dates-only, .tag--all-explained, .tag--unexplained, .tag--quoted,
 .tag--diff-only { color: var(--muted); background: transparent; border-color: var(--edge); }
 .tags-help { font-size: var(--text-meta); margin: 0 0 var(--space-3); }
+/* The small link to a definition, beside the tag or the value it defines; never the tag. */
+.define { margin-left: var(--space-2); font-size: var(--text-meta); font-weight: 400; }
 .hero { padding: var(--space-4) 0 var(--space-3); text-align: center; }
 .hero h1 { max-width: none; margin-bottom: var(--space-3); }
 .hero p { max-width: 42rem; margin: 0 auto var(--space-3); }
@@ -485,8 +469,6 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
 .cardrow h3 { font-size: var(--text-h3); margin: 0 0 var(--space-1); }
 .cardrow .facts { margin: 0 0 var(--space-1); }
 .cardrow .ident { display: block; margin: 0; }
-.cardrow .disp { padding: 0 .35rem; border: 1px solid var(--alert); border-radius: var(--radius);
-                 color: var(--alert); font-weight: 600; }
 .roster { list-style: none; margin: 0 0 var(--space-5); padding: 0; }
 .roster li { padding: var(--space-3) 0; border-top: 1px solid var(--rule); }
 .roster li:last-child { border-bottom: 1px solid var(--rule); }
@@ -636,6 +618,8 @@ td.meaning { color: var(--muted); }
 .version-masthead .ident, .version-masthead .instruments { font-size: var(--text-meta);
                                                            color: var(--muted); max-width: 80ch; }
 .version-masthead .ident code { color: var(--fg); }
+/* Why a version's code can carry a date it is not in force from, under the codes it explains. */
+.version-masthead .ident .note { display: block; margin-top: var(--space-1); }
 .summary {
   display: grid;
   gap: 0 var(--space-5);
@@ -684,18 +668,72 @@ td.meaning { color: var(--muted); }
   scroll-margin-top: var(--space-3);
 }
 .chg:target { background: var(--mark); box-shadow: 0 0 0 var(--space-3) var(--mark); }
-.chg h3 { margin: 0 0 var(--space-2); display: flex; flex-wrap: wrap; align-items: baseline;
-          gap: .15rem .6rem; font-size: var(--text-h3); line-height: 1.3; }
-.chg h3 .pill { align-self: center; }
+.chg h3, .chg.step h2 { margin: 0 0 var(--space-2); display: flex; flex-wrap: wrap;
+                        align-items: baseline; gap: .15rem .6rem; padding: 0; border: 0;
+                        font-size: var(--text-h3); line-height: 1.3; }
+.chg h3 .tag, .chg.step h2 .tag { align-self: center; }
 .chg .loc { font-weight: 600; }
 /* The coordinate in a change heading leads to that provision's own history. It keeps the
    weight and the colour it had as a span: it is still the heading of the block, not an
    invitation to leave it. */
 a.loc { color: inherit; font-weight: 600; }
 .chg .ttl { font-weight: 600; color: var(--fg); }
-/* The explanation, the largest text on the block and the model's words, in the sans. */
-.chg > p:not([class]) { font-size: var(--text-explain); line-height: 1.55; max-width: 64ch; }
-.chg .applies { margin: 0 0 var(--space-1); }
+.chg.step h2 .mag { font-size: var(--text-meta); }
+/* The source that named a row with no text, on the heading that is the whole of that row
+   until it is opened. Smaller and muted, so the heading stays one coordinate. */
+.chg .by { font-weight: 400; font-size: var(--text-meta); color: var(--muted); }
+/* One change's own address, at the end of the heading that names it: furniture beside a
+   coordinate that is not, so muted and pushed to the end of the row by the heading's flex. */
+.permalink { margin-left: auto; padding: 0 .25rem; color: var(--muted); font-weight: 400;
+             font-size: var(--text-meta); text-decoration: none; }
+.permalink:hover, .permalink:focus { color: var(--link); }
+/* How much moved and when it applies, one line of facts under the heading. A real date is
+   lifted out of the muted colour; the two stated non-answers keep it. */
+.chg .meta { margin: 0 0 var(--space-2); font-size: var(--text-meta); color: var(--muted); }
+.chg .meta .date { color: var(--fg); }
+.chg .amending { margin-bottom: var(--space-1); font-size: var(--text-meta); color: var(--muted); }
+/* The dates a change moved, set like the facts line above them and in tabular figures, so a
+   column of ISO dates reads as a column. */
+.dates { margin: var(--space-1) 0 var(--space-2); font-size: var(--text-meta);
+         color: var(--muted); font-variant-numeric: tabular-nums lining-nums; }
+/* Where the sources differ: the shape's tag, then the lead and the detail. Plain text for the
+   two presence shapes; only the contradiction takes the alert's tint and rule. */
+.differ { margin: var(--space-2) 0; font-size: var(--text-meta); line-height: 1.5;
+          color: var(--fg); }
+.differ-kind .differ { padding: var(--space-2) var(--space-3); background: var(--alert-tint);
+                       border-left: 3px solid var(--alert); }
+.differ-kind .differ strong { color: var(--alert); }
+/* The machine's register: a label saying who wrote the sentences under it, drawn with a small
+   open diamond, then the sentences in the sans behind a rule, the largest text on the block. */
+.register {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--muted);
+}
+.register::before {
+  content: "";
+  width: .8rem;
+  height: .8rem;
+  border: 2px solid var(--muted);
+  border-radius: 2px;
+  transform: rotate(45deg) scale(.75);
+}
+.register ~ p:not([class]) {
+  max-width: 64ch;
+  margin: 0;
+  padding: 0 0 var(--space-2) var(--space-3);
+  border-left: 3px solid var(--edge);
+  font-size: var(--text-explain);
+  line-height: 1.55;
+}
+/* The citations of one change, once, under its sentences, and what `v1` and `v2` in them
+   mean, under the row that uses them. */
+.cites { margin: var(--space-3) 0 0; font-size: var(--text-meta); color: var(--muted); }
+.cites-key { margin-bottom: var(--space-3); color: var(--muted); }
 /* One step of a provision's history: a change block on the same rail an act's timeline is
    drawn as, one node per version, the newest filled. */
 .chg.step {
@@ -720,13 +758,8 @@ a.loc { color: inherit; font-weight: 600; }
 .chg.step:first-of-type::before { background: var(--type-version); }
 .chg.step:target { background: transparent; box-shadow: none; }
 .chg.step:target > h2 { background: var(--mark); box-shadow: 0 0 0 .4rem var(--mark); }
-.step h2 { display: flex; flex-wrap: wrap; gap: .15rem .6rem; align-items: baseline;
-           margin: 0 0 var(--space-2); padding: 0; border: 0; font-size: var(--text-h3);
-           line-height: 1.3; }
-.step h2 .pill { align-self: center; }
-/* How much of the provision moved, in characters, beside the kind of change it was. Tabular
-   figures because it is a figure standing next to a label, and never wrapped: `+1,204` alone
-   at the end of a row would read as the whole count. */
+/* How much of the provision moved, in characters. Never wrapped: `+1,204` alone at the end
+   of a row would read as the whole count. */
 .mag { font-size: var(--text-label); font-weight: 400; color: var(--muted);
        white-space: nowrap; }
 /* A map of the page, not a second copy of it: one wrapping row, so forty-five provisions
@@ -738,6 +771,10 @@ a.loc { color: inherit; font-weight: 600; }
 .touched ol { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3);
               list-style: none; margin: 0; padding: 0; }
 .touched li { display: flex; align-items: baseline; gap: var(--space-1); }
+.touched li > a .loc { font-weight: inherit; }
+/* A row is a coordinate while the index is a wrapping row, and a coordinate over its title
+   once it is a column; the title is whole in the markup and cut to one line here. */
+.touched li > a .ttl { display: none; }
 /* The decade of characters a change moved, as weight on its link, so the index reads as a map
    of where the text is rather than only of where a change is. Two weights are loaded, so the
    four decades fall into two; the count beside each one is the fact, and the classes claim
@@ -763,41 +800,22 @@ a.loc { color: inherit; font-weight: 600; }
   .event-layout .touched ol { display: block; }
   .event-layout .touched li { padding: .45rem 0; border-top: 1px solid var(--rule); }
   .event-layout .touched li:first-child { border-top: 0; }
-  .event-layout .touched .mag { margin-left: auto; }
+  .event-layout .touched li { display: grid; grid-template-columns: minmax(0, 1fr) auto;
+                              gap: .1rem .5rem; }
+  .event-layout .touched li > a { grid-row: span 2; min-width: 0; text-decoration: none; }
+  .event-layout .touched li > a .loc { text-decoration: underline; text-underline-offset: .18em;
+                                       text-decoration-thickness: 1px; }
+  .event-layout .touched li > a:hover .loc { text-decoration-thickness: 2px; }
+  .event-layout .touched li > a .ttl { display: block; overflow: hidden; margin-top: .1rem;
+                                       color: var(--muted); font-size: var(--text-label);
+                                       font-weight: 400; line-height: 1.35;
+                                       text-overflow: ellipsis; white-space: nowrap; }
+  .event-layout .touched li .tag, .event-layout .touched li .mag { justify-self: end;
+                                                                   align-self: start; }
+  .event-layout .touched li .mag { grid-column: 2; }
   .changes { min-width: 0; }
   .changes > .chg:first-child { border-top: 0; padding-top: 0; }
 }
-/* One change's own address, at the end of the heading that names it. Set in the muted colour
-   because it is furniture beside a coordinate that is not, and pushed to the end of the row by
-   the heading's own flex. */
-.permalink { margin-left: auto; padding: 0 .25rem; color: var(--muted); font-weight: 400;
-             font-size: var(--text-meta); text-decoration: none; }
-.permalink:hover, .permalink:focus { color: var(--link); }
-/* The citations of one change, once, under its sentences. The lead word is muted and the
-   anchors keep the sheet's link colour, so the row reads as links with a label rather than as
-   a sentence. */
-.cites { margin: var(--space-3) 0 0; font-size: var(--text-meta); color: var(--muted); }
-/* Clock 2's answer for one change, on every block. A date is lifted out of the muted colour
-   and set in tabular figures, so it scans as the figure it is; the two stated non-answers keep
-   the muted colour, and recede without the line ever going silent about them. */
-.applies { font-size: var(--text-meta); color: var(--muted); }
-.applies .date { color: var(--fg); }
-/* The dates a change moved, directly under the line that says whether one of them governs the
-   provision. Set like the applies line, because the two are facts of the same rank about one
-   change, and in tabular figures so a column of ISO dates reads as a column. */
-.dates { margin: var(--space-1) 0 var(--space-2); font-size: var(--text-meta);
-         color: var(--muted); font-variant-numeric: tabular-nums lining-nums; }
-.disputed { font-size: var(--text-meta); color: var(--alert); }
-/* A disagreement is graded by which of the three shapes it is, and the badge carries the
-   grade. All three keep the one alert colour; the border style and the fill are what tell
-   them apart, so the colour is never the grade on its own. The evidenced shape, a change the
-   comparison read and another source did not list, is the plain disputed pill. */
-.disp-none .pill.disp { border-style: dashed; }
-.disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }
-/* The source that named a row with no text, on the heading that is the whole of that row
-   until it is opened. Set like the title beside it, smaller and muted, so the heading stays
-   one coordinate and everything after it reads as a note about it. */
-.chg .by { font-weight: 400; font-size: var(--text-meta); color: var(--muted); }
 /* The changes with no text to show, gathered at the foot of an event: one line each, with the
    rest of the block hidden until the row is the fragment target. `:target` is what a permalink
    into this list sets, so the link that names a row is the link that opens it, with no script
@@ -830,6 +848,14 @@ details[open] > summary { margin-bottom: var(--space-2); }
   font-size: var(--text-label);
   color: var(--muted);
 }
+/* The two sides compared, named, and each marked with the glyph and tint its text carries
+   below, so the label is also the legend. */
+.lbl .side-before, .lbl .side-after { padding: 0 .2rem; border-radius: 2px; color: var(--fg);
+                                      font-weight: 600; }
+.lbl .side-before { background: var(--del); }
+.lbl .side-after { background: var(--ins); }
+.lbl .side-before::before { content: "\2212\00a0"; }
+.lbl .side-after::before { content: "+\00a0"; }
 /* The law's own words: the serif, held to the legal measure, with no ligature and tabular
    figures, so the text reads as EUR-Lex wrote it and no two characters can merge. */
 .diff, .verbatim {
@@ -894,23 +920,24 @@ th { font-size: var(--text-label); font-weight: 600; color: var(--muted); }
   .event-layout .touched { position: static; max-height: none; overflow: visible; }
   /* Navigation, like the header's: a permalink and a way back to the top of a sheet of paper
      are both instructions a printed page cannot carry out. */
-  .permalink, .backtop, .pager, .tags-help { display: none; }
+  .permalink, .backtop, .pager, .tags-help, .define { display: none; }
   /* A row cannot be opened on paper either, so the gathered ones print whole, for the reason
      both indexes do. Named with the same two classes the screen rule uses, since a shorter
      selector would not outrank it. */
   .quiet .chg > *:not(h3) { display: block; }
-  .strip, .disclaimer, .sidebar, .touched, .diff, .verbatim, .lbl, .loop li, .pill, .tag
+  .strip, .disclaimer, .sidebar, .touched, .diff, .verbatim, .lbl, .loop li, .tag
     { background: transparent; }
   /* Named again because a two-class or pseudo-class selector outranks a one-class one
      whatever the order: what these tints say is already written beside them, in the label
-     above a whole inserted or deleted provision, in the word inside the pill, and in the
+     above a whole inserted or deleted provision, in the name of each side, and in the
      fragment that brought a reader to one block. */
-  .verbatim.ins, .verbatim.del, .pill.ins, .chg:target { background: transparent; }
+  .verbatim.ins, .verbatim.del, .lbl .side-before, .lbl .side-after, .chg:target
+    { background: transparent; }
   .chg:target, .chg.step:target > h2 { box-shadow: none; }
   .glossary dt:target { background: transparent; box-shadow: none; }
-  /* And the filled badge of the one shape that is an alert, for the same reason and by the
-     same rule: what its tint says is written beside it, in the lead of the note under it. */
-  .disp-kind .pill.disp { background: transparent; }
+  /* And the tinted note of the one shape that is an alert, for the same reason and by the
+     same rule: what its tint says is written in it, in its lead and beside it in its tag. */
+  .differ-kind .differ { background: transparent; }
   /* The tints inside a diff are the only ones that say something no word beside them does,
      so they stay, and nothing is redeclared for them: the screen rules already underline an
      insertion and strike a deletion, which is what a printer with no colour reads. */
@@ -924,9 +951,10 @@ th { font-size: var(--text-label); font-weight: 600; color: var(--muted); }
    background vanishes. So every boundary that is the information becomes `CanvasText`, and the
    rail's nodes are drawn as rings the system palette keeps, the newest still filled. */
 @media (forced-colors: active) {
-  .pill, .tag, .elided, .disclaimer, .touched, .sidebar, .diff, .verbatim, #search input
+  .tag, .elided, .disclaimer, .touched, .sidebar, .diff, .verbatim, #search input
     { border-color: CanvasText; }
-  .disp-kind .pill.disp, .tag--differ-kind { border-width: 2px; }
+  .tag--differ-kind, .differ-kind .differ { border-width: 2px; }
+  .differ-kind .differ { border-left-width: 3px; border-left-color: CanvasText; }
   .event::before, .chg.step::before {
     background: Canvas; border-color: CanvasText; forced-color-adjust: none;
   }

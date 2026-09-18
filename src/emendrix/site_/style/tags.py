@@ -7,7 +7,8 @@ wherever it appears, and the look is always said twice: a change kind has its ow
 glyph or border style, the three ways sources differ are told apart by border style, and only
 the one that is a contradiction, kinds differ, takes the alert colour, with a `≠` glyph and a
 double-weight border. The tally's own categories are quiet, muted words in a bordered box,
-because they are counts rather than findings.
+because they are counts rather than findings. Beside a sources-differ tag sits a small
+`.define` link to its definition, so the tag itself stays an adjective.
 
 A list of tags wraps as a row, and the tally sentence it follows sits on the same line where
 there is room. Print and forced colours for tags live in `media`.
@@ -62,4 +63,6 @@ TAGS: Final = """\
 .tag--substantive, .tag--dates-only, .tag--all-explained, .tag--unexplained, .tag--quoted,
 .tag--diff-only { color: var(--muted); background: transparent; border-color: var(--edge); }
 .tags-help { font-size: var(--text-meta); margin: 0 0 var(--space-3); }
+/* The small link to a definition, beside the tag or the value it defines; never the tag. */
+.define { margin-left: var(--space-2); font-size: var(--text-meta); font-weight: 400; }
 """

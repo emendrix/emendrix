@@ -327,7 +327,10 @@ def test_the_dispute_rate_is_broken_down_and_the_shapes_add_up_to_it() -> None:
     rendered = render_methodology(site)
     for part in (counts.shapes.evidenced, counts.shapes.no_text, counts.shapes.kind):
         assert f"{part:,} ({part / counts.disputed:.3f})" in rendered
-    assert f"{counts.disputed:,} disputed changes" in rendered
+    assert f"{counts.disputed:,} changes where sources differ" in rendered
+    assert "<td>Changes where sources differ</td>" in rendered
+    for words in ("not in every list", "no text found", "kinds differ"):
+        assert f"…of those, {words}: " in rendered
 
 
 def test_every_corpus_figure_says_what_it_does_not_mean() -> None:
@@ -379,6 +382,7 @@ def test_the_glossary_defines_every_term_under_its_own_id() -> None:
 
 def test_every_tag_kind_the_site_prints_has_a_glossary_entry() -> None:
     """A tag's words are defined where its list's link lands, or the link promises nothing."""
+    from emendrix.core import ChangeType
     from emendrix.site_.pages.glossary import GLOSSARY
     from emendrix.site_.tags import GLOSSARY_OF, SHAPE_TAGS
 
@@ -387,12 +391,15 @@ def test_every_tag_kind_the_site_prints_has_a_glossary_entry() -> None:
     kinds = {kind for kind, _ in SHAPE_TAGS.values()}
     kinds |= {"substantive", "dates-only", "no-text", "differ", "unexplained", "quoted"}
     kinds |= {"diff-only", "all-explained", "unattributed"}
+    kinds |= {f"kind-{kind.value.lower()}" for kind in ChangeType}
     assert kinds == set(GLOSSARY_OF)
 
 
-def test_the_glossary_says_the_table_counts_sources_differ_under_its_measure_s_name() -> None:
+def test_the_glossary_says_the_table_counts_sources_differ_in_its_own_row() -> None:
     """The one place "disputed" stays on a page is the table row the README shares, and the
-    glossary says that row and the tag count the same thing."""
+    glossary says that row and the tag count the same thing without printing the word again."""
     rendered = render_methodology(_site())
-    assert "Disputed changes (signals disagree)" in rendered
-    assert escape('"Disputed changes (signals disagree)"') in rendered.split('id="glossary"')[1]
+    assert rendered.count("Disputed changes (signals disagree)") == 1
+    glossary = rendered.split('id="glossary"')[1]
+    assert "in its row on changes where the signals disagree" in glossary
+    assert "isputed" not in glossary

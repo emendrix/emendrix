@@ -12,7 +12,7 @@ from datetime import date
 from emendrix.core import Change, ProvisionTree
 from emendrix.diff import compute_delta
 from emendrix.output import ChangelogEntry, diff_only_entry
-from emendrix.site_.diffview import render_texts
+from emendrix.site_.diffview import Sides, render_texts, summary_words
 from emendrix.site_.worddiff import compare
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -115,16 +115,44 @@ def test_a_word_diff_is_never_elided() -> None:
     assert "compared line by line" not in html
 
 
-def test_the_unified_block_is_labelled_with_both_version_tags_above_it() -> None:
-    """The label is a row of its own above the block, so a reader knows which direction the
-    marked text runs in without reading the surrounding page."""
+def test_the_unified_block_names_both_sides_above_it() -> None:
+    """The label is a row of its own above the block, naming each side by its role with its
+    code beside it, so a reader knows which direction the marked text runs in without reading
+    the surrounding page. Without dates handed in, the sides are named by role alone."""
     change, entry = _change("MODIFIED")
     rendered = render_texts(change, entry).html
     label = (
-        f'<p class="lbl"><code>{entry.from_version}</code> → <code>{entry.to_version}</code></p>'
+        '<p class="lbl"><span class="side-before">Previous version</span> '
+        f'<code class="id">{entry.from_version}</code> → '
+        '<span class="side-after">this version</span> '
+        f'<code class="id">{entry.to_version}</code></p>'
     )
     assert label in rendered
     assert rendered.index(label) < rendered.index('<p class="diff">')
+    dated = Sides(before="Previous version, in force 1 May 2026", after="this version, x")
+    assert (
+        '<span class="side-before">Previous version, in force 1 May 2026</span>'
+        in render_texts(change, entry, dated).html
+    )
+
+
+def test_a_one_sided_change_names_the_side_it_has() -> None:
+    change, entry = _change("INSERTED")
+    assert (
+        '<p class="lbl"><span class="side-after">Inserted in this version</span> '
+        f'<code class="id">{entry.to_version}</code></p>'
+    ) in render_texts(change, entry).html
+    gone = change.model_copy(update={"before": change.after, "after": None})
+    assert (
+        '<p class="lbl"><span class="side-before">Deleted in this version, from</span> '
+        f'<code class="id">{entry.from_version}</code></p>'
+    ) in render_texts(gone, entry).html
+
+
+def test_the_evidence_says_it_is_eur_lex_s_text_and_how_many_sides_it_has() -> None:
+    change, _ = _change("MODIFIED")
+    assert summary_words(change) == "Text from EUR-Lex, before and after"
+    assert summary_words(change.model_copy(update={"before": None})) == "Text from EUR-Lex"
 
 
 # ------------------------------------------------------------------ the size of the difference

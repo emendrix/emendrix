@@ -175,7 +175,8 @@ def test_no_markdown_fence_reaches_the_words_of_a_change_with_no_text() -> None:
 
     rendered = _page(textless_entry())
     assert '<p class="none">No explanation shipped — ' in rendered
-    assert "another signal named the unit and the disagreement ships marked disputed" in rendered
+    assert "another source named the provision, and it is listed where sources differ" in rendered
+    assert "disputed" not in text_of(_SCRIPT.sub("", rendered))
     assert "`" not in text_of(_SCRIPT.sub("", rendered))
 
 
@@ -201,17 +202,25 @@ def test_a_disputed_change_says_what_disagreed_without_saying_disputed() -> None
 
     The lead also says which shape the disagreement has. These changes are the evidenced one:
     the comparison read the text, which is on the page below the marker, and the metadata did
-    not list it. The block carries that shape as a class, which is what grades its badge.
+    not list it. The block carries that shape as a class and says it with the shape's tag,
+    beside the link to what the tag means.
     """
     rendered = _page(_disputed_entry())
-    assert "<strong>Sources disagree about what is listed, not about the text</strong>" in rendered
+    assert "<strong>Found in the text, but not every source lists it</strong>" in rendered
     assert (
         "the text comparison found this change; the EU&#x27;s own amendment metadata does not "
         "list it. Both are shown; neither is overruled." in rendered
     )
     assert "<strong>Disputed</strong>" not in rendered
-    assert rendered.count('<div class="chg disp-text"') == 4
-    assert "disp-kind" not in rendered
+    assert rendered.count('<div class="chg differ-text"') == 4
+    assert "differ-kind" not in rendered
+    assert (
+        rendered.count(
+            '<p><span class="tag tag--differ-text">Not in every list</span><a class="define" '
+            'href="../../../methodology/#sources-differ">What this means</a></p>'
+        )
+        == 4
+    )
 
 
 def test_the_masthead_tags_say_what_the_sources_differ_count_is_a_count_of() -> None:
@@ -252,12 +261,13 @@ def test_the_changes_with_no_text_are_gathered_and_every_one_is_still_on_the_pag
     (quiet,) = [emitted for emitted in entry.changes if emitted.change.textless]
     anchor = f"{entry.key}-{quiet.change.location.canonical.lower().replace(' ', '-')}"
     assert "<h3>1 provision named with no text to show</h3>" in rendered
-    assert "None was dropped and every one still counts in the disputed total above." in rendered
+    assert "None was dropped and every one still counts where sources differ above." in rendered
     section = rendered[rendered.index('<section class="quiet">') :]
-    assert f'<div class="chg disp-none" id="{anchor}">' in section
+    assert f'<div class="chg differ-none" id="{anchor}">' in section
     assert f'<a class="permalink" href="#{anchor}"' in section
     assert "named by the EU&#x27;s own amendment metadata" in section
-    assert "Sources disagree, and there is no text on either side" in section
+    assert "A source lists it, but there is no text to show" in section
+    assert '<span class="tag tag--differ-none">No text found</span>' in section
     # The four that carry text are blocks above the gathered list, not rows inside it.
     assert rendered.count('<div class="chg') == len(entry.changes)
     assert section.count('<div class="chg') == 1
@@ -279,7 +289,7 @@ def test_a_permalink_into_the_gathered_list_opens_the_row_it_names() -> None:
 
     rendered = _page(some_textless_entry())
     section = rendered[rendered.index('<section class="quiet">') :]
-    (target,) = re.findall(r'<div class="chg disp-none" id="([^"]+)">', section)
+    (target,) = re.findall(r'<div class="chg differ-none" id="([^"]+)">', section)
     assert f'href="#{target}"' in section
     assert ".quiet .chg > *:not(h3) { display: none; }" in STYLE
     assert ".quiet .chg:target > *:not(h3) { display: block; }" in STYLE
@@ -289,8 +299,8 @@ def test_the_outright_contradiction_about_kind_is_the_one_that_reads_as_an_alert
     """The smallest and loudest of the three shapes, on the page and in the sheet.
 
     Every source that looked found the provision and they named different kinds, so nothing is
-    missing and nothing is unlisted: the lead says so, the block carries the kind class, and the
-    badge is the only one of the three the sheet fills and draws with a double-weight border.
+    missing and nothing is unlisted: the lead says so, the block carries the kind class, and its
+    tag and note are the only ones of the three the sheet draws in the alert colour.
     """
     metadata = SignalReport(
         signal=Signal.CORPUS_METADATA,
@@ -301,11 +311,12 @@ def test_the_outright_contradiction_about_kind_is_the_one_that_reads_as_an_alert
     )
     entry = diff_only_entry(corroborate(_delta(), metadata=metadata).delta, detected_on=OBSERVED)
     rendered = _page(entry)
-    assert rendered.count('<div class="chg disp-kind"') == 3
-    assert "<strong>Sources disagree about the kind of change</strong>" in rendered
+    assert rendered.count('<div class="chg differ-kind"') == 3
+    assert "<strong>The sources name different kinds of change</strong>" in rendered
+    assert rendered.count('<span class="tag tag--differ-kind">Kinds differ</span>') == 3
     assert '<span class="tag tag--differ">3 where sources differ</span>' in rendered
     assert '<span class="tag tag--differ-kind">3 kinds differ</span>' in rendered
-    assert ".disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }" in STYLE
+    assert ".differ-kind .differ strong { color: var(--alert); }" in STYLE
 
 
 def test_the_tags_are_followed_by_one_link_to_the_glossary_that_defines_them() -> None:
@@ -703,7 +714,10 @@ def test_a_change_cites_its_provisions_once_however_many_sentences_named_them() 
     row = re.search(r'<p class="cites">.*?</p>', rendered)
     assert row is not None
     assert row.group().count("<a ") == 2
-    assert row.group().count('class="nowrap"') == 2
+    assert row.group().count('class="ext"') == 2
+    assert rendered.count(
+        '<p class="cites-key small">v1 is the previous version, v2 this one.</p>'
+    ) == (len(entry.changes))
 
 
 def test_no_citation_link_sits_inside_a_sentence_any_more() -> None:
@@ -731,7 +745,7 @@ def test_a_change_with_nothing_cited_carries_no_citation_row() -> None:
     assert 'class="cites"' not in _page(diff_only_entry(_delta(), detected_on=OBSERVED))
 
 
-_DATES = re.compile(r'<p class="applies">.*</p>\n<p class="dates">([^<]*)</p>')
+_DATES = re.compile(r'<p class="meta">.*</p>\n<p class="dates">([^<]*)</p>')
 """The dates line, captured only where it sits directly under the line it qualifies.
 
 The applies line above it is matched loosely because it carries markup of its own: a real date
@@ -771,10 +785,9 @@ def test_a_change_that_moved_dates_names_them_under_the_applies_line() -> None:
 def test_the_applies_line_labels_its_value_and_marks_only_a_real_date() -> None:
     """Three values share this line and only one of them is a date.
 
-    The colon is what makes it a label. Without it `applies from` opens a sentence that
-    `unchanged` and `unknown` cannot finish, which is how two of the three values read as
-    broken English while the third read fine. The committed Markdown and the CLI print the
-    label this way already, so the three surfaces now say one thing.
+    The colon is what makes it a label. The two non-answers are the site's own words:
+    `unchanged` beside a changed provision read as "the provision did not change", so it says no
+    date changed, and `unknown` says not readable, keeps its reason and links the definition.
 
     The span is on the date alone. It is what lets the stylesheet lift a date out of the
     colour the two non-answers keep, and marking a non-answer with it would style a stated
@@ -782,16 +795,19 @@ def test_the_applies_line_labels_its_value_and_marks_only_a_real_date() -> None:
     """
     unchanged = _delta().changes[0]
     assert isinstance(unchanged.applies_from, ApplicabilityUnchanged)
-    assert applies_line(unchanged) == '<p class="applies">applies from: unchanged</p>'
+    assert applies_line(unchanged, "../") == '<p class="meta">Applies from: no date changed</p>'
 
     deferred = unchanged.model_copy(update={"applies_from": date(2021, 5, 26)})
-    assert applies_line(deferred) == (
-        '<p class="applies">applies from: <span class="date">2021-05-26</span></p>'
+    assert applies_line(deferred, "../") == (
+        '<p class="meta">Applies from: <span class="date">2021-05-26</span></p>'
     )
 
     reason = "the text changed beyond its dates"
     unknown = unchanged.model_copy(update={"applies_from": ApplicabilityUnknown(reason=reason)})
-    assert applies_line(unknown) == f'<p class="applies">applies from: unknown ({reason})</p>'
+    assert applies_line(unknown, "../") == (
+        f'<p class="meta">Applies from: not readable ({reason}) <a class="define" '
+        'href="../methodology/#applies-from">why</a></p>'
+    )
 
 
 def test_a_change_that_moved_no_date_prints_no_dates_line() -> None:
@@ -858,3 +874,62 @@ def test_a_build_with_no_public_changelog_home_prints_the_closing_path_plainly()
     )
     assert "citation mapping" not in rendered
     assert "github.com" not in rendered
+
+
+def _coded_pair() -> tuple[SiteInputs, ChangelogEntry]:
+    """Two versions of one act, the older one's code carrying a date it is not in force from."""
+    from emendrix.core import VersionId
+
+    template = diff_only_entry(_delta(), detected_on=OBSERVED)
+    older = template.model_copy(
+        update={
+            "from_version": VersionId("v0"),
+            "to_version": VersionId("v1"),
+            "in_force": (date(2015, 12, 31),),
+        }
+    )
+    newer = template.model_copy(
+        update={
+            "from_version": VersionId("v1"),
+            "to_version": VersionId("v2"),
+            "in_force": (date(2025, 4, 1),),
+        }
+    )
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(older, newer),
+        version_dates={
+            (newer.act, VersionId("v1")): date(2018, 1, 1),
+            (newer.act, VersionId("v2")): date(2025, 4, 1),
+        },
+    )
+    return site, newer
+
+
+def test_a_coded_date_that_is_not_the_in_force_date_is_explained_where_the_codes_are() -> None:
+    """A version coded 20180101 and in force from 31 December 2015 reads as a mistake unless
+    the page says what the code's date is. Said once, beside the codes, and only where a
+    version this page names differs; this version's own code matches and is not mentioned
+    on the newer page, and the older page names the code as its own."""
+    site, newer = _coded_pair()
+    act = site.acts[0]
+    rendered = render_event_page(site, act, newer, text_blocks(newer, act.entries))
+    assert (
+        '<span class="note">The date in a version&#x27;s code is the date EUR-Lex gives that '
+        "consolidated text, which can differ from its in-force date: the previous version, "
+        "coded 20180101, is in force from 31 December 2015.</span>"
+    ) in rendered
+    assert "this version, coded" not in rendered
+    # The diff's sides are named by role and dated by the versions that produced them.
+    assert '<span class="side-before">Previous version, in force 31 December 2015</span>' in (
+        rendered
+    )
+    assert '<span class="side-after">this version, in force 1 April 2025</span>' in rendered
+    # The older page names the same code as its own, and its previous version has no record.
+    older = act.entries[1]
+    page = render_event_page(site, act, older, text_blocks(older, act.entries))
+    assert "this version, coded 20180101, is in force from 31 December 2015." in page
+    assert "the previous version, coded" not in page
+    assert '<span class="side-before">Previous version</span>' in page

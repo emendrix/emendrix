@@ -82,9 +82,9 @@ _LOOP: tuple[tuple[str, str], ...] = (
 _LOOP_NOTE = (
     "Between <b>Delta</b> and <b>Explain</b> the changes are corroborated against two "
     "independent signals — the corpus's own modification metadata and a parse of the amending "
-    "act's instruction prose — and anything they disagree about ships marked <em>disputed</em> "
-    "rather than dropped. After <b>Gate</b> the result is committed to a git repository as "
-    "Markdown and JSON. Every stage except <b>Explain</b> is deterministic Python."
+    "act's instruction prose — and any change the sources differ on is shown as such, with "
+    "what each said, rather than dropped. After <b>Gate</b> the result is committed to a git "
+    "repository as Markdown and JSON. Every stage except <b>Explain</b> is deterministic Python."
 )
 
 

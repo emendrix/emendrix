@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 154710)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 164528)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -132,9 +132,15 @@ the ISO date and closed with a separate link to the evidence; its detection line
 count run-on give way to a tally sentence and one tag, `No explanations for this version`;
 and its version pair is two small identifiers. The page gains a `Versions, newest first`
 heading and one link to the glossary above the cards. The card keeps `id="{entry.key}"`, and no
-anchor or id moved."""
+anchor or id moved.
 
-_TOTAL_BYTES: Final = 2772024
+9818 bytes heavier on 2026-09-18, later again, when a change's kind became a tag rather than
+an uppercase pill. The whole of it is the sidebar's touched-provisions list: each of its 401
+coordinates carries its kind as `<span class="tag tag--kind-modified">Modified</span>` where it
+carried `<span class="pill">MODIFIED</span>`, about 24 bytes a coordinate. Nothing on the cards
+moved, and no anchor or id did."""
+
+_TOTAL_BYTES: Final = 3152150
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -245,6 +251,21 @@ facts line, the count run-on and the mapping sentence at the foot, which now onl
 entry is committed; the spread is where a version sits, the two ends of the history printing one
 pager link and not two. Each of the 401 provision pages pays 2, its description counting
 versions where it counted events. No anchor or id moved and no measured figure moved with it.
+
+380 126 bytes heavier on 2026-09-18, later again, when one change started reading as the law's
+words and the machine's in two registers and its kind became a tag. The index pays the 9 818
+above. Each of the two hundred version pages pays 897 to 945, about 236 a change over four: the
+heading leads with the coordinate and closes on the kind as a sentence-case tag with a comma
+read aloud before it, where it opened on an uppercase pill; the characters moved out of it to a
+facts line that says `characters` and `Applies from:`; the evidence's summary says it is text
+from EUR-Lex, and its strip names both sides by role, this one dated, each code a small
+identifier; and a version of four changes opens its text. Each of the 401 provision pages pays
+264 or more, 181 506 between them: every step's heading is the version's name in words inside a
+link to that version's page, where it was the clock and the ISO date, with its kind as a tag,
+and the older steps' link out names EUR-Lex's text; the annex every event touches is two hundred
+such steps, 27 237 of the total. These events are diff-only, so no register label, citation row
+or key to `v1` and `v2` is printed here, and no change carries a difference between its sources.
+No anchor or id moved and no measured figure moved with it.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

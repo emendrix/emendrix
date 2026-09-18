@@ -236,20 +236,20 @@ def corpus_rows(counts: CorpusCounts) -> tuple[CorpusRow, ...]:
     three count in the rate above them.
     """
     changes = counted(counts.changes, "change")
-    disputed = counted(counts.disputed, "disputed change")
+    disputed = f"{counted(counts.disputed, 'change')} where sources differ"
     shapes = counts.shapes
     return (
         CorpusRow(
-            measure="Changes the sources disagree about",
+            measure="Changes where sources differ",
             result=_rate(counts.disputed, counts.changes),
             n=changes,
             meaning="At least one of the three sources emendrix checks named the change and "
-            "another did not, or two of them named different kinds of change. `disputed` is a "
-            "fact about the detectors and not a statement about the law: nothing is dropped for "
-            "it and nothing is overruled. The three rows below say what each disagreement is.",
+            "another did not, or two of them named different kinds of change. It is a fact about "
+            "the detectors and not a statement about the law: nothing is dropped for it and "
+            "nothing is overruled. The three rows below say how the sources differ each time.",
         ),
         CorpusRow(
-            measure="…of those, found in the text and not listed elsewhere",
+            measure="…of those, not in every list: found in the text, not listed elsewhere",
             result=_rate(shapes.evidenced, counts.disputed),
             n=disputed,
             meaning="The provision's own words are on the page, before and after. What disagrees "
@@ -257,7 +257,7 @@ def corpus_rows(counts: CorpusCounts) -> tuple[CorpusRow, ...]:
             "provisions it lands on are not enumerated. **Not a change nobody could corroborate.**",
         ),
         CorpusRow(
-            measure="…of those, named elsewhere with no difference in the text",
+            measure="…of those, no text found: named elsewhere, no difference in the text",
             result=_rate(shapes.no_text, counts.disputed),
             n=disputed,
             meaning="Nothing to quote on either side, so the row carries a location and the "
@@ -267,7 +267,7 @@ def corpus_rows(counts: CorpusCounts) -> tuple[CorpusRow, ...]:
             "once.",
         ),
         CorpusRow(
-            measure="…of those, found by every source that looked, called different things",
+            measure="…of those, kinds differ: every source that looked named another kind",
             result=_rate(shapes.kind, counts.disputed),
             n=disputed,
             meaning="The outright contradiction of the three: an insertion against a replacement, "

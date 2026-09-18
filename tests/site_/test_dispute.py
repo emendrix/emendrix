@@ -9,7 +9,7 @@ The six presence patterns split two ways from 2026-09-05, on whether the one sou
 carries text saw the change: a provision whose words are on the page and which another source
 did not enumerate is a different finding from a provision nothing could show at all. Three
 leads, three shapes, and the shape is the one `site_.entries` counts the published rates by.
-Nothing is graded away, which is why every lead still opens on `Sources disagree`.
+Nothing is graded away, and no lead uses a word that reads as a claim about the law.
 
 The expected sentences are written out in full rather than pattern-matched. A wording this
 short is only worth testing if the test can be read as the wording.
@@ -34,9 +34,9 @@ OBSERVED = SignalObservation(status=SignalStatus.OBSERVED)
 ABSENT = SignalObservation(status=SignalStatus.ABSENT)
 UNAVAILABLE = SignalObservation(status=SignalStatus.UNAVAILABLE)
 
-EVIDENCED = "Sources disagree about what is listed, not about the text"
-TEXTLESS = "Sources disagree, and there is no text on either side"
-KIND = "Sources disagree about the kind of change"
+EVIDENCED = "Found in the text, but not every source lists it"
+TEXTLESS = "A source lists it, but there is no text to show"
+KIND = "The sources name different kinds of change"
 
 DIFF = "the text comparison"
 META = "the EU's own amendment metadata"
@@ -176,7 +176,7 @@ def test_an_unavailable_source_is_never_listed_among_the_ones_that_did_not_see_i
 def test_the_two_source_case_reads_as_the_wording_the_site_ships() -> None:
     """The worked example, in full: one source found it, one did not, one could not look."""
     assert dispute_note(_set(OBSERVED, ABSENT, UNAVAILABLE)).text == (
-        "Sources disagree about what is listed, not about the text — the text comparison found "
+        "Found in the text, but not every source lists it — the text comparison found "
         "this change; the EU's own amendment metadata does not list it. Both are shown; "
         "neither is overruled."
     )
@@ -194,14 +194,13 @@ def test_every_signal_has_a_phrasing_so_a_new_one_cannot_ship_without_words() ->
 # ------------------------------------------------------------------ the three shapes
 
 
-def test_each_shape_gets_its_own_lead_and_they_all_open_on_the_same_three_words() -> None:
+def test_each_shape_gets_its_own_lead_and_class() -> None:
     """Built from the verdicts rather than from a fixture that happens to carry them.
 
     The three leads are the whole of the grading a reader sees first, so they are asserted
     against the shapes directly: the comparison saw it and another source did not list it, the
-    comparison never saw it, and every source that looked named a different kind. Each still
-    opens on `Sources disagree`, because grading a disagreement is not the same as softening
-    one, and the tally's tags and the methodology table name the same three shapes.
+    comparison never saw it, and every source that looked named a different kind. The tally's
+    tags and the methodology table name the same three shapes.
     """
     kinds = (
         SignalObservation(status=SignalStatus.OBSERVED, change_types=(ChangeType.MODIFIED,)),
@@ -215,7 +214,19 @@ def test_each_shape_gets_its_own_lead_and_they_all_open_on_the_same_three_words(
     ):
         assert dispute_shape(signals) == shape
         assert dispute_note(signals).lead == lead
-        assert lead.startswith("Sources disagree")
+    assert SHAPE_CLASS == {
+        "evidenced": "differ-text",
+        "no_text": "differ-none",
+        "kind": "differ-kind",
+    }
+
+
+def test_no_lead_says_anything_about_the_law() -> None:
+    """Every lead describes the sources. None uses a word a reader takes as a claim about the
+    law, which is the misreading the stored word `disputed` invites on a page."""
+    for lead in (EVIDENCED, TEXTLESS, KIND):
+        for word in ("disput", "contest", "conflict", "disagree"):
+            assert word not in lead.lower(), lead
 
 
 def test_no_lead_names_a_source_at_all_so_none_can_name_an_unavailable_one() -> None:
@@ -230,7 +241,7 @@ def test_no_lead_names_a_source_at_all_so_none_can_name_an_unavailable_one() -> 
 
 
 def test_the_shapes_the_page_words_are_the_shapes_the_rates_are_counted_by() -> None:
-    """One question, one answer: the badge, the tally's tags and the published table agree.
+    """One question, one answer: the tag, the tally's tags and the published table agree.
 
     `DisputeShapes` is what the site publishes a rate for each of, and the two maps here are
     what a page prints for one change. A fourth shape added to that model would land in a page

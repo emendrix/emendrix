@@ -248,13 +248,13 @@ def test_every_component_boundary_is_visible_in_both_schemes(
 def test_the_two_line_colours_are_used_for_their_own_job() -> None:
     """A component boundary reaches `--edge` and a hairline reaches `--rule`, both by name.
 
-    Cheap, and it catches the one way this pass could rot: a later rule drawing a pill-like
+    Cheap, and it catches the one way this pass could rot: a later rule drawing a tag-like
     border in `--rule` would be under the 3:1 floor and invisible to the check above, which
     reads the palette rather than the selectors. The search box and the elision chip joined
     the list on 2026-09-18, when both moved off `--rule`.
     """
     assert "--edge: " in STYLE
-    for selector in (".pill {", ".tag {", "#search input {", ".elided {"):
+    for selector in (".tag {", "#search input {", ".elided {"):
         block = STYLE.split(selector)[1].split("}")[0]
         assert "var(--edge)" in block, selector
         assert "var(--rule)" not in block, selector
@@ -319,25 +319,36 @@ def test_the_modules_are_concatenated_in_cascade_order() -> None:
     assert STYLE.index("@media print") < STYLE.index(_FORCED)
 
 
-def test_the_three_shapes_of_a_disagreement_are_told_apart_without_a_hue_alone() -> None:
-    """The badge is graded by border and fill, and all three keep the one alert colour.
+def test_only_the_contradiction_takes_the_alert_colour_where_sources_differ() -> None:
+    """The two presence shapes are provenance, and only kinds differ is an alert.
 
-    Measured 2026-09-18 over the palette redrawn that day: the one surface the grading
-    introduces is the filled badge of the kind contradiction, `--alert` on `--alert-tint`, at
-    7.93:1 light and 5.35:1 dark, a pair `_PAIRS` already checks. The other two shapes reach
-    for no colour at all: a dashed border for a row with no text and the sheet's plain disputed
-    pill for the evidenced one, which adds no rule.
+    Measured 2026-09-18 over the palette redrawn that day: the provenance grey on its tint and
+    the alert on its tint are pairs `_PAIRS` already checks, and each shape says itself twice,
+    the evidenced one by a plain border, the textless one by a dashed one and the contradiction
+    by a `≠` glyph and a double-weight border, so no shape rests on its hue.
     """
     assert ("alert", "alert-tint") in _PAIRS
-    graded = [line for line in STYLE.splitlines() if line.startswith((".disp-", ".pill.disp"))]
-    assert graded == [
-        ".pill.disp { background: transparent; border-color: var(--alert); color: var(--alert); }",
-        ".disp-none .pill.disp { border-style: dashed; }",
-        ".disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }",
-    ]
-    # The two grading rules reach for exactly one custom property between them, the alert's own
-    # tint, so the grade is a fill and a border rather than a second hue.
-    assert re.findall(r"var\((--[a-z-]+)\)", " ".join(graded[1:])) == ["--alert-tint"]
+    assert ("provenance", "provenance-tint") in _PAIRS
+    rules = " ".join(STYLE.split())
+    assert (
+        ".tag--differ, .tag--differ-text { color: var(--provenance); "
+        "background: var(--provenance-tint); border-color: var(--edge); }"
+    ) in rules
+    assert (
+        ".tag--no-text, .tag--differ-none { color: var(--provenance); "
+        "background: var(--provenance-tint); border: 1px dashed var(--edge); }"
+    ) in rules
+    assert (
+        ".tag--differ-kind { color: var(--alert); background: var(--alert-tint); "
+        "border: 2px solid var(--alert); padding: .06rem .4rem; }"
+    ) in rules
+    assert '.tag--differ-kind::before { content: "\\2260"; }' in rules
+    # The note under a tag: plain for the presence shapes, tinted and ruled only for kinds.
+    assert ".differ-kind .differ { padding: var(--space-2) var(--space-3); " in rules
+    for line in STYLE.splitlines():
+        if "var(--alert" in line:
+            assert "differ-text" not in line and "differ-none" not in line, line
+    assert "disp-" not in STYLE and ".pill" not in STYLE
 
 
 def test_the_link_and_the_alert_are_told_apart_by_colour_in_both_schemes() -> None:
@@ -370,15 +381,15 @@ def test_every_tint_a_word_already_says_is_stripped_for_print() -> None:
 
     The blanket rule in the print block is one class deep, so every tint drawn by a selector
     of higher specificity has to be named there again or it survives on paper. That is why the
-    two verbatim blocks, the insertion pill and a targeted change block are all listed, and it
-    is why the filled badge of the kind contradiction is listed too: `.disp-kind .pill.disp`
-    outranks `.pill` three simple selectors to one.
+    two verbatim blocks, the named sides of a diff and a targeted change block are all listed,
+    and it is why the tinted note of the kind contradiction is listed too: `.differ-kind
+    .differ` outranks `.tag` two classes to one.
     """
     screen, printed = _print_block()
-    assert ".disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }" in screen
-    for selector in (".verbatim.ins", ".verbatim.del", ".pill.ins", ".chg:target"):
+    assert ".differ-kind .differ { padding: var(--space-2) var(--space-3);" in screen
+    for selector in (".verbatim.ins", ".verbatim.del", ".lbl .side-before", ".chg:target"):
         assert selector in printed, selector
-    assert ".disp-kind .pill.disp { background: transparent; }" in printed
+    assert ".differ-kind .differ { background: transparent; }" in printed
 
 
 def test_forced_colours_keep_every_mark_that_was_drawn_as_a_background() -> None:
@@ -391,7 +402,7 @@ def test_forced_colours_keep_every_mark_that_was_drawn_as_a_background() -> None
     _, _, forced = STYLE.partition(_FORCED)
     assert forced
     assert "forced-color-adjust: none" in forced
-    for selector in (".event::before", ".chg.step::before", ".elided", ".pill", ".tag"):
+    for selector in (".event::before", ".chg.step::before", ".elided", ".tag", ".differ-kind"):
         assert selector in forced, selector
     assert "CanvasText" in forced
 

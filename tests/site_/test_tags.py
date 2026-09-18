@@ -112,3 +112,43 @@ def test_the_help_link_resolves_to_the_glossary_from_every_page_that_prints_it(
             assert target == (root / "methodology" / "index.html").resolve(), page
             checked += 1
     assert checked >= 3
+
+
+def test_every_change_kind_is_a_tag_in_sentence_case_with_its_own_look() -> None:
+    """The stored value's own word, cased for reading: `Modified`, never `MODIFIED`."""
+    from emendrix.core import ChangeType
+    from emendrix.site_.tags import GLOSSARY_OF, kind_tag
+
+    for kind in ChangeType:
+        words = kind.value.capitalize()
+        assert kind_tag(kind) == (
+            f'<span class="tag tag--kind-{kind.value.lower()}">{words}</span>'
+        ), kind
+        assert f"kind-{kind.value.lower()}" in GLOSSARY_OF
+
+
+def test_every_shape_where_sources_differ_is_a_tag_with_its_definition_beside_it() -> None:
+    """The tag is an adjective and never the link; the link to what it means sits beside it."""
+    from emendrix.core import ChangeType, SignalObservation, SignalSet, SignalStatus
+    from emendrix.site_.dispute import dispute_shape
+    from emendrix.site_.tags import SHAPE_TAGS, differ_tag
+
+    seen = SignalObservation(status=SignalStatus.OBSERVED)
+    absent = SignalObservation(status=SignalStatus.ABSENT)
+    unavailable = SignalObservation(status=SignalStatus.UNAVAILABLE)
+    kinds = (
+        SignalObservation(status=SignalStatus.OBSERVED, change_types=(ChangeType.MODIFIED,)),
+        SignalObservation(status=SignalStatus.OBSERVED, change_types=(ChangeType.INSERTED,)),
+    )
+    shapes = {}
+    for diff, meta in ((seen, absent), (absent, seen), kinds):
+        signals = SignalSet(
+            structural_diff=diff, corpus_metadata=meta, instruction_parse=unavailable
+        )
+        shapes[dispute_shape(signals)] = differ_tag(signals, "../../")
+    assert set(shapes) == set(SHAPE_TAGS)
+    for shape, (kind, words) in SHAPE_TAGS.items():
+        assert shapes[shape] == (
+            f'<span class="tag tag--{kind}">{words}</span><a class="define" '
+            'href="../../methodology/#sources-differ">What this means</a>'
+        )

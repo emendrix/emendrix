@@ -19,10 +19,8 @@ on 2026-09-03:
   official title and the dated words on the second, so a reader scanning forty rows reads a
   column of names rather than a column of separators.
 
-The disputed count is a bordered chip in the alert colour rather than a clause appended to the
-provision count, and deliberately not the change-type pill: that pill carries a single
-uppercase word, and `1 disputed change` set the same way would shout the one number on the
-page that most needs to read as a note.
+The count of changes where sources differ is a tag in the neutral provenance look, from
+`tags`, rather than a clause appended to the provision count, so it reads as the note it is.
 
 This text is minted, not escaped, like every module of the package.
 """
@@ -55,8 +53,6 @@ PAGES: Final = """\
 .cardrow h3 { font-size: var(--text-h3); margin: 0 0 var(--space-1); }
 .cardrow .facts { margin: 0 0 var(--space-1); }
 .cardrow .ident { display: block; margin: 0; }
-.cardrow .disp { padding: 0 .35rem; border: 1px solid var(--alert); border-radius: var(--radius);
-                 color: var(--alert); font-weight: 600; }
 .roster { list-style: none; margin: 0 0 var(--space-5); padding: 0; }
 .roster li { padding: var(--space-3) 0; border-top: 1px solid var(--rule); }
 .roster li:last-child { border-bottom: 1px solid var(--rule); }

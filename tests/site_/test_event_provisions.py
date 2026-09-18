@@ -24,6 +24,7 @@ from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.magnitude import magnitude_html, weight_class
+from emendrix.site_.markup import escape
 from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.event_index import INDEX_ABOVE
 from emendrix.site_.pages.texts import RenderedText, text_blocks
@@ -85,8 +86,9 @@ def _many(entry: ChangelogEntry, n: int) -> ChangelogEntry:
 
 def test_every_change_opens_with_a_heading_and_the_applies_line_stays_outside_it() -> None:
     """The provision is the unit a crawler ranks a passage under and a screen reader jumps to,
-    so each block opens with an `<h3>` of pill, coordinate and title. The applies line is a
-    fact about the change, not part of its name, and sits in its own paragraph after it.
+    so each block opens with an `<h3>` that leads with what a reader scans for: the coordinate,
+    then the title, then the kind of change as a tag. The applies line is a fact about the
+    change, not part of its name, and sits in the facts line after it.
 
     The coordinate is a link to that provision's own page, a sibling directory of this event's
     under the act: an event page answers what one consolidation did, and the reader who wants
@@ -95,7 +97,8 @@ def test_every_change_opens_with_a_heading_and_the_applies_line_stays_outside_it
     rendered = _page(entry)
     assert rendered.count("<h3>") == len(entry.changes)
     assert rendered.count('<div class="chg"') == len(entry.changes)
-    assert rendered.count('<p class="applies">applies from: ') == len(entry.changes)
+    assert rendered.count('<p class="meta">') == len(entry.changes)
+    assert rendered.count(" characters · Applies from: ") == len(entry.changes)
     for emitted in entry.changes:
         change = emitted.change
         slug = location_slug(change.location.canonical)
@@ -103,8 +106,12 @@ def test_every_change_opens_with_a_heading_and_the_applies_line_stays_outside_it
         if change.heading:
             assert f'<span class="ttl">{change.heading}</span>' in rendered
     for heading in re.findall(r"<h3>.*?</h3>", rendered):
-        assert "applies from" not in heading
-        assert '<span class="pill' in heading
+        assert "Applies from" not in heading
+        assert "pill" not in heading
+        assert heading.startswith('<h3><a class="loc" ')
+        tag = heading.index('<span class="tag tag--kind-')
+        if 'class="ttl"' in heading:
+            assert heading.index('class="loc"') < heading.index('class="ttl"') < tag
     assert rendered.index('<div class="chg"') < rendered.index("<h3>")
 
 
@@ -143,7 +150,11 @@ def test_a_long_page_opens_with_an_index_of_its_blocks_and_a_short_one_does_not(
     assert len(links) == INDEX_ABOVE
     assert links == re.findall(r'<div class="chg" id="([^"]+)"', rendered)
     assert index.count("<li ") == INDEX_ABOVE
-    assert index.count('<span class="pill') == INDEX_ABOVE
+    assert index.count('<span class="tag tag--kind-') == INDEX_ABOVE
+    assert "pill" not in index
+    for emitted in _many(entry, INDEX_ABOVE).changes:
+        if emitted.change.heading:
+            assert f'<span class="ttl">{escape(emitted.change.heading)}</span></a>' in index
 
 
 def test_the_index_lists_a_repeated_coordinate_once_per_block() -> None:
@@ -153,7 +164,7 @@ def test_the_index_lists_a_repeated_coordinate_once_per_block() -> None:
     human = entry.changes[0].change.location.human
     assert entry.changes[-1].change.location.human == human
     (index,) = _INDEX.findall(_page(entry))
-    assert index.count(f">{human}</a>") == 2
+    assert index.count(f'<span class="loc">{human}</span>') == 2
     links = re.findall(r'href="#([^"]+)"', index)
     assert links[-1] == links[0] + "-2"
 
@@ -236,20 +247,21 @@ def _blocks(entry: ChangelogEntry) -> tuple[str, tuple[RenderedText, ...]]:
     return render_event_page(site, site.acts[0], entry, texts), texts
 
 
-def test_every_change_heading_says_how_much_of_the_provision_moved() -> None:
-    """One figure per block, inside the heading, beside the pill that says what kind it was.
+def test_every_change_says_how_much_of_the_provision_moved_under_its_heading() -> None:
+    """One figure per block, opening the facts line under the heading, never inside it.
 
-    A punctuation fix and a rewritten paragraph are both `MODIFIED`, and this is what tells
-    them apart without opening forty-five blocks. The figure is the block's own, so it is read
-    back off the evidence the page was built from rather than restated here.
+    A punctuation fix and a rewritten paragraph are both modified, and this is what tells
+    them apart without opening forty-five blocks. It is a size and not part of the provision's
+    name, so the heading a screen reader announces stays coordinate, title and kind. The figure
+    is the block's own, so it is read back off the evidence the page was built from.
     """
     rendered, texts = _blocks(_entry())
     headings = re.findall(r"<h3>.*?</h3>", rendered)
-    assert len(headings) == len(texts)
-    for heading, text in zip(headings, texts, strict=True):
-        assert heading.count('<span class="mag"') == 1
-        assert magnitude_html(text) in heading
-        assert heading.index('<span class="pill') < heading.index('<span class="mag"')
+    metas = re.findall(r'<p class="meta">.*?</p>', rendered)
+    assert len(headings) == len(metas) == len(texts)
+    for heading, meta, text in zip(headings, metas, texts, strict=True):
+        assert 'class="mag"' not in heading
+        assert meta.startswith(f'<p class="meta">{magnitude_html(text)} characters · ')
 
 
 def test_the_index_weights_each_link_by_the_characters_its_own_block_moved() -> None:

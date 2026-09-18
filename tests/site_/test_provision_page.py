@@ -19,7 +19,7 @@ import re
 from datetime import date, timedelta
 from pathlib import Path
 
-from site_entries import attributed_entry, unattributed_entry
+from site_entries import attributed_entry, disputed_entry, unattributed_entry
 
 from emendrix.core import Delta, ProvisionTree, VersionId
 from emendrix.diff import compute_delta
@@ -126,13 +126,25 @@ def test_every_older_step_links_the_block_on_its_own_event_page() -> None:
     event page has always published for this change."""
     rendered, _, history = _page(_entry(2), _entry(1))
     older = history.steps[1]
-    assert f'href="../{older.entry.key}/#{older.anchor}"' in rendered
+    assert (
+        f'<a href="../{older.entry.key}/#{older.anchor}">'
+        "Text from EUR-Lex, on this version&#x27;s page →</a>"
+    ) in rendered
+
+
+def test_every_step_heading_links_its_version_page_the_newest_included() -> None:
+    """The heading names the version by its date and is the way to that version's own page,
+    so the newest step, whose text is here and which carries no link out below it, still
+    leads to the version that made it."""
+    rendered, _, history = _page(_entry(2), _entry(1))
+    for step in history.steps:
+        assert f'<h2><a href="../{step.entry.key}/">Version ' in rendered
 
 
 def test_a_one_step_history_carries_no_older_link_at_all() -> None:
     rendered, _, history = _page(_entry(1))
     assert len(history.steps) == 1
-    assert "on the event page" not in rendered
+    assert "on this version" not in rendered
     assert "<details open>" in rendered
 
 
@@ -198,8 +210,9 @@ def test_every_step_states_its_date_its_kind_and_when_it_applies() -> None:
     found = _STEPS.findall(rendered)
     assert [anchor for anchor, _ in found] == [step.anchor for step in history.steps]
     for _, block in found:
-        assert '<p class="applies">applies from: ' in block
-        assert '<span class="pill' in block
+        assert '<p class="meta">Applies from: ' in block
+        assert '<span class="tag tag--kind-' in block
+        assert "pill" not in block
         assert "in force" in block or "detected" in block
 
 
@@ -316,7 +329,7 @@ def test_only_the_step_showing_its_evidence_says_how_much_moved() -> None:
     magnitudes = [heading for heading in headings if '<span class="mag"' in heading]
     assert len(magnitudes) == 1
     assert magnitude_html(newest) in magnitudes[0]
-    assert magnitudes[0].index('<span class="pill') < magnitudes[0].index('<span class="mag"')
+    assert magnitudes[0].index('<span class="tag') < magnitudes[0].index('<span class="mag"')
 
 
 def test_a_step_carries_the_dates_its_own_change_moved() -> None:
@@ -336,6 +349,27 @@ def test_a_step_carries_the_dates_its_own_change_moved() -> None:
     rendered = _render(site, act, moved)
     ((_, body),) = _STEPS.findall(rendered)
     assert '<p class="dates">dates added to the text: 2027-12-02</p>' in body
-    assert body.index('<p class="applies">') < body.index('<p class="dates">')
+    assert body.index('<p class="meta">') < body.index('<p class="dates">')
     untouched = next(one for one in histories(act) if one.location.canonical == "AN I")
     assert 'class="dates"' not in _render(site, act, untouched)
+
+
+def test_a_step_where_sources_differ_is_graded_as_its_version_page_grades_it() -> None:
+    """The same class, tag, link and note the version page gives the same change, so a reader
+    meets one grade for one difference whichever view of it they arrived on."""
+    entry = disputed_entry()
+    site = _site(entry)
+    act = site.acts[0]
+    graded = 0
+    for history in histories(act):
+        change = history.steps[0].change
+        rendered = _render(site, act, history)
+        if not change.disputed:
+            assert "sources-differ" not in rendered and "chg step differ" not in rendered
+            continue
+        graded += 1
+        assert '<article class="chg step differ-' in rendered
+        assert '<span class="tag tag--differ-' in rendered
+        assert 'href="../../../methodology/#sources-differ">What this means</a>' in rendered
+        assert '<p class="differ"><strong>' in rendered
+    assert graded

@@ -52,7 +52,7 @@ _WHAT_IT_IS = (
     "computes which articles and annexes differ, checks that finding against two independent "
     "signals, the publisher's own amendment metadata and a parse of the amending act's "
     "instructions, and has a model phrase the difference between the two verbatim texts. "
-    "Anything the three sources disagree about ships marked disputed rather than dropped."
+    "Anything the three sources differ on is shown as such rather than dropped."
 )
 
 _NOT_THE_MODEL = (

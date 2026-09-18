@@ -18,10 +18,9 @@ Four things this page will not do:
   figure and links straight to the row that says what it does not mean.
 - **No silence.** An empty changelog repository, or none at all, is a sentence saying which,
   not a page that renders nothing.
-- **No disputed count without the sentence saying what disputed means.** The word is the
-  project's own vocabulary and reads on a card as a defect rate, so the gloss is printed once
-  above the list whenever any card shown carries one, and each count carries it again as its
-  own tooltip.
+- **No count of changes where sources differ without the way to what that means.** On a card
+  such a count can read as a defect rate, so it is a tag, an adjective in the neutral
+  provenance look, with the small link to its definition beside it, where the count is.
 
 Depth 0: this page sits at the site root, so its internal links need no prefix. `up(0)` is
 still written where a link is built, because the prefix is what makes the tree work from a
@@ -35,11 +34,11 @@ from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date
-from emendrix.site_.dispute import DISPUTED_GLOSS
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.seo import website_json_ld
+from emendrix.site_.tags import DEFINE_WORDS, tag
 from emendrix.site_.untouched import (
     UNTOUCHED_CARD,
     all_textless,
@@ -137,9 +136,9 @@ def _card(act: ActSite, entry: ChangelogEntry, named: str) -> Html:
     quiet lie about a fact this project treats as first class, which is why the words come
     from `clocks.event_date` rather than being built here.
 
-    A disputed count is its own segment carrying the gloss as a tooltip, never a clause
-    appended to the provision count: `36 provisions, 36 disputed` reads as a failure rate,
-    where two counts separated like the date are two facts about the same event.
+    The count of changes where sources differ is its own segment, a tag with the link to its
+    definition, never a clause appended to the provision count: `36 provisions, 36 …` reads as
+    a failure rate, where two counts separated like the date are two facts about one event.
 
     `named` is the instrument clause, `by Digital Omnibus on AI`, and it rides with the count
     rather than in a segment of its own: it says what the count is a count of. It is empty for
@@ -154,8 +153,9 @@ def _card(act: ActSite, entry: ChangelogEntry, named: str) -> Html:
         touched = count(counts.touched, "provision")
     disputed = (
         Html(
-            f' · <span class="disp" title="{escape(DISPUTED_GLOSS)}">'
-            f"{escape(count(counts.disputed, 'disputed change'))}</span>"
+            f" · {tag('differ', f'{counts.disputed} where sources differ')}"
+            f'<a class="define" href="{up(_DEPTH)}methodology/#sources-differ">'
+            f"{escape(DEFINE_WORDS)}</a>"
         )
         if counts.disputed
         else Html("")
@@ -180,9 +180,6 @@ def _amendments(site: SiteInputs, limit: int) -> list[Html]:
     ones no amending act is named for, which do not belong in a list titled "Latest
     amendments" at all. Both exclusions are stated with a count, because a silent one would
     make this window read as the whole record.
-
-    The gloss is printed when a card in this window carries a disputed count and not otherwise:
-    a sentence explaining a mark that is nowhere on the page reads as a warning about it.
     """
     recent = site.recent
     lines = [Html("<h2>Latest amendments</h2>")]
@@ -198,8 +195,6 @@ def _amendments(site: SiteInputs, limit: int) -> list[Html]:
         )
         return lines
     shown = amendments[:limit]
-    if any(entry.counts.disputed for _, entry in shown):
-        lines.append(Html(f'<p class="small muted">{escape(DISPUTED_GLOSS)}</p>'))
     lines.extend(
         _card(act, entry, by_words(amenders(site.amending, entry))) for act, entry in shown
     )

@@ -18,9 +18,10 @@ index `entry_anchors` counts occurrences over, so nothing has to be matched up b
 from __future__ import annotations
 
 from emendrix.output import ChangelogEntry
-from emendrix.site_.diffview import Rendered, render_texts
+from emendrix.site_.clocks import event_date
+from emendrix.site_.diffview import Rendered, Sides, render_texts
 
-__all__ = ["RenderedText", "text_blocks"]
+__all__ = ["RenderedText", "sides", "text_blocks"]
 
 RenderedText = Rendered
 """The renderer's own model, under the name the pages ask for it by.
@@ -32,10 +33,29 @@ would be the same fields in a second place, free to drift from the first.
 """
 
 
-def text_blocks(entry: ChangelogEntry) -> tuple[RenderedText, ...]:
+def sides(entry: ChangelogEntry, history: tuple[ChangelogEntry, ...] = ()) -> Sides:
+    """The two versions an entry compares, named by role and dated where the history knows how.
+
+    This version is dated by the entry's own clock. The previous one is dated by the entry that
+    produced it, the one in the act's `history` whose newer version is this entry's older one;
+    where no recorded entry did, the previous version is named by its role alone rather than
+    given a date nobody recorded. Either date says its clock, `in force` or `detected`.
+    """
+    produced = next((other for other in history if other.to_version == entry.from_version), None)
+    before = "Previous version"
+    if produced is not None:
+        before += f", {event_date(produced).human}"
+    return Sides(before=before, after=f"this version, {event_date(entry).human}")
+
+
+def text_blocks(
+    entry: ChangelogEntry, history: tuple[ChangelogEntry, ...] = ()
+) -> tuple[RenderedText, ...]:
     """Every change of one entry as its evidence block, in the entry's own order.
 
     Called once per entry per build. A page never calls `render_texts` itself, which is the
     property that stops one diff being computed twice now that two page kinds show it.
+    `history` is the act's entries, which date the previous version's side.
     """
-    return tuple(render_texts(emitted.change, entry) for emitted in entry.changes)
+    named = sides(entry, history)
+    return tuple(render_texts(emitted.change, entry, named) for emitted in entry.changes)

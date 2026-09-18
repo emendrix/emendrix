@@ -14,17 +14,18 @@ The promises live here, each as a line of markup rather than a claim made elsewh
 - **A sentence the gate quoted is marked as one**, in the changelog's own words, because a
   sentence a model composed and a sentence the gate lifted verbatim are different kinds of
   claim.
-- **A disputed change is shown, says what disagreed and says which shape the disagreement
-  has**, in the lead of its note and in the weight of its badge. Dropping it would make the
-  card tidier and the counts wrong; grading it changes what the page says about a disagreement
-  and never whether one is recorded.
+- **A change where the sources differ is shown, says what differed and says which shape the
+  difference has**, in its tag, in the lead of its note and in the weight of both. Dropping it
+  would make the card tidier and the counts wrong; grading it changes what the page says about
+  a difference and never whether one is recorded.
 - **A change with no text to show is one line, and every one is still on the page.** They
   gather at the foot of the changes under a heading saying how many and what they are, each
   still a block with its own anchor, permalink and disagreement note, and each opens where it
   stands when a permalink names it. Nothing leaves the page or the counts for it.
 - **Nothing here is cut.** A summary panel that merely points at the artifact can justify
   capping a sentence; this is where a reader arrives instead, so the sentences run in full and
-  the before/after text sits one `<details>` away, uncut and verbatim.
+  the before/after text sits one `<details>` away, uncut and verbatim, open on a version short
+  enough that it has no index.
 - **Every provision is a heading**, and a long page opens with a list of them built from the
   same anchors the blocks carry, so the list cannot point where no block is.
 - **Every change says how much of the provision moved**, in characters, measured on the very
@@ -40,11 +41,11 @@ The promises live here, each as a line of markup rather than a claim made elsewh
   a reader forty blocks down can still see the map; below that width it stays the wrapping row
   it has always been, which costs a few lines rather than a screen.
 
-What a change block carries wherever it appears, the pill, the permalink, the sentences, the row
-of their citations and the dates its text moved, lives in `pages/prose.py`, and the index a long
-page opens with lives in `pages/event_index.py`. Each is a statement this module places rather
-than composes. What is left is one version's changes: the block each sits in, and the order all
-of them come in.
+What a change block carries wherever it appears, the permalink, the note where sources differ,
+the sentences, the row of their citations and the facts line, lives in `pages/prose.py`, and
+the index a long page opens with lives in `pages/event_index.py`. Each is a statement this
+module places rather than composes. What is left is one version's changes: the block each
+sits in, and the order all of them come in.
 
 Wording is imported rather than restated wherever the changelog says the same thing
 (`output.markdown`): two renderings of one fact that describe it differently are how a caveat
@@ -60,23 +61,28 @@ from __future__ import annotations
 
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry
-from emendrix.site_.dispute import (
-    QUIET_NOTE,
-    SHAPE_CLASS,
-    dispute_note,
-    dispute_shape,
-    named_by,
-    quiet_heading,
-)
+from emendrix.site_.diffview import summary_words
+from emendrix.site_.dispute import QUIET_NOTE, SHAPE_CLASS, dispute_shape, named_by, quiet_heading
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
-from emendrix.site_.pages.prose import applies_line, dates_line, permalink, pill, prose
+from emendrix.site_.pages.prose import (
+    applies_line,
+    dates_line,
+    differ_note,
+    permalink,
+    prose,
+    title_span,
+)
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.sources import repo_file
-from emendrix.site_.urls import location_slug
+from emendrix.site_.tags import SPOKEN_COMMA, kind_tag
+from emendrix.site_.urls import location_slug, up
 
 __all__ = ["render_event"]
+
+_DEPTH = 3
+"""`acts/<slug>/<key>/index.html`, the version page every block here is printed on."""
 
 _WHAT_CHANGED = "What changed"
 """The heading the changes open under, between the version's masthead and its first block, so the
@@ -91,41 +97,41 @@ the last block ends, and a link back to what a reader can see is furniture rathe
 
 
 def _change_block(
-    emitted: EmittedChange, entry: ChangelogEntry, anchor: str, text: RenderedText
+    emitted: EmittedChange, entry: ChangelogEntry, anchor: str, text: RenderedText, *, open_: bool
 ) -> list[Html]:
-    """One change: what it is, what is disputed about it, what was said, and the text itself.
+    """One change: what it is, where its sources differ, what was said, and the text itself.
 
     The block opens with a heading because the provision is the unit a reader and a crawler
     both look for: a passage is ranked, and a screen reader jumps, under `Art. 6` and its
-    title. The heading holds the pill, the coordinate and the title, each its own element so
-    the stylesheet sets the spacing; the applies line is a fact about the change rather than
-    part of its name, so it is a paragraph of its own. The `id` stays on the wrapping `div`,
-    which is what the anchors were minted for and what `.chg:target` highlights.
+    title. The heading leads with what a reader scans for, the coordinate, then the title, then
+    the kind of change as a tag, so its name reads `Art. 1 Subject matter, Modified`. The `id`
+    stays on the wrapping `div`, which is what the anchors were minted for and what
+    `.chg:target` highlights.
 
     The coordinate is a link to that provision's own page, a sibling of this event's page under
-    the act, so `../` climbs to the act's directory and the slug names the provision. It keeps
-    the weight it had as a span, because the coordinate is still the heading of the block and
-    not an invitation to leave it. The permalink closes the heading and points at this block's
-    own `id`, so a reader can hand one change to somebody without knowing the anchor scheme.
+    the act, so `../` climbs to the act's directory and the slug names the provision. The
+    permalink closes the heading and points at this block's own `id`, so a reader can hand one
+    change to somebody without knowing the anchor scheme.
 
-    The dates line follows the applies line where a date moved, and is absent where none did.
-    The order is the argument: the applies line answers whether one of them governs the
-    provision, and the dates below it are the ones the text stopped and started naming.
+    Under the heading, one line of facts: how much of the provision moved, measured on the
+    comparison `text` carries, and the applies line. A punctuation fix and a rewritten
+    paragraph are both modified, and the count is what tells them apart without opening
+    either; it is a size and not part of the provision's name, which is why it left the
+    heading. A change with no text on either side has nothing to measure and prints no count.
+    The dates line follows where a date moved.
 
-    The block carries the shape of its disagreement as a class, which is what grades its badge
-    in the sheet, and a change with no text names its naming source in the heading: that
-    heading is the whole of such a row until a permalink opens it.
+    Where the sources differ the block carries the shape as a class and says it twice, as the
+    shape's tag with its definition link and as the lead and detail of the note. A change with
+    no text names its naming source in the heading: that heading is the whole of such a row
+    until a permalink opens it.
 
     `text` is the evidence, rendered once for the whole entry by `pages.texts` and handed in:
     the provision page shows the same block, and a diff computed twice is the one cost the
-    split of these pages could have introduced. It carries the size of the difference it shows,
-    which the heading prints beside the pill: a punctuation fix and a rewritten paragraph are
-    both `MODIFIED`, and the count is what tells them apart without opening either.
+    split of these pages could have introduced. `open_` opens it where the version is short
+    enough that every change's text belongs on the first read.
     """
     change = emitted.change
-    title = (
-        Html(f' <span class="ttl">{escape(change.heading)}</span>') if change.heading else Html("")
-    )
+    title = title_span(change)
     graded = f" {SHAPE_CLASS[dispute_shape(change.signals)]}" if change.disputed else ""
     named = (
         Html(f' <span class="by">named by {escape(named_by(change.signals))}</span>')
@@ -135,28 +141,24 @@ def _change_block(
     lines = [
         Html(f'<div class="chg{graded}" id="{escape(anchor)}">'),
         Html(
-            f"<h3>{pill(change.change_type, disputed=change.disputed)} "
-            f"{magnitude_html(text)} "
-            f'<a class="loc" href="../{escape(location_slug(change.location.canonical))}/">'
-            f"{escape(change.location.human)}</a>{title}{named}{permalink(anchor)}</h3>"
+            f'<h3><a class="loc" href="../{escape(location_slug(change.location.canonical))}/">'
+            f"{escape(change.location.human)}</a>{title}{SPOKEN_COMMA} "
+            f"{kind_tag(change.change_type)}{named}{permalink(anchor)}</h3>"
         ),
-        applies_line(change),
+        applies_line(change, up(_DEPTH), None if change.textless else magnitude_html(text)),
     ]
     dates = dates_line(change)
     if dates is not None:
         lines.append(dates)
     if change.disputed:
-        note = dispute_note(change.signals)
-        lines.append(
-            Html(
-                f'<p class="disputed"><strong>{escape(note.lead)}</strong> — '
-                f"{escape(note.detail)}</p>"
-            )
-        )
+        lines.extend(differ_note(change.signals, up(_DEPTH)))
     lines.extend(prose(emitted, entry))
     lines.extend(
         (
-            Html("<details><summary>text before / after</summary>"),
+            Html(
+                f"<details{' open' if open_ else ''}>"
+                f"<summary>{escape(summary_words(change))}</summary>"
+            ),
             text.html,
             Html("</details>"),
             Html("</div>"),
@@ -210,15 +212,16 @@ def render_event(
     shown: list[Html] = []
     hushed: list[Html] = []
     quiet = 0
+    long = len(entry.changes) >= INDEX_ABOVE
     for emitted, anchor, text in zip(entry.changes, anchors, texts, strict=True):
-        block = _change_block(emitted, entry, anchor, text)
+        block = _change_block(emitted, entry, anchor, text, open_=not long)
         if emitted.change.textless:
             quiet += 1
             hushed.extend(block)
         else:
             shown.extend(block)
     blocks = shown + (_quiet(hushed, quiet) if quiet else [])
-    if len(entry.changes) >= INDEX_ABOVE:
+    if long:
         lines.append(Html('<div class="layout event-layout">'))
         lines.extend(touched(entry, anchors, texts))
         lines.append(Html('<section class="changes">'))

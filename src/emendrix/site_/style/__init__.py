@@ -16,14 +16,16 @@ bar's current section), `tags` (the adjectives a version and a change carry, one
 split off on 2026-09-18 so every page family can place one), `pages` (home, the acts roster,
 methodology), `timeline` (the act, version and amending-act pages as documents: header lines,
 the two columns and the sidebar, the rail, the version card, the version masthead, the act's
-dates list and the pager), `evidence` (one change: the block and its heading, the touched index,
-the disagreement badge, the gathered rows with no text, the diff and verbatim blocks, tables)
+dates list and the pager), `change` (one change as a statement: its heading, facts line, the
+note where its sources differ, the model's register and the citations), `evidence` (the text it
+quotes: the touched index, the gathered rows with no text, the diff and verbatim blocks, tables)
 and `media` (print and forced colours). A rule in a later module may rely on an earlier one and
 never the reverse, which is what makes the order a contract rather than a preference. A class
 used by more than one page family lives in `base`; a class one page owns lives with that page.
 `timeline` was split off `evidence` on 2026-09-05, when gathering an event's changes with no
 text to show needed rules that module had no room for under the cap, and `media` on 2026-09-18,
-when forced colours joined print.
+when forced colours joined print, and `change` off `evidence` the same day, when the change
+block gained its registers.
 
 This text is minted, not escaped. It is the repository's own writing, not anything a legal
 document or a model produced, so it never passes through `markup.escape`; nothing in it is
@@ -61,6 +63,7 @@ from __future__ import annotations
 from typing import Final
 
 from emendrix.site_.style.base import BASE
+from emendrix.site_.style.change import CHANGE
 from emendrix.site_.style.evidence import EVIDENCE
 from emendrix.site_.style.fonts import FONTS_CSS
 from emendrix.site_.style.identity import IDENTITY
@@ -72,6 +75,8 @@ from emendrix.site_.style.tokens import TOKENS
 
 __all__ = ["STYLE"]
 
-STYLE: Final = FONTS_CSS + TOKENS + BASE + IDENTITY + TAGS + PAGES + TIMELINE + EVIDENCE + MEDIA
+STYLE: Final = (
+    FONTS_CSS + TOKENS + BASE + IDENTITY + TAGS + PAGES + TIMELINE + CHANGE + EVIDENCE + MEDIA
+)
 """The whole sheet, in cascade order. `build.py` writes exactly this, and `fingerprint`
 names the file from these bytes so a page never loads a cached sheet from another build."""

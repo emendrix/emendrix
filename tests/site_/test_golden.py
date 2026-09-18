@@ -231,7 +231,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 42874)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 48166)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -358,7 +358,18 @@ three tags and a link to the glossary, and the two identifiers with `v1` and `v2
 a `What changed` heading opens the changes and the index is labelled as changes in this
 version. The facts line naming the act's key and EUR-Lex, the count run-on and the citation
 mapping in the closing sentence are gone. The version's key stays the masthead's `id`, and no
-anchor, no other id and no measured figure moved."""
+anchor, no other id and no measured figure moved.
+
+5292 bytes heavier on 2026-09-18, later again, when one change started reading as the law's
+words and the machine's in two registers. Each of the nine blocks leads its heading with the
+coordinate and its title, then the kind as a sentence-case tag with a comma read aloud before
+it, where it opened on an uppercase pill and the characters; the characters open a facts line
+beside `Applies from:`. The sentences sit under the label `Explanation, written by a model and
+checked against the cited text`, each citation is marked as leaving the site for EUR-Lex and is
+followed by the line saying what `v1` and `v2` are, the evidence's summary says it is text from
+EUR-Lex, and its strip names both sides by role, this one dated, each code a small identifier.
+The index names each provision's title after its coordinate. No anchor, no id and no measured
+figure moved, and the stored text inside each `<details>` did not."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

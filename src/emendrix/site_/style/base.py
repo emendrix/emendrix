@@ -3,7 +3,7 @@
 Third in the cascade, after the faces and the tokens. What lives here is what a rule further
 down is allowed to assume: the box model, the body face and its feature settings, the heading
 scale, the shared small-print classes (`.muted`, `.small`, `.facts`, `.ident`, `.none`,
-`.quoted`) and the pills, each of which is minted by two or more of the page renderers. A class
+`.quoted`), each of which is minted by two or more of the page renderers. A class
 one page owns lives with that page instead, in `pages`, `timeline` or `evidence`.
 
 The body is the sans face with ligatures off and synthesis off: no two characters anywhere on
@@ -88,24 +88,6 @@ code, .id {
 .ident { font-size: var(--text-meta); color: var(--muted); }
 .quoted { color: var(--muted); }
 .none { color: var(--muted); }
-/* The pill's whole content is a boundary and a word, so its border is `--edge` and not the
-   hairline the rest of the sheet draws with. Tags, which share that rule, are in `tags`. */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  padding: .12rem .45rem;
-  border: 1px solid var(--edge);
-  border-radius: var(--radius);
-  background: var(--panel);
-  color: var(--fg);
-  font: 600 var(--text-label)/1.25 var(--sans);
-  letter-spacing: .02em;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.pill.ins { color: var(--kind-inserted); background: var(--kind-inserted-tint);
-            border-color: var(--kind-inserted); }
-.pill.disp { background: transparent; border-color: var(--alert); color: var(--alert); }
 /* A link that leaves the site says so with a drawn arrow; its words for a screen reader are
    in the markup (`outbound.py`). */
 .ext { white-space: nowrap; }

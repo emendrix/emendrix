@@ -17,7 +17,7 @@ from emendrix.site_.history import DateMention
 from emendrix.site_.inputs import ActSite
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.pages.act_dates import ANCHOR, LINK
-from emendrix.site_.pages.prose import pill
+from emendrix.site_.tags import kind_tag
 from emendrix.site_.urls import event_href, provision_href, up
 
 __all__ = ["ACT_DEPTH", "event_link", "sidebar"]
@@ -62,9 +62,9 @@ def _provisions(act: ActSite) -> list[Html]:
     lines = [Html("<h2>Touched provisions</h2>"), Html("<ul>")]
     for location in sorted(locations.values(), key=lambda item: item.sort_key):
         key = location.canonical
-        pills = join((pill(kind) for kind in kinds[key]), " ")
+        tags = join((kind_tag(kind) for kind in kinds[key]), " ")
         href = escape(up(ACT_DEPTH) + provision_href(act.slug, key))
-        lines.append(Html(f'<li><a href="{href}">{escape(location.human)}</a> {pills}</li>'))
+        lines.append(Html(f'<li><a href="{href}">{escape(location.human)}</a> {tags}</li>'))
     lines.append(Html("</ul>"))
     return lines
 

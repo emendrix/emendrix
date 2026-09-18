@@ -705,4 +705,30 @@ stand, and the only new ids are the methodology page's. Both feeds, `search-inde
 `sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the script, the fonts, `icon.svg` and `og.png`
 are byte-identical. The largest page grew by 332 bytes and `_LARGEST_PAGE` moved with it, and no
 measured figure moved.
+
+Read again on 2026-09-18, later again, when the word "disputed" left every page and one change
+started reading as the law's words and the machine's in two registers. All 23 HTML pages moved,
+every one for the stylesheet's new name, `style.58a4dd0c.css` replacing `style.85cf7e26.css`,
+which now carries the change block in a module of its own, the register label, the named sides
+of a diff, the definition link beside a tag and the kind tags in place of the pills. The version
+page's nine blocks lead their headings with the coordinate and the title, then the kind as a
+sentence-case tag, `Deferred` or `Modified`, with a comma read aloud before it; the characters
+moved out of the heading to a facts line reading `Applies from:`; the sentences sit under
+`Explanation, written by a model and checked against the cited text`; each citation is marked as
+leaving the site and followed by the line saying what `v1` and `v2` are; the evidence's summary
+reads `Text from EUR-Lex, before and after`, and its strip names `Previous version` and `this
+version, in force 24 April 2020` with each code beside it. The index names each provision's
+title after its coordinate, except Annex IX, whose title says only `ANNEX IX`. The nine provision
+pages head each step with the version's name in words linking that version's page, then the
+kind as a tag, and state the change in the same words. The methodology page's corpus rows say
+`Changes where sources differ` and name the three shapes by their tags, the loop note and the
+glossary drop the stored word, and the glossary says the applies line's two non-answers in the
+site's words. Both feeds moved in their summaries alone, `0 where sources differ` where they
+said `0 disputed`; **every feed `<id>` is unchanged**. The about page says anything the three
+sources differ on is shown as such. **No `id=` moved or went** on any page, checked file by file
+against the tree before it. `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
+`robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical. The largest
+page grew by 5292 bytes and `_LARGEST_PAGE` moved with it. **No measured figure moved**: the
+methodology page reads its numbers from the same report as before, and only the words around
+them changed.
 """

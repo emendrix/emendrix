@@ -24,16 +24,21 @@ from __future__ import annotations
 from collections import Counter
 from typing import Final
 
+from emendrix.core import ChangeType, SignalSet
 from emendrix.output import ChangelogEntry
 from emendrix.site_.dispute import dispute_shape
 from emendrix.site_.markup import Html, count, escape
 from emendrix.site_.untouched import UNTOUCHED_SENTENCE, all_textless, textless_words, untouched
 
 __all__ = [
+    "DEFINE_WORDS",
     "GLOSSARY_OF",
     "HELP_WORDS",
     "LIST_HELP_WORDS",
     "SHAPE_TAGS",
+    "SPOKEN_COMMA",
+    "differ_tag",
+    "kind_tag",
     "tag",
     "tags_help",
     "tally",
@@ -61,6 +66,7 @@ GLOSSARY_OF: Final[dict[str, str]] = {
     "diff-only": "unexplained",
     "all-explained": "unexplained",
     "unattributed": "amending-act",
+    **{f"kind-{kind.value.lower()}": kind.value.lower() for kind in ChangeType},
 }
 """Every tag kind this module or a page can print, and the glossary term that defines it.
 
@@ -73,10 +79,41 @@ HELP_WORDS: Final = "What these mean →"
 LIST_HELP_WORDS: Final = "What the tags on these versions mean →"
 """The same link, said once above a list of version cards rather than under each of them."""
 
+DEFINE_WORDS: Final = "What this means"
+"""The small link beside a sources-differ tag, to the one definition every such tag shares."""
+
+SPOKEN_COMMA: Final = Html('<span class="visually-hidden">,</span>')
+"""Read aloud before a kind tag in a heading and never drawn, so a screen reader names a change
+`Art. 1 Subject matter, Modified` rather than running the title into the kind."""
+
 
 def tag(kind: str, words: str) -> Html:
     """One tag. `kind` names its fixed look and must be a key of `GLOSSARY_OF`."""
     return Html(f'<span class="tag tag--{escape(kind)}">{escape(words)}</span>')
+
+
+def kind_tag(change_type: ChangeType) -> Html:
+    """The change kind the diff reported, in sentence case: `Modified`, never `MODIFIED`.
+
+    The words are the stored value's own, only cased for reading, and the look is the kind's
+    own colour with a glyph or a border style beside it, so the colour never says it alone.
+    """
+    value = change_type.value
+    return tag(f"kind-{value.lower()}", value[:1] + value[1:].lower())
+
+
+def differ_tag(signals: SignalSet, root: str) -> Html:
+    """The shape a change's sources differ in, as its tag, and the link to what that means.
+
+    The tag itself is never the link, being an adjective; the definition is the small link
+    beside it, from a page whose climb to the site root is `root`. Only for a change that
+    ships `disputed`, the one case `dispute_shape` has an answer for.
+    """
+    kind, words = SHAPE_TAGS[dispute_shape(signals)]
+    return Html(
+        f'{tag(kind, words)}<a class="define" href="{escape(root)}methodology/#sources-differ">'
+        f"{escape(DEFINE_WORDS)}</a>"
+    )
 
 
 def tags_help(root: str, words: str = HELP_WORDS) -> Html:
