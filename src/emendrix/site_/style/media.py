@@ -46,7 +46,7 @@ MEDIA: Final = """\
      both indexes do. Named with the same two classes the screen rule uses, since a shorter
      selector would not outrank it. */
   .quiet .chg > *:not(h3) { display: block; }
-  .strip, .disclaimer, .sidebar, .touched, .diff, .verbatim, .lbl, .loop li, .tag
+  .stat, .disclaimer, .sidebar, .touched, .diff, .verbatim, .lbl, .loop li, .tag
     { background: transparent; }
   /* Named again because a two-class or pseudo-class selector outranks a one-class one
      whatever the order: what these tints say is already written beside them, in the label

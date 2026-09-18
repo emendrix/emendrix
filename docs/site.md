@@ -15,9 +15,9 @@ uv run emendrix site build --out site/ \
 A directory of files, not a page:
 
 ```
-index.html            search, the latest amendments, and the one-line measured claim
+index.html            search, the latest versions, and the one measured claim after them
 404.html              the page a mistyped address gets, with a way back
-acts/index.html       every watched act, grouped by the domain the watchlist gives it
+acts/index.html       every watched act, by the sector the watchlist gives it, with a jump list
 acts/<celex>/         one page per act: the whole watched history, newest first, as cards
 acts/<celex>/<key>/   one page per version: its masthead, the changes and the verbatim text
 acts/<celex>/<prov>/  one page per touched provision: its history, newest first
@@ -26,7 +26,7 @@ amendments/<celex>/   one page per amending act: every watched act it amended, a
 dates/                every date in the amended texts that has not arrived yet, nearest first
 about/                who runs the site, how current the corpus is, and what it does here
 methodology/          the metrics table with its caveats, the loop, the glossary of the site's words
-feeds/                what the feeds are and where they are
+feeds/                what the feeds are and where they are, by sector
 feeds/all.xml         every amendment event, as Atom
 feeds/<celex>.xml     one act's events, for a reader who watches only that act
 robots.txt            what crawlers may read, and where the sitemap index is
@@ -361,7 +361,7 @@ modification annotations and no amending-act instructions, so only the text comp
 them. The commonest shape is the act as published set against its own first consolidation, where
 no amending act can exist yet. The site derives the class at build time from the committed
 document's own fields (`site_/attribution.py`) and says the fact rather than a cause: the front
-page leaves these events out of "Latest amendments" and counts the exclusion in words, the acts
+page leaves these events out of "Latest versions" and counts the exclusion in words, the acts
 index counts them apart from the amendment events and never answers a date fact with one, the act
 page keeps every one in place under the label "no amending act named" with one sentence saying
 what it means, and the feeds keep every one with the same fact leading the summary. Nothing is
@@ -411,6 +411,58 @@ itself. Home and the not-found page mark nothing.
 form stays wherever a machine reads it: every `<title>`, every feed title and entry, the
 `datetime` attribute and the committed changelogs. The JSON, the Markdown, the metrics and the
 code keep `event`, `instrument` and `disputed`.
+
+## Every list names things the way the pages it leads to do
+
+A list is a promise about the page each row opens, so a row names its object in the words that
+page's heading uses, and each object in a row has one link, to its own page.
+
+**Home** is the hero, then `Latest versions`, then the stat strip, then the lines counting what
+the list leaves out. Each card is led by its act, a caption in the act's colour and shape
+linking the act's page, and headed by the version's name, `Version in force 1 April 2025`,
+linking the version's page. Under it: `Made by` and the amending act's short name in plain
+text, the tally every version card prints, and the version pair as two small identifiers. One
+link to the glossary sits above the cards rather than beside each tag. The stat strip is the
+localisation figure in the sentence that says what it does not mean, set large beside it,
+**after** the list: a stranger meets the versions before a measure of the engine that found
+them, and the sentence, the number and the caveat are unchanged. It links the methodology
+page's `#measured` section. Versions past the cap and versions naming no amending act are
+counted in words, never dropped silently. The hero's act links use the long name where the
+watchlist gives one, the name the act's own heading uses.
+
+**An act page's index** lists `Touched provisions`, each with its kind tags and, where the title
+says more than the coordinate, the title of its newest change, the one the provision's own page
+is headed by; the sheet cuts it to one line and the markup carries it whole. Then `Versions`,
+each by its date, `detected` written out where no in-force date is known, and the short name of
+the amending act that made it. No version pair is printed there: an act of two hundred versions
+pays every byte of a row two hundred times. A version card whose code carries another date than
+its in-force date says so in one note, `Coded 20180101, the date EUR-Lex gives this consolidated
+text; in force from 31 December 2015.`, and a card whose two dates agree says nothing.
+
+**The acts roster opens with a jump list of its sectors**, each with its count, each link the
+fragment the sector heading has always carried, so no address moved. A row leads with the act's
+name, the label and key beside it one step down, the official title in the law's face cut
+visibly with `[…]`, then the dated words. **Sectors are decided in one place**,
+`site_/sectors.py`: the watchlist's `domain`, `Other` where none is declared and always last,
+then case-folded order. The acts roster and the feeds page both read it, so an act sits under
+the same sector on both.
+
+**The amending-acts roster** keeps its year headings and is not grouped by sector: one amending
+act can change acts in several sectors, and sector headings would list it twice. Each row names
+the amending act, its key, its subject (the recorded official title, cut visibly) and the
+watched acts it changed, each linking its page, three by name and the rest counted, then the
+date with its clock. The act names carry the sector.
+
+**The feeds page** lists the global feed, then one feed per act under the same sector headings,
+with one clause saying what Atom is. The note about the one reissue of 2026-09-05 follows the
+list. No feed file and no entry id moved.
+
+**Search says `No results` on screen** as a row in the panel that is not an option, as well as
+in the live region, so a sighted reader is not left looking at an empty box and the combobox
+still reports no options. Each result's kind is a word in sentence case, `Act`, `Provision` or
+`Amending act`, where the index holds a code; an alias reads `Act` like the name it stands for,
+and an identifier reads as whichever of the two it leads to. The index's `kind` values are
+unchanged.
 
 ## No backend, and that is the more interesting decision
 

@@ -218,6 +218,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
                 amenders(site.amending, entry),
                 level=2,
                 root=up(_DEPTH),
+                coded=site.version_dates.get((entry.act, entry.to_version)),
             )
         )
     if not act.entries:
@@ -229,7 +230,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     columns = (
         (
             Html('<div class="layout">'),
-            sidebar(act, mentions),
+            sidebar(act, mentions, site.amending),
             *timeline,
             *dates_section(act, mentions, up(_DEPTH)),
             Html("</div>"),

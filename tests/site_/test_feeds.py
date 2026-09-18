@@ -21,8 +21,10 @@ from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
-from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
+from emendrix.site_.feeds import feed_path, render_feed
 from emendrix.site_.inputs import SiteInputs, collect_site
+from emendrix.site_.pages.feeds_page import render_feeds_page
+from emendrix.site_.sectors import groups
 from emendrix.site_.titles import SUFFIX, event_title, event_words
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -173,6 +175,28 @@ def test_the_feeds_page_lists_the_global_feed_and_every_watched_act() -> None:
     assert 'href="../feeds/all.xml"' in rendered
     assert f'href="../feeds/{site.acts[0].slug}.xml"' in rendered
     assert "Not legal advice:" in rendered
+
+
+def test_the_feeds_page_lists_the_acts_under_the_roster_s_sectors() -> None:
+    """One grouping for the whole site: an act sits under the same sector heading here as on
+    the acts roster, because both read `sectors.groups`. The files do not move."""
+    site = _site()
+    act = site.acts[0]
+    grouped = site.model_copy(update={"acts": (act.model_copy(update={"domain": "Housing"}),)})
+    rendered = render_feeds_page(grouped)
+    assert [sector for sector, _ in groups(grouped.acts)] == ["Housing"]
+    assert rendered.index("<h2>Housing</h2>") < rendered.index(f'href="../feeds/{act.slug}.xml"')
+    assert rendered.index('href="../feeds/all.xml"') < rendered.index("<h2>Housing</h2>")
+    assert "<h2>Other</h2>" in render_feeds_page(site)
+    assert "Atom is a format feed readers subscribe to." in rendered
+
+
+def test_the_reissue_note_follows_the_list() -> None:
+    """The note is owed to a reader handed every entry twice; a reader arriving to subscribe
+    meets the feeds first."""
+    rendered = render_feeds_page(_site())
+    note = rendered.index("Moving this site to its own domain on 2026-09-05")
+    assert rendered.rindex('.xml"') < note
 
 
 def test_the_feeds_page_dates_the_one_reissue_and_promises_no_other() -> None:

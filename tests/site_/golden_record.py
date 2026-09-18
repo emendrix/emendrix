@@ -731,4 +731,28 @@ against the tree before it. `search-index.json`, `sitemap.xml`, `sitemap_index.x
 page grew by 5292 bytes and `_LARGEST_PAGE` moved with it. **No measured figure moved**: the
 methodology page reads its numbers from the same report as before, and only the words around
 them changed.
+
+Read again on 2026-09-18, later again, when every list started naming its items the way the
+pages they lead to do. All 23 HTML pages moved for the stylesheet's new name,
+`style.f2708177.css` replacing `style.58a4dd0c.css`, and the script's, `search.e4a10d8f.js`
+replacing `search.622da217.js`: search now shows `No results` in its panel as well as in the
+live region, and names each result's kind as a word. Five pages moved in their markup. The home
+page says `Latest versions`; its one card is led by a caption linking the Medical Devices
+Regulation's page and headed `Version in force 24 April 2020` linking the version's page, with
+`Made by Regulation (EU) 2020/561`, the tally and tags every version card prints, one glossary
+link above the list, and the version pair as two identifiers; the measured claim follows the
+list as `<aside class="stat">`, its sentence, number and caveat unchanged, linking
+`methodology/#measured`. The acts roster opens with a jump list of its three sectors, each link
+the id its heading already carried, and each row's dated words sit in a line of their own,
+`Newest amendment in force 24 April 2020 by Regulation (EU) 2020/561`, or `No amendment
+recorded`. The act page's index gives each touched article its title, except Annex IX, whose
+title says only `ANNEX IX`, and lists `Versions` by date and amending act where it listed
+`Amendments` by version pair. The amending-acts roster says `1 amending act` and gives its row
+the official title, cut visibly, and `Changed` with a link to the act. The feeds page lists the
+act feeds under the roster's sector headings, says in one sentence what Atom is, and moves the
+note about the 2026-09-05 reissue below the list, in the same words. **No `id=` moved or went**
+on any page, checked file by file against the tree before it. Both feeds, `search-index.json`,
+`sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the fonts, `icon.svg` and `og.png` are
+byte-identical, and every version and provision page moved in its two asset names alone.
+`_LARGEST_PAGE` did not move, and no measured figure moved.
 """

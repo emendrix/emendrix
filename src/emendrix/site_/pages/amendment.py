@@ -137,6 +137,7 @@ def render_amendment_page(site: SiteInputs, instrument: AmendingAct, amended: Am
                     amenders(site.amending, entry),
                     level=3,
                     root=up(_DEPTH),
+                    coded=site.version_dates.get((entry.act, entry.to_version)),
                     extra=_provisions(instrument, act, entry),
                     omit=instrument.key,
                 )

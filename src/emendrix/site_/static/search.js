@@ -17,7 +17,9 @@
 // tab all work because the row is an anchor before it is an option. The status
 // line is the only element on the page with live semantics; it is off-screen,
 // announces the count politely, and says nothing at all until a query is long
-// enough to be searched.
+// enough to be searched. A query that finds nothing is also said on screen, as a
+// row that is not an option, so the list stays closed to assistive technology
+// while a sighted reader is not left looking at nothing.
 "use strict";
 
 (function () {
@@ -69,6 +71,22 @@
     return at < 0 ? -1 : 2 + at / label.length;
   }
 
+  // What each kind of entry in the index is called on screen. An alias leads to
+  // an act, so it is called one. An identifier is an act's or an amending act's,
+  // and which one is read off where it leads.
+  var KIND = {
+    act: "Act",
+    alias: "Act",
+    celex: "Act",
+    provision: "Provision",
+    amending: "Amending act"
+  };
+
+  function kindWord(entry) {
+    if (entry.kind === "celex" && entry.url.indexOf("amendments/") === 0) return KIND.amending;
+    return KIND[entry.kind] || entry.kind;
+  }
+
   function counted(total) {
     if (total === 0) return "No results";
     return total === 1 ? "1 result" : total + " results";
@@ -88,17 +106,24 @@
       item.setAttribute("aria-selected", "false");
       var link = document.createElement("a");
       link.href = root + entry.url;
-      link.textContent = entry.label;
+      link.textContent = entry.label + " ";
       var kind = document.createElement("span");
       kind.className = "kind";
-      kind.textContent = entry.kind;
+      kind.textContent = kindWord(entry);
+      link.appendChild(kind);
       item.appendChild(link);
-      item.appendChild(kind);
       results.appendChild(item);
       options.push(item);
     });
-    results.hidden = matches.length === 0;
-    input.setAttribute("aria-expanded", results.hidden ? "false" : "true");
+    if (searched && matches.length === 0) {
+      var empty = document.createElement("li");
+      empty.className = "empty";
+      empty.setAttribute("role", "presentation");
+      empty.textContent = counted(0);
+      results.appendChild(empty);
+    }
+    results.hidden = !searched && matches.length === 0;
+    input.setAttribute("aria-expanded", matches.length === 0 ? "false" : "true");
     status.textContent = searched ? counted(matches.length) : "";
   }
 

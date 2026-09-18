@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 164528)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 177158)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -138,9 +138,19 @@ anchor or id moved.
 an uppercase pill. The whole of it is the sidebar's touched-provisions list: each of its 401
 coordinates carries its kind as `<span class="tag tag--kind-modified">Modified</span>` where it
 carried `<span class="pill">MODIFIED</span>`, about 24 bytes a coordinate. Nothing on the cards
-moved, and no anchor or id did."""
+moved, and no anchor or id did.
 
-_TOTAL_BYTES: Final = 3152150
+12 630 bytes heavier on 2026-09-18, later again, when the index started naming things the way
+their pages do. 12 439 of it is the touched-provisions list: each of the 401 coordinates now
+carries its newest change's title after its kind tags, `<span class="ttl">…</span>`, about 31
+bytes a coordinate, which the sheet cuts to one line. The other 191 are the versions list, which
+the index calls `Versions` where it said `Amendments`: each of the two hundred rows names its
+version by the date in words inside `<time>`, with `detected` written out because none of these
+events carries an in-force date, where it named the version pair and the ISO date beside it.
+No row names an amending act, these events being diff-only. Nothing on the cards moved, and no
+anchor or id did."""
+
+_TOTAL_BYTES: Final = 3164780
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -265,6 +275,11 @@ link to that version's page, where it was the clock and the ISO date, with its k
 and the older steps' link out names EUR-Lex's text; the annex every event touches is two hundred
 such steps, 27 237 of the total. These events are diff-only, so no register label, citation row
 or key to `v1` and `v2` is printed here, and no change carries a difference between its sources.
+No anchor or id moved and no measured figure moved with it.
+
+12 630 bytes heavier on 2026-09-18, later again, when lists started naming things the way their
+pages do. It is the index's 12 630 above and nothing else: the act page's index gained each
+provision's title and names its versions by date, and no version page or provision page moved.
 No anchor or id moved and no measured figure moved with it.
 """
 

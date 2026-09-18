@@ -76,7 +76,7 @@ from emendrix.site_.discovery import (
     sitemap_index_xml,
     sitemap_xml,
 )
-from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
+from emendrix.site_.feeds import feed_path, render_feed
 from emendrix.site_.fingerprint import FONTS, SCRIPT, STYLESHEET
 from emendrix.site_.history import histories
 from emendrix.site_.inputs import ActSite, SiteInputs
@@ -88,6 +88,7 @@ from emendrix.site_.pages.amendment import render_amendment_page
 from emendrix.site_.pages.amendments_index import render_amendments_index
 from emendrix.site_.pages.dates import render_dates
 from emendrix.site_.pages.event import render_event_page
+from emendrix.site_.pages.feeds_page import render_feeds_page
 from emendrix.site_.pages.home import render_home
 from emendrix.site_.pages.methodology import render_methodology
 from emendrix.site_.pages.not_found import render_not_found

@@ -4,13 +4,12 @@ The roster page. It answers "is this act watched at all?" and "has anything happ
 and it is the whole navigation for a reader without JavaScript, so it lists everything rather
 than the recent slice the home page shows.
 
-Grouping comes from the watchlist's `domain` field and nowhere else. Nothing here infers a
-subject area from an act's title or its identifier: an operator who has not said which group an
-act belongs in gets `Other`, which is honest, while a guess would be a claim this project has
-no evidence for. `Other` sorts last for the same reason it exists, that it is the absence of an
-answer rather than a group. Each group's heading carries the id an act page's neighbours line
-links to, so a reader following "all 12" from one act lands on the group rather than at the
-top of the roster.
+Grouping is `sectors.groups`, the one place that decides which sector an act sits in and in
+what order sectors come, so this roster and the feeds page cannot disagree about either. Each
+sector's heading carries the id an act page's neighbours line links to, so a reader following
+"all 12" from one act lands on the sector rather than at the top of the roster. A jump list of
+the sectors opens the page, each with its count, because forty rows under nine headings is a
+scroll a reader who knows their sector should not have to make.
 
 The page also says what the roster covers, in two places for two reasons. The lede says what
 kinds of act are on it, counted from words the composition root chose, because "67 acts" says
@@ -19,21 +18,21 @@ is `pitch.SCOPE`, and it is printed only while the kinds say it is true: it clai
 is watched, and the day one is, the sentence would be the site being wrong about itself.
 
 An act with no events says so in words. A row that simply had no date would read as a rendering
-bug; "no amendment recorded" is the actual state, and it is a real answer. It says what the
+bug; "No amendment recorded" is the actual state, and it is a real answer. It says what the
 record holds rather than what anyone has looked for: the site has no "last checked" date and
 `emendrix backfill` writes historical transitions, so nothing here is a claim about time. An
 act whose every recorded event names no amending act is a third state and gets its own words,
-because "no amendment recorded" would deny events the act's own page shows.
+because "No amendment recorded" would deny events the act's own page shows.
 
-A row is two lines: the name a reader knows the act by, with the label and the key beside it,
-then the official title and the dated words. The key joined the row on 2026-09-03, one step
-down in size and colour, because an identifier a reader pastes into EUR-Lex should be on the
-page that lists the acts and not only on each act's own.
+A row leads with the name a reader knows the act by, with the label and the key beside it one
+step down in size and colour: an identifier a reader pastes into EUR-Lex belongs on the page
+that lists the acts and not only on each act's own, but it is not the thing the row is about.
+Under the name, the official title, cut visibly, then the dated words.
 
-A row's date names its clock, in the words the event cards already use: "in force" is the
-corpus's own answer, "detected" is the day emendrix first saw the event. The rule is the one
-`home.py` states for its cards; this page once broke it by printing whichever date existed
-under "last amended", so a backfill's run day read as an amendment a reader had missed.
+A row's date names its clock, in the words every version card uses: "in force" is the corpus's
+own answer, "detected" is the day emendrix first saw the event. The rule is the one
+`clocks.event_date` states; this page once broke it by printing whichever date existed under
+"last amended", so a backfill's run day read as an amendment a reader had missed.
 """
 
 from __future__ import annotations
@@ -42,11 +41,13 @@ from emendrix.output.markdown import short_title
 from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
+from emendrix.site_.clocks import time_html
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pitch import SCOPE, scope_holds
+from emendrix.site_.sectors import groups
 from emendrix.site_.trail import ACTS_ROSTER
 from emendrix.site_.urls import act_href, depth_of, domain_anchor, up
 
@@ -56,12 +57,9 @@ _PATH = "acts/"
 _DEPTH = depth_of(_PATH)
 """`acts/index.html`: every internal link on this page climbs one directory first."""
 
-_UNGROUPED = "Other"
-"""Where an act with no declared domain lands, and the group that always sorts last."""
+_QUIET = "No amendment recorded"
 
-_QUIET = "no amendment recorded"
-
-_UNATTRIBUTED_ONLY = "events recorded, none names an amending act"
+_UNATTRIBUTED_ONLY = "Events recorded, none names an amending act"
 """The row's date fact when every recorded event names no amending act. Not `_QUIET`, because
 events were seen; not a date, because dating an "amended" fact by one of them would claim an
 amendment the pipeline did not find."""
@@ -85,40 +83,33 @@ def _kinds_clause(kinds: tuple[tuple[str, int], ...]) -> str:
     return ", " + " and ".join((", ".join(parts[:-1]), parts[-1]))
 
 
-def _groups(site: SiteInputs) -> list[tuple[str, list[ActSite]]]:
-    """The acts by domain, groups alphabetical with the ungrouped bucket last.
+def _sectors(grouped: list[tuple[str, list[ActSite]]]) -> Html:
+    """The jump list: every sector on the page, in the page's order, with how many acts it holds.
 
-    Insertion order inside a group is `collect_site`'s, which is already sorted by label, so
-    the whole page is a total order over one repository state and two builds agree by
-    construction.
+    Each link is the fragment the sector's heading carries, the address an act page's
+    neighbours line already uses, so the list adds no address of its own.
     """
-    grouped: dict[str, list[ActSite]] = {}
-    for act in site.acts:
-        grouped.setdefault(act.domain or _UNGROUPED, []).append(act)
-    return sorted(
-        grouped.items(), key=lambda item: (item[0] == _UNGROUPED, item[0].casefold(), item[0])
+    items = "".join(
+        f'<li><a href="#{escape(domain_anchor(domain))}">{escape(domain)}</a> '
+        f'<span class="small">{len(acts)}</span></li>'
+        for domain, acts in grouped
     )
+    return Html(f'<nav class="sectors" aria-label="Sectors"><ul>{items}</ul></nav>')
 
 
 def _row(site: SiteInputs, act: ActSite) -> Html:
-    """One act on two lines: what it is called, then what it is and when it last moved.
+    """One act: what it is called, then what the official text calls it and when it last moved.
 
-    The link carries the headline, and the identifiers follow it on the same line: the short
-    label when it differs, so a reader scanning for an initialism still finds the row, and the
-    key, which was not on this page at all before 2026-09-03. The key is what a reader checks
-    a row against and what they paste into EUR-Lex, so it belongs on every row, set one step
-    down rather than left to the act's own page.
+    The link carries the headline, and the identifiers follow it on the same line, one step
+    down: the short label when it differs, so a reader scanning for an initialism still finds
+    the row, and the key, which is what a reader checks a row against and pastes into EUR-Lex.
+    Which part sits on which line is the stylesheet's decision, so the markup keeps a literal
+    space between them: with no stylesheet at all the row still reads as words.
 
-    The second line carries what the official text calls the act and when it last moved. A
-    chain of five facts on one line reads as a column of separators; two lines let the eye run
-    down the names. Which of the three parts sit on which line is the stylesheet's decision,
-    so the markup keeps a literal space between them: with no stylesheet at all the row still
-    reads as words rather than as one run.
-
-    The official title stays cut here: this is a list, and a whole official title per row is a
-    wall of text. The instrument that made the newest amendment is named beside its date for
-    the opposite reason: it is the fact a reader scanning the roster for one act is looking
-    for, and one short name is a name rather than a wall.
+    The official title stays cut, with its visible marker: this is a list, and a whole official
+    title per row is a wall of text. The instrument that made the newest amendment is named
+    beside its date for the opposite reason: it is the fact a reader scanning the roster for
+    one act is looking for, and one short name is a name rather than a wall.
     """
     identity: list[Html] = []
     if act.headline != act.label:
@@ -128,17 +119,22 @@ def _row(site: SiteInputs, act: ActSite) -> Html:
     newest = act.newest_amendment
     if dated is not None and newest is not None:
         named = by_words(amenders(site.amending, newest))
-        last = f"{dated.words} {named}" if named else dated.words
+        last = Html(f"Newest amendment {dated.clock} {time_html(dated.on)}")
+        if named:
+            last = Html(f"{last} {escape(named)}")
     elif act.entries:
-        last = _UNATTRIBUTED_ONLY
+        last = escape(_UNATTRIBUTED_ONLY)
     else:
-        last = _QUIET
-    sub = [escape(short_title(act.entries[0].title))] if act.entries else []
-    sub.append(escape(last))
+        last = escape(_QUIET)
+    sub = (
+        Html(f' <span class="sub">{escape(short_title(act.entries[0].title))}</span>')
+        if act.entries
+        else Html("")
+    )
     return Html(
         f'<li><a href="{escape(up(_DEPTH) + act_href(act.slug))}">{escape(act.headline)}</a> '
-        f'<span class="ident">{join(identity, " · ")}</span> '
-        f'<span class="sub">{join(sub, " · ")}</span></li>'
+        f'<span class="ident">{join(identity, " · ")}</span>{sub} '
+        f'<span class="facts">{last}</span></li>'
     )
 
 
@@ -163,7 +159,10 @@ def render_acts_index(site: SiteInputs) -> Html:
     ]
     if scope_holds(site.kinds):
         lines.append(Html(f"<p>{escape(SCOPE)}</p>"))
-    for domain, acts in _groups(site):
+    grouped = groups(site.acts)
+    if grouped:
+        lines.append(_sectors(grouped))
+    for domain, acts in grouped:
         lines.append(Html(f'<h2 id="{escape(domain_anchor(domain))}">{escape(domain)}</h2>'))
         lines.append(Html('<ul class="roster">'))
         lines.extend(_row(site, act) for act in acts)

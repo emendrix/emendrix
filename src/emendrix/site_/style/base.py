@@ -27,7 +27,8 @@ not here:
   reason they are not here is stated here.
 
 The `#search` selectors are the script's contract with this sheet (`static/search.js` builds
-`input`, `ul.results`, `li.active`, `span.kind` and a `div.visually-hidden` inside `#search`);
+`input`, `ul.results`, `li.active`, `span.kind` inside each row's link, `li.empty` for a query
+that found nothing, and a `div.visually-hidden` inside `#search`);
 they are restyled here and never renamed. `.visually-hidden` is written as a reusable class
 rather than as a `#search` rule because what it does, keep an element in the accessibility
 tree and out of the layout, belongs to no one page family.
@@ -172,16 +173,18 @@ header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; 
   font-size: var(--text-meta);
 }
 #search .results:empty { display: none; }
-#search .results li { display: flex; align-items: baseline; gap: var(--space-2); }
-#search .results a { flex: 1 1 auto; padding: .45rem .75rem; color: var(--fg);
+#search .results a { display: flex; justify-content: space-between; align-items: baseline;
+                     gap: var(--space-3); padding: .45rem .75rem; color: var(--fg);
                      text-decoration: none; }
 /* One declaration for three states, so the row the arrow keys highlight and the row the
    pointer is over cannot come to look different from each other. */
 #search .results a:hover, #search .results a:focus,
 #search .results li.active a { background: var(--mark); }
 /* What kind of thing a result is, said once at the end of the row rather than under it. */
-.kind { padding-right: .75rem; font-size: var(--text-label); font-weight: 600;
-        color: var(--muted); }
+#search .results .kind { flex: none; font-size: var(--text-label); font-weight: 600;
+                        color: var(--muted); }
+/* A query that found nothing says so in the panel, as a row that is not an option. */
+#search .results .empty { padding: .45rem .75rem; color: var(--muted); }
 /* Narrow enough that the header wraps: the box takes its own row rather than the sliver
    left beside the navigation. */
 @media (max-width: 40rem) {

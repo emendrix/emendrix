@@ -34,7 +34,8 @@ about nothing.
 A feed's links are absolute by definition, so a feed cannot be written without knowing where the
 site will live. That is a build configuration fact rather than a state of the corpus, so
 `render_feed` refuses rather than inventing a base; the builder asks `site.site_url` first and
-writes no feed files without one, and `render_feeds_page` then says so in words.
+writes no feed files without one, and the feeds page (`pages/feeds_page.py`) then says so in
+words.
 """
 
 from __future__ import annotations
@@ -45,9 +46,7 @@ from emendrix import DISCLAIMER
 from emendrix.output import ChangelogEntry
 from emendrix.site_.amending import amenders
 from emendrix.site_.attribution import UNATTRIBUTED_FEED_LEAD, unattributed
-from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_dated
-from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.titles import event_words
@@ -57,27 +56,14 @@ from emendrix.site_.untouched import (
     all_textless,
     untouched,
 )
-from emendrix.site_.urls import act_href, depth_of, event_href, up
+from emendrix.site_.urls import act_href, event_href
 
-__all__ = ["feed_path", "feed_title", "render_feed", "render_feeds_page"]
-
-_PATH = "feeds/"
-_DEPTH = depth_of(_PATH)
-"""Where the feeds page lives and, derived from it, how far its internal links climb first.
-
-The feed XML files are addressed absolutely and are unaffected: this pair is `render_feeds_page`'s
-alone.
-"""
+__all__ = ["feed_path", "feed_title", "render_feed"]
 
 _MIDNIGHT = "T00:00:00Z"
 """What a date becomes in a feed. The corpus dates events to the day; this invents no more."""
 
 _GLOBAL_PATH = "feeds/all.xml"
-
-_UNCONFIGURED = (
-    "Feeds are not published for this build because no site URL was configured. A feed's "
-    "links have to be absolute, and a guessed address would be worse than none."
-)
 
 
 def feed_path(act: ActSite | None) -> str:
@@ -213,59 +199,3 @@ def render_feed(site: SiteInputs, act: ActSite | None) -> str:
         Html(""),
     ]
     return join(lines, "\n")
-
-
-def _feed_list(site: SiteInputs) -> list[Html]:
-    """The global feed and one line per act, each pointing at a file the builder writes.
-
-    Every watched act is listed, including one nothing has happened to yet: its feed is an
-    empty feed, which is the same real answer its page gives, and a link on the act page that
-    resolved to nothing would be worse.
-    """
-    root = up(_DEPTH)
-    lines = [
-        Html("<ul>"),
-        Html(
-            f'<li><a href="{escape(root + _GLOBAL_PATH)}">All watched acts</a> '
-            f'<span class="muted">every amendment event this site records</span></li>'
-        ),
-    ]
-    lines.extend(
-        Html(
-            f'<li><a href="{escape(root + feed_path(act))}">{escape(act.label)}</a> '
-            f'<span class="muted">{escape(act.act.key)}</span></li>'
-        )
-        for act in site.acts
-    )
-    lines.append(Html("</ul>"))
-    return lines
-
-
-def render_feeds_page(site: SiteInputs) -> Html:
-    """The short page that lists the feeds. Same inputs, same bytes, no clock, no network."""
-    lines = [
-        *page_masthead("prose", "About this site", "Feeds", _PATH),
-        Html(
-            '<p class="lede">One Atom feed per watched act, plus one carrying every act. An '
-            "entry appears when an amendment event is recorded and is identified by the "
-            "permanent link to that event. Moving this site to its own domain on 2026-09-05 "
-            "changed those links and reissued every entry once, so a reader subscribed before "
-            "that date saw every entry a second time. Nothing else reissues an entry.</p>"
-        ),
-    ]
-    if site.site_url:
-        lines.extend(_feed_list(site))
-    else:
-        lines.append(Html(f'<p class="none">{escape(_UNCONFIGURED)}</p>'))
-    return page(
-        title="Feeds — emendrix",
-        description=(
-            "Atom feeds of the amendment events emendrix records: one per watched act, plus a "
-            "global feed."
-        ),
-        body=join(lines, "\n"),
-        path=_PATH,
-        chrome=site.chrome,
-        section=_PATH,
-        feeds=((feed_path(None), feed_title(None)),),
-    )

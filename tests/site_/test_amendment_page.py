@@ -190,8 +190,37 @@ def test_the_index_lists_every_instrument_with_a_page_under_the_year_of_its_newe
     rendered = render_amendments_index(site)
     assert "<h1>Amending acts</h1>" in rendered
     assert "<title>Amending acts — emendrix</title>" in rendered
-    assert "1 instrument named by a committed event" in rendered
+    assert "1 amending act named by a committed event" in rendered
     assert "2 amendment events" in rendered
     assert f'<a href="../amendments/{AMENDMENT.key}/">' in rendered
     assert "<h2>2026</h2>" in rendered
     assert rendered.split('<ul class="roster">')[1].split("</ul>")[0].count("<li>") == 1
+
+
+def test_a_roster_row_names_the_subject_and_the_watched_acts_it_changed() -> None:
+    """The subject is the recorded official title, cut visibly; the acts are links to their
+    pages, and past three the rest are counted rather than named."""
+    site = _two_acts()
+    named = dict(site.amending)
+    named[AMENDMENT.key] = site.amending[AMENDMENT.key].model_copy(
+        update={"title": "Rule change, June " + "as agreed by every tenant, " * 8}
+    )
+    rendered = render_amendments_index(site.model_copy(update={"amending": named}))
+    row = rendered.split('<ul class="roster">')[1].split("</ul>")[0]
+    assert '<span class="sub">Rule change, June as agreed' in row
+    assert "[…]" in row
+    changed = row.split("Changed ")[1].split(" · in force ")[0]
+    assert " and " in changed
+    for act in site.acts:
+        assert f'<a href="../acts/{act.slug}/">{act.label}</a>' in changed
+
+
+def test_a_roster_row_counts_the_changed_acts_past_three() -> None:
+    first = attributed_entry()
+    entries = [first] + [
+        first.model_copy(update={"act": ActId(corpus="toy", key=f"other-{n}")}) for n in range(4)
+    ]
+    rendered = render_amendments_index(_site(*entries))
+    row = rendered.split('<ul class="roster">')[1].split("</ul>")[0]
+    assert row.count('<a href="../acts/') == 3
+    assert " and 2 more · " in row

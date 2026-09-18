@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import date
 from pathlib import Path
+from typing import get_args
+
+from site_entries import attributed_entry
 
 from emendrix.core import ProvisionLocation, ProvisionTree
 from emendrix.diff import compute_delta
@@ -14,7 +18,7 @@ from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_.assets import search_js
 from emendrix.site_.build import act_pages
 from emendrix.site_.inputs import collect_site
-from emendrix.site_.search_index import search_index_json
+from emendrix.site_.search_index import IndexKind, search_index_json
 from emendrix.watch.config import Watchlist
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -256,3 +260,35 @@ def test_the_script_moves_the_highlight_by_key() -> None:
     for key in ("ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"):
         assert f'event.key === "{key}"' in script, key
     assert "keyCode" not in script
+
+
+def test_a_search_that_finds_nothing_says_so_on_screen_as_well_as_aloud() -> None:
+    """The status region is off-screen, so a sighted reader once saw an empty panel. The words
+    are now a row in the list too, one that is not an option, so the arrow keys and the
+    combobox's expanded state still see no options at all."""
+    script = search_js()
+    assert 'empty.className = "empty"' in script
+    assert 'empty.setAttribute("role", "presentation")' in script
+    assert "empty.textContent = counted(0)" in script
+    assert "results.appendChild(empty)" in script
+    assert 'input.setAttribute("aria-expanded", matches.length === 0 ? "false" : "true")' in script
+
+
+def test_every_kind_the_index_emits_has_a_word_on_screen() -> None:
+    """Result kinds read as words, never as the index's codes. Read from the built index, so a
+    kind added there without a word here fails, and from the type, so a kind no fixture reaches
+    fails too."""
+    script = search_js()
+    table = script.split("var KIND = {")[1].split("};")[0]
+    words = dict(re.findall(r"(\w+): \"([^\"]+)\"", table))
+    assert set(words) == set(get_args(IndexKind))
+    site = collect_site(
+        generated_on=OBSERVED,
+        run=_run(),
+        report=Path("r.json"),
+        entries=(attributed_entry(),),
+    )
+    emitted = {entry["kind"] for entry in json.loads(search_index_json(site))["entries"]}
+    assert {"act", "provision", "amending"} <= emitted
+    assert emitted <= set(words)
+    assert all(word[:1].isupper() and word[1:] == word[1:].lower() for word in words.values())

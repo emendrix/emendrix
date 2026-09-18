@@ -76,6 +76,12 @@ TIMELINE: Final = """\
 .sidebar li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 .4rem;
               padding: .3rem 0; border-top: 1px solid var(--rule); }
 .sidebar li:first-child { border-top: 0; }
+/* A provision's title under its coordinate, one line, cut by the sheet and never the markup. */
+.sidebar li .ttl { flex: 1 1 100%; min-width: 0; overflow: hidden; white-space: nowrap;
+                   text-overflow: ellipsis; color: var(--muted); }
+.sidebar li > a + .tag { margin-left: auto; }
+.sidebar .versions a { font-weight: 600; }
+.sidebar .versions .small { flex: 1 1 100%; color: var(--muted); }
 @media (min-width: 60rem) {
   .layout {
     display: grid;

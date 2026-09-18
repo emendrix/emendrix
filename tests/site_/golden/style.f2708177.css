@@ -284,16 +284,18 @@ header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; 
   font-size: var(--text-meta);
 }
 #search .results:empty { display: none; }
-#search .results li { display: flex; align-items: baseline; gap: var(--space-2); }
-#search .results a { flex: 1 1 auto; padding: .45rem .75rem; color: var(--fg);
+#search .results a { display: flex; justify-content: space-between; align-items: baseline;
+                     gap: var(--space-3); padding: .45rem .75rem; color: var(--fg);
                      text-decoration: none; }
 /* One declaration for three states, so the row the arrow keys highlight and the row the
    pointer is over cannot come to look different from each other. */
 #search .results a:hover, #search .results a:focus,
 #search .results li.active a { background: var(--mark); }
 /* What kind of thing a result is, said once at the end of the row rather than under it. */
-.kind { padding-right: .75rem; font-size: var(--text-label); font-weight: 600;
-        color: var(--muted); }
+#search .results .kind { flex: none; font-size: var(--text-label); font-weight: 600;
+                        color: var(--muted); }
+/* A query that found nothing says so in the panel, as a row that is not an option. */
+#search .results .empty { padding: .45rem .75rem; color: var(--muted); }
 /* Narrow enough that the header wraps: the box takes its own row rather than the sliver
    left beside the navigation. */
 @media (max-width: 40rem) {
@@ -451,31 +453,48 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
 .hero { padding: var(--space-4) 0 var(--space-3); text-align: center; }
 .hero h1 { max-width: none; margin-bottom: var(--space-3); }
 .hero p { max-width: 42rem; margin: 0 auto var(--space-3); }
+/* Home: a version card led by its act, then the stat strip after the list. */
+.cardrow { padding: var(--space-3) 0 var(--space-4); border-top: 1px solid var(--rule); }
+.cardrow:last-of-type { border-bottom: 1px solid var(--rule); }
+.cardrow .caption { margin-bottom: .1rem; --type: var(--type-act); }
+.cardrow .caption::before { border-radius: 1px; }
+.cardrow h3 { font-size: var(--text-h3); margin: 0 0 var(--space-1); }
+.cardrow .made { font-size: var(--text-meta); color: var(--muted); margin-bottom: var(--space-2); }
+.cardrow .tally { display: inline; font-size: var(--text-meta); font-weight: 600;
+                  margin-right: var(--space-2); }
+.cardrow .tally + .tags { display: inline-flex; vertical-align: middle;
+                          margin-bottom: var(--space-2); }
+.cardrow .ident { display: block; font-size: var(--text-meta); color: var(--muted); margin: 0; }
 /* A measured figure, not a warning: a panel with a rule in the act colour, never the notice
    surface the disclaimer owns. */
-.strip {
-  margin: 0 auto var(--space-5);
-  padding: var(--space-3) var(--space-4);
+.stat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-1) var(--space-4);
+  align-items: baseline;
   max-width: 62ch;
   background: var(--panel);
   border: 1px solid var(--rule);
   border-top: 3px solid var(--type-act);
   border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-5) 0;
   font-size: var(--text-meta);
 }
-.strip strong { font-variant-numeric: tabular-nums; }
-.cardrow { padding: var(--space-3) 0 var(--space-4); border-top: 1px solid var(--rule); }
-.cardrow:last-of-type { border-bottom: 1px solid var(--rule); }
-.cardrow h3 { font-size: var(--text-h3); margin: 0 0 var(--space-1); }
-.cardrow .facts { margin: 0 0 var(--space-1); }
-.cardrow .ident { display: block; margin: 0; }
+.stat strong { font-size: var(--text-h2); line-height: 1; font-variant-numeric: tabular-nums; }
+/* Rosters (acts, amending acts): one row per object, name first, identifier demoted. */
+.sectors ul { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); list-style: none;
+              padding: 0; margin: 0 0 var(--space-5); font-size: var(--text-meta); }
+.sectors a { font-weight: 600; }
+.sectors .small { color: var(--muted); margin-left: .25rem; }
 .roster { list-style: none; margin: 0 0 var(--space-5); padding: 0; }
 .roster li { padding: var(--space-3) 0; border-top: 1px solid var(--rule); }
 .roster li:last-child { border-bottom: 1px solid var(--rule); }
-.roster > li > a { font-weight: 600; font-size: var(--text-body); }
+.roster > li > a:first-child { font-weight: 600; font-size: var(--text-body); }
 .roster .ident { margin-left: .35rem; }
 .roster .sub { display: block; max-width: 82ch; margin-top: .15rem; font-family: var(--serif);
                font-size: var(--text-meta); color: var(--fg); }
+.roster .facts { display: block; margin: .15rem 0 0; }
 td.result { white-space: nowrap; font-variant-numeric: tabular-nums; }
 td.meaning { color: var(--muted); }
 .caveats { margin: var(--space-3) 0 0; padding-left: 1.1rem; font-size: var(--text-meta);
@@ -531,6 +550,12 @@ td.meaning { color: var(--muted); }
 .sidebar li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 .4rem;
               padding: .3rem 0; border-top: 1px solid var(--rule); }
 .sidebar li:first-child { border-top: 0; }
+/* A provision's title under its coordinate, one line, cut by the sheet and never the markup. */
+.sidebar li .ttl { flex: 1 1 100%; min-width: 0; overflow: hidden; white-space: nowrap;
+                   text-overflow: ellipsis; color: var(--muted); }
+.sidebar li > a + .tag { margin-left: auto; }
+.sidebar .versions a { font-weight: 600; }
+.sidebar .versions .small { flex: 1 1 100%; color: var(--muted); }
 @media (min-width: 60rem) {
   .layout {
     display: grid;
@@ -925,7 +950,7 @@ th { font-size: var(--text-label); font-weight: 600; color: var(--muted); }
      both indexes do. Named with the same two classes the screen rule uses, since a shorter
      selector would not outrank it. */
   .quiet .chg > *:not(h3) { display: block; }
-  .strip, .disclaimer, .sidebar, .touched, .diff, .verbatim, .lbl, .loop li, .tag
+  .stat, .disclaimer, .sidebar, .touched, .diff, .verbatim, .lbl, .loop li, .tag
     { background: transparent; }
   /* Named again because a two-class or pseudo-class selector outranks a one-class one
      whatever the order: what these tints say is already written beside them, in the label
