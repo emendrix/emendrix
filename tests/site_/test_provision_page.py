@@ -223,7 +223,7 @@ def test_the_title_and_description_carry_the_human_coordinate() -> None:
     rendered, act, history = _page(_entry(1))
     human = history.location.human
     assert f"<title>{act.label} {human}: every consolidated version and what changed" in rendered
-    assert f'content="{human} of {act.headline}: 1 change across 1 event' in rendered
+    assert f'content="{human} of {act.headline}: 1 change across 1 version' in rendered
 
 
 def test_the_structured_data_names_the_provision_as_a_part_of_the_act() -> None:

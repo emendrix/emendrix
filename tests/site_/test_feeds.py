@@ -146,7 +146,8 @@ def _summary_of(entry: ChangelogEntry) -> tuple[str, str]:
 
 
 def test_a_summary_counts_the_units_with_no_text_beside_the_other_two() -> None:
-    """The split the count line prints, printed here too, so the two cannot disagree."""
+    """The same three-way split the version's tags print, read off the same stored counts, so
+    a feed and a page cannot give one version two different totals."""
     summary, _ = _summary_of(some_textless_entry())
     assert "5 provisions touched: 4 substantive, 0 date-only, 1 with no text, 1 disputed." in (
         summary

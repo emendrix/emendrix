@@ -23,7 +23,9 @@ Four names, in the order a heading prefers them:
 
 Why this module holds the markup as well as the words: an act's name is a fact with a link, a
 code and an optional title beside it, and writing that group in one place is what keeps the
-event page and the act page's card from naming one instrument two ways. `site_/inputs.py`
+version page, the act page's card and a provision's history from naming one instrument two
+ways. Every amending act is named one way and goes one place: its own page on this site, with
+EUR-Lex offered after it as a secondary link that says it leaves the site. `site_/inputs.py`
 imports `AmendingAct` and `collect_amending` from here rather than the other way round, so the
 dependency runs one way and this module never needs to know what `SiteInputs` is; the read
 helpers take the resolved mapping instead. That split is also what keeps `inputs.py` under the
@@ -40,17 +42,18 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix.output import ChangelogEntry
 from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.outbound import external
 from emendrix.site_.urls import amendment_href
 
 __all__ = [
     "AmendingAct",
     "amenders",
     "amending_keys",
-    "amending_lines",
-    "amending_links",
     "by_words",
     "collect_amending",
+    "made_by",
     "mentioned_keys",
+    "official_titles",
     "resolve",
 ]
 
@@ -188,63 +191,38 @@ def by_words(acts: tuple[AmendingAct, ...]) -> str:
     return f"by {names[0]} and {len(names) - 1} others"
 
 
-def _one_line(act: AmendingAct) -> Html:
-    """One instrument, named: the number linked where there is an address, then the code.
+def made_by(acts: tuple[AmendingAct, ...], root: str, *, verb: str) -> list[Html]:
+    """`Made by X`, each amending act named once and linking one place: its page on this site.
 
-    The label rides between them where the watchlist declares one, so a reader who knows the
-    instrument by its short name and a reader who knows it by its number both find it, and the
-    identifier closes the group either way.
-    """
-    name = escape(act.number) if act.number else escape(act.key)
-    code = Html(f" <code>{escape(act.key)}</code>") if act.number else Html("")
-    named = Html(f'<a href="{escape(act.eurlex_url)}">{name}</a>') if act.eurlex_url else Html(name)
-    label = Html(f' <span class="ttl">{escape(act.label)}</span>') if act.label else Html("")
-    return Html(f"{named}{label}{code}")
+    The name is the one a heading prefers, and it goes to the amending act's own page under
+    `root`, where the rest of its work is gathered. The key follows as a small identifier where
+    the name is not the key already, and EUR-Lex follows that as a secondary link, marked as
+    leaving the site, where the corpus gives the act an address. `verb` is `Made by` where the
+    line describes a version and `Amended by` where it describes one provision's step.
 
-
-def amending_lines(acts: tuple[AmendingAct, ...], *, full: bool) -> list[Html]:
-    """The instrument line, and on a full page the official titles under it.
-
-    Empty for an event that names none: what a page says then is `attribution.py`'s sentence,
-    and a line saying nothing above it would be a second answer to one question.
-
-    `full` is false on the act page's timeline card, where thirty events would print thirty
-    official titles and the reader is scanning dates. On the event's own page the titles are
-    printed verbatim, because the words a reader searched for are in them and this is the one
-    surface with room. They carry `.official`, the class the act page already prints its own
-    act's official title under: one kind of fact, one treatment.
+    Empty for an event that names none: what a page says then is `attribution.py`'s label and
+    sentence, and a line saying nothing above them would be a second answer to one question.
+    `root` climbs from the page to the site root and is computed by the caller, the convention
+    every cross-page link on the site follows.
     """
     if not acts:
         return []
-    lines = [
-        Html(f'<p class="amending">Amended by {join([_one_line(act) for act in acts], " · ")}</p>')
-    ]
-    if full:
-        lines.extend(
-            Html(f'<p class="official">{escape(act.title)}</p>') for act in acts if act.title
-        )
-    return lines
+    named: list[Html] = []
+    for act in acts:
+        href = escape(root + amendment_href(act.key))
+        parts = [Html(f'<a href="{href}">{escape(act.short)}</a>')]
+        if act.short != act.key:
+            parts.append(Html(f'<code class="id">{escape(act.key)}</code>'))
+        if act.eurlex_url:
+            parts.append(external(act.eurlex_url, "on EUR-Lex"))
+        named.append(join(parts, " "))
+    return [Html(f'<p class="amending">{escape(verb)} {join(named, " · ")}</p>')]
 
 
-def amending_links(acts: tuple[AmendingAct, ...], root: str) -> list[Html]:
-    """The instrument line with each name linking the instrument's own page under `root`.
+def official_titles(acts: tuple[AmendingAct, ...]) -> list[Html]:
+    """Each named act's recorded official title, verbatim and uncut, as the version's lede.
 
-    A provision page's form of `amending_lines`. A step there is one row of one coordinate's
-    history and the question it answers is which instrument moved it, so the name goes to that
-    instrument's page, where the rest of its work is; the official address is on the event page
-    one link away and is not printed again per step. The name and the identifier are the pair
-    `_one_line` prints, in that order, so no surface names one instrument two ways.
-
-    `root` is the prefix that climbs from the page to the site root, computed by the caller,
-    which is the convention every cross-page link on the site follows.
+    The title is the best summary of a version a page has: the words a reader searched for are
+    in it, and it is the law's own. A mention that carries no title prints no empty line.
     """
-    if not acts:
-        return []
-    named = [
-        Html(
-            f'<a href="{escape(root + amendment_href(act.key))}">{escape(act.short)}</a>'
-            + (f" <code>{escape(act.key)}</code>" if act.short != act.key else "")
-        )
-        for act in acts
-    ]
-    return [Html(f'<p class="amending">Amended by {join(named, " · ")}</p>')]
+    return [Html(f'<p class="lede">{escape(act.title)}</p>') for act in acts if act.title]

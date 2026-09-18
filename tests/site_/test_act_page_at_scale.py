@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 171792)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 154710)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -123,9 +123,18 @@ page opens with a masthead: a breadcrumb of three rungs, the last this act unlin
 naming the page an act, and the H1 it already had, now inside a sectioning header. The header
 bar marks `All acts` as the current section and says `Amending acts` where it said
 `Amendments`, and the title says the page holds every version and what changed rather than every
-amendment. Nothing on the two hundred cards moved, and no anchor or id did."""
+amendment. Nothing on the two hundred cards moved, and no anchor or id did.
 
-_TOTAL_BYTES: Final = 2658215
+17 082 bytes lighter on 2026-09-18, when a version in a list became a card of its own rather
+than the opening the version page shared. Each of the two hundred cards is about 85 bytes
+lighter: it is headed by the version's name in words as its one link, where it was headed by
+the ISO date and closed with a separate link to the evidence; its detection line and its six
+count run-on give way to a tally sentence and one tag, `No explanations for this version`;
+and its version pair is two small identifiers. The page gains a `Versions, newest first`
+heading and one link to the glossary above the cards. The card keeps `id="{entry.key}"`, and no
+anchor or id moved."""
+
+_TOTAL_BYTES: Final = 2772024
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -225,6 +234,17 @@ spread is the length of a month's name. Each of the 401 provision pages pays 385
 four-rung trail and a caption linking the act; a title the source gives joins the coordinate
 in the H1 rather than taking a line of its own. No anchor or id moved and no measured figure
 moved with it.
+
+113 809 bytes heavier on 2026-09-18, when a version page gained a masthead of its own and a
+version in a list became a card. The index gives back the 17 082 above. Each of the two hundred
+version pages pays 429 to 654: the masthead holding `Made by` and the amending act's page, a
+status sentence placing the version among the two hundred, a dates line in words, the tally and
+its glossary link, the two identifiers with `v1` and `v2` named once, the pager at the top as
+well as at the foot, each direction dated in words, and a `What changed` heading, less the
+facts line, the count run-on and the mapping sentence at the foot, which now only says where the
+entry is committed; the spread is where a version sits, the two ends of the history printing one
+pager link and not two. Each of the 401 provision pages pays 2, its description counting
+versions where it counted events. No anchor or id moved and no measured figure moved with it.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
@@ -344,6 +364,9 @@ def test_every_fragment_link_across_the_act_tree_resolves() -> None:
                 if not target
                 else f"{posixpath.normpath(posixpath.join(base, target))}/index.html"
             )
+            if not landing.startswith("acts/"):
+                # The glossary link leaves the act's tree; `test_methodology.py` resolves it.
+                continue
             assert landing in pages, f"{path}: {href}"
             assert f'id="{fragment}"' in pages[landing], f"{path}: {href}"
             checked += 1

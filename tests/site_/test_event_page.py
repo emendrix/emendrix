@@ -103,13 +103,11 @@ def test_the_page_names_its_act_and_links_back_to_the_timeline() -> None:
     assert f"<h1>{version_heading(entry)}</h1>" in rendered
     assert f"<h1>{site.acts[0].headline}</h1>" not in rendered
     assert f'href="../../../acts/{site.acts[0].slug}/"' in rendered
-    assert "every version of this act" in rendered
 
 
-def test_a_long_name_opens_the_facts_line_and_the_label_names_the_act_in_the_caption() -> None:
-    """The version's heading is its own, so the act is named twice under it instead: by the
-    short label in the caption, linked back to the act, and by the long form on the facts line
-    beside the key."""
+def test_the_label_names_the_act_in_the_caption_and_the_long_name_in_the_snippet() -> None:
+    """The version's heading is its own, so the act is named by its short label in the caption,
+    linked back to the act, and by its long form in the description a snippet is read under."""
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     act = site.acts[0].model_copy(update={"long_name": "House Rules of Flat 3B"})
@@ -119,7 +117,6 @@ def test_a_long_name_opens_the_facts_line_and_the_label_names_the_act_in_the_cap
         f'<p class="caption">Version · <a href="../../../acts/{act.slug}/">{act.label}</a></p>'
         in rendered
     )
-    assert f'<p class="facts">House Rules of Flat 3B · <code>{act.act.key}</code>' in rendered
     assert f"<title>{act.label}: " in rendered
     assert 'content="House Rules of Flat 3B: 4 provisions changed, detected' in rendered
 
@@ -163,8 +160,9 @@ def test_an_event_with_no_text_anywhere_says_that_in_its_title_and_its_descripti
     rendered = _page(textless_entry())
     assert "2 provisions named with no text to show" in rendered
     assert "2 provisions changed" not in rendered
-    assert "2 provisions touched — none with text to show" in rendered
-    assert "<strong>2 disputed</strong>" in rendered
+    assert '<p class="tally">2 provisions named with no text to show</p>' in rendered
+    assert '<span class="tag tag--differ">2 where sources differ</span>' in rendered
+    assert "without text</span>" not in rendered
     assert "Each provision, with the source that named it, from consolidated" in rendered
     assert "the verbatim text before and after" not in rendered
 
@@ -216,24 +214,27 @@ def test_a_disputed_change_says_what_disagreed_without_saying_disputed() -> None
     assert "disp-kind" not in rendered
 
 
-def test_the_count_line_says_what_the_disputed_count_is_a_count_of() -> None:
-    """One number covered three findings, and the clauses under it add back up to that number.
+def test_the_masthead_tags_say_what_the_sources_differ_count_is_a_count_of() -> None:
+    """One number covers three findings, and the tags after it add back up to that number.
 
-    They are read off the same function the site's published rates are counted by, so the line
-    under an event and the methodology table cannot say different things about one corpus.
+    They are read off the same function the site's published rates are counted by, so the tags
+    over a version and the methodology table cannot say different things about one corpus. A
+    shape with no change in it gets no tag, and the word the stored field is named by is not
+    printed.
     """
     rendered = _page(_disputed_entry())
-    assert (
-        "<strong>5 disputed</strong> (4 found in the text, 1 named with no text, "
-        "0 called different kinds)" in rendered
-    )
+    assert '<span class="tag tag--differ">5 where sources differ</span>' in rendered
+    assert '<span class="tag tag--differ-text">4 not in every list</span>' in rendered
+    assert '<span class="tag tag--differ-none">1 no text found</span>' in rendered
+    assert "tag--differ-kind" not in rendered
+    assert "5 disputed" not in rendered
 
 
-def test_an_event_with_nothing_disputed_gets_no_clause_about_shapes() -> None:
-    """There is no shape of a disagreement that did not happen, and one zero already says so."""
+def test_a_version_with_nothing_disputed_gets_no_sources_differ_tag() -> None:
+    """There is no shape of a disagreement that did not happen, and no zero is printed for it."""
     rendered = _page(diff_only_entry(_delta(), detected_on=OBSERVED))
-    assert "<strong>0 disputed</strong> ·" in rendered
-    assert "found in the text" not in rendered
+    assert "tag--differ" not in rendered
+    assert "where sources differ" not in rendered
 
 
 def test_the_changes_with_no_text_are_gathered_and_every_one_is_still_on_the_page() -> None:
@@ -262,9 +263,9 @@ def test_the_changes_with_no_text_are_gathered_and_every_one_is_still_on_the_pag
     assert section.count('<div class="chg') == 1
     # The heading counts rows and calls them provisions, which is only honest because the
     # corroborator appends one such change per top-level unit: the number it prints is the
-    # `with no text` figure the count line above states, reached by a different route.
+    # `without text` figure the tally above states, reached by a different route.
     assert entry.counts.textless == 1
-    assert "1 with no text" in rendered
+    assert '<span class="tag tag--no-text">1 without text</span>' in rendered
 
 
 def test_a_permalink_into_the_gathered_list_opens_the_row_it_names() -> None:
@@ -302,21 +303,16 @@ def test_the_outright_contradiction_about_kind_is_the_one_that_reads_as_an_alert
     rendered = _page(entry)
     assert rendered.count('<div class="chg disp-kind"') == 3
     assert "<strong>Sources disagree about the kind of change</strong>" in rendered
-    assert "<strong>3 disputed</strong> (0 found in the text, 0 named with no text, " in rendered
+    assert '<span class="tag tag--differ">3 where sources differ</span>' in rendered
+    assert '<span class="tag tag--differ-kind">3 kinds differ</span>' in rendered
     assert ".disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }" in STYLE
 
 
-def test_the_three_sources_explainer_is_said_once_above_the_first_disagreement() -> None:
+def test_the_tags_are_followed_by_one_link_to_the_glossary_that_defines_them() -> None:
+    """The three sources are explained once, on the methodology page, where every tag's word is
+    defined; the page links there once, under its tags, and never from a tag itself."""
     rendered = _page(_disputed_entry())
-    assert rendered.count("Emendrix checks every change against three independent sources") == 1
-    assert rendered.index("three independent sources") < rendered.index("Sources disagree")
-
-
-def test_a_page_with_no_disagreement_does_not_explain_one() -> None:
-    """An explanation of something absent from the page reads as a warning about it."""
-    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
-    assert entry.counts.disputed == 0
-    rendered = _page(entry)
+    assert rendered.count('<a href="../../../methodology/#glossary">What these mean →</a>') == 1
     assert "three independent sources" not in rendered
 
 
@@ -384,10 +380,10 @@ def _headed(**update: object) -> str:
     return _rendered(site, site.acts[0], site.acts[0].entries[0])
 
 
-def _gate_clause(**counts: int) -> str:
-    """The facts line of an explained event whose gate counts are patched to order."""
+def _gate_tags(**counts: int) -> list[str]:
+    """The tag words of an explained version whose gate counts are patched to order."""
     from emendrix.output.counts import EntryCounts
-    from emendrix.site_.pages.facts import event_facts
+    from emendrix.site_.tags import tally
 
     entry = diff_only_entry(_delta(), detected_on=OBSERVED).model_copy(
         update={
@@ -395,78 +391,106 @@ def _gate_clause(**counts: int) -> str:
             "counts": EntryCounts(touched=4, substantive=4, **counts),
         }
     )
-    return event_facts(entry)[-1].split(" · ")[-1].removesuffix("</p>")
-
-
-def test_the_facts_line_says_what_the_citation_check_found_in_the_readers_words() -> None:
-    """The same two fields the line has always carried, said as what they mean. A reader
-    arriving at an event page has never heard of a gate, and "shipped" is a pipeline's word."""
-    assert _gate_clause() == "every change carries an explanation that passed its citation check"
-    assert _gate_clause(unexplained=2) == "2 changes without an explanation"
-    assert _gate_clause(quoted=1) == (
-        "1 sentence quoting the provision verbatim where an explanation failed its citation check"
+    return re.findall(
+        r'<span class="tag tag--[a-z-]+">([^<]*)</span>', "".join(tally(entry, shapes=True))
     )
-    both = _gate_clause(unexplained=2, quoted=1)
-    assert both.startswith("2 changes without an explanation; 1 sentence quoting")
 
 
-def test_an_event_the_explain_stage_never_ran_for_keeps_its_own_sentence() -> None:
-    """A diff-only event has no explanations to have checked, which is a different answer
+def test_the_tags_say_what_the_citation_check_found_in_the_readers_words() -> None:
+    """The same two fields the summary has always carried, said as what they mean. A reader
+    arriving at a version page has never heard of a gate, and "shipped" is a pipeline's word.
+    Nothing unexplained and nothing quoted is one tag, not two absences."""
+    assert _gate_tags() == ["All explained"]
+    assert _gate_tags(unexplained=2) == ["2 without an explanation"]
+    assert _gate_tags(quoted=1) == ["1 quoted verbatim"]
+    assert _gate_tags(unexplained=2, quoted=1) == ["2 without an explanation", "1 quoted verbatim"]
+
+
+def test_a_version_the_explain_stage_never_ran_for_says_so_in_its_own_tag() -> None:
+    """A diff-only version has no explanations to have checked, which is a different answer
     from every explanation passing."""
     rendered = _headed(in_force=(date(2024, 6, 1),))
-    assert "the explain stage did not run for this event" in rendered
-    assert "passed its citation check" not in rendered
+    assert '<span class="tag tag--diff-only">No explanations for this version</span>' in rendered
+    assert "All explained" not in rendered
 
 
 def _card(**update: object) -> str:
-    """One event's opening as the act page's card prints it, its entry patched to order."""
-    from emendrix.site_.pages.facts import event_header
+    """One version as the act page's card prints it, its entry patched to order."""
+    from emendrix.site_.pages.version_card import version_card
 
     entry = diff_only_entry(_delta(), detected_on=OBSERVED).model_copy(update=update)
-    return "\n".join(event_header(entry, (), full=False))
+    return "\n".join(version_card(entry, "v/", (), level=2, root="../../"))
 
 
-def test_the_event_is_headed_by_its_date_and_the_dates_line_carries_the_other_clock() -> None:
+_FIRST_SEEN = (
+    '<p class="dates">First seen by emendrix on <time datetime="2026-08-09">9 August 2026</time>, '
+    "when it first read this version; that is not a legal date.</p>"
+)
+
+
+def test_the_version_is_headed_by_its_date_and_the_dates_line_carries_the_other_clock() -> None:
     """The H1 is the version by the date its own clock answers with, and the line below states
-    the clock the heading did not, never the one it did. The act page's card says the same
-    date in the ISO form, as its H2."""
+    the clock the heading did not, in words that say what that date is. The act page's card is
+    headed by the same name, as a link to this page."""
     rendered = _headed(in_force=(date(2024, 6, 1),))
     assert '<h1>Version in force <time datetime="2024-06-01">1 June 2024</time></h1>' in rendered
-    assert "<h2>in force" not in rendered
-    assert "<h2>in force 2024-06-01</h2>" in _card(in_force=(date(2024, 6, 1),))
-    assert '<p class="facts">detected 2026-08-09</p>' in rendered
+    assert (
+        '<h2><a href="v/">Version in force <time datetime="2024-06-01">1 June 2024</time></a></h2>'
+        in _card(in_force=(date(2024, 6, 1),))
+    )
+    assert _FIRST_SEEN in rendered
     # The title and the meta description name the dated words too, and should. What must not
     # happen is the line under the heading restating the heading.
-    assert '<p class="facts">in force' not in rendered
+    assert '<p class="dates">In force' not in rendered
 
 
-def test_an_event_with_no_in_force_date_is_headed_by_detection_and_says_so_below() -> None:
+def test_a_version_with_no_in_force_date_is_headed_by_detection_and_says_so_below() -> None:
     """The heading names the only clock there is, so the line below is what is missing rather
     than the detection date a second time."""
     rendered = _headed(in_force=())
     assert '<h1>Version detected <time datetime="2026-08-09">9 August 2026</time></h1>' in rendered
-    assert "<h2>detected 2026-08-09</h2>" in _card(in_force=())
-    assert '<p class="facts">in force not stated</p>' in rendered
-    assert '<p class="facts">detected' not in rendered
+    assert 'Version detected <time datetime="2026-08-09">9 August 2026</time></a></h2>' in _card(
+        in_force=()
+    )
+    assert '<p class="dates">In force date not stated.</p>' in rendered
+    assert "First seen by emendrix" not in rendered
 
 
-def test_an_event_with_several_in_force_dates_lists_them_all_below_its_heading() -> None:
+def test_a_version_with_several_in_force_dates_lists_them_all_below_its_heading() -> None:
     """The heading can name only one date. Where the corpus states more, the line below is the
     whole set, which is more than the heading said and so is not a repetition of it."""
     rendered = _headed(in_force=(date(2024, 6, 1), date(2025, 1, 2)))
     assert '<h1>Version in force <time datetime="2025-01-02">2 January 2025</time></h1>' in rendered
-    assert "<h2>in force 2025-01-02</h2>" in _card(in_force=(date(2024, 6, 1), date(2025, 1, 2)))
-    assert '<p class="facts">in force 2024-06-01, 2025-01-02 · detected 2026-08-09</p>' in rendered
+    assert (
+        '<p class="dates">In force <time datetime="2024-06-01">1 June 2024</time>, '
+        '<time datetime="2025-01-02">2 January 2025</time>. First seen by emendrix on' in rendered
+    )
 
 
-def test_the_event_page_names_the_act_and_the_version_pair_under_the_heading() -> None:
+def test_the_version_names_its_consolidated_versions_once_with_v1_and_v2_mapped() -> None:
+    """The identifiers are secondary, and the one place the citation mapping is stated."""
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
     site = _site(stated)
     rendered = _rendered(site, site.acts[0], site.acts[0].entries[0])
     assert f"<h1>{version_heading(stated)}</h1>" in rendered
     assert (
-        f'<p class="ident"><code>{stated.from_version} → {stated.to_version}</code></p>' in rendered
+        f'<p class="ident">Consolidated versions <code class="id">{stated.from_version}</code> → '
+        f'<code class="id">{stated.to_version}</code>. v1 is the previous version, v2 this one.</p>'
+        in rendered
+    )
+    assert rendered.count("v1 is the previous version") == 1
+
+
+def test_the_masthead_says_where_the_version_sits_in_the_act_s_history() -> None:
+    site = _timeline(3)
+    act = site.acts[0]
+    newest, middle, oldest = act.entries
+    label = act.label
+    assert f"Version 3 of 3 recorded for {label}, the newest." in _rendered(site, act, newest)
+    assert f"Version 2 of 3 recorded for {label}.</p>" in _rendered(site, act, middle)
+    assert f"Version 1 of 3 recorded for {label}, the oldest recorded." in (
+        _rendered(site, act, oldest)
     )
 
 
@@ -480,12 +504,16 @@ def test_the_title_and_the_description_name_the_instrument_that_made_the_event()
     assert "— emendrix</title>" in rendered
 
 
-def test_the_event_says_which_instrument_amended_it_with_the_identifier_beside_the_name() -> None:
-    """No number and no address for a key that is not a CELEX, so the key is the whole name."""
+def test_the_version_says_which_amending_act_made_it_and_links_its_page_here() -> None:
+    """No number and no address for a key that is not a CELEX, so the key is the whole name,
+    and it goes to the amending act's page on this site rather than off it."""
     from site_entries import attributed_entry
 
     rendered = _page(attributed_entry())
-    assert '<p class="amending">Amended by house-rules-amendment-1</p>' in rendered
+    assert (
+        '<p class="amending">Made by <a href="../../../amendments/house-rules-amendment-1/">'
+        "house-rules-amendment-1</a></p>" in rendered
+    )
 
 
 def test_the_recorded_official_title_is_printed_on_the_page_and_only_when_known() -> None:
@@ -494,7 +522,7 @@ def test_the_recorded_official_title_is_printed_on_the_page_and_only_when_known(
     from site_entries import attributed_entry
 
     entry = attributed_entry()
-    assert '<p class="official">Rule change, June</p>' in _page(entry)
+    assert '<p class="lede">Rule change, June</p>' in _page(entry)
     untitled = entry.model_copy(
         update={
             "changes": tuple(
@@ -517,7 +545,7 @@ def test_the_recorded_official_title_is_printed_on_the_page_and_only_when_known(
     )
     rendered = _page(untitled)
     assert '<p class="amending">' in rendered
-    assert '<p class="official">' not in rendered
+    assert '<p class="lede">' not in rendered
 
 
 def test_an_event_naming_no_amending_act_says_so_and_gains_no_line() -> None:
@@ -526,8 +554,12 @@ def test_an_event_naming_no_amending_act_says_so_and_gains_no_line() -> None:
 
     site = _site(unattributed_entry())
     rendered = _rendered(site, site.acts[0], site.acts[0].entries[0])
-    assert 'class="amending"' not in rendered
-    assert "no amending act named" in rendered
+    assert "Made by" not in rendered
+    assert (
+        '<p class="amending"><span class="tag tag--unattributed">no amending act named</span></p>'
+        in rendered
+    )
+    assert "No amending act is named for this event" in rendered
     label = site.acts[0].label
     assert f"<title>{label}: 4 provisions changed, detected 2026-08-09 — emendrix</title>" in (
         rendered
@@ -549,15 +581,25 @@ def _timeline(count: int) -> SiteInputs:
     return _site(*entries)
 
 
-def test_the_pager_links_the_events_either_side_and_names_each_by_its_date() -> None:
-    """Older is `prev`, the act's timeline running newest first; the dates say which is which."""
+def test_the_pager_links_the_versions_either_side_by_direction_with_each_date_under_it() -> None:
+    """Older is `prev`, the act's timeline running newest first, and the words now say so. The
+    pager is printed at the top and at the foot, and the two landmarks have different names."""
     site = _timeline(3)
     act = site.acts[0]
     newest, middle, oldest = act.entries
     rendered = _rendered(site, act, middle)
-    assert '<nav class="pager" aria-label="Events of this act">' in rendered
-    assert f'<a rel="prev" href="../{oldest.key}/">← detected 2026-08-10</a>' in rendered
-    assert f'<a rel="next" href="../{newest.key}/">detected 2026-08-12 →</a>' in rendered
+    assert '<nav class="pager" aria-label="Versions of this act (top)">' in rendered
+    assert '<nav class="pager pager--foot" aria-label="Versions of this act">' in rendered
+    older = (
+        f'<a rel="prev" href="../{oldest.key}/"><span>← Previous version</span> '
+        '<span class="small">detected <time datetime="2026-08-10">10 August 2026</time></span></a>'
+    )
+    newer = (
+        f'<a rel="next" href="../{newest.key}/"><span>Next version →</span> '
+        '<span class="small">detected <time datetime="2026-08-12">12 August 2026</time></span></a>'
+    )
+    assert rendered.count(older) == 2
+    assert rendered.count(newer) == 2
 
 
 def test_the_pager_is_half_missing_at_each_end_and_absent_for_a_lone_event() -> None:
@@ -569,7 +611,7 @@ def test_the_pager_is_half_missing_at_each_end_and_absent_for_a_lone_event() -> 
     assert 'rel="prev"' not in _rendered(site, act, oldest)
     assert 'rel="next"' in _rendered(site, act, oldest)
     lone = _timeline(1)
-    assert 'class="pager"' not in _rendered(lone, lone.acts[0], lone.acts[0].entries[0])
+    assert 'class="pager' not in _rendered(lone, lone.acts[0], lone.acts[0].entries[0])
 
 
 def test_the_event_links_the_page_of_every_instrument_it_names() -> None:
@@ -578,7 +620,7 @@ def test_the_event_links_the_page_of_every_instrument_it_names() -> None:
     rendered = _page(attributed_entry())
     assert (
         '<a href="../../../amendments/house-rules-amendment-1/">'
-        "Everything house-rules-amendment-1 amended</a>" in rendered
+        "Everything house-rules-amendment-1 changed</a>" in rendered
     )
 
 
@@ -588,12 +630,12 @@ def test_the_other_acts_an_instrument_amended_are_named_only_when_there_are_some
 
     entry = attributed_entry()
     site = _site(entry)
-    assert "also amended" not in _rendered(site, site.acts[0], site.acts[0].entries[0])
+    assert "also changed" not in _rendered(site, site.acts[0], site.acts[0].entries[0])
     second = ActId(corpus="toy", key="second-house")
     shared = _site(entry, entry.model_copy(update={"act": second}))
     here = next(act for act in shared.acts if act.act != second)
     rendered = _rendered(shared, here, here.entries[0])
-    assert f'also amended <a href="../../../acts/{second.key}/">{second.key}</a>' in rendered
+    assert f'also changed <a href="../../../acts/{second.key}/">{second.key}</a>' in rendered
 
 
 def test_an_event_naming_no_instrument_gains_no_link_line() -> None:
@@ -759,7 +801,8 @@ def test_a_change_that_moved_no_date_prints_no_dates_line() -> None:
     assert not any(
         emitted.change.dates_added or emitted.change.dates_removed for emitted in entry.changes
     )
-    assert 'class="dates"' not in _page(entry)
+    changes = _page(entry).split('<h2 class="section">What changed</h2>')[1]
+    assert 'class="dates"' not in changes
 
 
 def test_the_dates_line_states_dates_and_never_calls_one_a_deadline() -> None:
@@ -810,5 +853,8 @@ def test_a_build_with_no_public_changelog_home_prints_the_closing_path_plainly()
     """The honest answer where the repository is the operator's own: the stable path inside
     it, for a reader who has the checkout, and no host named."""
     rendered, path = _closed_with("")
-    assert f"is committed at <code>{path}</code>." in rendered
+    assert f'<p class="small muted">The full entry is committed at <code>{path}</code>.</p>' in (
+        rendered
+    )
+    assert "citation mapping" not in rendered
     assert "github.com" not in rendered

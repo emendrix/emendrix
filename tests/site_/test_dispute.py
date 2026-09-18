@@ -22,13 +22,13 @@ import pytest
 from emendrix.core import ChangeType, Signal, SignalObservation, SignalSet, SignalStatus
 from emendrix.site_.dispute import (
     SHAPE_CLASS,
-    SHAPE_WORDS,
     dispute_note,
     dispute_shape,
     named_by,
     quiet_heading,
 )
 from emendrix.site_.entries import DisputeShapes
+from emendrix.site_.tags import SHAPE_TAGS
 
 OBSERVED = SignalObservation(status=SignalStatus.OBSERVED)
 ABSENT = SignalObservation(status=SignalStatus.ABSENT)
@@ -201,7 +201,7 @@ def test_each_shape_gets_its_own_lead_and_they_all_open_on_the_same_three_words(
     against the shapes directly: the comparison saw it and another source did not list it, the
     comparison never saw it, and every source that looked named a different kind. Each still
     opens on `Sources disagree`, because grading a disagreement is not the same as softening
-    one, and the count line and the methodology table print the same three names.
+    one, and the tally's tags and the methodology table name the same three shapes.
     """
     kinds = (
         SignalObservation(status=SignalStatus.OBSERVED, change_types=(ChangeType.MODIFIED,)),
@@ -230,14 +230,14 @@ def test_no_lead_names_a_source_at_all_so_none_can_name_an_unavailable_one() -> 
 
 
 def test_the_shapes_the_page_words_are_the_shapes_the_rates_are_counted_by() -> None:
-    """One question, one answer: the badge, the count line and the published table agree.
+    """One question, one answer: the badge, the tally's tags and the published table agree.
 
     `DisputeShapes` is what the site publishes a rate for each of, and the two maps here are
     what a page prints for one change. A fourth shape added to that model would land in a page
     with no words and no class for it, which is what this catches.
     """
     fields = set(DisputeShapes.model_fields)
-    assert set(SHAPE_WORDS) == fields
+    assert set(SHAPE_TAGS) == fields
     assert set(SHAPE_CLASS) == fields
     assert len(set(SHAPE_CLASS.values())) == len(fields)
 

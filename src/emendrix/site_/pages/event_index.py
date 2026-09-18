@@ -68,10 +68,10 @@ def touched(
     inserted = sum(text.inserted for text in texts)
     deleted = sum(text.deleted for text in texts)
     lines = [
-        Html('<nav class="touched" aria-label="Provisions in this event">'),
+        Html('<nav class="touched" aria-label="Changes in this version">'),
         Html(
             f'<p class="small muted">{escape(count(len(entry.changes), "change"))} '
-            f"in this event · {escape(f'+{inserted:,} −{deleted:,}')} characters</p>"
+            f"in this version · {escape(f'+{inserted:,} −{deleted:,}')} characters</p>"
         ),
         Html("<ol>"),
     ]

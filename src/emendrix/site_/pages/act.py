@@ -8,7 +8,8 @@ renders one summary card per event through `act_event`:
   coordinate to that provision's own page, its whole history in one place, so it works with
   JavaScript switched off;
 - the timeline, newest first, because the question a reader arrives with is what changed
-  recently. A card states the event's facts and links to the event's own page, which is where
+  recently. A card (`pages/version_card.py`) names the version, what made it and its tally,
+  and its heading links the version's own page, which is where
   the per-change blocks and the verbatim text live: an act with a long history was shipping
   megabytes of collapsed evidence on this one page, and a timeline a phone can hold serves
   the same reader better than a fold it cannot;
@@ -38,9 +39,10 @@ from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.pages.act_dates import dates_section
-from emendrix.site_.pages.act_event import render_event_summary
 from emendrix.site_.pages.act_index import ACT_DEPTH, event_link, sidebar
+from emendrix.site_.pages.version_card import version_card
 from emendrix.site_.seo import act_json_ld
+from emendrix.site_.tags import LIST_HELP_WORDS, tags_help
 from emendrix.site_.trail import act_trail
 from emendrix.site_.urls import act_href, domain_anchor, up
 
@@ -65,6 +67,9 @@ _QUIET_FEED = "the feed above will carry the first event the day one is recorded
 no site URL mints no feed, and an act outside a corpus with published documents has no link."""
 
 _QUIET_TAIL = "A quiet act is a real answer."
+
+_VERSIONS = "Versions, newest first"
+"""The timeline's heading, so the page reads as an act, then its versions, then each version."""
 
 _RELATED = 6
 """How many neighbours the related line names before it stops and links the group instead."""
@@ -198,9 +203,22 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
 def render_act(site: SiteInputs, act: ActSite) -> Html:
     """One act's complete page. Deterministic: same inputs, same bytes, no clock, no network."""
     timeline: list[Html] = [Html('<section class="timeline">')]
+    if act.entries:
+        timeline.extend(
+            (
+                Html(f'<h2 class="section">{escape(_VERSIONS)}</h2>'),
+                tags_help(up(_DEPTH), LIST_HELP_WORDS),
+            )
+        )
     for entry in act.entries:
         timeline.extend(
-            render_event_summary(entry, event_link(act, entry), amenders(site.amending, entry))
+            version_card(
+                entry,
+                event_link(act, entry),
+                amenders(site.amending, entry),
+                level=2,
+                root=up(_DEPTH),
+            )
         )
     if not act.entries:
         timeline.append(Html(f'<p class="none">{escape(_quiet_words(act, site))}</p>'))

@@ -1,17 +1,14 @@
-"""One amendment event, whole, on its own address: the evidence the act page points at.
+"""One version, whole, on its own address: the evidence the act page points at.
 
-The act page decided this event belongs in the history and gave it a summary card; this is
-where a reader who followed that card, a search result or a feed's `<link rel="alternate">`
-actually lands. `act_event.render_event` renders the whole body, so this module supplies only
-what a page needs beyond its body: enough of the act's identity to know where the reader is,
-the shell, and the breadcrumb. The evidence blocks arrive from the builder rather than being
-rendered here, because this act's provision pages show the same blocks and a diff is expensive
-enough to be worth computing once.
+The act page lists this version as a card; this is where a reader who followed that card, a
+search result or a feed's `<link rel="alternate">` actually lands. The page is composed of three
+parts, each of which lives in its own module: the masthead that says what kind of page this is
+and names the version (`identity`), the version's own subject, facts and tally
+(`pages/version_masthead.py`), and its changes (`pages/act_event.render_event`). The evidence
+blocks arrive from the builder rather than being rendered here, because this act's provision
+pages show the same blocks and a diff is expensive enough to be worth computing once.
 
-The header names the act and links back to its timeline rather than repeating the act page's
-own header: the version's own date is this page's heading, and the version pair sits below it
-in the shared card opening, which prints no date heading of its own here. The act's full
-identity lives one link up where it has always been.
+The act's full identity lives one link up, which the trail and the caption both point at.
 """
 
 from __future__ import annotations
@@ -23,10 +20,10 @@ from emendrix.site_.clocks import event_date, version_heading
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
-from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.act_event import render_event
 from emendrix.site_.pages.texts import RenderedText
+from emendrix.site_.pages.version_masthead import pager, version_masthead
 from emendrix.site_.seo import event_json_ld
 from emendrix.site_.titles import event_title
 from emendrix.site_.trail import version_trail
@@ -36,7 +33,7 @@ from emendrix.site_.untouched import (
     textless_words,
     untouched,
 )
-from emendrix.site_.urls import act_href, amendment_href, entry_anchors, event_href, up
+from emendrix.site_.urls import act_href, entry_anchors, event_href, up
 
 __all__ = ["render_event_page"]
 
@@ -50,114 +47,15 @@ which `test_urls.py` pins.
 
 
 def _header(act: ActSite, entry: ChangelogEntry) -> list[Html]:
-    """Which version this is, which act it belongs to, and the way back to its timeline.
+    """The trail, the caption naming the page a version of its act, and the version's own H1.
 
-    The H1 is the version's own name, its date with its clock, and never the act's heading,
-    which is one link up: a version page that carried its act's H1 could not be told from the
-    act page by its heading. The caption names the page a version and links the act by its
-    short label, and the trail says the same thing as a path.
-
-    The facts line keeps the act's identifying facts under the masthead, minus what only makes
-    sense over a whole history: no feed link (the head advertises both feeds already, and the
-    timeline is where a reader decides to subscribe) and no "newest amendment" line, which is a
-    fact about the act rather than about this version. The act's long form opens it where the
-    watchlist gives one, since the caption names the act by its short label.
+    The H1 is the version's name, its date with its clock, and never the act's heading, which
+    is one link up: a version page that carried its act's H1 could not be told from the act
+    page by its heading.
     """
-    facts: list[Html] = []
-    if act.headline != act.label:
-        facts.append(escape(act.headline))
     act_page = escape(up(_DEPTH) + act_href(act.slug))
-    facts.extend(
-        (
-            Html(f"<code>{escape(act.act.key)}</code>"),
-            Html(f'<a href="{act_page}">every version of this act</a>'),
-        )
-    )
-    if act.eurlex_url:
-        facts.append(Html(f'<a class="nowrap" href="{escape(act.eurlex_url)}">on EUR-Lex</a>'))
     caption = Html(f'Version · <a href="{act_page}">{escape(act.label)}</a>')
-    return [
-        *masthead("version", version_trail(act, entry), _DEPTH, caption, version_heading(entry)),
-        Html(f'<p class="facts">{join(facts, " · ")}</p>'),
-    ]
-
-
-def _instruments(site: SiteInputs, act: ActSite, entry: ChangelogEntry) -> list[Html]:
-    """Where each named instrument's own page is, and which other watched acts it also moved.
-
-    One line per instrument, under the facts about the act: an event of a consolidation that
-    folded several is several lines rather than one, because "also amended" is a different set
-    for each of them. The act this page belongs to is left out of that set, it being the page
-    the reader is already on.
-
-    The inversion is computed here rather than carried in the inputs, for the reason every
-    other derived list on this site is: `SiteInputs` holds what was read off disk, and a
-    renderer is a pure function of it.
-    """
-    found = amended_by(site)
-    lines: list[Html] = []
-    for instrument in amenders(site.amending, entry):
-        facts = [
-            Html(
-                f'<a href="{escape(up(_DEPTH) + amendment_href(instrument.key))}">'
-                f"Everything {escape(instrument.short)} amended</a>"
-            )
-        ]
-        others: dict[str, ActSite] = {
-            other.act.key: other
-            for other, _ in found.get(instrument.key, ())
-            if other.act != act.act
-        }
-        if others:
-            named = [
-                Html(
-                    f'<a href="{escape(up(_DEPTH) + act_href(other.slug))}">'
-                    f"{escape(other.label)}</a>"
-                )
-                for other in others.values()
-            ]
-            facts.append(Html(f"also amended {join(named, ', ')}"))
-        lines.append(Html(f'<p class="facts">{join(facts, " · ")}</p>'))
-    return lines
-
-
-def _pager(act: ActSite, entry: ChangelogEntry) -> list[Html]:
-    """The events either side of this one in the act's own history, each named by its date.
-
-    The act's timeline runs newest first, so the *previous* event in reading order is the
-    older one and `rel="next"` points at the newer. Nothing on the page says "previous" or
-    "next" in words for that reason: each link carries the date it goes to, with the clock
-    that date answers to, so the direction is read rather than deduced. An event at either end
-    of the history is simply missing that half.
-    """
-    keys = [other.key for other in act.entries]
-    if entry.key not in keys:
-        return []
-    at = keys.index(entry.key)
-    older = act.entries[at + 1] if at + 1 < len(act.entries) else None
-    newer = act.entries[at - 1] if at > 0 else None
-    links: list[Html] = []
-    if older is not None:
-        links.append(
-            Html(
-                f'<a rel="prev" href="../{escape(older.key)}/">'
-                f"← {escape(event_date(older).words)}</a>"
-            )
-        )
-    if newer is not None:
-        links.append(
-            Html(
-                f'<a rel="next" href="../{escape(newer.key)}/">'
-                f"{escape(event_date(newer).words)} →</a>"
-            )
-        )
-    if not links:
-        return []
-    return [
-        Html('<nav class="pager" aria-label="Events of this act">'),
-        *links,
-        Html("</nav>"),
-    ]
+    return masthead("version", version_trail(act, entry), _DEPTH, caption, version_heading(entry))
 
 
 def render_event_page(
@@ -175,9 +73,9 @@ def render_event_page(
     body = join(
         (
             *_header(act, entry),
-            *_instruments(site, act, entry),
-            *render_event(entry, anchors, texts, acts, site.changelogs_url),
-            *_pager(act, entry),
+            *version_masthead(site, act, entry, acts),
+            *render_event(entry, anchors, texts, site.changelogs_url),
+            *pager(act, entry, top=False),
         ),
         "\n",
     )
@@ -185,7 +83,7 @@ def render_event_page(
     # made the change and the date with its clock. It is composed in `titles` because the feed
     # entry says the same thing and the two may not drift. The description says it again under
     # the act's long form, which is what a snippet is read under, and names the version the
-    # text below was read from; the version pair itself is under the H2 the body opens with.
+    # text below was read from.
     # It also says what the page holds, so a page with no text on it does not promise any.
     dated = event_date(entry)
     if untouched(entry):

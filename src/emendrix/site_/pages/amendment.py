@@ -12,13 +12,13 @@ declared label, and the recorded official title verbatim and uncut, which is the
 `pages/act.py` prints an act's own title in full on the act's own page and cuts it in a list.
 
 Each watched act gets a section headed by its name, linking its page, and inside it the
-timeline card of every event this instrument produced there, newest first. Under each card sit
-the coordinates that event's changes attribute to **this** instrument, and only those: one
-consolidation can fold several instruments, and listing an event's whole change set under each
-of them would credit every instrument with all of the work. The card is the shared one the act
-page uses, so an event cannot be stated one way here and another way there; the repetition of
-the instrument's own name in the card's "Amended by" line is the price of that, and it is worth
-paying, because the line also names the other instruments the same event folded in.
+card of every version this amending act made there, newest first, one heading level below the
+act's. Under each card sit the coordinates that version's changes attribute to **this** amending
+act, and only those: one consolidation can fold several, and listing a version's whole change
+set under each of them would credit every one with all of the work. The card is the shared one
+the act page uses, so a version cannot be stated one way here and another way there, except
+that it does not say "Made by" the act whose page this is. It still names any other amending
+act the same version folded in.
 """
 
 from __future__ import annotations
@@ -31,8 +31,10 @@ from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import Amended
 from emendrix.site_.markup import Html, count, escape, join
-from emendrix.site_.pages.act_event import render_event_summary
+from emendrix.site_.outbound import external
+from emendrix.site_.pages.version_card import version_card
 from emendrix.site_.seo import amendment_json_ld
+from emendrix.site_.tags import LIST_HELP_WORDS, tags_help
 from emendrix.site_.titles import SUFFIX
 from emendrix.site_.trail import amending_trail
 from emendrix.site_.urls import act_href, amendment_href, entry_anchors, event_href, up
@@ -47,7 +49,7 @@ and it is the same number as `depth_of(amendment_href(key))` for any key, which
 `test_urls.py` pins.
 """
 
-_ATTRIBUTED = "Attributed to this instrument:"
+_ATTRIBUTED = "Changes this amending act made:"
 """What the coordinate list under a card is, said before it rather than left to be inferred."""
 
 
@@ -78,17 +80,12 @@ def _header(instrument: AmendingAct, acts: int, events: int) -> list[Html]:
         lines.append(Html(f'<p class="official">{escape(instrument.title)}</p>'))
     facts = [
         Html(f"<code>{escape(instrument.key)}</code>"),
-        escape(f"{count(acts, 'watched act')} amended"),
-        escape(f"in {count(events, 'event')}"),
+        escape(f"Changed {count(acts, 'watched act')} in {count(events, 'version')}"),
     ]
     lines.append(Html(f'<p class="facts">{join(facts, " · ")}</p>'))
     if instrument.eurlex_url:
-        lines.append(
-            Html(
-                f'<p class="links"><a class="nowrap" href="{escape(instrument.eurlex_url)}">'
-                f"on EUR-Lex</a></p>"
-            )
-        )
+        lines.append(Html(f'<p class="links">{external(instrument.eurlex_url, "on EUR-Lex")}</p>'))
+    lines.append(tags_help(up(_DEPTH), LIST_HELP_WORDS))
     return lines
 
 
@@ -134,11 +131,14 @@ def render_amendment_page(site: SiteInputs, instrument: AmendingAct, amended: Am
         )
         for entry in entries:
             lines.extend(
-                render_event_summary(
+                version_card(
                     entry,
                     up(_DEPTH) + event_href(act.slug, entry.key),
                     amenders(site.amending, entry),
-                    _provisions(instrument, act, entry),
+                    level=3,
+                    root=up(_DEPTH),
+                    extra=_provisions(instrument, act, entry),
+                    omit=instrument.key,
                 )
             )
         lines.extend((Html("</div>"), Html("</section>")))
@@ -147,7 +147,7 @@ def render_amendment_page(site: SiteInputs, instrument: AmendingAct, amended: Am
     title = f"{named}{numbered}: every watched act it amended{SUFFIX}"
     description = (
         f"{named}{', ' + instrument.number if numbered else ''} amended "
-        f"{count(len(acts), 'watched act')} in {count(len(amended), 'event')}. Each event "
+        f"{count(len(acts), 'watched act')} in {count(len(amended), 'version')}. Each version "
         f"lists every changed provision with its text before and after."
     )
     return page(

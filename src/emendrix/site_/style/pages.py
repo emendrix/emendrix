@@ -1,11 +1,12 @@
 """The front door, the roster and the page that argues: rules no other page needs.
 
-Fourth in the cascade, so everything here may rely on `fonts`, `tokens` and `base` and nothing
-here is relied on by them. Three page families live in this module and none of their selectors
-escapes its own page: the home page's hero, credibility strip and event cards; the acts index's
-roster rows; the methodology page's table columns, caveat list and loop grid. The feeds page and
-the about page carry no rule of their own, because they are prose the shell already styles, and
-a class invented for them would be a class nothing else could reuse.
+Sixth in the cascade, so everything here may rely on `fonts`, `tokens`, `base` and `tags` and
+nothing here is relied on by them. Three page families live in this module and none of their
+selectors escapes its own page: the home page's hero, credibility strip and event cards; the
+acts index's roster rows; the methodology page's table columns, caveat list, loop grid and
+glossary. The feeds page and the about page carry no rule of their own, because they are prose
+the shell already styles, and a class invented for them would be a class nothing else could
+reuse.
 
 Two hierarchy decisions are worth stating, because they are what the markup was reshaped for
 on 2026-09-03:
@@ -73,4 +74,8 @@ td.meaning { color: var(--muted); }
 .loop li { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius);
            padding: .7rem .8rem; font-size: var(--text-meta); }
 .loop b { display: block; font-size: var(--text-label); font-weight: 600; color: var(--fg); }
+/* The glossary: one definition per term, each term addressable and lit when a link lands on it. */
+.glossary dt { font-weight: 600; margin-top: var(--space-3); scroll-margin-top: var(--space-3); }
+.glossary dt:target { background: var(--mark); box-shadow: 0 0 0 .3rem var(--mark); }
+.glossary dd { margin: .2rem 0 0; max-width: var(--measure); }
 """

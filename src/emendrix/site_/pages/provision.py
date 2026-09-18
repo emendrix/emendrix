@@ -30,7 +30,7 @@ history nobody asked for.
 
 from __future__ import annotations
 
-from emendrix.site_.amending import amenders, amending_links
+from emendrix.site_.amending import amenders, made_by
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date
@@ -141,7 +141,7 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
         ),
     ]
     acts = amenders(site.amending, entry)
-    lines.extend(amending_links(acts, up(_DEPTH)))
+    lines.extend(made_by(acts, up(_DEPTH), verb="Amended by"))
     if not acts and unattributed(entry):
         lines.append(Html(f'<p class="amending">{escape(UNATTRIBUTED_LABEL)}</p>'))
     lines.append(applies_line(change))
@@ -196,7 +196,7 @@ def render_provision_page(
     title = f"{act.label} {named}: every consolidated version and what changed{SUFFIX}"
     description = (
         f"{named} of {act.headline}: {count(len(history.steps), 'change')} across "
-        f"{count(events, 'event')}, newest first, with the verbatim text of the newest change "
+        f"{count(events, 'version')}, newest first, with the verbatim text of the newest change "
         "and a link to every earlier one."
     )
     return page(

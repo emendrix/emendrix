@@ -176,7 +176,7 @@ def some_textless_entry() -> ChangelogEntry:
     """The toy transition, with one unit the metadata named and the diff never saw.
 
     The mixed event: four units carrying text and one carrying none, which is what keeps the
-    count line's three-way split honest rather than only its all-or-nothing branch.
+    tally's three-way split honest rather than only its all-or-nothing branch.
     """
     delta = _toy_delta()
     named = [change.unit.canonical for change in delta.changes] + ["AR 9"]

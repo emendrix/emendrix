@@ -1,14 +1,10 @@
-"""One amendment event, wherever it appears: the facts, and on its own page the evidence.
+"""One version's changes, on the version's own page: the evidence the act page points at.
 
-The module that renders a single committed changelog entry, on the two surfaces the site gives
-one: `render_event_summary` is the card on the act page's timeline, the facts and a link to the
-evidence; `render_event` is the body of the event's own page, the same facts and then one block
-per provision that moved. Both open through one shared header, so the two surfaces cannot state
-one event differently, and the card keeps minting `id="{entry.key}"` on the act page because
-that fragment was published in every feed entry before the event had a page of its own. It sits
-beside `act.py` rather than inside it because the page and the card are two jobs: the page
-decides what an act's history looks like as a whole (header, index, order), this module decides
-how one event states what it did and what evidence it has.
+`render_event` is the body of a version's page below its masthead: one block per provision that
+moved, the index over them on a long page, and where the committed entry lives. The version's
+subject, its facts and its tally are `pages/version_masthead.py`, and the card a list prints is
+`pages/version_card.py`; this module decides how a version states what it changed and what
+evidence it has.
 
 The promises live here, each as a line of markup rather than a claim made elsewhere:
 
@@ -26,13 +22,6 @@ The promises live here, each as a line of markup rather than a claim made elsewh
   gather at the foot of the changes under a heading saying how many and what they are, each
   still a block with its own anchor, permalink and disagreement note, and each opens where it
   stands when a permalink names it. Nothing leaves the page or the counts for it.
-- **An event names the instrument that made it**, where a document names one: the number, the
-  declared short name, the identifier, and on the event's own page the recorded official title.
-- **An event no amending act is named for says so**, once, above its changes: a label and a
-  sentence about the corpus's records for the window, never a doubt about the text below.
-- **An event that touched nothing states the finding in words**: a sentence in place of the
-  count line, and a note saying how much was compared, because a row of zeros reads like a
-  counter that failed rather than a comparison that ran.
 - **Nothing here is cut.** A summary panel that merely points at the artifact can justify
   capping a sentence; this is where a reader arrives instead, so the sentences run in full and
   the before/after text sits one `<details>` away, uncut and verbatim.
@@ -52,15 +41,10 @@ The promises live here, each as a line of markup rather than a claim made elsewh
   it has always been, which costs a few lines rather than a screen.
 
 What a change block carries wherever it appears, the pill, the permalink, the sentences, the row
-of their citations and the dates its text moved, lives in `pages/prose.py`; the index a long page
-opens with lives in `pages/event_index.py`; and the event's whole opening, its heading, its
-identity, its dates and its counts, lives in `pages/facts.py`. All three were split off on
-2026-09-03, the first when naming the amending act pushed this module past the size cap, the
-second when the index gained a label and a column to stand in, and the third when the gate clause
-was rewritten for a reader and the cap was reached again; the opening followed the count line it
-ends on when gathering the changes with no text crossed the cap on 2026-09-05. Each is a
-statement this module places rather than composes. What is left is one event's changes: the block
-each sits in, and the order all of them come in.
+of their citations and the dates its text moved, lives in `pages/prose.py`, and the index a long
+page opens with lives in `pages/event_index.py`. Each is a statement this module places rather
+than composes. What is left is one version's changes: the block each sits in, and the order all
+of them come in.
 
 Wording is imported rather than restated wherever the changelog says the same thing
 (`output.markdown`): two renderings of one fact that describe it differently are how a caveat
@@ -76,7 +60,6 @@ from __future__ import annotations
 
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry
-from emendrix.site_.amending import AmendingAct
 from emendrix.site_.dispute import (
     QUIET_NOTE,
     SHAPE_CLASS,
@@ -88,28 +71,16 @@ from emendrix.site_.dispute import (
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
-from emendrix.site_.pages.facts import event_header
 from emendrix.site_.pages.prose import applies_line, dates_line, permalink, pill, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.sources import repo_file
 from emendrix.site_.urls import location_slug
 
-__all__ = ["render_event", "render_event_summary"]
+__all__ = ["render_event"]
 
-_THREE_SOURCES = (
-    "Emendrix checks every change against three independent sources. Where they disagree it "
-    "says so rather than picking a winner."
-)
-"""Said once above an event's first disagreement, and only on a page that has one.
-
-It lives here rather than on the act page because the disagreement notes it primes render
-here: since the evidence moved to the event's own page, a reader meets the sentence where the
-first "Sources disagree" marker actually is, and a page whose changes all agree does not get
-it, since an explanation of something not present reads as a warning about it.
-"""
-
-_SUMMARY_LINK = "Every change in this event, with the text before and after →"
-"""The card's one link. The words promise exactly what the event page holds and no more."""
+_WHAT_CHANGED = "What changed"
+"""The heading the changes open under, between the version's masthead and its first block, so the
+page reads as a version, then what changed, then each change."""
 
 _BACK_TO_TOP = "Back to top ↑"
 """The foot of a page that opened with an index, aimed at the id the skip link already targets.
@@ -212,46 +183,18 @@ def _quiet(rows: list[Html], number: int) -> list[Html]:
     ]
 
 
-def render_event_summary(
-    entry: ChangelogEntry,
-    href: str,
-    acts: tuple[AmendingAct, ...] = (),
-    extra: tuple[Html, ...] = (),
-) -> list[Html]:
-    """One event as a timeline card: the facts, and where the evidence is.
-
-    `href` is the event's own page, already climbed to the site root and back down by the
-    caller, the convention every cross-page link on the site follows. No verbatim text and no
-    per-change block reaches the card: the act page stays a timeline a phone can hold, and the
-    evidence sits one link away instead of one fold away.
-
-    `extra` is what a page has to add about this event that is true only on that page, closed
-    inside the same article so it is read as part of the event rather than after it. The
-    amending instrument's page is the one caller: on it, an event of a consolidation that
-    folded several instruments carries only the coordinates that name the instrument the page
-    is about, which is a fact about the pairing and not about the event.
-    """
-    return [
-        *event_header(entry, acts, full=False),
-        Html(f'<p><a href="{escape(href)}">{escape(_SUMMARY_LINK)}</a></p>'),
-        *extra,
-        Html("</article>"),
-    ]
-
-
 def render_event(
     entry: ChangelogEntry,
     anchors: tuple[str, ...],
     texts: tuple[RenderedText, ...],
-    acts: tuple[AmendingAct, ...] = (),
     changelogs_url: str = "",
 ) -> list[Html]:
     """One event's full body. `anchors` is one fragment per change, in the entry's own order.
 
     The anchors are computed once for the whole page and handed down, so the index over the
     changes and the blocks themselves point at the same fragments by construction rather than by
-    both sides running the same counter; `acts`, the instruments the entry names, and `texts`,
-    the evidence blocks, arrive resolved for the same reason. `texts` is positional too, one
+    both sides running the same counter; `texts`, the evidence blocks, arrive resolved for the
+    same reason. `texts` is positional too, one
     block per change, and is built once per entry however many pages show one of its changes.
 
     The changes with no text to show are moved to the foot of the list, which is the one place
@@ -263,9 +206,7 @@ def render_event(
     that repository lives on the operator's machine is never printed either way; the path it
     does print is the stable one inside the repository.
     """
-    lines = event_header(entry, acts, full=True, heading=False)
-    if any(emitted.change.disputed for emitted in entry.changes):
-        lines.append(Html(f'<p class="small muted">{escape(_THREE_SOURCES)}</p>'))
+    lines = [Html(f'<h2 class="section">{escape(_WHAT_CHANGED)}</h2>')] if entry.changes else []
     shown: list[Html] = []
     hushed: list[Html] = []
     quiet = 0
@@ -289,15 +230,5 @@ def render_event(
     else:
         lines.extend(blocks)
     committed = repo_file(f"{entry.act_dir}/CHANGELOG.md", changelogs_url)
-    lines.extend(
-        (
-            Html(
-                f'<p class="small muted">The full entry, with the citation mapping '
-                f"<code>v1</code> = <code>{escape(str(entry.from_version))}</code>, "
-                f"<code>v2</code> = <code>{escape(str(entry.to_version))}</code>, is committed "
-                f"at {committed}.</p>"
-            ),
-            Html("</article>"),
-        )
-    )
+    lines.append(Html(f'<p class="small muted">The full entry is committed at {committed}.</p>'))
     return lines

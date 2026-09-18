@@ -40,7 +40,7 @@ MEDIA: Final = """\
   .event-layout .touched { position: static; max-height: none; overflow: visible; }
   /* Navigation, like the header's: a permalink and a way back to the top of a sheet of paper
      are both instructions a printed page cannot carry out. */
-  .permalink, .backtop, .pager { display: none; }
+  .permalink, .backtop, .pager, .tags-help { display: none; }
   /* A row cannot be opened on paper either, so the gathered ones print whole, for the reason
      both indexes do. Named with the same two classes the screen rule uses, since a shorter
      selector would not outrank it. */
@@ -53,6 +53,7 @@ MEDIA: Final = """\
      fragment that brought a reader to one block. */
   .verbatim.ins, .verbatim.del, .pill.ins, .chg:target { background: transparent; }
   .chg:target, .chg.step:target > h2 { box-shadow: none; }
+  .glossary dt:target { background: transparent; box-shadow: none; }
   /* And the filled badge of the one shape that is an alert, for the same reason and by the
      same rule: what its tint says is written beside it, in the lead of the note under it. */
   .disp-kind .pill.disp { background: transparent; }
@@ -63,6 +64,7 @@ MEDIA: Final = """\
   /* The band is a tint and costs ink; its top rule is what says where the page begins. */
   .masthead { background: none; box-shadow: none; clip-path: none; border-image: none;
               border-top: 2px solid currentColor; }
+  .version-masthead { background: none; box-shadow: none; clip-path: none; }
 }
 /* Forced colours replace every colour with the reader's own, and a mark drawn only as a
    background vanishes. So every boundary that is the information becomes `CanvasText`, and the
@@ -70,11 +72,11 @@ MEDIA: Final = """\
 @media (forced-colors: active) {
   .pill, .tag, .elided, .disclaimer, .touched, .sidebar, .diff, .verbatim, #search input
     { border-color: CanvasText; }
-  .disp-kind .pill.disp { border-width: 2px; }
-  .timeline .event::before, .chg.step::before {
+  .disp-kind .pill.disp, .tag--differ-kind { border-width: 2px; }
+  .event::before, .chg.step::before {
     background: Canvas; border-color: CanvasText; forced-color-adjust: none;
   }
-  .timeline .event:first-of-type::before, .chg.step:first-of-type::before
+  .event:first-of-type::before, .chg.step:first-of-type::before
     { background: CanvasText; }
   .diff ins { text-decoration: underline; }
   .diff del { text-decoration: line-through; }

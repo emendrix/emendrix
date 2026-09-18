@@ -345,3 +345,54 @@ def test_a_build_with_no_committed_entries_states_that_instead_of_a_rate() -> No
     assert "there is nothing here to count" in rendered
     section = rendered.split("The corpus on this site, counted")[1].split("Measured, not")[0]
     assert "0.000" not in section
+
+
+# ------------------------------------------------------------------ headings and glossary
+
+
+def test_every_section_heading_carries_an_id_a_link_can_land_on() -> None:
+    """The home page's strip and every tag point into this page, so each section is addressable."""
+    import re
+
+    rendered = render_methodology(_corpus_site())
+    headings = re.findall(r"<h2([^>]*)>([^<]*)</h2>", rendered)
+    assert [attrs for attrs, _ in headings] == [
+        ' id="corpus"',
+        ' id="measured"',
+        ' id="how-it-works"',
+        ' id="built"',
+        ' id="glossary"',
+    ]
+    assert "<h2>" not in rendered
+
+
+def test_the_glossary_defines_every_term_under_its_own_id() -> None:
+    from emendrix.site_.pages.glossary import GLOSSARY
+
+    rendered = render_methodology(_site())
+    assert '<h2 id="glossary">Words this site uses</h2>' in rendered
+    for ident, term, _ in GLOSSARY:
+        assert f'<dt id="{ident}">{escape(term)}</dt>' in rendered, ident
+    assert '<dt id="sources-differ">' in rendered
+    assert len({ident for ident, _, _ in GLOSSARY}) == len(GLOSSARY)
+
+
+def test_every_tag_kind_the_site_prints_has_a_glossary_entry() -> None:
+    """A tag's words are defined where its list's link lands, or the link promises nothing."""
+    from emendrix.site_.pages.glossary import GLOSSARY
+    from emendrix.site_.tags import GLOSSARY_OF, SHAPE_TAGS
+
+    ids = {ident for ident, _, _ in GLOSSARY}
+    assert set(GLOSSARY_OF.values()) <= ids
+    kinds = {kind for kind, _ in SHAPE_TAGS.values()}
+    kinds |= {"substantive", "dates-only", "no-text", "differ", "unexplained", "quoted"}
+    kinds |= {"diff-only", "all-explained", "unattributed"}
+    assert kinds == set(GLOSSARY_OF)
+
+
+def test_the_glossary_says_the_table_counts_sources_differ_under_its_measure_s_name() -> None:
+    """The one place "disputed" stays on a page is the table row the README shares, and the
+    glossary says that row and the tag count the same thing."""
+    rendered = render_methodology(_site())
+    assert "Disputed changes (signals disagree)" in rendered
+    assert escape('"Disputed changes (signals disagree)"') in rendered.split('id="glossary"')[1]

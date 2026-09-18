@@ -74,7 +74,7 @@ def test_the_timeline_keeps_the_event_anchor_and_links_the_evidence() -> None:
     rendered = render_act(site, site.acts[0])
     assert f'id="{entry.key}"' in rendered
     assert f'href="../../{event_href(site.acts[0].slug, entry.key)}"' in rendered
-    assert "with the text before and after" in rendered
+    assert "Every change in this event" not in rendered
     assert '<div class="chg"' not in rendered
     assert 'class="verbatim"' not in rendered
     # The one fold left on the page is the sidebar's own, not a change's evidence.
@@ -289,7 +289,10 @@ def test_an_event_naming_no_amending_act_is_labelled_and_explained_once() -> Non
     states the same fact instead of falling silent over a timeline the reader can see."""
     site = _site(unattributed_entry())
     rendered = render_act(site, site.acts[0])
-    assert '<span class="pill">no amending act named</span>' in rendered
+    assert (
+        '<p class="amending"><span class="tag tag--unattributed">no amending act named</span> '
+        "In force date not stated.</p>" in rendered
+    )
     assert rendered.count("No amending act is named for this event") == 1
     assert "recorded events name no amending act" in rendered
     assert "newest amendment" not in rendered
@@ -303,7 +306,7 @@ def test_an_ordinary_event_carries_no_attribution_label() -> None:
     assert "No amending act is named" not in rendered
 
 
-def test_the_facts_line_counts_one_touched_provision_in_the_singular() -> None:
+def test_the_tally_counts_one_change_in_the_singular() -> None:
     """The counts are read off the entry, and one of them being 1 must still read as English."""
     delta = _delta()
     single = delta.model_copy(update={"changes": delta.changes[:1]})
@@ -311,8 +314,8 @@ def test_the_facts_line_counts_one_touched_provision_in_the_singular() -> None:
     assert entry.counts.touched == 1
     site = _site(entry)
     rendered = render_act(site, site.acts[0])
-    assert "1 provision touched" in rendered
-    assert "1 provisions" not in rendered
+    assert '<p class="tally">1 change in this version</p>' in rendered
+    assert "1 changes" not in rendered
 
 
 def test_a_diff_only_entry_says_the_stage_never_ran_once() -> None:
@@ -320,7 +323,7 @@ def test_a_diff_only_entry_says_the_stage_never_ran_once() -> None:
     site = _site(entry)
     rendered = render_act(site, site.acts[0])
     assert "No explanation shipped" not in rendered
-    assert rendered.count("the explain stage did not run for this event") == 1
+    assert rendered.count("No explanations for this version") == 1
 
 
 def test_the_header_states_the_act_before_it_offers_anything_to_do() -> None:
@@ -361,17 +364,25 @@ def test_an_act_with_nothing_to_link_gets_no_empty_line_of_links() -> None:
     assert 'class="links"' not in rendered
 
 
-def test_a_timeline_card_is_headed_by_its_date_with_the_version_pair_below() -> None:
-    """A reader arriving at a timeline is asking when, so the date is the heading and the
-    version pair sits one step down, where an identifier belongs. The `id` does not move."""
+def test_a_timeline_card_is_headed_by_the_linked_version_name_with_the_pair_below() -> None:
+    """A reader arriving at a timeline is asking when, so the version's name, its date with its
+    clock, is the heading and the one link to its page; the version pair sits below it, small,
+    where an identifier belongs. The `id` does not move: every feed entry points at it."""
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     rendered = render_act(site, site.acts[0])
+    href = f"../../{event_href(site.acts[0].slug, entry.key)}"
     assert f'<article class="event" id="{entry.key}">' in rendered
-    assert f"<h2>detected {OBSERVED.isoformat()}</h2>" in rendered
     assert (
-        f'<p class="ident"><code>{entry.from_version} → {entry.to_version}</code></p>' in rendered
+        f'<h2><a href="{href}">Version detected <time datetime="2026-08-09">9 August 2026</time>'
+        "</a></h2>" in rendered
     )
+    assert (
+        f'<p class="ident"><code class="id">{entry.from_version}</code> → '
+        f'<code class="id">{entry.to_version}</code></p>' in rendered
+    )
+    assert '<h2 class="section">Versions, newest first</h2>' in rendered
+    assert rendered.count("methodology/#glossary") == 1
 
 
 _SECTION = re.compile(r'<section class="dates-named" id="dates-named">(.*?)</section>', re.DOTALL)

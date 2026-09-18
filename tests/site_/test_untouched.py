@@ -65,11 +65,11 @@ def test_the_act_page_states_the_finding_in_words_not_as_a_row_of_zeros() -> Non
     assert "0 substantive" not in rendered
 
 
-def test_a_touched_event_keeps_its_count_line() -> None:
+def test_a_touched_event_keeps_its_tally() -> None:
     entry = unattributed_entry()
     rendered = render_act(_site(entry), _site(entry).acts[0])
     assert UNTOUCHED_SENTENCE not in rendered
-    assert "touched — " in rendered
+    assert '<p class="tally">4 changes in this version</p>' in rendered
 
 
 def test_the_feed_summary_states_the_finding_and_keeps_the_entry_whole() -> None:
@@ -95,25 +95,41 @@ def test_every_unit_with_no_text_is_the_class_and_a_mixed_event_is_not() -> None
 def test_the_note_says_what_named_the_rows_and_that_none_was_dropped() -> None:
     entry = textless_entry()
     note = textless_note(entry)
-    assert str(entry.counts.touched) in note
-    assert "marked disputed" in note and "none was dropped" in note
+    assert note.startswith(f"All {entry.counts.touched} provisions were named by a source")
+    assert "listed where sources differ" in note and "none was dropped" in note
+    assert "disputed" not in note
+
+
+def test_the_note_says_one_provision_as_one() -> None:
+    """`All 1 provision were` is the plural slip a count of one used to print."""
+    entry = textless_entry()
+    one = entry.model_copy(
+        update={"counts": entry.counts.model_copy(update={"touched": 1, "textless": 1})}
+    )
+    note = textless_note(one)
+    assert note.startswith("The one provision was named by a source other than the text")
+    assert "it was not dropped" in note
+    assert "All 1" not in note
 
 
 def test_the_act_page_keeps_both_counts_and_replaces_only_the_split() -> None:
     entry = textless_entry()
     rendered = render_act(_site(entry), _site(entry).acts[0])
-    assert "2 provisions touched — none with text to show" in rendered
-    assert "<strong>2 disputed</strong>" in rendered
+    assert '<p class="tally">2 provisions named with no text to show</p>' in rendered
+    assert '<span class="tag tag--differ">2 where sources differ</span>' in rendered
     assert textless_note(entry) in rendered
     assert "0 substantive" not in rendered
 
 
-def test_a_mixed_event_prints_the_split_three_ways() -> None:
-    """The clause is unconditional otherwise, `0 with no text` included: a line that changed
-    shape between two events is a line a reader has to read twice."""
+def test_a_mixed_event_tags_each_part_of_the_split_it_has_and_no_zero() -> None:
+    """Only the categories present are tags; the total is always printed, so nothing a zero
+    once said is lost."""
     entry = some_textless_entry()
     rendered = render_act(_site(entry), _site(entry).acts[0])
-    assert "5 provisions touched — 4 substantive, 0 date-only, 1 with no text" in rendered
+    assert '<p class="tally">5 changes in this version</p>' in rendered
+    assert '<span class="tag tag--substantive">4 substantive</span>' in rendered
+    assert '<span class="tag tag--no-text">1 without text</span>' in rendered
+    assert "dates only" not in rendered
     assert textless_note(entry) not in rendered
 
 

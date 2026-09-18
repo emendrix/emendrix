@@ -391,7 +391,7 @@ def test_forced_colours_keep_every_mark_that_was_drawn_as_a_background() -> None
     _, _, forced = STYLE.partition(_FORCED)
     assert forced
     assert "forced-color-adjust: none" in forced
-    for selector in (".timeline .event::before", ".chg.step::before", ".elided", ".pill"):
+    for selector in (".event::before", ".chg.step::before", ".elided", ".pill", ".tag"):
         assert selector in forced, selector
     assert "CanvasText" in forced
 

@@ -679,4 +679,30 @@ page moved with it. The not-found page has a masthead and no breadcrumb. **No `i
 feed or feed id moved**: both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
 `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical. The largest
 page grew by 464 bytes and `_LARGEST_PAGE` moved with it, and no measured figure moved.
+
+Read again on 2026-09-18, later still, when a version's own page stopped opening with the card
+its act's timeline prints. All 23 HTML pages moved, every one for the stylesheet's new name,
+`style.85cf7e26.css` replacing `style.981166cb.css`, which now carries the tag styles, the
+version masthead, the version card on a rail drawn per card, the pager, the outbound-link cue and
+the glossary. The version page opens with a masthead: `Made by` linking the amending act's page
+on this site, with EUR-Lex after it marked as leaving the site, the official title as a lede, a
+status sentence, the first-seen line in words, the tally `9 changes in this version` with its
+tags and a link to the glossary, and the two identifiers with `v1` and `v2` named once; a `What
+changed` heading follows, the index is labelled as changes in this version, and the closing
+sentence only says where the entry is committed. The MDR act page, the one with a history, heads
+its timeline `Versions, newest first`, links the glossary once, and prints its version as a card
+headed by its name in words as one link, where it was headed by the ISO date and closed with a
+link to the evidence; the six-part count line gave way to a tally and tags that print only the
+categories present, and "disputed" is no longer printed in any count. The amending act's page
+sets each card as an H3 under its act's H2, drops `Made by` the act the page is about, calls
+the coordinate list `Changes this amending act made:`, says `Changed 1 watched act in 1
+version`, and marks its EUR-Lex link as external. The nine provision pages say `Amended by`
+linking the amending act's page with EUR-Lex after it, and their descriptions count versions
+where they counted events. The methodology page gives every section heading an `id` and closes
+with the glossary, `Words this site uses`, one `id` per term. **No `id=` moved or went**: the act
+page's `<article class="event" id="{key}">`, the change anchors and the version page's key all
+stand, and the only new ids are the methodology page's. Both feeds, `search-index.json`,
+`sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the script, the fonts, `icon.svg` and `og.png`
+are byte-identical. The largest page grew by 332 bytes and `_LARGEST_PAGE` moved with it, and no
+measured figure moved.
 """

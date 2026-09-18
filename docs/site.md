@@ -19,13 +19,13 @@ index.html            search, the latest amendments, and the one-line measured c
 404.html              the page a mistyped address gets, with a way back
 acts/index.html       every watched act, grouped by the domain the watchlist gives it
 acts/<celex>/         one page per act: the whole watched history, newest first, as cards
-acts/<celex>/<key>/   one page per event: the changes and the verbatim text
+acts/<celex>/<key>/   one page per version: its masthead, the changes and the verbatim text
 acts/<celex>/<prov>/  one page per touched provision: its history, newest first
 amendments/           every amending act a committed event names, newest first, grouped by year
 amendments/<celex>/   one page per amending act: every watched act it amended, and what it moved
 dates/                every date in the amended texts that has not arrived yet, nearest first
 about/                who runs the site, how current the corpus is, and what it does here
-methodology/          the metrics table with its caveats, the loop, the disclaimer in full
+methodology/          the metrics table with its caveats, the loop, the glossary of the site's words
 feeds/                what the feeds are and where they are
 feeds/all.xml         every amendment event, as Atom
 feeds/<celex>.xml     one act's events, for a reader who watches only that act
@@ -109,9 +109,9 @@ behind is published instead; where a page has none, it carries no `<lastmod>`, w
 a quiet act already gets. Clamping to the build date would be worse than omitting: it would stamp
 every affected URL with the one value this file refuses to put in a `<lastmod>`.
 
-The evidence is on the site rather than behind a link out of it, one page per event. An act's
-own page is the timeline: a card per event with the facts and the anchor every feed entry was
-published under, linking the event's page. That split is a weight decision: an act's history is
+The evidence is on the site rather than behind a link out of it, one page per version. An act's
+own page is the timeline: a version card per version, headed by the version's name as its one
+link, carrying the anchor every feed entry was published under. That split is a weight decision: an act's history is
 unbounded and one backfilled act served 6.1 MB as a single page, where an event is bounded by
 one consolidation. The event page lists the provision changes with the sentences that survived
 the citation gate, and each change opens onto the before and after text in full: a **unified
@@ -167,32 +167,80 @@ from one of them is stated for each change under "applies from" and nowhere else
 line the section's own lede points at.
 
 Every event that does name an amending act says which one, on every surface it appears on: the
-event page's `<title>`, its description and a line under its heading, the act page's timeline
-card, the front page's card, the acts index row's date fact and the Atom entry's title and
-summary. The name is, in order, the short name the watchlist declares under `[[amending_acts]]`,
-the official number rendered from the CELEX by the numbering convention in force for its year
-(`Regulation (EU) 2020/561`, `Directive (EU) 2015/2366`), and the key itself. The CELEX stays
-beside the number wherever the number is shown, linked to the act on EUR-Lex, because the number
-is a reading of the identifier and the identifier is the fact; the reading happens at the CLI
-boundary, which is the one place in the site generator allowed to know what a CELEX is. Where a
-committed document recorded the instrument's official title, the event's own page prints it
-verbatim under the line, which is the one surface with room for one. None of it is authored: a
-label is a label, a number is mechanical and reversible, and a title is the corpus's own words.
+version page's `<title>`, its description and its masthead, the act page's version card, the
+front page's card, the acts index row's date fact and the Atom entry's title and summary. The
+name is, in order, the short name the watchlist declares under `[[amending_acts]]`, the official
+number rendered from the CELEX by the numbering convention in force for its year
+(`Regulation (EU) 2020/561`, `Directive (EU) 2015/2366`), and the key itself; the reading happens
+at the CLI boundary, which is the one place in the site generator allowed to know what a CELEX
+is. **An amending act is named one way and goes one place**: `Made by X` on a version and
+`Amended by X` on a provision's step both link X's page on this site, the key follows as a small
+identifier, and EUR-Lex follows that as a secondary link. Those EUR-Lex links, and the one on
+an amending act's own page, are written by `site_/outbound.py`, drawn with an arrow by the sheet
+and announced to a screen reader as external, so they cannot look like internal ones. Where a committed document
+recorded the amending act's official title, the version's masthead prints it verbatim as its
+lede and the version card prints it uncut under the line. None of it is authored: a label is a
+label, a number is mechanical and reversible, and a title is the corpus's own words.
 
 Each named instrument also has a page of its own under `/amendments/<celex>/`, addressed by the
 key the corpus published and never by a year-and-number reading of it, and every event page
 links it. It gathers what the event pages already carry, under the instrument instead of under
-the act: every watched act the instrument amended, the timeline card of each event it produced
-there, and under each card the coordinates that event's changes attribute to that instrument
-and to no other, because one consolidation can fold several instruments and crediting each of
-them with all of the work would be a claim the corpus did not make. Where an instrument moved
-more than one watched act, the event page names the others beside the link. `/amendments/` is
+the act: every watched act the instrument amended as an H2, the version card of each version it
+made there as an H3 under it, and under each card the coordinates that version's changes
+attribute to that instrument and to no other, because one consolidation can fold several
+instruments and crediting each of them with all of the work would be a claim the corpus did not
+make. A card on that page does not say `Made by` the act the page is about, and still names any
+other amending act the version folded in. Where an instrument moved more than one watched act,
+the version page names the others beside the link. `/amendments/` is
 the roster of every instrument a committed event names, newest first by the newest event each
 produced and grouped under the year of that date; an instrument the watchlist names a short
 name for and no event names gets no row and no page, a declared label not being evidence that
-anything happened. Every event page also carries the events either side of it in its own act's
-history, older first as `rel="prev"`, each named by its dated words, the timeline running
-newest first.
+anything happened. Every version page also carries the versions either side of it in its own
+act's history, as `← Previous version` and `Next version →` with each date under it, at the top
+of the page and again at its foot, as two landmarks named apart. The previous version is the
+older one and carries `rel="prev"`, the timeline running newest first.
+
+## A version: its masthead, its card, its tags
+
+A version appears in two places and is drawn two ways. **On its own page it has a masthead**
+(`pages/version_masthead.py`), under the page's H1 and before its changes, in the version's band:
+`Made by` the amending act, its official title as a readable serif lede, a status sentence
+placing the version in its act's history (`Version 5 of 5 recorded for FIC Regulation, the
+newest.`), a dates line that states the clock the heading did not name (`First seen by emendrix
+on 4 September 2026, …; that is not a legal date.`, or `In force date not stated.`), the tally,
+and, small and secondary, the two consolidated versions with `v1` and `v2` named once, which is
+the only place the citation mapping is printed. Then the `What changed` H2 opens the changes, so
+the page's outline reads version, what changed, each change. **In a list it is a card**
+(`pages/version_card.py`): the version's name as its one link, `Made by` and the official title,
+the tally without the per-shape tags, and the identifiers. The act's timeline sets the cards as
+H2 under a `Versions, newest first` H2; an amending act's page sets them as H3 under each act's
+H2. The two share the helpers that read the document's facts and never their markup, and the
+card keeps `id="{entry.key}"` on the act page, which every feed `<id>` points at.
+
+**A tally is a total and a few tags** (`site_/tags.py`). The total is always printed: `1 change
+in this version`, or the sentence for a version that touched nothing or has no text to show.
+Then only the categories present, each a `<span class="tag tag--{kind}">` that counts itself:
+`2 substantive`, `6 dates only`, `1 without text`, `3 where sources differ`, and on the
+version's own page one tag per shape the disagreements take (`Not in every list`, `No text
+found`, `Kinds differ`), then `1 without an explanation`, `2 quoted verbatim`, or one of `All
+explained` and `No explanations for this version`. A tag is an adjective, never a link, with one
+look per kind everywhere. A category with a count of zero is not printed: what a row of zeros
+once guaranteed is kept by printing the total always and the sources-differ tag whenever its
+count is not zero. Every number is the committed document's own. One link follows the tags,
+`What these mean →`, to the glossary.
+
+**The word "disputed" is not printed in a count any more.** It is the stored field's name and
+correct in the JSON, the metrics and the code, but on a page with a not-legal-advice disclaimer
+a newcomer reads it as a claim about the law, where it is a claim about emendrix's three
+sources. Pages say `where sources differ`. The methodology table keeps its row `Disputed changes
+(signals disagree)`, rendered from the evaluation report's own wording that the README shares,
+and the glossary says that row counts the same thing.
+
+**The glossary** is the last section of the methodology page, `Words this site uses`, at
+`methodology/#glossary`, with an `id` on every term (`#sources-differ`, `#dates-only`,
+`#first-seen`, …). Every tag kind the site prints maps to one of its terms, and a test holds the
+two together. Every other heading on that page carries an `id` too: `#corpus`, `#measured`,
+`#how-it-works`, `#built`.
 
 `/dates/` is the one forward-looking page on the site. Everything else here is a record of
 what has already happened; this gathers, across every watched act, the dates an amendment added

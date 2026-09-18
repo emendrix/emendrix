@@ -26,8 +26,8 @@ Four rules hold this module together:
   whose words the comparison read and quoted, which another source merely did not enumerate,
   is not the finding a provision nothing could show at all is, and neither is the outright
   contradiction about kind. Which shape a disagreement has is read from `entries`, the same
-  question the published rates are counted by, so the lead over one change, the count line
-  under an event and the methodology table cannot tell three stories. **Nothing is graded
+  question the published rates are counted by, so the lead over one change, the tally over
+  a version and the methodology table cannot tell three stories. **Nothing is graded
   away**: all three still ship, still carry `disputed` in the JSON and still count in the rate,
   and every lead still opens on the words `Sources disagree`.
 
@@ -51,7 +51,6 @@ __all__ = [
     "DISPUTED_GLOSS",
     "QUIET_NOTE",
     "SHAPE_CLASS",
-    "SHAPE_WORDS",
     "DisputeNote",
     "dispute_note",
     "dispute_shape",
@@ -126,20 +125,7 @@ _LEADS: Final[dict[str, str]] = {
 `dispute_note` reads its shape from `dispute_shape` and looks the lead up here rather than
 asking the verdicts a second question of its own. A second discriminator would be free to
 answer differently from the one the counts are taken with, which is exactly what a reader
-would then see: a lead about text over a change the count line filed under no text.
-"""
-
-SHAPE_WORDS: Final[dict[str, str]] = {
-    "evidenced": "found in the text",
-    "no_text": "named with no text",
-    "kind": "called different kinds",
-}
-"""Each shape as the count line prints it, in the order the methodology table lists them.
-
-A count line has one clause per shape and no room for a lead, so these are the short forms of
-the three leads above and say the same thing in the same order. The keys are `DisputeShapes`'
-own field names, which is asserted rather than assumed: a fourth shape added to that model
-without words here would print a count nobody could read.
+would then see: a lead about text over a change the tally filed under no text.
 """
 
 SHAPE_CLASS: Final[dict[str, str]] = {
@@ -149,8 +135,8 @@ SHAPE_CLASS: Final[dict[str, str]] = {
 }
 """Each shape as the class its change block carries, which is what grades the badge.
 
-Weight and border, never a hue: the sheet spends colour on diffs, disputes and links, and all
-three of these keep the one disputed colour. The class rides on the block, and the sheet
+Weight and border tell the three apart: the sheet spends colour only on meaning, and all three
+of these keep the one alert colour for now. The class rides on the block, and the sheet
 reaches the badge through it, because the pill itself is minted in `pages/prose.py` for four
 callers and three of them are not a change block at all. **It is the event page's block that
 carries it today**: a provision page states the same change with the same lead and the plain
@@ -182,8 +168,8 @@ def quiet_heading(number: int) -> str:
     `provision` is the honest noun here and not the looser one an index of change blocks needs.
     A change with no text is appended by `corroborate.merge` at the top-level unit, one per
     unit and never for a unit the comparison already produced a change for, so the rows are in
-    one-to-one correspondence with provisions and this number is the `with no text` figure on
-    the count line above, reached by counting the rows themselves.
+    one-to-one correspondence with provisions and this number is the `with no text` figure the
+    version's tally counts under `without text`, reached by counting the rows themselves.
     """
     return f"{count(number, 'provision')} {TEXTLESS_TAIL}"
 
@@ -192,7 +178,7 @@ def dispute_shape(signals: SignalSet) -> str:
     """Which of the three shapes one disagreement has, for a change that carries one.
 
     Delegated to the rollup that counts the published rates rather than decided again here.
-    Two answers to this question would let a badge, a count line and a table disagree with one
+    Two answers to this question would let a badge, a tally and a table disagree with one
     another about the same change, which is the whole failure this grading exists to end.
 
     Only meaningful for a change that ships `disputed`; on a set the sources agree about it

@@ -1,6 +1,6 @@
 """One change on a page, and the text it quotes: the block, the marks, the diff, the table.
 
-Sixth in the cascade, so a rule here may rely on everything before it and on `timeline` in
+Eighth in the cascade, so a rule here may rely on everything before it and on `timeline` in
 particular, which draws the pages these blocks sit on. This module dresses the evidence rather
 than the page: the change block and its heading, the in-page map of touched provisions and the
 sticky column it becomes, the permalink and the citation row, the applies and dates lines, the

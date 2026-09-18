@@ -1,22 +1,24 @@
-"""The act, event and amendment pages as documents: header lines, columns, rail and pager.
+"""The act, version and amending-act pages as documents: header lines, columns, rail and pager.
 
-Fifth in the cascade and split off `evidence` on 2026-09-05, when gathering an event's
-changes with no text to show needed rules that module had no room for. The seam is the one
-those two halves always had: this is the page a reader is standing on, its identifying lines,
-its two columns and the sticky index in the left one, the rail an act's history is drawn as,
-the card each event opens with, the list of dates an act's text names, and the pager at the
-foot of an event. What follows in `evidence` is one change and the text it quotes. A rule
-here may be relied on by one there and never the reverse, which is what makes the order a
-contract: the event page's `.event-layout` variant, the sticky column it puts the in-page
-index in, and the print block that undoes several of these all sit downstream.
+Seventh in the cascade and split off `evidence` on 2026-09-05, when gathering an event's changes
+with no text to show needed rules that module had no room for. The seam is the one those two
+halves always had: this is the page a reader is standing on, its identifying lines, its two
+columns and the sticky index in the left one, the rail an act's history is drawn as, the card
+each version is listed as, the masthead a version's own page opens with, the list of dates an
+act's text names, and the pager between versions. What follows in `evidence` is one change and
+the text it quotes. A rule here may be relied on by one there and never the reverse, which is
+what makes the order a contract: the event page's `.event-layout` variant, the sticky column it
+puts the in-page index in, and the print block that undoes several of these all sit downstream.
 
 Two decisions carry the look of these pages and are worth stating:
 
-- **The timeline is drawn as one.** A rail with a node per event, because an act's history is
-  genuinely a sequence and the heading of each entry is its date. The events carry no panel,
+- **The timeline is drawn as one.** A rail with a node per version, because an act's history is
+  genuinely a sequence and the heading of each entry is its date. The cards carry no panel,
   border or radius: identical rounded cards say the entries are alike, and what a reader needs
   to see is where each one sits on the line. Each node is a ring in the version colour and the
   newest is filled, drawn with a border as well as a fill so it survives forced colours.
+- **A version's own page is not a card.** Its masthead continues the version band under the
+  heading, so the page's subject reads as a masthead and never as one item of a list.
 - **An index is bounded by what it is at that width.** The act page's index is a `<details>`
   of hundreds of links and is capped everywhere; an event page's is a row of a few dozen that
   costs a few lines, so it is capped only at the width where it becomes a sticky column beside
@@ -88,44 +90,91 @@ TIMELINE: Final = """\
      narrow one, where a row of two links and a date does not fit. */
   .layout > .dates-named { grid-column: 2; }
 }
-/* The rail and its nodes: an act's history is a sequence, and the heading of each entry on
-   it is a date. Drawn in the sheet so the markup stays one article per event. */
+/* The rail and its nodes: an act's history is a sequence, and each version on it is a point.
+   Each card draws its own stretch of the line, so a heading above the cards stands clear of
+   it, and the last card's stretch is transparent so the line ends at the last node. */
 .timeline { min-width: 0; }
-.layout > .timeline, .amended > .timeline { padding-left: var(--space-5);
-                                            border-left: 2px solid var(--rule);
-                                            margin-left: .45rem; }
-.timeline .event { position: relative; padding-bottom: var(--space-5); }
-.timeline .event::before {
+.event {
+  position: relative;
+  min-width: 0;
+  padding: 0 0 var(--space-5) var(--space-5);
+  border-left: 2px solid var(--rule);
+  margin-left: .45rem;
+}
+.event:last-of-type { border-left-color: transparent; padding-bottom: var(--space-3); }
+.event::before {
   content: "";
   position: absolute;
+  left: calc(-.45rem - 1px);
   top: .45rem;
-  left: calc(-1 * var(--space-5) - .45rem - 1px);
   width: .9rem;
   height: .9rem;
   border-radius: 50%;
   border: 2px solid var(--type-version);
   background: var(--bg);
 }
-.timeline .event:first-of-type::before { background: var(--type-version); }
-.timeline .event:last-child { padding-bottom: 0; }
+.event:first-of-type::before { background: var(--type-version); }
+/* A card: the version's name as its one link, what made it, its tally, its identifiers. */
+.event > h2, .event > h3 { font-size: var(--text-h3); line-height: 1.3;
+                           margin: 0 0 var(--space-2); }
+.event .amending { font-size: var(--text-meta); color: var(--muted);
+                   margin-bottom: var(--space-1); }
+.event .amending a:first-of-type { font-weight: 600; }
+.event .subject {
+  font-family: var(--serif);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--fg);
+  max-width: 66ch;
+  margin-bottom: var(--space-2);
+}
+.event .tally, .version-masthead .tally { display: inline; font-weight: 600;
+                                          margin-right: var(--space-2); }
+.event .tally { font-size: var(--text-meta); }
+.event .tally + .tags, .version-masthead .tally + .tags { display: inline-flex;
+                                                          vertical-align: middle;
+                                                          margin-bottom: var(--space-2); }
+.event .ident, .event .note { font-size: var(--text-meta); color: var(--muted); margin-bottom: 0; }
+.event .note { margin-top: var(--space-1); }
+.timeline > .section { margin: 0 0 var(--space-2); }
+.timeline > .tags-help { margin-bottom: var(--space-4); }
 /* A phone gives the rail less of its narrow column. */
 @media (max-width: 40rem) {
-  .layout > .timeline, .amended > .timeline { padding-left: var(--space-4); }
-  .timeline .event::before { left: calc(-1 * var(--space-4) - .45rem - 1px); }
+  .event { padding-left: var(--space-4); }
 }
-.event { min-width: 0; }
-.event > h2 {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin: 0 0 var(--space-2);
-  padding: 0;
-  border: 0;
-  font-size: var(--text-h3);
-  line-height: 1.3;
+/* The version masthead continues the version band below the header: a page's subject, not a
+   card. Its facts sit in two groups, side by side where there is room. */
+.version-masthead {
+  margin-top: calc(-1 * var(--space-4));
+  padding: 0 0 var(--space-4);
+  margin-bottom: var(--space-5);
+  background: var(--type-version-tint);
+  border-bottom: 1px solid var(--rule);
+  border-image: conic-gradient(var(--rule) 0 0) 0 0 1 0 / 0 0 1px 0 / 0 100vmax;
+  box-shadow: 0 0 0 100vmax var(--type-version-tint);
+  clip-path: inset(0 -100vmax -1px);
 }
-.event > .ident { margin: 0 0 var(--space-1); }
+.version-masthead .amending { font-size: var(--text-body); margin-bottom: var(--space-2); }
+.version-masthead .amending a:first-of-type { font-weight: 600; }
+/* The amending act's official title: the law's words, so the serif, at a readable size. */
+.version-masthead .lede { font-family: var(--serif); font-size: var(--text-lede); line-height: 1.45;
+                          color: var(--fg); max-width: 66ch; }
+.version-masthead .dates { font-size: var(--text-meta); color: var(--muted); }
+.version-masthead .ident, .version-masthead .instruments { font-size: var(--text-meta);
+                                                           color: var(--muted); max-width: 80ch; }
+.version-masthead .ident code { color: var(--fg); }
+.summary {
+  display: grid;
+  gap: 0 var(--space-5);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--space-3);
+  margin-top: var(--space-3);
+}
+@media (min-width: 60rem) {
+  .summary { grid-template-columns: minmax(0, 1fr) minmax(0, 22rem); }
+}
+.status { font-weight: 600; margin-bottom: var(--space-2); }
+.section { font-size: var(--text-h2); margin: 0 0 var(--space-4); }
 /* Every date one act's text names, under its timeline. A list rather than a table: a row is a
    date and the two places it can be checked, and columns would promise a structure the corpus
    never wrote. The date leads each row in tabular figures, so the dates scan as a column
@@ -140,17 +189,20 @@ TIMELINE: Final = """\
 .amended { margin: var(--space-5) 0 0; }
 .amended > h2 a { text-decoration: none; }
 .amended > h2 a:hover { text-decoration: underline; }
-/* The events either side of this one, at the foot of an event page. Each link carries the date
-   it goes to, so the row is read rather than decoded; they sit at the two ends of the line so
-   the direction is visible before the words are. */
-.pager { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-3);
-         margin: var(--space-5) 0 0; padding-top: var(--space-3);
-         border-top: 1px solid var(--rule); font-size: var(--text-meta); line-height: 1.4; }
-/* The instrument that made the event, under the version pair it produced. Set small, like the
-   other fact lines, the instrument's link in the semibold, and the declared short name in the
-   text colour beside the muted number, so the label and the identifier read as two kinds of
-   name without a slant the site does not load. */
+/* The versions either side of this one: quiet local navigation, each direction's date under
+   it, at the two ends of the line so the direction is visible before the words are. */
+.pager { display: flex; justify-content: space-between; gap: var(--space-3);
+         font-size: var(--text-meta); line-height: 1.4; margin: 0; }
+.pager a { text-decoration: none; display: inline-flex; flex-direction: column; }
+.pager a > span:first-child { text-decoration: underline; text-underline-offset: .18em;
+                              text-decoration-thickness: 1px; }
+.pager a:hover > span:first-child { text-decoration-thickness: 2px; }
+.pager .small { color: var(--muted); }
+.pager [rel="next"] { margin-left: auto; text-align: right; }
+.pager--foot { border-top: 1px solid var(--rule); padding-top: var(--space-3);
+               margin-top: var(--space-5); }
+/* The amending act that made a version or moved a provision: its name in the semibold, its
+   identifier small beside it, EUR-Lex last. */
 .amending { font-size: var(--text-meta); color: var(--muted); margin-bottom: var(--space-1); }
 .amending a:first-of-type { font-weight: 600; }
-.amending .ttl { color: var(--fg); }
 """

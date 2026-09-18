@@ -49,7 +49,7 @@ __all__ = [
 ]
 
 UNTOUCHED_SENTENCE: Final = "No provisions differ between these two versions."
-"""The finding as a sentence, for the act page's facts line and the feed summary."""
+"""The finding as a sentence, for a version's tally and the feed summary."""
 
 UNTOUCHED_CARD: Final = "no provisions differ"
 """The same finding as a card fragment, where the other cards say `3 provisions`."""
@@ -66,7 +66,7 @@ def untouched(entry: ChangelogEntry) -> bool:
 
 
 def untouched_note(entry: ChangelogEntry) -> str:
-    """The sentence under the facts line, saying what was compared and what the zero means.
+    """The sentence under the tally, saying what was compared and what the zero means.
 
     The unit count is the evidence that the comparison really walked the document rather than
     coming up empty. The last clause is the scoping caveat: the corpus did publish two
@@ -84,9 +84,8 @@ def untouched_note(entry: ChangelogEntry) -> str:
 TEXTLESS_CLAUSE: Final = "none with text to show"
 """The three-way split, for an event none of whose units carries any text.
 
-It stands where `0 substantive, 0 date-only, 36 with no text` would, on the count line and in
-the feed summary. The counts either side of it, touched and disputed, are printed as they
-always were.
+It stands where `0 substantive, 0 date-only, 36 with no text` would, in the feed summary. The
+counts either side of it, touched and disputed, are printed as they always were.
 """
 
 TEXTLESS_TAIL: Final = "named with no text to show"
@@ -115,16 +114,22 @@ def textless_words(entry: ChangelogEntry) -> str:
 
 
 def textless_note(entry: ChangelogEntry) -> str:
-    """The sentence under the facts line, naming what the rows are and what became of them.
+    """The sentence under the tally, naming what the rows are and what became of them.
 
     The point a reader needs is that the rows exist and that the one source carrying text is
     not among the sources that named them, which is why there is nothing to open. The closing
-    clause is the same promise the disputed mark carries everywhere else on this site: a
-    disagreement ships as one and is never dropped.
+    clause is the promise every "sources differ" tag on this site carries: a disagreement ships
+    as one and is never dropped. One provision is said as one, not as "all 1".
     """
-    named = count(entry.counts.touched, "provision")
+    touched = entry.counts.touched
+    if touched == 1:
+        return (
+            "The one provision was named by a source other than the text comparison, which is "
+            "the only source that carries any text. It ships with the source that named it and "
+            "is listed where sources differ; it was not dropped."
+        )
     return (
-        f"All {named} were named by a source other than the text comparison, which is the "
-        "only source that carries any text. Each ships with the source that named it and is "
-        "marked disputed; none was dropped."
+        f"All {touched} provisions were named by a source other than the text comparison, "
+        "which is the only source that carries any text. Each ships with the source that "
+        "named it and is listed where sources differ; none was dropped."
     )

@@ -136,7 +136,7 @@ def test_a_long_page_opens_with_an_index_of_its_blocks_and_a_short_one_does_not(
     assert '<nav class="touched"' not in _page(untouched_entry())
 
     rendered = _page(_many(entry, INDEX_ABOVE))
-    assert rendered.count('<nav class="touched" aria-label="Provisions in this event">') == 1
+    assert rendered.count('<nav class="touched" aria-label="Changes in this version">') == 1
     (index,) = _INDEX.findall(rendered)
     assert rendered.index(index) < rendered.index('<div class="chg"')
     links = re.findall(r'href="#([^"]+)"', index)
@@ -211,17 +211,16 @@ def test_a_long_page_ends_with_the_way_back_to_the_top() -> None:
 def test_the_index_says_how_many_blocks_it_lists_rather_than_how_many_provisions() -> None:
     """The column needs a label of its own, and the number has to be the list's own length.
 
-    This entry touches one coordinate twice, so six blocks stand over five provisions and the
-    event's own facts line counts provisions. A label reading `6 provisions` beside a line
-    saying five would be read as one of the two being wrong, so the label counts the blocks it
-    is a list of and names them as what they are.
+    This entry touches one coordinate twice, so six blocks stand over five provisions, and the
+    version's tally counts provisions. The label counts the blocks it is a list of, and the
+    glossary's entry for a change says why the two totals can differ by a repeated provision.
     """
     entry = _many(_entry(), INDEX_ABOVE)
     coordinates = {emitted.change.location.canonical for emitted in entry.changes}
     assert len(entry.changes) == INDEX_ABOVE
     assert len(coordinates) == INDEX_ABOVE - 1
     (index,) = _INDEX.findall(_page(entry))
-    assert f'<p class="small muted">{INDEX_ABOVE} changes in this event · ' in index
+    assert f'<p class="small muted">{INDEX_ABOVE} changes in this version · ' in index
     assert index.count("<li ") == INDEX_ABOVE
 
 
@@ -278,7 +277,7 @@ def test_the_index_label_totals_the_characters_of_the_blocks_it_lists() -> None:
     deleted = sum(text.deleted for text in texts)
     assert inserted and deleted
     label = (
-        f'<p class="small muted">{INDEX_ABOVE} changes in this event · '
+        f'<p class="small muted">{INDEX_ABOVE} changes in this version · '
         f"+{inserted:,} −{deleted:,} characters</p>"
     )
     assert label in index

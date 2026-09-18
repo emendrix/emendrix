@@ -88,8 +88,8 @@ code, .id {
 .ident { font-size: var(--text-meta); color: var(--muted); }
 .quoted { color: var(--muted); }
 .none { color: var(--muted); }
-/* The pill and the tag are the two components whose whole content is a boundary and a word,
-   so their border is `--edge` and not the hairline the rest of the sheet draws with. */
+/* The pill's whole content is a boundary and a word, so its border is `--edge` and not the
+   hairline the rest of the sheet draws with. Tags, which share that rule, are in `tags`. */
 .pill {
   display: inline-flex;
   align-items: center;
@@ -106,10 +106,11 @@ code, .id {
 .pill.ins { color: var(--kind-inserted); background: var(--kind-inserted-tint);
             border-color: var(--kind-inserted); }
 .pill.disp { background: transparent; border-color: var(--alert); color: var(--alert); }
-.tag { display: inline-flex; align-items: center; padding: .12rem .45rem;
-       border: 1px solid var(--edge); border-radius: var(--radius); background: var(--panel);
-       color: var(--fg); font: 600 var(--text-label)/1.25 var(--sans);
-       font-variant-numeric: tabular-nums; }
+/* A link that leaves the site says so with a drawn arrow; its words for a screen reader are
+   in the markup (`outbound.py`). */
+.ext { white-space: nowrap; }
+.ext::after { content: "\\2197"; display: inline-block; margin-left: .12em; font-size: .85em;
+              text-decoration: none; }
 /* Off-screen until it takes focus, then placed over the header rather than moving it, so
    arriving at the page shifts nothing. It is the first focusable element on every page. */
 .skip {

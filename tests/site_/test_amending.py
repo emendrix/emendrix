@@ -17,10 +17,11 @@ from emendrix.site_.amending import (
     AmendingAct,
     amenders,
     amending_keys,
-    amending_lines,
     by_words,
     collect_amending,
+    made_by,
     mentioned_keys,
+    official_titles,
 )
 
 OBSERVED = date(2026, 8, 9)
@@ -143,7 +144,9 @@ def test_an_unknown_key_resolves_to_itself_rather_than_disappearing() -> None:
     assert only.number == "" and only.eurlex_url == ""
 
 
-def test_the_line_links_the_number_and_keeps_the_key_beside_it() -> None:
+def test_the_line_links_the_act_s_own_page_and_offers_eur_lex_after_it() -> None:
+    """One destination per amending act: its page on this site. EUR-Lex follows, marked as
+    leaving the site, and the key sits between them as a small identifier."""
     act = AmendingAct(
         key="32020R0561",
         number="Regulation (EU) 2020/561",
@@ -151,21 +154,28 @@ def test_the_line_links_the_number_and_keeps_the_key_beside_it() -> None:
         title="Regulation (EU) 2020/561 of the European Parliament and of the Council",
         label="MDR postponement",
     )
-    (line, official) = amending_lines((act,), full=True)
-    assert 'class="amending">Amended by <a href="https://eur-lex.europa.eu/' in line
-    assert ">Regulation (EU) 2020/561</a>" in line
-    assert '<span class="ttl">MDR postponement</span>' in line
-    assert "<code>32020R0561</code>" in line
-    assert official == f'<p class="official">{act.title}</p>'
-    assert amending_lines((act,), full=False) == [line]
+    (line,) = made_by((act,), "../../../", verb="Made by")
+    assert line == (
+        '<p class="amending">Made by <a href="../../../amendments/32020R0561/">MDR postponement'
+        '</a> <code class="id">32020R0561</code> <a class="ext" href="https://eur-lex.europa.eu/'
+        'legal-content/EN/TXT/HTML/?uri=CELEX:32020R0561">on EUR-Lex<span class="visually-hidden">'
+        " (external, EUR-Lex)</span></a></p>"
+    )
+    assert official_titles((act,)) == [f'<p class="lede">{act.title}</p>']
+    (step,) = made_by((act,), "../../../", verb="Amended by")
+    assert step.startswith('<p class="amending">Amended by <a href="../../../amendments/')
 
 
-def test_a_key_that_is_not_a_celex_is_shown_bare_and_unlinked() -> None:
+def test_a_key_that_is_not_a_celex_is_its_own_name_with_no_code_and_no_eur_lex() -> None:
     """No number, no address, no code beside a name that is the code: the toy corpus's shape."""
-    (line,) = amending_lines((AmendingAct(key="house-rules-amendment-1"),), full=True)
-    assert line == '<p class="amending">Amended by house-rules-amendment-1</p>'
+    (line,) = made_by((AmendingAct(key="house-rules-amendment-1"),), "", verb="Made by")
+    assert line == (
+        '<p class="amending">Made by <a href="amendments/house-rules-amendment-1/">'
+        "house-rules-amendment-1</a></p>"
+    )
+    assert official_titles((AmendingAct(key="house-rules-amendment-1"),)) == []
 
 
 def test_an_event_naming_nothing_gets_no_line_at_all() -> None:
     """The sentence for that class is `attribution`'s; a second line would be a second answer."""
-    assert amending_lines((), full=True) == []
+    assert made_by((), "", verb="Made by") == []

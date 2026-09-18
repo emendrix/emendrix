@@ -17,8 +17,10 @@ Two rules hold the page together:
   grounding stays a separate row from explanation faithfulness: one is a deterministic property
   of the gate and the other is a sampled judgement, and merging them would flatter both.
 
-The loop is stated last because it explains how the numbers came about, and a reader who does
-not care can stop above it.
+The loop is stated after the figures because it explains how they came about, and a reader who
+does not care can stop above it. The glossary closes the page: every tag on the site links one
+of its terms, and every heading on the page carries an `id` so a link can land on it. The
+corpus section lives in `pages/methodology_corpus.py` and the glossary in `pages/glossary.py`.
 
 No clock, no network, no model call: `generated_on` arrives from the caller and every other
 value on the page was read off an artifact somebody committed.
@@ -28,11 +30,12 @@ from __future__ import annotations
 
 from emendrix.eval_.metric_rows import metric_rows, synthetic_caveats
 from emendrix.site_.chrome import page
-from emendrix.site_.entries import corpus_rows, counted
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, count, escape, inline, join
+from emendrix.site_.pages.glossary import glossary_html
+from emendrix.site_.pages.methodology_corpus import corpus_section
 from emendrix.site_.pitch import PITCH
 from emendrix.site_.sources import repo_file
 
@@ -127,7 +130,7 @@ def _metrics(site: SiteInputs) -> list[Html]:
     """The published table, its standing caveats, and where the figures were read from."""
     run = site.run
     lines = [
-        Html("<h2>Measured, not asserted</h2>"),
+        Html('<h2 id="measured">Measured, not asserted</h2>'),
         Html(
             '<p class="small muted">Every row carries what it means and what it does not. The '
             "rows are the same ones the repository's README publishes, rendered from the same "
@@ -170,61 +173,9 @@ def _metrics(site: SiteInputs) -> list[Html]:
     return lines
 
 
-def _corpus(site: SiteInputs) -> list[Html]:
-    """What the reader is browsing, counted, above the table that scores a labelled subset.
-
-    Above it rather than below because these rates describe the corpus on screen and those
-    below it do not: a reader who met the pinned figures first would carry them onto every
-    page they opened next. Every figure is rolled up at build time from the committed entries
-    this build renders, and each arrives with its own caveat attached, by the same rule the
-    measured table lives under: the result and its meaning are fields of one frozen row, so
-    the table cannot print half of a measure.
-    """
-    counts = site.corpus
-    lines = [Html("<h2>The corpus on this site, counted</h2>")]
-    if counts.changes == 0:
-        lines.append(
-            Html(
-                '<p class="small muted">This build was given no committed changelog entries, so '
-                "there is nothing here to count.</p>"
-            )
-        )
-        return lines
-    lines.extend(
-        (
-            Html(
-                f'<p class="small muted">Counted over the {escape(counted(counts.events, "event"))}'
-                f" and {escape(counted(counts.changes, 'change'))} this site renders, and over "
-                f"nothing else. The measured table below scores emendrix against a small labelled "
-                f"set of transitions instead: a different question over a different denominator, "
-                f"so a figure there is not a better reading of one here, and neither is adjusted "
-                f"for the other.</p>"
-            ),
-            Html('<div class="scroll">'),
-            Html("<table>"),
-            Html(
-                "<thead><tr><th>Over the published corpus</th><th>Result</th><th>n</th>"
-                "<th>What it means — and what it does not</th></tr></thead>"
-            ),
-            Html("<tbody>"),
-        )
-    )
-    lines.extend(
-        Html(
-            f"<tr><td>{inline(row.measure)}</td>"
-            f'<td class="result">{escape(row.result)}</td>'
-            f"<td>{escape(row.n)}</td>"
-            f'<td class="meaning">{inline(row.meaning)}</td></tr>'
-        )
-        for row in corpus_rows(counts)
-    )
-    lines.extend((Html("</tbody>"), Html("</table>"), Html("</div>")))
-    return lines
-
-
 def _how_it_works() -> list[Html]:
     """The five stages, and the sentence that says which one of them a model is allowed in."""
-    lines = [Html("<h2>How it works</h2>"), Html('<ul class="loop">')]
+    lines = [Html('<h2 id="how-it-works">How it works</h2>'), Html('<ul class="loop">')]
     lines.extend(Html(f"<li><b>{escape(name)}</b>{escape(text)}</li>") for name, text in _LOOP)
     lines.extend((Html("</ul>"), Html(f'<p class="small muted">{_LOOP_NOTE}</p>')))
     return lines
@@ -286,7 +237,7 @@ def _how_this_site_is_built(site: SiteInputs) -> list[Html]:
             ),
         )
     return [
-        Html("<h2>How this site is built</h2>"),
+        Html('<h2 id="built">How this site is built</h2>'),
         *built_from,
         Html(
             "<p>Every page is a rendering of things already committed, so the site can answer no "
@@ -307,10 +258,11 @@ def render_methodology(site: SiteInputs) -> Html:
             *page_masthead("prose", "About this site", "Methodology", _PATH),
             Html(f'<p class="lede">{escape(PITCH)}</p>'),
             Html(f'<p class="lede muted">{_headline_sentence(site)}</p>'),
-            *_corpus(site),
+            *corpus_section(site),
             *_metrics(site),
             *_how_it_works(),
             *_how_this_site_is_built(site),
+            *glossary_html(),
         ),
         "\n",
     )

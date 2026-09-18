@@ -69,7 +69,19 @@ def test_the_page_lists_every_watched_act_the_instrument_amended_once() -> None:
     for act in site.acts:
         assert rendered.count(f'<h2><a href="../../acts/{act.slug}/">') == 1, act.slug
     assert rendered.count('<article class="event"') == 2
-    assert "2 watched acts amended · in 2 events" in rendered
+    # Act, then version: each card sits one heading level under the act it belongs to.
+    assert rendered.count("<h3><a href=") == 2
+    assert rendered.index('<section class="amended">\n<h2>') < rendered.index("<h3><a href=")
+    assert "Changed 2 watched acts in 2 versions" in rendered
+
+
+def test_the_card_on_an_amending_act_s_page_does_not_say_it_was_made_by_that_act() -> None:
+    """The page is the amending act's own, so "Made by X" on its every card says nothing. Its
+    EUR-Lex link is still offered once, in the header, marked as leaving the site."""
+    site = _two_acts()
+    rendered = _page(site, AMENDMENT.key)
+    assert "Made by" not in rendered
+    assert rendered.count("methodology/#glossary") == 1
 
 
 def test_a_coordinate_is_listed_under_the_instrument_its_own_change_names() -> None:
@@ -90,7 +102,7 @@ def test_a_coordinate_is_listed_under_the_instrument_its_own_change_names() -> N
     partial = whole.model_copy(update={"act": SECOND, "changes": (kept, *stripped)})
     site = _site(whole, partial)
     rendered = _page(site, AMENDMENT.key)
-    listed = rendered.count("Attributed to this instrument:")
+    listed = rendered.count("Changes this amending act made:")
     assert listed == 2
     coordinates = [emitted.change.location.human for emitted in whole.changes]
     section = rendered.split(f'<h2><a href="../../acts/{SECOND.key}/">')[1].split("</section>")[0]
