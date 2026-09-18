@@ -143,7 +143,12 @@ def test_a_long_page_opens_with_an_index_of_its_blocks_and_a_short_one_does_not(
     assert '<nav class="touched"' not in _page(untouched_entry())
 
     rendered = _page(_many(entry, INDEX_ABOVE))
-    assert rendered.count('<nav class="touched" aria-label="Changes in this version">') == 1
+    assert (
+        rendered.count(
+            '<nav class="touched" id="changes-index" aria-label="Changes in this version">'
+        )
+        == 1
+    )
     (index,) = _INDEX.findall(rendered)
     assert rendered.index(index) < rendered.index('<div class="chg"')
     links = re.findall(r'href="#([^"]+)"', index)
@@ -217,6 +222,54 @@ def test_a_long_page_ends_with_the_way_back_to_the_top() -> None:
     assert rendered.rindex('<div class="chg"') < rendered.index(back)
     assert rendered.index(back) < rendered.index("</section>")
     assert 'id="content"' in rendered
+
+
+_TO_INDEX = '<p class="to-index"><a href="#changes-index">↑ Index</a></p>'
+
+
+def _block_markup(rendered: str) -> list[str]:
+    """Each change block's markup, from its opening tag to the next block or the section end."""
+    starts = [match.start() for match in re.finditer(r'<div class="chg', rendered)]
+    ends = [*starts[1:], rendered.index("</section>", starts[-1])]
+    return [rendered[start:end] for start, end in zip(starts, ends, strict=True)]
+
+
+def test_every_change_on_an_indexed_page_closes_with_the_way_back_to_the_index() -> None:
+    """Forty changes down, the index is a screen of scrolling away, so each block links it.
+
+    The link closes the block, inside its `div`, so it travels with the block's own anchor.
+    The index answers to the id every one of those links names.
+    """
+    rendered = _page(_many(_entry(), INDEX_ABOVE))
+    assert '<nav class="touched" id="changes-index"' in rendered
+    blocks = _block_markup(rendered)
+    assert len(blocks) == INDEX_ABOVE
+    for block in blocks:
+        assert block.count(_TO_INDEX) == 1
+        assert f"{_TO_INDEX}\n</div>" in block
+
+
+def test_a_gathered_row_on_an_indexed_page_carries_the_way_back_inside_itself() -> None:
+    """A row with no text shows only its heading until a permalink opens it, and the link is
+    one of the children the sheet hides and `:target` shows, so it appears with the row."""
+    from site_entries import some_textless_entry
+
+    mixed = some_textless_entry()
+    entry = mixed.model_copy(update={"changes": (*mixed.changes, mixed.changes[0])})
+    assert len(entry.changes) >= INDEX_ABOVE
+    rendered = _page(entry)
+    quiet = rendered[rendered.index('<section class="quiet">') :]
+    (row,) = _block_markup(quiet)
+    assert f"{_TO_INDEX}\n</div>" in row
+    assert rendered.count(_TO_INDEX) == len(entry.changes)
+
+
+def test_a_short_page_carries_no_context_bar_and_no_way_back_to_an_index() -> None:
+    """Below the threshold there is no index, so nothing may point at one."""
+    rendered = _page(_entry())
+    assert 'class="context"' not in rendered
+    assert "to-index" not in rendered
+    assert "#changes-index" not in rendered
 
 
 def test_the_index_says_how_many_blocks_it_lists_rather_than_how_many_provisions() -> None:

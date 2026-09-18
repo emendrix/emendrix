@@ -21,10 +21,10 @@ Two decisions carry the look of these pages and are worth stating:
 - **A version's own page is not a card.** Its masthead continues the version band under the
   heading, so the page's subject reads as a masthead and never as one item of a list.
 - **An index is bounded by what it is at that width.** The act page's index is a `<details>`
-  of hundreds of links and is capped everywhere; an event page's is a row of a few dozen that
-  costs a few lines, so it is capped only at the width where it becomes a sticky column beside
-  the changes, which is a rule `evidence` writes. Two indexes, two caps, and neither rule is
-  written for the other's shape.
+  of hundreds of links and is capped everywhere; an event page's is a grid of a few dozen
+  coordinates that costs a few lines, so it is capped only at the width where it becomes a
+  sticky column beside the changes, which is a rule `evidence` writes. Two indexes, two caps,
+  and neither rule is written for the other's shape.
 
 This text is minted, not escaped, like every module of the package.
 """
@@ -51,7 +51,7 @@ TIMELINE: Final = """\
 .layout { display: block; }
 /* The index is bounded at every width. An act with hundreds of provisions renders hundreds
    of links, and `<details open>` opens them all: unbounded, the CRR index stands 20510px tall
-   on a 390px screen and the timeline it sits above starts below all of it. */
+   on a 390px screen, and the dates list that follows it on a phone starts below all of it. */
 .sidebar {
   margin: var(--space-4) 0;
   padding: var(--space-2) var(--space-3) var(--space-3);
@@ -83,19 +83,22 @@ TIMELINE: Final = """\
 .sidebar li > a + .tag { margin-left: auto; }
 .sidebar .versions a { font-weight: 600; }
 .sidebar .versions .small { flex: 1 1 100%; color: var(--muted); }
+/* The markup runs timeline, index, dates, which is the order a phone reads in; a wide screen
+   places the index in the left column by area, beside both, and caps it at the viewport so a
+   short timeline never stands beside a taller box of links. */
 @media (min-width: 60rem) {
   .layout {
     display: grid;
     grid-template-columns: var(--index-width) minmax(0, 1fr);
+    grid-template-areas: "index main" "index dates";
     gap: var(--space-5);
     align-items: start;
   }
+  .layout > .sidebar { grid-area: index; }
+  .layout > .timeline { grid-area: main; }
+  .layout > .dates-named { grid-area: dates; }
   .sidebar { position: sticky; top: var(--space-3); max-height: calc(100vh - 2rem);
              margin: 0; overflow-y: auto; }
-  /* The dates list follows the timeline down the page, so it belongs in the timeline's column
-     rather than under the index: auto-placement would otherwise start it a row lower in the
-     narrow one, where a row of two links and a date does not fit. */
-  .layout > .dates-named { grid-column: 2; }
 }
 /* The rail and its nodes: an act's history is a sequence, and each version on it is a point.
    Each card draws its own stretch of the line, so a heading above the cards stands clear of

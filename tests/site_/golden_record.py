@@ -772,4 +772,20 @@ grouping is asserted over the toy corpus in `test_dates_page.py`. **No `id=` mov
 Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the script,
 the fonts, `icon.svg` and `og.png` are byte-identical. `_LARGEST_PAGE` did not move, and no
 measured figure moved.
+
+Read again on 2026-09-18, later still, when long pages learned to keep their place and small
+screens their order. All 23 HTML pages moved for the stylesheet's new name, `style.881d1c06.css`
+replacing `style.b628d73d.css`, which adds the pinned context bar, the `↑ Index` links, the
+version index's grid of marked coordinates below 60rem, the act grid's named areas, a two-row
+phone header and the print and forced-colours rules for the bar. Two pages moved in their
+markup. The MDR version page, whose nine changes pass the index threshold, gains the context
+bar under its masthead, `id="changes-index"` on its index and `↑ Index` closing each of the nine
+change blocks. The MDR act page dates its newest amendment as `in force <time
+datetime="2020-04-24">24 April 2020</time>` where it printed the ISO date bare, and its timeline
+now precedes its index in the markup, the same lines in another order. **No `id=` moved or
+went**, and every fragment the new links name resolves on its own page. Both feeds,
+`search-index.json`, `sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the script, the fonts,
+`icon.svg` and `og.png` are byte-identical, and every other page moved in its stylesheet name
+alone. `_LARGEST_PAGE` moves by 794 bytes, all of it on the MDR version page, and no measured
+figure moved.
 """

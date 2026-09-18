@@ -231,7 +231,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 48166)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 48960)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -369,7 +369,14 @@ checked against the cited text`, each citation is marked as leaving the site for
 followed by the line saying what `v1` and `v2` are, the evidence's summary says it is text from
 EUR-Lex, and its strip names both sides by role, this one dated, each code a small identifier.
 The index names each provision's title after its coordinate. No anchor, no id and no measured
-figure moved, and the stored text inside each `<details>` did not."""
+figure moved, and the stored text inside each `<details>` did not.
+
+794 bytes heavier on 2026-09-18, later again, when a long version page learned to keep its
+place. Its nine changes pass the six that give a page an index, so it gains the three devices
+keyed to the same threshold: 208 bytes of context bar under the masthead, naming the Medical
+Devices Regulation as a link to its page, `Version in force 24 April 2020` and `Index`; 19 bytes
+of `id="changes-index"` on the index; and 63 bytes of `↑ Index` closing each of the nine change
+blocks, 567 in all. No anchor moved, no id went, and nothing inside a `<details>` did."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

@@ -33,6 +33,7 @@ from __future__ import annotations
 
 from emendrix.site_.amending import amenders
 from emendrix.site_.chrome import page
+from emendrix.site_.clocks import time_html
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.history import dates_named
 from emendrix.site_.identity import masthead
@@ -173,7 +174,7 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
         facts.append(escape(act.domain))
     dated = act.dated
     if dated is not None:
-        facts.append(escape(f"newest amendment {dated.words}"))
+        facts.append(Html(f"newest amendment {dated.clock} {time_html(dated.on)}"))
     elif act.entries:
         facts.append(escape("recorded events name no amending act"))
     links: list[Html] = []
@@ -226,12 +227,14 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     timeline.append(Html("</section>"))
     # A quiet act gets no index and no two-column layout: the index would be two headings
     # over two empty lists, and the grid reserves its first column for exactly that index.
+    # The timeline leads the markup so a phone, which reads in markup order, meets the versions
+    # before the index; the wide grid places the index in the left column by area.
     mentions = dates_named(act)
     columns = (
         (
             Html('<div class="layout">'),
-            sidebar(act, mentions, site.amending),
             *timeline,
+            sidebar(act, mentions, site.amending),
             *dates_section(act, mentions, up(_DEPTH)),
             Html("</div>"),
         )

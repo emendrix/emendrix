@@ -57,12 +57,15 @@ def test_the_header_dates_the_newest_amendment_by_its_own_clock() -> None:
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
     site = _site(entry)
     rendered = render_act(site, site.acts[0])
-    assert f"newest amendment detected {OBSERVED.isoformat()}" in rendered
+    assert (
+        f'newest amendment detected <time datetime="{OBSERVED.isoformat()}">'
+        f"{human_date(OBSERVED)}</time>"
+    ) in rendered
     assert "reflects the consolidated version" not in rendered
     stated = entry.model_copy(update={"in_force": (date(2024, 6, 1),)})
     site = _site(stated)
     rendered = render_act(site, site.acts[0])
-    assert "newest amendment in force 2024-06-01" in rendered
+    assert 'newest amendment in force <time datetime="2024-06-01">1 June 2024</time>' in rendered
 
 
 def test_the_timeline_keeps_the_event_anchor_and_links_the_evidence() -> None:
@@ -290,6 +293,17 @@ def test_the_sidebar_lists_touched_provisions_and_versions() -> None:
         f'<time datetime="{OBSERVED.isoformat()}">{human_date(OBSERVED)}</time></a></li>'
     ) in versions
     assert "→" not in versions
+
+
+def test_the_timeline_comes_before_the_index_in_the_markup() -> None:
+    """A phone reads in markup order, so the versions come first and the index after them; the
+    wide grid puts the index back in the left column by name, not by order."""
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    site = _site(entry)
+    rendered = render_act(site, site.acts[0])
+    layout = rendered[rendered.index('<div class="layout">') :]
+    assert layout.index('<section class="timeline">') < layout.index('<aside class="sidebar">')
+    assert "<details open><summary>Index of this act</summary>" in layout
 
 
 def test_the_sidebar_names_each_version_by_its_date_and_its_amending_act() -> None:

@@ -30,6 +30,7 @@ import pytest
 
 from emendrix.site_.fingerprint import FONTS
 from emendrix.site_.style import STYLE
+from emendrix.site_.style.base import BASE
 
 _DARK = "@media (prefers-color-scheme: dark)"
 """Where the light palette stops and the override begins. Both blocks name the same tokens."""
@@ -405,6 +406,59 @@ def test_forced_colours_keep_every_mark_that_was_drawn_as_a_background() -> None
     for selector in (".event::before", ".chg.step::before", ".elided", ".tag", ".differ-kind"):
         assert selector in forced, selector
     assert "CanvasText" in forced
+
+
+# ------------------------------------------------------------------ long pages, small screens
+
+
+def test_every_css_escape_reaches_the_sheet_as_written() -> None:
+    """A CSS escape such as `\\2191` must be written `\\\\2191` in the Python source; written
+    once, Python reads `\\21` as an octal escape and the sheet draws a control character and
+    two digits where the glyph should be. No control character but the newline belongs here."""
+    assert not [char for char in STYLE if ord(char) < 0x20 and char != "\n"]
+
+
+def test_the_pinned_line_and_the_ways_back_to_the_index_do_not_print() -> None:
+    """Both are instructions a sheet of paper cannot carry out, like the permalink and the pager.
+
+    A gathered row prints whole through a two-class rule, which outranks the blanket line, so
+    its way back to the index is named again at that weight.
+    """
+    _, printed = _print_block()
+    hidden = printed.split("{ display: none; }")[1]
+    assert ".context" in hidden
+    assert ".to-index" in hidden
+    assert ".quiet .chg > .to-index { display: none; }" in printed
+
+
+def test_the_pinned_line_sticks_and_nothing_it_covers_is_scrolled_under_it() -> None:
+    """A fragment or a focused link lands below the line, and the index column sticks below it."""
+    screen, _ = _print_block()
+    context = screen.split("\n.context {")[1].split("}")[0]
+    assert "position: sticky;" in context
+    assert "top: 0;" in context
+    assert "html:has(.context) { scroll-padding-top: var(--context-height); }" in screen
+    touched = screen.split(".event-layout .touched {")[1].split("}")[0]
+    assert "top: calc(var(--context-height) + var(--space-3));" in touched
+
+
+def test_a_phone_keeps_the_whole_site_navigation_on_one_row_that_scrolls() -> None:
+    """Nothing is folded behind a menu a script would have to open: every link stays in the
+    markup and on screen, in one row a reader swipes, so the header costs two rows, not four."""
+    phone = BASE.split("@media (max-width: 40rem) {")[1]
+    nav = phone.split("header.bar nav {")[1].split("}")[0]
+    assert "flex-wrap: nowrap;" in nav
+    assert "overflow-x: auto;" in nav
+    assert "display: none" not in phone
+
+
+def test_the_act_grid_places_its_index_by_name_so_the_markup_can_lead_with_the_timeline() -> None:
+    """On a phone the markup order is the reading order, and it starts with the versions."""
+    wide = STYLE.split("@media (min-width: 60rem) {\n  .layout {")[1].split("\n}")[0]
+    assert 'grid-template-areas: "index main" "index dates";' in wide
+    assert ".layout > .sidebar { grid-area: index; }" in wide
+    assert ".layout > .timeline { grid-area: main; }" in wide
+    assert ".layout > .dates-named { grid-area: dates; }" in wide
 
 
 # ------------------------------------------------------------------ fonts

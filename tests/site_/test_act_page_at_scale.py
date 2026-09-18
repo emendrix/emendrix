@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 177158)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 177195)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -148,9 +148,16 @@ the index calls `Versions` where it said `Amendments`: each of the two hundred r
 version by the date in words inside `<time>`, with `detected` written out because none of these
 events carries an in-force date, where it named the version pair and the ISO date beside it.
 No row names an amending act, these events being diff-only. Nothing on the cards moved, and no
-anchor or id did."""
+anchor or id did.
 
-_TOTAL_BYTES: Final = 3164780
+37 bytes heavier on 2026-09-18, later again, when the header's facts line started dating the
+newest amendment in words inside `<time>`, `detected <time datetime="…">…</time>`, where it
+printed the ISO date bare. Moving the index after the timeline in the markup, so a phone reads
+the versions first, is byte-neutral: the same lines in another order. None of these events has
+the six changes a version page needs before it carries an index, a context bar or a way back to
+the index from each change, so no event page moved."""
+
+_TOTAL_BYTES: Final = 3164817
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -281,6 +288,12 @@ No anchor or id moved and no measured figure moved with it.
 pages do. It is the index's 12 630 above and nothing else: the act page's index gained each
 provision's title and names its versions by date, and no version page or provision page moved.
 No anchor or id moved and no measured figure moved with it.
+
+37 bytes heavier on 2026-09-18, later again: the index's 37 above and nothing else. The act
+page's facts line dates the newest amendment inside `<time>`, and its index moved after the
+timeline in the markup at no cost in bytes. No version here reaches the six changes that give
+a version page its index, context bar and `↑ Index` links, so no version page moved. No anchor or
+id moved and no measured figure moved with it.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

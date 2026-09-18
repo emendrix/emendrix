@@ -1,10 +1,11 @@
 """One version, whole, on its own address: the evidence the act page points at.
 
 The act page lists this version as a card; this is where a reader who followed that card, a
-search result or a feed's `<link rel="alternate">` actually lands. The page is composed of three
+search result or a feed's `<link rel="alternate">` actually lands. The page is composed of four
 parts, each of which lives in its own module: the masthead that says what kind of page this is
 and names the version (`identity`), the version's own subject, facts and tally
-(`pages/version_masthead.py`), and its changes (`pages/act_event.render_event`). The evidence
+(`pages/version_masthead.py`), on a long page the line that stays pinned while it scrolls
+(`pages/context_bar.py`), and its changes (`pages/act_event.render_event`). The evidence
 blocks arrive from the builder rather than being rendered here, because this act's provision
 pages show the same blocks and a diff is expensive enough to be worth computing once.
 
@@ -22,6 +23,7 @@ from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.act_event import render_event
+from emendrix.site_.pages.context_bar import context_bar
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.pages.version_masthead import pager, version_masthead
 from emendrix.site_.seo import event_json_ld
@@ -74,6 +76,7 @@ def render_event_page(
         (
             *_header(act, entry),
             *version_masthead(site, act, entry, acts),
+            *context_bar(act, entry, _DEPTH),
             *render_event(entry, anchors, texts, site.changelogs_url),
             *pager(act, entry, top=False),
         ),

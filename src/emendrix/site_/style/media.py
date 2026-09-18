@@ -39,13 +39,14 @@ MEDIA: Final = """\
   /* A scroll box cannot be scrolled on paper, so both indexes print whole. */
   .sidebar { max-height: none; overflow: visible; }
   .event-layout .touched { position: static; max-height: none; overflow: visible; }
-  /* Navigation, like the header's: a permalink and a way back to the top of a sheet of paper
-     are both instructions a printed page cannot carry out. */
-  .permalink, .backtop, .pager, .tags-help, .define { display: none; }
+  /* Navigation, like the header's: a permalink, a pinned line and a way back to the top or to
+     the index of a sheet of paper are all instructions a printed page cannot carry out. */
+  .permalink, .backtop, .context, .to-index, .pager, .tags-help, .define { display: none; }
   /* A row cannot be opened on paper either, so the gathered ones print whole, for the reason
      both indexes do. Named with the same two classes the screen rule uses, since a shorter
      selector would not outrank it. */
   .quiet .chg > *:not(h3) { display: block; }
+  .quiet .chg > .to-index { display: none; }
   .stat, .disclaimer, .sidebar, .touched, .diff, .verbatim, .lbl, .loop li, .tag
     { background: transparent; }
   /* Named again because a two-class or pseudo-class selector outranks a one-class one
@@ -84,7 +85,8 @@ MEDIA: Final = """\
   .diff ins { text-decoration: underline; }
   .diff del { text-decoration: line-through; }
   /* The caption's shape is a fill, so it is drawn as a ring the system palette keeps. */
-  .caption::before { background: Canvas; border-color: CanvasText; forced-color-adjust: none; }
+  .caption::before, .context p::before
+    { background: Canvas; border-color: CanvasText; forced-color-adjust: none; }
   .masthead { border-image: none; border-top-color: CanvasText; }
   header.bar nav a[aria-current="page"] { border-bottom-color: CanvasText; }
 }

@@ -35,7 +35,8 @@ The promises live here, each as a line of markup rather than a claim made elsewh
   provision's page, which is the same act's directory one level up from this event's, so a
   reader who arrived asking what this event did can ask what has ever been done to Annex XVII.
 - **Every change block is addressable from itself**, by the permalink at the end of its
-  heading, and a page long enough to open with an index closes with the way back to the top.
+  heading. On a page long enough to open with an index, every block closes with the way back
+  to that index and the page closes with the way back to the top.
 - **The index is beside the changes where there is room for it.** A page listing its
   provisions puts the list in a column at the same width the act page's index becomes one, so
   a reader forty blocks down can still see the map; below that width it stays the wrapping row
@@ -65,7 +66,7 @@ from emendrix.site_.diffview import summary_words
 from emendrix.site_.dispute import QUIET_NOTE, SHAPE_CLASS, dispute_shape, named_by, quiet_heading
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, escape
-from emendrix.site_.pages.event_index import INDEX_ABOVE, touched
+from emendrix.site_.pages.event_index import INDEX_ABOVE, INDEX_ID, touched
 from emendrix.site_.pages.prose import (
     applies_line,
     dates_line,
@@ -95,9 +96,22 @@ Only on such a page: below the index threshold the top of the page is still on t
 the last block ends, and a link back to what a reader can see is furniture rather than help.
 """
 
+_TO_INDEX = f'<p class="to-index"><a href="#{INDEX_ID}">↑ Index</a></p>'
+"""The close of every change on a page with an index: the way back to the list of changes.
+
+Kept to one element and one class because a long act can print thousands of blocks. In a
+gathered row with no text it is hidden with the rest of the row and shows when the row opens.
+"""
+
 
 def _change_block(
-    emitted: EmittedChange, entry: ChangelogEntry, anchor: str, text: RenderedText, *, open_: bool
+    emitted: EmittedChange,
+    entry: ChangelogEntry,
+    anchor: str,
+    text: RenderedText,
+    *,
+    open_: bool,
+    indexed: bool,
 ) -> list[Html]:
     """One change: what it is, where its sources differ, what was said, and the text itself.
 
@@ -128,7 +142,8 @@ def _change_block(
     `text` is the evidence, rendered once for the whole entry by `pages.texts` and handed in:
     the provision page shows the same block, and a diff computed twice is the one cost the
     split of these pages could have introduced. `open_` opens it where the version is short
-    enough that every change's text belongs on the first read.
+    enough that every change's text belongs on the first read, and `indexed` closes the block
+    with the way back to the index where the page has one; both are decided once by the caller.
     """
     change = emitted.change
     title = title_span(change)
@@ -161,9 +176,11 @@ def _change_block(
             ),
             text.html,
             Html("</details>"),
-            Html("</div>"),
         )
     )
+    if indexed:
+        lines.append(Html(_TO_INDEX))
+    lines.append(Html("</div>"))
     return lines
 
 
@@ -214,7 +231,7 @@ def render_event(
     quiet = 0
     long = len(entry.changes) >= INDEX_ABOVE
     for emitted, anchor, text in zip(entry.changes, anchors, texts, strict=True):
-        block = _change_block(emitted, entry, anchor, text, open_=not long)
+        block = _change_block(emitted, entry, anchor, text, open_=not long, indexed=long)
         if emitted.change.textless:
             quiet += 1
             hushed.extend(block)

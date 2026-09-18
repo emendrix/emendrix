@@ -185,19 +185,21 @@ header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; 
                         color: var(--muted); }
 /* A query that found nothing says so in the panel, as a row that is not an option. */
 #search .results .empty { padding: .45rem .75rem; color: var(--muted); }
-/* Narrow enough that the header wraps: the box takes its own row rather than the sliver
-   left beside the navigation. */
+/* A phone gets two rows: the wordmark with the navigation beside it, then the search box
+   across the width rather than the sliver left beside the links. The header stays under a
+   sixth of the screen, and every link stays in the markup and on screen, never in a menu. */
 @media (max-width: 40rem) {
-  header.bar { gap: var(--space-2); padding-top: var(--space-2); padding-bottom: var(--space-2); }
-  /* One row that scrolls sideways, faded at its end so the cut reads as more to come. */
+  header.bar { gap: var(--space-2); padding-top: var(--space-1); padding-bottom: var(--space-2); }
+  .wordmark { flex: none; }
+  /* One row that scrolls sideways to the screen's edge, faded at its end so the cut reads as
+     more to come. */
   header.bar nav {
-    order: 3; flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; gap: 0 var(--space-3);
-    scrollbar-width: none; margin: 0 calc(-1 * var(--gutter)); padding: 0 var(--gutter);
-    mask-image: linear-gradient(to right, black 85%, transparent);
+    flex: 1 1 0; min-width: 0; flex-wrap: nowrap; overflow-x: auto; gap: 0 var(--space-3);
+    scrollbar-width: none; margin-right: calc(-1 * var(--gutter)); padding-right: var(--gutter);
+    mask-image: linear-gradient(to right, black 80%, transparent);
   }
   header.bar nav a { white-space: nowrap; padding: .75rem 0; }
-  .wordmark { flex: 1 1 auto; }
-  #search { flex: 1 1 100%; order: 4; margin-left: 0; }
+  #search { flex: 1 1 100%; margin-left: 0; }
 }
 footer {
   padding: var(--space-5) max(var(--gutter), calc((100% - var(--shell)) / 2 + var(--gutter)))

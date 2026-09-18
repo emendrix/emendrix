@@ -2,8 +2,9 @@
 
 Ninth in the cascade, after `change`, so a rule here may rely on everything before it and on
 `timeline` and `change` in particular, which draw the pages and the blocks this text sits in.
-This module dresses the evidence rather than the statement about it: the in-page map of the
-changes and the sticky column it becomes, the gathered rows with no text to show, the
+This module dresses the evidence rather than the statement about it: the line pinned over a
+long version page, the in-page map of the changes and the sticky column it becomes, the way
+back to it from each change, the gathered rows with no text to show, the
 `<details>` a change's text sits in, the strip naming the two sides compared, the unified diff,
 the verbatim blocks and the metrics table.
 
@@ -38,19 +39,47 @@ from typing import Final
 __all__ = ["EVIDENCE"]
 
 EVIDENCE: Final = """\
-/* A map of the page, not a second copy of it: one wrapping row, so forty-five provisions
-   cost a few lines of height and a reader can see the whole event at once. */
+/* The line pinned while a long version page scrolls: the act, the version, the way back to the
+   index. It exists only where the index does, so the sticky column's offset below makes room
+   for it unconditionally. Painted full-bleed the way the masthead band is. */
+.context {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  min-height: var(--context-height);
+  display: flex;
+  align-items: center;
+  margin: 0 0 var(--space-4);
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+  box-shadow: 0 0 0 100vmax var(--bg);
+  clip-path: inset(0 -100vmax -1px);
+}
+.context p { flex: 1; margin: 0; max-width: none; font-size: var(--text-meta); line-height: 1.3;
+             padding: .5rem 0; }
+.context p::before { content: ""; display: inline-block; width: .55rem; height: .55rem;
+                     border-radius: 50%; margin-right: .5rem; background: var(--type-version);
+                     border: 1px solid var(--type-version); }
+.context a { font-weight: 600; }
+.context a[href="#changes-index"]::before { content: "\\2191"; margin-right: .3rem;
+                                            display: inline-block; }
+.version-masthead + .context { margin-top: calc(-1 * var(--space-5)); }
+/* Anything the page scrolls to, a fragment or a focused link, lands below the bar rather
+   than under it; a change's own margin then clears its highlight. */
+html:has(.context) { scroll-padding-top: var(--context-height); }
+.to-index { text-align: right; font-size: var(--text-meta); margin: var(--space-2) 0 0;
+            max-width: none; }
+.to-index a { text-decoration: none; }
+.to-index a:hover { text-decoration: underline; }
+/* A map of the page, not a second copy of it. Below the two-column width it is a grid of
+   coordinates, each marked by its kind's glyph, so forty-five changes cost a few lines. */
 .touched { margin: var(--space-3) 0 var(--space-4); padding: var(--space-3);
            background: var(--panel); border: 1px solid var(--rule);
-           border-radius: var(--radius); font-size: var(--text-meta); line-height: 1.35; }
+           border-radius: var(--radius); font-size: var(--text-meta); line-height: 1.35;
+           scroll-margin-top: var(--space-2); }
 .touched p { margin: 0 0 var(--space-2); }
-.touched ol { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3);
-              list-style: none; margin: 0; padding: 0; }
-.touched li { display: flex; align-items: baseline; gap: var(--space-1); }
+.touched ol { list-style: none; margin: 0; padding: 0; }
 .touched li > a .loc { font-weight: inherit; }
-/* A row is a coordinate while the index is a wrapping row, and a coordinate over its title
-   once it is a column; the title is whole in the markup and cut to one line here. */
-.touched li > a .ttl { display: none; }
 /* The decade of characters a change moved, as weight on its link, so the index reads as a map
    of where the text is rather than only of where a change is. Two weights are loaded, so the
    four decades fall into two; the count beside each one is the fact, and the classes claim
@@ -59,25 +88,39 @@ EVIDENCE: Final = """\
 .touched .mag-2 a { font-weight: 400; }
 .touched .mag-3 a { font-weight: 600; }
 .touched .mag-4 a { font-weight: 600; }
+@media (max-width: 59.99rem) {
+  .touched ol { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+                gap: 0 .75rem; }
+  .touched li { display: flex; align-items: baseline; gap: .3rem; padding: .4rem 0;
+                border-bottom: 1px solid var(--rule); }
+  .touched li > a .ttl, .touched li .mag { display: none; }
+  /* The tag's words stay in the accessibility tree at no size; its glyph shows the kind, and
+     a modified change, the common case, is left unmarked. */
+  .touched li .tag { order: -1; font-size: 0; padding: 0; border: 0; background: none; gap: 0; }
+  .touched li .tag::before { font-size: var(--text-meta); font-weight: 600; min-width: .7em; }
+  .touched li .tag--kind-modified::before { content: ""; }
+  .touched li .tag--kind-renumbered::before { content: "#"; }
+  .touched li .tag--kind-deferred::before { content: "\\00bb"; }
+}
 /* The same grid the act page draws, with the event's index as the left column, at the one
    width the act page becomes two columns. The `.sidebar` cap above is deliberately not reused:
-   that one bounds a `<details>` of hundreds of links at every width, where this is a row of
-   forty coordinates that costs a few lines while it is a row and needs the cap only once it
-   stands as a column. Below the query nothing here applies and the row is untouched. */
+   that one bounds a `<details>` of hundreds of links at every width, where this is a grid of
+   forty coordinates that costs a few lines until it stands as a column. It sticks below the
+   context bar, which every page with this index carries. */
 @media (min-width: 60rem) {
+  .event-layout { grid-template-areas: none; }
   .event-layout .touched {
     position: sticky;
-    top: var(--space-3);
-    max-height: calc(100vh - 2rem);
+    top: calc(var(--context-height) + var(--space-3));
+    max-height: calc(100vh - var(--context-height) - 2rem);
     margin: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
-  .event-layout .touched ol { display: block; }
-  .event-layout .touched li { padding: .45rem 0; border-top: 1px solid var(--rule); }
-  .event-layout .touched li:first-child { border-top: 0; }
   .event-layout .touched li { display: grid; grid-template-columns: minmax(0, 1fr) auto;
-                              gap: .1rem .5rem; }
+                              gap: .1rem .5rem; padding: .45rem 0;
+                              border-top: 1px solid var(--rule); }
+  .event-layout .touched li:first-child { border-top: 0; }
   .event-layout .touched li > a { grid-row: span 2; min-width: 0; text-decoration: none; }
   .event-layout .touched li > a .loc { text-decoration: underline; text-underline-offset: .18em;
                                        text-decoration-thickness: 1px; }

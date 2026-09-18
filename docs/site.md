@@ -131,10 +131,26 @@ gives each link a weight by decade of characters so a page of forty-five changes
 the text actually moved.
 
 An event of six changes or more opens with an index of the provisions it touched, and from
-60rem wide that index is a sticky column beside the changes rather than a row above them, so a
-reader forty blocks down can still see the map; narrower than that it stays the wrapping row,
-which costs a few lines where a column would cost a screen. The same threshold puts the link
-back to the top at the foot of the page. Every change heading, on an event page and on a
+60rem wide that index is a sticky column beside the changes rather than a block above them, so a
+reader forty blocks down can still see the map. Narrower than that it is a grid of coordinates,
+each marked by its kind's glyph (`+` inserted, `−` deleted, `#` renumbered, `»` deferred,
+unmarked for modified) with the kind's words kept in the accessibility tree at no size, which
+costs a few lines where a column would cost a screen.
+
+**Long pages keep their place.** `INDEX_ABOVE` in `pages/event_index.py` is the one threshold
+for every device a long version page carries, so a page never has half of them: the index, with
+`id="changes-index"`; a context bar under the version's masthead (`pages/context_bar.py`),
+one line naming the act as a link to its page, the version by its name and `Index`, pinned to
+the top of the screen with `position: sticky` as the page scrolls; a `↑ Index` link closing
+every change, gathered rows with no text included, where it shows when the row opens; and
+`Back to top ↑` at the foot. The bar is a `<div>` holding a `<p>`, not a landmark, since the
+page already names four, and it follows the masthead in the markup so a keyboard reader meets it
+once. Nothing scrolls under it: the page's `scroll-padding-top` is the bar's height wherever the
+bar exists, so a fragment link and a link reached by the keyboard both land below it, and the
+sticky index column starts below it too. The bar and every `↑ Index` are hidden in print. All of
+it is CSS; the site's one script is still search.
+
+Every change heading, on an event page and on a
 provision page alike, ends with a `§` permalink to that change's own anchor, which is the
 anchor both pages already publish. The citations a change's sentences carry are printed once
 for the change, in first-mention order and deduplicated by the pair of address and label,
@@ -421,7 +437,10 @@ two different trails.
 **The header bar marks the section a page belongs to** with `aria-current="page"`, by weight and
 an underline rather than by colour alone: act, version and provision pages mark `All acts`,
 amending-act pages and their roster mark `Amending acts`, and each page about the site marks
-itself. Home and the not-found page mark nothing.
+itself. Home and the not-found page mark nothing. On a phone (up to 40rem) the wordmark heads
+the bar, the six section links sit in one row below it that scrolls sideways, faded at its end
+so the cut reads as more to come, and search takes the row under that. Nothing is folded behind
+a menu: a menu would need a script to open, and it would hide the site's structure.
 
 **Pages speak the reader's vocabulary; the stored one does not change.** On a page, an event is a
 *version*, named by its date and the clock that date answers to, and an instrument is an
@@ -448,6 +467,12 @@ them, and the sentence, the number and the caveat are unchanged. It links the me
 page's `#measured` section. Versions past the cap and versions naming no amending act are
 counted in words, never dropped silently. The hero's act links use the long name where the
 watchlist gives one, the name the act's own heading uses.
+
+**An act page's index follows its timeline in the markup.** A phone reads in markup order, so a
+reader there meets the versions first, then the index, then the dates the text names; from
+60rem the grid places the index in the left column by named area (`"index main" "index dates"`),
+sticky and capped at the height of the screen with its own scroll, so a short timeline never
+stands beside a taller box of links. It stays a `<details open>` at every width.
 
 **An act page's index** lists `Touched provisions`, each with its kind tags and, where the title
 says more than the coordinate, the title of its newest change, the one the provision's own page

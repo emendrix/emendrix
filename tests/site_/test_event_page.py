@@ -38,6 +38,7 @@ from emendrix.site_.clocks import version_heading
 from emendrix.site_.inputs import ActSite, SiteInputs, collect_site
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.event import render_event_page
+from emendrix.site_.pages.event_index import INDEX_ABOVE
 from emendrix.site_.pages.prose import applies_line
 from emendrix.site_.pages.texts import text_blocks
 from emendrix.site_.style import STYLE
@@ -103,6 +104,33 @@ def test_the_page_names_its_act_and_links_back_to_the_timeline() -> None:
     assert f"<h1>{version_heading(entry)}</h1>" in rendered
     assert f"<h1>{site.acts[0].headline}</h1>" not in rendered
     assert f'href="../../../acts/{site.acts[0].slug}/"' in rendered
+
+
+def test_the_context_bar_is_there_exactly_when_the_index_is() -> None:
+    """Pinned while a long page scrolls, it names the act as a link to the act's page, the
+    version by its name, and links the index; a short page, with no index, has neither."""
+    from site_entries import some_textless_entry
+
+    short = diff_only_entry(_delta(), detected_on=OBSERVED)
+    assert 'class="context"' not in _page(short)
+    assert '<nav class="touched"' not in _page(short)
+
+    mixed = some_textless_entry()
+    entry = mixed.model_copy(update={"changes": (*mixed.changes, mixed.changes[0])})
+    assert len(entry.changes) >= INDEX_ABOVE
+    site = _site(entry)
+    act = site.acts[0]
+    rendered = _rendered(site, act, act.entries[0])
+    bar = (
+        f'<div class="context"><p><a href="../../../acts/{act.slug}/">{escape(act.label)}</a> · '
+        f'{version_heading(entry)} · <a href="#changes-index">Index</a></p></div>'
+    )
+    assert rendered.count(bar) == 1
+    assert rendered.count('<nav class="touched" id="changes-index"') == 1
+    # After the version's masthead, so a keyboard reader meets it once the page has said what
+    # it is, and before the index it links.
+    assert rendered.index('<div class="version-masthead"') < rendered.index(bar)
+    assert rendered.index(bar) < rendered.index('<nav class="touched"')
 
 
 def test_the_label_names_the_act_in_the_caption_and_the_long_name_in_the_snippet() -> None:
