@@ -5,8 +5,11 @@ index.html                      the front door
 404.html                        what an address that matches nothing gets
 style.<digest>.css              the one stylesheet every page links, named for its bytes
 search.<digest>.js              the one script, copied from the package as committed
+sans-400.<digest>.woff2         the sans face, regular, self-hosted and loaded by the stylesheet
+sans-600.<digest>.woff2         the sans face, semibold
+serif-400.<digest>.woff2        the serif face the law's own words are set in
 icon.svg                        the favicon every head links
-og.png                          the link-preview card, the one binary published
+og.png                          the link-preview card, the one raster image published
 robots.txt                      the crawl policy, and where the sitemap is
 search-index.json               what that script fetches, prebuilt
 sitemap.xml                     every page, with the date its content last moved
@@ -30,8 +33,11 @@ relative to it, and the script reads the index back from the root it was handed;
 them and every page below the root loads nothing. The first two carry a digest of their own
 bytes in the name, and `fingerprint` is the module that says why; both names are read from
 there rather than spelled again here, so what a page links and what this table writes cannot
-be two strings. `robots.txt`, `sitemap.xml` and `sitemap_index.xml` sit at the root because
-that is the only place a crawler looks for any of them.
+be two strings. The font files carry a digest too and sit at the root beside the stylesheet,
+because the sheet loads them by a bare relative `url()`, which resolves against the sheet and
+so works from every page depth, from `file://` and from a subpath. `robots.txt`, `sitemap.xml`
+and `sitemap_index.xml` sit at the root because that is the only place a crawler looks for any
+of them.
 
 The feeds and the sitemap are the one conditional, and it is one rule rather than two: a feed's
 links and a sitemap's locations are both absolute, so without a site URL `render_feed` and
@@ -61,7 +67,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from emendrix.site_.amending import resolve
-from emendrix.site_.assets import icon_svg, og_png, search_js
+from emendrix.site_.assets import font_files, icon_svg, og_png, search_js
 from emendrix.site_.discovery import (
     ROBOTS,
     SITEMAP,
@@ -71,7 +77,7 @@ from emendrix.site_.discovery import (
     sitemap_xml,
 )
 from emendrix.site_.feeds import feed_path, render_feed, render_feeds_page
-from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
+from emendrix.site_.fingerprint import FONTS, SCRIPT, STYLESHEET
 from emendrix.site_.history import histories
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
@@ -155,6 +161,8 @@ def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
         "about/index.html": render_about(site),
         "feeds/index.html": render_feeds_page(site),
     }
+    for name, content in font_files():
+        files[FONTS[name]] = content
     for act in site.acts:
         files.update(act_pages(site, act))
     # Only an instrument a committed event names gets a page: a declared short name for one
@@ -179,7 +187,8 @@ def write_site(out: Path, site: SiteInputs, *, home_limit: int = 20) -> tuple[Pa
     that directory. Two calls with one `SiteInputs` write byte-identical files.
 
     Bytes and text take separate branches because `write_bytes` accepts no newline argument and
-    the card must reach the tree exactly as it was committed, neither decoded nor re-encoded.
+    the card and the fonts must reach the tree exactly as committed, neither decoded nor
+    re-encoded.
     """
     written: list[Path] = []
     for name, content in sorted(_files(site, home_limit).items()):

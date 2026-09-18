@@ -212,6 +212,9 @@ def test_no_page_reaches_a_third_party_or_counts_its_readers(site: Path) -> None
 def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
     """The pages are only half the promise: a web font in the stylesheet is a request too.
 
+    Since 2026-09-18 the sheet loads three self-hosted faces, so a `url(` is allowed in one form
+    only, a relative fingerprinted `.woff2` the tree itself holds, and never to anywhere else.
+
     The feeds are excluded on purpose, because the one absolute `http://` in them is the Atom
     namespace, which is an identifier and never fetched. The icon's `xmlns` is stripped before
     the scan for exactly that reason: the SVG namespace names the language the document is
@@ -219,8 +222,13 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
     """
     for name in (_asset(site, ".css"), _asset(site, ".js"), "icon.svg"):
         text = (site / name).read_text(encoding="utf-8").replace(SVG_NS, "")
-        for banned in ("http://", "https://", "@import", "url("):
+        for banned in ("http://", "https://", "@import"):
             assert banned not in text, f"{name}: {banned}"
+        # A font is the one thing the sheet may load, and only by a bare fingerprinted name
+        # that resolves beside it at the root, where the build wrote the file.
+        for url in re.findall(r"url\(([^)]*)\)", text):
+            assert re.fullmatch(r"[a-z0-9-]+\.[0-9a-f]{8}\.woff2", url), f"{name}: {url}"
+            assert (site / url).is_file(), f"{name}: {url}"
 
 
 _LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 42078)

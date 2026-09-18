@@ -1,0 +1,775 @@
+@font-face {
+  font-family: "Emendrix Sans";
+  src: url(sans-400.424f1d2e.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+0100-017F, U+0218-021B, U+2010-2027, U+202F,
+    U+2032-2034, U+20AC, U+2190-2193, U+2197, U+2208, U+2212, U+221A, U+2260, U+2264-2265;
+}
+@font-face {
+  font-family: "Emendrix Sans";
+  src: url(sans-600.e2b79ccd.woff2) format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+0100-017F, U+0218-021B, U+2010-2027, U+202F,
+    U+2032-2034, U+20AC, U+2190-2193, U+2197, U+2208, U+2212, U+221A, U+2260, U+2264-2265;
+}
+@font-face {
+  font-family: "Emendrix Serif";
+  src: url(serif-400.de886d3d.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+0100-017F, U+0218-021B, U+0370-03FF, U+0400-045F,
+    U+2010-2027, U+202F, U+2032-2034, U+20AC, U+2190-2193, U+2197, U+2208, U+2212, U+221A,
+    U+2260, U+2264-2265;
+}
+@font-face {
+  font-family: "Emendrix Sans Fallback";
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("Arimo");
+  font-weight: 400;
+  size-adjust: 101.53%;
+  ascent-override: 100.96%;
+  descent-override: 27.09%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Emendrix Sans Fallback";
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"),
+    local("Arimo Bold");
+  font-weight: 600;
+  size-adjust: 98.06%;
+  ascent-override: 104.53%;
+  descent-override: 28.05%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Emendrix Serif Fallback";
+  src: local("Georgia");
+  font-weight: 400;
+  size-adjust: 100.07%;
+  ascent-override: 103.53%;
+  descent-override: 33.48%;
+  line-gap-override: 0%;
+}
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9;
+  --fg: #161a21;
+  --muted: #4e5664;
+  --rule: #dde1e7;
+  --edge: #7b8392;
+  --panel: #ffffff;
+  --mark: #e7ecf6;
+  --notice: #eceef2;
+  --ins: #d8efdf;
+  --del: #f8dfe1;
+  --link: #2a5fd6;
+  --alert: #8a1c0e;
+  --alert-tint: #fbe9e4;
+  --provenance: #4e5664;
+  --provenance-tint: #eef0f4;
+  --kind-inserted: #17692f;
+  --kind-inserted-tint: #e3f3e7;
+  --kind-deleted: #a3244f;
+  --kind-deleted-tint: #f9e6ed;
+  --kind-modified: #3a4a66;
+  --kind-modified-tint: #e8ecf3;
+  --kind-deferred: #7a4f00;
+  --kind-deferred-tint: #f8eed8;
+  --type-act: #0c6b5f;
+  --type-act-tint: #e2f0ec;
+  --type-version: #5a3db0;
+  --type-version-tint: #ebe7f7;
+  --type-provision: #8a4b00;
+  --type-provision-tint: #f6ebdb;
+  --type-amending: #7e2a64;
+  --type-amending-tint: #f4e5ef;
+
+  --sans: "Emendrix Sans", "Emendrix Sans Fallback", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --serif: "Emendrix Serif", "Emendrix Serif Fallback", Georgia, "Times New Roman", serif;
+
+  --text-caption: .875rem;
+  --text-h1: clamp(1.95rem, 1.45rem + 2vw, 2.75rem);
+  --text-h2: clamp(1.4rem, 1.25rem + .6vw, 1.65rem);
+  --text-h3: 1.3rem;
+  --text-lede: clamp(1.125rem, 1.05rem + .35vw, 1.3rem);
+  --text-explain: 1.125rem;
+  --text-body: 1.0625rem;
+  --text-meta: .875rem;
+  --text-label: .8125rem;
+  --text-legal: clamp(1rem, .96rem + .2vw, 1.0625rem);
+  --text-code: .8125rem;
+
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+
+  --shell: 76rem;
+  --gutter: clamp(1rem, 3vw, 2rem);
+  --measure: 68ch;
+  --legal-measure: 40rem;
+  --index-width: 19rem;
+  --context-height: 2.75rem;
+  --radius: 4px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171a21;
+    --fg: #e7e9ee;
+    --muted: #a4acba;
+    --rule: #2c313c;
+    --edge: #788192;
+    --panel: #1e222b;
+    --mark: #222a3f;
+    --notice: #232833;
+    --ins: #1d3d29;
+    --del: #4a2230;
+    --link: #b0caff;
+    --alert: #f7704f;
+    --alert-tint: #3a1e19;
+    --provenance: #b2bac8;
+    --provenance-tint: #232833;
+    --kind-inserted: #70d18f;
+    --kind-inserted-tint: #173222;
+    --kind-deleted: #f490b4;
+    --kind-deleted-tint: #3a1d2a;
+    --kind-modified: #aebbd6;
+    --kind-modified-tint: #252c3c;
+    --kind-deferred: #e5b660;
+    --kind-deferred-tint: #352a15;
+    --type-act: #5fcfbb;
+    --type-act-tint: #15282a;
+    --type-version: #b9a8ff;
+    --type-version-tint: #211f38;
+    --type-provision: #eab46a;
+    --type-provision-tint: #2c2418;
+    --type-amending: #f19bd2;
+    --type-amending-tint: #301c2c;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 var(--text-body)/1.6 var(--sans);
+  font-variant-ligatures: none;
+  font-synthesis: none;
+}
+main { max-width: var(--shell); margin: 0 auto;
+       padding: var(--space-5) var(--gutter) var(--space-6); }
+h1, h2, h3, .display { font-family: var(--sans); font-weight: 600; color: var(--fg); }
+h1 { font-size: var(--text-h1); line-height: 1.08; letter-spacing: -.018em;
+     margin: 0 0 var(--space-3); }
+h2 { font-size: var(--text-h2); line-height: 1.2; letter-spacing: -.01em;
+     margin: var(--space-5) 0 var(--space-3); }
+h3 { font-size: var(--text-h3); line-height: 1.3; margin: 0 0 var(--space-2); }
+p, ul, ol { margin: 0 0 var(--space-3); }
+p { max-width: var(--measure); }
+a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: .18em; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; border-radius: 2px; }
+strong { font-weight: 600; }
+/* Identifiers are set in the sans with its slashed zero rather than in a monospace face, and
+   every figure a reader compares down a column is tabular. */
+time, .date, .mag, code, .id { font-variant-numeric: tabular-nums lining-nums; }
+code, .id {
+  font-family: var(--sans);
+  font-size: var(--text-code);
+  font-feature-settings: "zero" 1;
+  color: var(--muted);
+  letter-spacing: .01em;
+  overflow-wrap: anywhere;
+}
+.lede { max-width: var(--measure); font-size: var(--text-body); }
+.muted { color: var(--muted); }
+.small { font-size: var(--text-meta); line-height: 1.5; }
+/* A proper noun carrying a hyphen, kept off the line break that would read as two words. */
+.nowrap { white-space: nowrap; }
+.scroll { overflow-x: auto; }
+.facts { margin: var(--space-1) 0 var(--space-3); font-size: var(--text-meta); line-height: 1.55;
+         color: var(--muted); }
+.ident { font-size: var(--text-meta); color: var(--muted); }
+.quoted { color: var(--muted); }
+.none { color: var(--muted); }
+/* The pill and the tag are the two components whose whole content is a boundary and a word,
+   so their border is `--edge` and not the hairline the rest of the sheet draws with. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: .12rem .45rem;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--fg);
+  font: 600 var(--text-label)/1.25 var(--sans);
+  letter-spacing: .02em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.pill.ins { color: var(--kind-inserted); background: var(--kind-inserted-tint);
+            border-color: var(--kind-inserted); }
+.pill.disp { background: transparent; border-color: var(--alert); color: var(--alert); }
+.tag { display: inline-flex; align-items: center; padding: .12rem .45rem;
+       border: 1px solid var(--edge); border-radius: var(--radius); background: var(--panel);
+       color: var(--fg); font: 600 var(--text-label)/1.25 var(--sans);
+       font-variant-numeric: tabular-nums; }
+/* Off-screen until it takes focus, then placed over the header rather than moving it, so
+   arriving at the page shifts nothing. It is the first focusable element on every page. */
+.skip {
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  z-index: 30;
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel);
+  color: var(--link);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  transform: translateY(-300%);
+}
+.skip:focus { transform: none; }
+/* Read aloud and never drawn: the search control's result count lives here. Clipped rather
+   than hidden, because `display: none` and `visibility: hidden` take it out of the
+   accessibility tree, which is the one place it exists to be. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* The header and the footer paint the full width and hold their content to the shell, so a
+   wide screen shows no empty margins beside them. */
+header.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) max(var(--gutter), calc((100% - var(--shell)) / 2 + var(--gutter)));
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+}
+.wordmark { font-weight: 600; font-size: var(--text-explain); letter-spacing: -.02em;
+            color: var(--fg); text-decoration: none; margin-right: var(--space-2); }
+.wordmark:hover { color: var(--link); }
+header.bar nav { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); flex: 1 1 auto; }
+header.bar nav a { color: var(--fg); text-decoration: none; font-size: var(--text-meta);
+                   padding: .7rem 0; border-bottom: 2px solid transparent; }
+header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; }
+/* It does not grow: a search box that takes half of a wide header reads as the page's main
+   business, and it is a shortcut past navigation that already works. */
+#search { position: relative; flex: 0 1 20rem; min-width: 12rem; margin-left: auto; }
+/* A form control's boundary is the information, so it is `--edge`, at 3:1 or better. */
+#search input {
+  width: 100%;
+  padding: .55rem .75rem;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--fg);
+  font: 400 var(--text-meta)/1.4 var(--sans);
+}
+#search input::placeholder { color: var(--muted); opacity: 1; }
+#search .results {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + .25rem);
+  left: 0;
+  right: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-1) 0;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+}
+#search .results:empty { display: none; }
+#search .results li { display: flex; align-items: baseline; gap: var(--space-2); }
+#search .results a { flex: 1 1 auto; padding: .45rem .75rem; color: var(--fg);
+                     text-decoration: none; }
+/* One declaration for three states, so the row the arrow keys highlight and the row the
+   pointer is over cannot come to look different from each other. */
+#search .results a:hover, #search .results a:focus,
+#search .results li.active a { background: var(--mark); }
+/* What kind of thing a result is, said once at the end of the row rather than under it. */
+.kind { padding-right: .75rem; font-size: var(--text-label); font-weight: 600;
+        color: var(--muted); }
+/* Narrow enough that the header wraps: the box takes its own row rather than the sliver
+   left beside the navigation. */
+@media (max-width: 40rem) {
+  header.bar { gap: var(--space-2); padding-top: var(--space-2); padding-bottom: var(--space-2); }
+  /* One row that scrolls sideways, faded at its end so the cut reads as more to come. */
+  header.bar nav {
+    order: 3; flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; gap: 0 var(--space-3);
+    scrollbar-width: none; margin: 0 calc(-1 * var(--gutter)); padding: 0 var(--gutter);
+    mask-image: linear-gradient(to right, black 85%, transparent);
+  }
+  header.bar nav a { white-space: nowrap; padding: .75rem 0; }
+  .wordmark { flex: 1 1 auto; }
+  #search { flex: 1 1 100%; order: 4; margin-left: 0; }
+}
+footer {
+  padding: var(--space-5) max(var(--gutter), calc((100% - var(--shell)) / 2 + var(--gutter)))
+    var(--space-6);
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: var(--text-meta);
+  line-height: 1.55;
+}
+footer p { max-width: 62ch; }
+/* The not-legal-advice notice: its own surface, an `--edge` boundary and a drawn `!` in the
+   text colour, and the only block on the site that looks like it. */
+.disclaimer {
+  position: relative;
+  max-width: 62ch;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-3) var(--space-3) 3.25rem;
+  background: var(--notice);
+  color: var(--fg);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  line-height: 1.55;
+}
+.disclaimer::before {
+  content: "!";
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 2px solid var(--fg);
+  border-radius: 50%;
+  font-weight: 600;
+  line-height: 1.2rem;
+  text-align: center;
+}
+.hero { padding: var(--space-4) 0 var(--space-3); text-align: center; }
+.hero h1 { max-width: none; margin-bottom: var(--space-3); }
+.hero p { max-width: 42rem; margin: 0 auto var(--space-3); }
+/* A measured figure, not a warning: a panel with a rule in the act colour, never the notice
+   surface the disclaimer owns. */
+.strip {
+  margin: 0 auto var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  max-width: 62ch;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--type-act);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+}
+.strip strong { font-variant-numeric: tabular-nums; }
+.cardrow { padding: var(--space-3) 0 var(--space-4); border-top: 1px solid var(--rule); }
+.cardrow:last-of-type { border-bottom: 1px solid var(--rule); }
+.cardrow h3 { font-size: var(--text-h3); margin: 0 0 var(--space-1); }
+.cardrow .facts { margin: 0 0 var(--space-1); }
+.cardrow .ident { display: block; margin: 0; }
+.cardrow .disp { padding: 0 .35rem; border: 1px solid var(--alert); border-radius: var(--radius);
+                 color: var(--alert); font-weight: 600; }
+.roster { list-style: none; margin: 0 0 var(--space-5); padding: 0; }
+.roster li { padding: var(--space-3) 0; border-top: 1px solid var(--rule); }
+.roster li:last-child { border-bottom: 1px solid var(--rule); }
+.roster > li > a { font-weight: 600; font-size: var(--text-body); }
+.roster .ident { margin-left: .35rem; }
+.roster .sub { display: block; max-width: 82ch; margin-top: .15rem; font-family: var(--serif);
+               font-size: var(--text-meta); color: var(--fg); }
+td.result { white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.meaning { color: var(--muted); }
+.caveats { margin: var(--space-3) 0 0; padding-left: 1.1rem; font-size: var(--text-meta);
+           color: var(--muted); }
+.caveats li { margin: .3rem 0; max-width: var(--measure); }
+.loop { list-style: none; display: grid; gap: .75rem; padding: 0; margin: var(--space-3) 0;
+        grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); }
+.loop li { background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius);
+           padding: .7rem .8rem; font-size: var(--text-meta); }
+.loop b { display: block; font-size: var(--text-label); font-weight: 600; color: var(--fg); }
+/* An official title or heading, in the law's own words: the serif, one step down. */
+.official {
+  margin: 0 0 var(--space-3);
+  max-width: 82ch;
+  font-family: var(--serif);
+  font-size: var(--text-meta);
+  line-height: 1.55;
+  color: var(--muted);
+}
+.links { margin: var(--space-1) 0 var(--space-4); font-size: var(--text-meta); line-height: 1.55; }
+/* The neighbours line closes the header, so its gap above is the links line's own. */
+.related { margin: 0 0 var(--space-4); font-size: var(--text-meta); color: var(--muted); }
+.layout { display: block; }
+/* The index is bounded at every width. An act with hundreds of provisions renders hundreds
+   of links, and `<details open>` opens them all: unbounded, the CRR index stands 20510px tall
+   on a 390px screen and the timeline it sits above starts below all of it. */
+.sidebar {
+  margin: var(--space-4) 0;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  font-size: var(--text-meta);
+  line-height: 1.45;
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.sidebar summary { padding: var(--space-2) 0; font-weight: 600; color: var(--fg); }
+.sidebar h2 {
+  margin: var(--space-3) 0 var(--space-2);
+  padding: 0;
+  border: 0;
+  font-size: var(--text-label);
+  letter-spacing: .01em;
+  color: var(--muted);
+}
+.sidebar ul { list-style: none; margin: 0; padding: 0; }
+.sidebar li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 .4rem;
+              padding: .3rem 0; border-top: 1px solid var(--rule); }
+.sidebar li:first-child { border-top: 0; }
+@media (min-width: 60rem) {
+  .layout {
+    display: grid;
+    grid-template-columns: var(--index-width) minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+  }
+  .sidebar { position: sticky; top: var(--space-3); max-height: calc(100vh - 2rem);
+             margin: 0; overflow-y: auto; }
+  /* The dates list follows the timeline down the page, so it belongs in the timeline's column
+     rather than under the index: auto-placement would otherwise start it a row lower in the
+     narrow one, where a row of two links and a date does not fit. */
+  .layout > .dates-named { grid-column: 2; }
+}
+/* The rail and its nodes: an act's history is a sequence, and the heading of each entry on
+   it is a date. Drawn in the sheet so the markup stays one article per event. */
+.timeline { min-width: 0; }
+.layout > .timeline, .amended > .timeline { padding-left: var(--space-5);
+                                            border-left: 2px solid var(--rule);
+                                            margin-left: .45rem; }
+.timeline .event { position: relative; padding-bottom: var(--space-5); }
+.timeline .event::before {
+  content: "";
+  position: absolute;
+  top: .45rem;
+  left: calc(-1 * var(--space-5) - .45rem - 1px);
+  width: .9rem;
+  height: .9rem;
+  border-radius: 50%;
+  border: 2px solid var(--type-version);
+  background: var(--bg);
+}
+.timeline .event:first-of-type::before { background: var(--type-version); }
+.timeline .event:last-child { padding-bottom: 0; }
+/* A phone gives the rail less of its narrow column. */
+@media (max-width: 40rem) {
+  .layout > .timeline, .amended > .timeline { padding-left: var(--space-4); }
+  .timeline .event::before { left: calc(-1 * var(--space-4) - .45rem - 1px); }
+}
+.event { min-width: 0; }
+.event > h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  border: 0;
+  font-size: var(--text-h3);
+  line-height: 1.3;
+}
+.event > .ident { margin: 0 0 var(--space-1); }
+/* Every date one act's text names, under its timeline. A list rather than a table: a row is a
+   date and the two places it can be checked, and columns would promise a structure the corpus
+   never wrote. The date leads each row in tabular figures, so the dates scan as a column
+   while the words around them stay prose. */
+.dates-named { margin: var(--space-5) 0 0; }
+.dates-named ul { list-style: none; margin: 0; padding: 0; font-size: var(--text-meta); }
+.dates-named li { padding: .2rem 0; }
+.dates-named .on { font-weight: 600; font-variant-numeric: tabular-nums lining-nums; }
+/* One watched act on an amending instrument's page: its own heading, then the rail of events
+   that instrument produced there. The heading carries the act, so it is set as a page heading
+   rather than as a card's. */
+.amended { margin: var(--space-5) 0 0; }
+.amended > h2 a { text-decoration: none; }
+.amended > h2 a:hover { text-decoration: underline; }
+/* The events either side of this one, at the foot of an event page. Each link carries the date
+   it goes to, so the row is read rather than decoded; they sit at the two ends of the line so
+   the direction is visible before the words are. */
+.pager { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-3);
+         margin: var(--space-5) 0 0; padding-top: var(--space-3);
+         border-top: 1px solid var(--rule); font-size: var(--text-meta); line-height: 1.4; }
+/* The instrument that made the event, under the version pair it produced. Set small, like the
+   other fact lines, the instrument's link in the semibold, and the declared short name in the
+   text colour beside the muted number, so the label and the identifier read as two kinds of
+   name without a slant the site does not load. */
+.amending { font-size: var(--text-meta); color: var(--muted); margin-bottom: var(--space-1); }
+.amending a:first-of-type { font-weight: 600; }
+.amending .ttl { color: var(--fg); }
+.chg {
+  padding: var(--space-4) 0 var(--space-3);
+  border-top: 1px solid var(--rule);
+  scroll-margin-top: var(--space-3);
+}
+.chg:target { background: var(--mark); box-shadow: 0 0 0 var(--space-3) var(--mark); }
+.chg h3 { margin: 0 0 var(--space-2); display: flex; flex-wrap: wrap; align-items: baseline;
+          gap: .15rem .6rem; font-size: var(--text-h3); line-height: 1.3; }
+.chg h3 .pill { align-self: center; }
+.chg .loc { font-weight: 600; }
+/* The coordinate in a change heading leads to that provision's own history. It keeps the
+   weight and the colour it had as a span: it is still the heading of the block, not an
+   invitation to leave it. */
+a.loc { color: inherit; font-weight: 600; }
+.chg .ttl { font-weight: 600; color: var(--fg); }
+/* The explanation, the largest text on the block and the model's words, in the sans. */
+.chg > p:not([class]) { font-size: var(--text-explain); line-height: 1.55; max-width: 64ch; }
+.chg .applies { margin: 0 0 var(--space-1); }
+/* One step of a provision's history: a change block on the same rail an act's timeline is
+   drawn as, one node per version, the newest filled. */
+.chg.step {
+  position: relative;
+  margin-left: .45rem;
+  padding: 0 0 var(--space-5) var(--space-5);
+  border-top: 0;
+  border-left: 2px solid var(--rule);
+}
+.chg.step:last-of-type { border-left-color: transparent; }
+.chg.step::before {
+  content: "";
+  position: absolute;
+  left: calc(-.45rem - 1px);
+  top: .5rem;
+  width: .9rem;
+  height: .9rem;
+  border-radius: 50%;
+  border: 2px solid var(--type-version);
+  background: var(--bg);
+}
+.chg.step:first-of-type::before { background: var(--type-version); }
+.chg.step:target { background: transparent; box-shadow: none; }
+.chg.step:target > h2 { background: var(--mark); box-shadow: 0 0 0 .4rem var(--mark); }
+.step h2 { display: flex; flex-wrap: wrap; gap: .15rem .6rem; align-items: baseline;
+           margin: 0 0 var(--space-2); padding: 0; border: 0; font-size: var(--text-h3);
+           line-height: 1.3; }
+.step h2 .pill { align-self: center; }
+/* How much of the provision moved, in characters, beside the kind of change it was. Tabular
+   figures because it is a figure standing next to a label, and never wrapped: `+1,204` alone
+   at the end of a row would read as the whole count. */
+.mag { font-size: var(--text-label); font-weight: 400; color: var(--muted);
+       white-space: nowrap; }
+/* A map of the page, not a second copy of it: one wrapping row, so forty-five provisions
+   cost a few lines of height and a reader can see the whole event at once. */
+.touched { margin: var(--space-3) 0 var(--space-4); padding: var(--space-3);
+           background: var(--panel); border: 1px solid var(--rule);
+           border-radius: var(--radius); font-size: var(--text-meta); line-height: 1.35; }
+.touched p { margin: 0 0 var(--space-2); }
+.touched ol { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3);
+              list-style: none; margin: 0; padding: 0; }
+.touched li { display: flex; align-items: baseline; gap: var(--space-1); }
+/* The decade of characters a change moved, as weight on its link, so the index reads as a map
+   of where the text is rather than only of where a change is. Two weights are loaded, so the
+   four decades fall into two; the count beside each one is the fact, and the classes claim
+   nothing about importance. */
+.touched .mag-1 a { font-weight: 400; }
+.touched .mag-2 a { font-weight: 400; }
+.touched .mag-3 a { font-weight: 600; }
+.touched .mag-4 a { font-weight: 600; }
+/* The same grid the act page draws, with the event's index as the left column, at the one
+   width the act page becomes two columns. The `.sidebar` cap above is deliberately not reused:
+   that one bounds a `<details>` of hundreds of links at every width, where this is a row of
+   forty coordinates that costs a few lines while it is a row and needs the cap only once it
+   stands as a column. Below the query nothing here applies and the row is untouched. */
+@media (min-width: 60rem) {
+  .event-layout .touched {
+    position: sticky;
+    top: var(--space-3);
+    max-height: calc(100vh - 2rem);
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .event-layout .touched ol { display: block; }
+  .event-layout .touched li { padding: .45rem 0; border-top: 1px solid var(--rule); }
+  .event-layout .touched li:first-child { border-top: 0; }
+  .event-layout .touched .mag { margin-left: auto; }
+  .changes { min-width: 0; }
+  .changes > .chg:first-child { border-top: 0; padding-top: 0; }
+}
+/* One change's own address, at the end of the heading that names it. Set in the muted colour
+   because it is furniture beside a coordinate that is not, and pushed to the end of the row by
+   the heading's own flex. */
+.permalink { margin-left: auto; padding: 0 .25rem; color: var(--muted); font-weight: 400;
+             font-size: var(--text-meta); text-decoration: none; }
+.permalink:hover, .permalink:focus { color: var(--link); }
+/* The citations of one change, once, under its sentences. The lead word is muted and the
+   anchors keep the sheet's link colour, so the row reads as links with a label rather than as
+   a sentence. */
+.cites { margin: var(--space-3) 0 0; font-size: var(--text-meta); color: var(--muted); }
+/* Clock 2's answer for one change, on every block. A date is lifted out of the muted colour
+   and set in tabular figures, so it scans as the figure it is; the two stated non-answers keep
+   the muted colour, and recede without the line ever going silent about them. */
+.applies { font-size: var(--text-meta); color: var(--muted); }
+.applies .date { color: var(--fg); }
+/* The dates a change moved, directly under the line that says whether one of them governs the
+   provision. Set like the applies line, because the two are facts of the same rank about one
+   change, and in tabular figures so a column of ISO dates reads as a column. */
+.dates { margin: var(--space-1) 0 var(--space-2); font-size: var(--text-meta);
+         color: var(--muted); font-variant-numeric: tabular-nums lining-nums; }
+.disputed { font-size: var(--text-meta); color: var(--alert); }
+/* A disagreement is graded by which of the three shapes it is, and the badge carries the
+   grade. All three keep the one alert colour; the border style and the fill are what tell
+   them apart, so the colour is never the grade on its own. The evidenced shape, a change the
+   comparison read and another source did not list, is the plain disputed pill. */
+.disp-none .pill.disp { border-style: dashed; }
+.disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }
+/* The source that named a row with no text, on the heading that is the whole of that row
+   until it is opened. Set like the title beside it, smaller and muted, so the heading stays
+   one coordinate and everything after it reads as a note about it. */
+.chg .by { font-weight: 400; font-size: var(--text-meta); color: var(--muted); }
+/* The changes with no text to show, gathered at the foot of an event: one line each, with the
+   rest of the block hidden until the row is the fragment target. `:target` is what a permalink
+   into this list sets, so the link that names a row is the link that opens it, with no script
+   and nothing dropped from the markup. */
+.quiet { margin: var(--space-5) 0 0; }
+.quiet .chg { padding: .2rem 0; border-top: 0; }
+.quiet .chg > *:not(h3) { display: none; }
+.quiet .chg:target { padding: var(--space-3) 0; }
+.quiet .chg:target > *:not(h3) { display: block; }
+details { margin: var(--space-3) 0 var(--space-2); }
+summary { cursor: pointer; width: fit-content; padding: .35rem 0; font-weight: 600;
+          font-size: var(--text-meta); color: var(--link); }
+summary::marker { color: var(--link); }
+summary:hover { text-decoration: underline; }
+details[open] > summary { margin-bottom: var(--space-2); }
+/* The strip above a diff or a whole provision: which versions it compares, joined to the box
+   under it and exactly as wide, which is why the legal measure is set in `rem`. */
+.lbl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .25rem .5rem;
+  max-width: var(--legal-measure);
+  margin: 0;
+  padding: .5rem .9rem;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-bottom: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+  font-size: var(--text-label);
+  color: var(--muted);
+}
+/* The law's own words: the serif, held to the legal measure, with no ligature and tabular
+   figures, so the text reads as EUR-Lex wrote it and no two characters can merge. */
+.diff, .verbatim {
+  max-width: var(--legal-measure);
+  margin: 0 0 var(--space-3);
+  padding: .9rem 1.1rem 1rem;
+  background: var(--panel);
+  color: var(--fg);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--edge);
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-family: var(--serif);
+  font-size: var(--text-legal);
+  line-height: 1.7;
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-kerning: normal;
+  /* The stored text breaks at every block boundary the source document opened, and the
+     unified view emits those breaks. Without this they would collapse and a provision would
+     read as one wall of prose. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* Both tints carry foreground text, so what is readable never depends on a coloured
+   foreground surviving a theme swap, and both marks also say which they are without their
+   tint: an insertion is underlined and a deletion struck through, on screen as on paper. A
+   diff block holds no links, so an underline inside one can mean only the one thing. */
+.diff ins, .diff del { padding: 0 .1em; border-radius: 2px; color: var(--fg); }
+.diff ins { background: var(--ins); text-decoration: underline; text-underline-offset: .2em;
+            text-decoration-thickness: 1px; }
+.diff del { background: var(--del); text-decoration: line-through;
+            text-decoration-thickness: 1px; }
+/* The site's interruption of the text rather than part of it: the sans, in a chip whose
+   `--edge` border is visible at 3:1. */
+.elided {
+  display: inline-block;
+  margin: 0 .15rem;
+  padding: 0 .45rem;
+  border: 1px dashed var(--edge);
+  border-radius: var(--radius);
+  font: 400 var(--text-label)/1.4 var(--sans);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.verbatim.ins { background: var(--ins); border-left-color: var(--kind-inserted); }
+.verbatim.del { background: var(--del); border-left-color: var(--kind-deleted); }
+/* A phone gives the step rail and the legal text less padding and more of the line. */
+@media (max-width: 40rem) {
+  .chg.step { padding-left: var(--space-4); }
+  .diff, .verbatim { padding: .75rem .8rem; }
+}
+table { border-collapse: collapse; width: 100%; font-size: var(--text-meta); min-width: 40rem; }
+th, td { text-align: left; vertical-align: top; padding: .5rem .6rem;
+         border-bottom: 1px solid var(--rule); }
+th { font-size: var(--text-label); font-weight: 600; color: var(--muted); }
+@media print {
+  #search, header.bar nav, .skip { display: none; }
+  body { background: white; color: black; }
+  main, header.bar, footer { max-width: none; padding-left: 0; padding-right: 0; }
+  /* A scroll box cannot be scrolled on paper, so both indexes print whole. */
+  .sidebar { max-height: none; overflow: visible; }
+  .event-layout .touched { position: static; max-height: none; overflow: visible; }
+  /* Navigation, like the header's: a permalink and a way back to the top of a sheet of paper
+     are both instructions a printed page cannot carry out. */
+  .permalink, .backtop, .pager { display: none; }
+  /* A row cannot be opened on paper either, so the gathered ones print whole, for the reason
+     both indexes do. Named with the same two classes the screen rule uses, since a shorter
+     selector would not outrank it. */
+  .quiet .chg > *:not(h3) { display: block; }
+  .strip, .disclaimer, .sidebar, .touched, .diff, .verbatim, .lbl, .loop li, .pill, .tag
+    { background: transparent; }
+  /* Named again because a two-class or pseudo-class selector outranks a one-class one
+     whatever the order: what these tints say is already written beside them, in the label
+     above a whole inserted or deleted provision, in the word inside the pill, and in the
+     fragment that brought a reader to one block. */
+  .verbatim.ins, .verbatim.del, .pill.ins, .chg:target { background: transparent; }
+  .chg:target, .chg.step:target > h2 { box-shadow: none; }
+  /* And the filled badge of the one shape that is an alert, for the same reason and by the
+     same rule: what its tint says is written beside it, in the lead of the note under it. */
+  .disp-kind .pill.disp { background: transparent; }
+  /* The tints inside a diff are the only ones that say something no word beside them does,
+     so they stay, and nothing is redeclared for them: the screen rules already underline an
+     insertion and strike a deletion, which is what a printer with no colour reads. */
+  a { color: inherit; }
+}
+/* Forced colours replace every colour with the reader's own, and a mark drawn only as a
+   background vanishes. So every boundary that is the information becomes `CanvasText`, and the
+   rail's nodes are drawn as rings the system palette keeps, the newest still filled. */
+@media (forced-colors: active) {
+  .pill, .tag, .elided, .disclaimer, .touched, .sidebar, .diff, .verbatim, #search input
+    { border-color: CanvasText; }
+  .disp-kind .pill.disp { border-width: 2px; }
+  .timeline .event::before, .chg.step::before {
+    background: Canvas; border-color: CanvasText; forced-color-adjust: none;
+  }
+  .timeline .event:first-of-type::before, .chg.step:first-of-type::before
+    { background: CanvasText; }
+  .diff ins { text-decoration: underline; }
+  .diff del { text-decoration: line-through; }
+}

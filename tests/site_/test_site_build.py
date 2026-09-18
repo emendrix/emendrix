@@ -24,8 +24,9 @@ from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
 from emendrix.site_ import collect_site, write_site
+from emendrix.site_.assets import font_files
 from emendrix.site_.boundary import eurlex_urls, version_dates
-from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
+from emendrix.site_.fingerprint import FONTS, SCRIPT, STYLESHEET
 from emendrix.watch.state import PendingConsolidation, WatchState
 from eu_pins import OBSERVED_ON
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
@@ -121,6 +122,29 @@ def test_the_two_cached_assets_are_named_for_the_bytes_they_hold(
     home = (out / "index.html").read_text(encoding="utf-8")
     assert f'href="{STYLESHEET}"' in home
     assert f'src="{SCRIPT}"' in home
+
+
+def test_the_fonts_are_written_at_the_root_under_their_own_digests(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """Each face lands beside the stylesheet, named for its bytes, and byte for byte as committed.
+
+    The stylesheet loads them by a bare relative `url()`, which resolves against the sheet, so
+    the root is the one place they work from every page depth. The digest is recomputed over the
+    written file, like the stylesheet's, and the bytes are compared with the committed ones
+    because a font decoded to text and back is a font no browser will load.
+    """
+    out = build(tmp_path / "site", changelog_repo)
+    committed = dict(font_files())
+    assert set(FONTS) == set(committed)
+    for source, name in FONTS.items():
+        stem, digest, suffix = name.split(".")
+        assert (stem, suffix) == tuple(source.split(".")), name
+        assert len(digest) == 8, name
+        written = (out / name).read_bytes()
+        assert written == committed[source], name
+        assert hashlib.sha256(written).hexdigest().startswith(digest), name
+        assert not (out / source).exists(), source
 
 
 def test_the_committed_assets_are_copied_and_not_re_encoded(

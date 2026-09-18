@@ -1,4 +1,4 @@
-"""The two generated-name assets: a stylesheet and a script named for their own bytes.
+"""The generated-name assets: a stylesheet, a script and the fonts, named for their own bytes.
 
 A cache is right by construction when the name changes with the content. The edge in front of
 this site gives an asset a one-day lifetime, and on 2026-09-04 it served a stylesheet of 14 424
@@ -24,7 +24,13 @@ build's bytes rather than defending against anyone choosing them; it is a cache 
 security claim. The separator is a dot, with the extension left last, so every server, editor
 and browser keeps reading the type off the suffix.
 
-Both names are computed once at import: they are pure functions of two constants in this
+The fonts are named the same way, by `digest`, which holds the one digest function this
+module also uses. They are named there rather than here because the stylesheet has to embed
+their names and this module is computed from the finished stylesheet: `digest` imports nothing
+that imports `style`, and this module re-exports `FONTS` so the builder reads every generated
+name from one place.
+
+The names are computed once at import: they are pure functions of two constants in this
 package, so two builds of one checkout name one file one way. `chrome.page` links them and
 `build.py` writes them, and they read the name from here rather than each spelling it, because
 a link and a file that disagree is the defect this module exists to make unrepresentable.
@@ -32,22 +38,18 @@ a link and a file that disagree is the defect this module exists to make unrepre
 
 from __future__ import annotations
 
-import hashlib
 from typing import Final
 
 from emendrix.site_.assets import search_js
+from emendrix.site_.digest import FONTS, fingerprinted_bytes
 from emendrix.site_.style import STYLE
 
-__all__ = ["SCRIPT", "STYLESHEET", "fingerprinted"]
-
-_DIGEST_LENGTH: Final = 8
+__all__ = ["FONTS", "SCRIPT", "STYLESHEET", "fingerprinted", "fingerprinted_bytes"]
 
 
 def fingerprinted(name: str, content: str) -> str:
-    """`("style.css", sheet)` -> `style.<digest>.css`. The suffix stays the suffix."""
-    stem, _, suffix = name.rpartition(".")
-    digest = hashlib.sha256(content.encode("utf-8")).hexdigest()[:_DIGEST_LENGTH]
-    return f"{stem}.{digest}.{suffix}"
+    """`("style.css", sheet)` -> `style.<digest>.css`, over the UTF-8 bytes the build writes."""
+    return fingerprinted_bytes(name, content.encode("utf-8"))
 
 
 STYLESHEET: Final = fingerprinted("style.css", STYLE)

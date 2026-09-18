@@ -282,7 +282,7 @@ def test_the_outright_contradiction_about_kind_is_the_one_that_reads_as_an_alert
 
     Every source that looked found the provision and they named different kinds, so nothing is
     missing and nothing is unlisted: the lead says so, the block carries the kind class, and the
-    badge is the only one of the three the sheet fills and weights.
+    badge is the only one of the three the sheet fills and draws with a double-weight border.
     """
     metadata = SignalReport(
         signal=Signal.CORPUS_METADATA,
@@ -296,7 +296,7 @@ def test_the_outright_contradiction_about_kind_is_the_one_that_reads_as_an_alert
     assert rendered.count('<div class="chg disp-kind"') == 3
     assert "<strong>Sources disagree about the kind of change</strong>" in rendered
     assert "<strong>3 disputed</strong> (0 found in the text, 0 named with no text, " in rendered
-    assert ".disp-kind .pill.disp { background: var(--mark); font-weight: 700; }" in STYLE
+    assert ".disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }" in STYLE
 
 
 def test_the_three_sources_explainer_is_said_once_above_the_first_disagreement() -> None:

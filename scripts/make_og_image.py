@@ -13,10 +13,11 @@ fixtures. Regeneration is deliberate and rare, so the exact bytes depending on t
 Pillow version is accepted.
 
 The card is 1200x630, the size every link preview crops to, and it uses the stylesheet's light
-palette because an image cannot follow `prefers-color-scheme`. The type is Pillow's bundled
-font rather than the site's Georgia: loading a system font by path would make the output depend
-on the machine that ran this, and committing a font file would add a second binary nobody
-reviews. The card is therefore sans-serif where the site's display face is a serif.
+palette because an image cannot follow `prefers-color-scheme`. The type is the site's own sans,
+read from the subset WOFF2 files the repository already commits under
+`src/emendrix/site_/static/fonts/` (Pillow's FreeType reads WOFF2), so the card and the header
+set the wordmark in one face. A system font loaded by path would make the output depend on the
+machine that ran this; the committed files make it depend only on the repository.
 
 It carries "Not legal advice." because a link preview is a user-facing output and every one of
 them states the limit alongside the claim.
@@ -32,11 +33,12 @@ WIDTH = 1200
 HEIGHT = 630
 """The size link previews are cropped to, on every platform that reads Open Graph."""
 
-BACKGROUND = "#fcfcfa"
-INK = "#1c1c1a"
-MUTED = "#5d5d58"
-ACCENT = "#7a4b1e"
-"""The light palette of `src/emendrix/site_/style/tokens.py`. A card cannot follow a theme."""
+BACKGROUND = "#f6f7f9"
+INK = "#161a21"
+MUTED = "#4e5664"
+ACCENT = "#2a5fd6"
+"""The light `--bg`, `--fg`, `--muted` and `--link` of `src/emendrix/site_/style/tokens.py`.
+A card cannot follow a theme."""
 
 BAR_WIDTH = 12
 LEFT = 96
@@ -46,17 +48,20 @@ WORDMARK = "emendrix"
 TAGLINE = "Provision-level changelogs for EU legislation"
 DISCLAIMER = "Not legal advice."
 
-TARGET = Path(__file__).resolve().parents[1] / "src/emendrix/site_/static/og.png"
+STATIC = Path(__file__).resolve().parents[1] / "src/emendrix/site_/static"
+TARGET = STATIC / "og.png"
+REGULAR = STATIC / "fonts/sans-400.woff2"
+SEMIBOLD = STATIC / "fonts/sans-600.woff2"
 
 
 def draw_card() -> Image.Image:
-    """The finished card. Pure: same Pillow, same bytes, no clock and no input."""
+    """The finished card. Pure: same Pillow and fonts, same bytes, no clock and no input."""
     card = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND)
     pen = ImageDraw.Draw(card)
     pen.rectangle((0, 0, BAR_WIDTH - 1, HEIGHT - 1), fill=ACCENT)
-    pen.text((LEFT, 202), WORDMARK, font=ImageFont.load_default(size=96), fill=INK)
-    pen.text((LEFT, 322), TAGLINE, font=ImageFont.load_default(size=36), fill=MUTED)
-    pen.text((LEFT, 414), DISCLAIMER, font=ImageFont.load_default(size=24), fill=MUTED)
+    pen.text((LEFT, 202), WORDMARK, font=ImageFont.truetype(SEMIBOLD, 96), fill=INK)
+    pen.text((LEFT, 322), TAGLINE, font=ImageFont.truetype(REGULAR, 36), fill=MUTED)
+    pen.text((LEFT, 414), DISCLAIMER, font=ImageFont.truetype(REGULAR, 24), fill=MUTED)
     return card
 
 

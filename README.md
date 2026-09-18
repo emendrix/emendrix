@@ -204,3 +204,8 @@ code here that hits the network outside the opt-in `live` tests, and CI never ru
 ## License
 
 [MIT](./LICENSE) © 2026 Martins Erts
+
+The site's self-hosted fonts are not covered by that licence. The files under
+[`src/emendrix/site_/static/fonts/`](./src/emendrix/site_/static/fonts/) are subsets of IBM Plex
+Sans and Source Serif 4, renamed "Emendrix Sans" and "Emendrix Serif" as a modified copy must be,
+and ship under the SIL Open Font License 1.1, whose full text sits beside them.

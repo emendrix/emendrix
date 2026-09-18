@@ -63,6 +63,11 @@ dev = [
     # card. The site build copies that PNG's bytes and rasterises nothing, so no module under
     # `src/emendrix/` may import `PIL` and the wheel's runtime deps stay free of it.
     "pillow>=12.3.0",
+    # Only `scripts/subset_fonts.py` imports them, to regenerate the committed WOFF2 subsets
+    # (`brotli` is what writes WOFF2). The site build copies those bytes and subsets nothing,
+    # so no module under `src/emendrix/` may import `fontTools` or `brotli`.
+    "fonttools>=4.65.0",
+    "brotli>=1.2.0",
 ]
 
 # --- ruff ---------------------------------------------------------------------

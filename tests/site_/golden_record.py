@@ -647,4 +647,17 @@ built for 2026-08-06 from a report dated 2026-09-05, and a build cannot say a pa
 day that is ahead of it. That inversion is a property of the pinned build date rather than of
 the rule: on a deployment, where the build date is the day the build ran, a committed report
 always precedes it and the date is published as before. No measured figure moved with them.
+
+Read again on 2026-09-18, when the site took its own typefaces and a redrawn palette. No page's
+markup moved. Every one of the 23 HTML pages moved by exactly one line, the stylesheet link,
+because the sheet's bytes changed and its name is their digest: `style.9481cdd6.css` is gone and
+`style.26242efc.css` replaces it, carrying the new tokens in both schemes, the named type scale,
+the 76rem shell, the legal-text measure, the `--edge` borders on the search box and the elision
+chip, and a forced-colours block. Three files are new at the root, the self-hosted faces the
+sheet loads by relative `url()`: `sans-400.424f1d2e.woff2`, `sans-600.e2b79ccd.woff2` and
+`serif-400.de886d3d.woff2`, 66,268 bytes between them against a budget of 184,320. `icon.svg`
+moved to the new ink, ground and link values, and `og.png` was redrawn in the new light palette
+and the site's own sans. No feed, no `search-index.json`, no `sitemap.xml`, no `robots.txt` and
+no script moved, no size pin moved because a digest name is the same length as the one it
+replaces, and no measured figure moved with any of them.
 """

@@ -28,10 +28,13 @@ import re
 
 import pytest
 
+from emendrix.site_.fingerprint import FONTS
 from emendrix.site_.style import STYLE
 
 _DARK = "@media (prefers-color-scheme: dark)"
 """Where the light palette stops and the override begins. Both blocks name the same tokens."""
+
+_FORCED = "@media (forced-colors: active)"
 
 _TOKEN = re.compile(r"--([a-z0-9-]+):\s*(#[0-9a-f]{6})\b")
 _ANY_HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
@@ -40,25 +43,76 @@ _PAIRS: tuple[tuple[str, str], ...] = (
     ("fg", "bg"),
     ("fg", "panel"),
     ("fg", "mark"),
+    ("fg", "notice"),
     ("fg", "ins"),
     ("fg", "del"),
+    ("fg", "type-act-tint"),
+    ("fg", "type-version-tint"),
+    ("fg", "type-provision-tint"),
+    ("fg", "type-amending-tint"),
+    ("fg", "kind-inserted-tint"),
+    ("fg", "kind-deleted-tint"),
+    ("fg", "kind-modified-tint"),
+    ("fg", "kind-deferred-tint"),
+    ("fg", "provenance-tint"),
+    ("fg", "alert-tint"),
     ("muted", "bg"),
     ("muted", "panel"),
     ("muted", "mark"),
-    ("accent", "bg"),
-    ("accent", "panel"),
-    ("accent", "mark"),
-    ("warn", "bg"),
-    ("warn", "panel"),
-    ("warn", "mark"),
+    ("muted", "notice"),
+    ("muted", "type-act-tint"),
+    ("muted", "type-version-tint"),
+    ("muted", "type-provision-tint"),
+    ("muted", "type-amending-tint"),
+    ("link", "bg"),
+    ("link", "panel"),
+    ("link", "mark"),
+    ("link", "notice"),
+    ("link", "alert-tint"),
+    ("link", "type-act-tint"),
+    ("link", "type-version-tint"),
+    ("link", "type-provision-tint"),
+    ("link", "type-amending-tint"),
+    ("alert", "bg"),
+    ("alert", "panel"),
+    ("alert", "mark"),
+    ("alert", "alert-tint"),
+    ("provenance", "provenance-tint"),
+    ("provenance", "bg"),
+    ("provenance", "panel"),
+    ("kind-inserted", "kind-inserted-tint"),
+    ("kind-deleted", "kind-deleted-tint"),
+    ("kind-modified", "kind-modified-tint"),
+    ("kind-deferred", "kind-deferred-tint"),
+    ("kind-inserted", "bg"),
+    ("kind-inserted", "panel"),
+    ("kind-deleted", "bg"),
+    ("kind-deleted", "panel"),
+    ("kind-modified", "bg"),
+    ("kind-modified", "panel"),
+    ("kind-deferred", "bg"),
+    ("kind-deferred", "panel"),
+    ("provenance", "type-version-tint"),
+    ("type-act", "type-act-tint"),
+    ("type-version", "type-version-tint"),
+    ("type-provision", "type-provision-tint"),
+    ("type-amending", "type-amending-tint"),
+    ("type-act", "bg"),
+    ("type-version", "bg"),
+    ("type-provision", "bg"),
+    ("type-amending", "bg"),
 )
-"""Every foreground the sheet sets against every surface it sets it on.
+"""Every foreground the sheet sets as text against every surface it sets it on.
 
-`--mark` is in the list three times over because it is the busiest surface on the site: the
-credibility strip, the disclaimer box, a targeted change block, a hovered search result and
-the change-type pill all sit on it. `--rule` is absent because it is a hairline that separates
-things a reader can already see apart, so nothing depends on finding its edge; `--edge`, which
-draws boundaries that are themselves the information, is checked below at its own threshold.
+The palette was redrawn on 2026-09-18 and this list with it: the ground and its text on every
+surface and tint a reader can meet them on, the link on every surface a link sits on, the alert
+on the surfaces a disagreement is drawn on, each change kind on its own tint and on the two
+grounds, the provenance grey on its tint, and each page type on its band and on the page
+ground. Some pairs are declared ahead of the rule that paints them, so a palette change is
+checked against every place the palette is meant to be used. `--rule` is absent because it is a
+hairline that separates things a reader can already see apart, so nothing depends on finding
+its edge; `--edge`, which draws boundaries that are themselves the information, is checked
+below at its own threshold.
 """
 
 _MINIMUM = 4.5
@@ -68,14 +122,54 @@ _BOUNDARY_PAIRS: tuple[tuple[str, str], ...] = (
     ("edge", "bg"),
     ("edge", "panel"),
     ("edge", "mark"),
+    ("edge", "notice"),
+    ("edge", "type-act-tint"),
+    ("edge", "type-version-tint"),
+    ("edge", "type-provision-tint"),
+    ("edge", "type-amending-tint"),
+    ("kind-inserted", "bg"),
+    ("kind-inserted", "panel"),
+    ("kind-inserted", "mark"),
+    ("kind-inserted", "type-version-tint"),
+    ("kind-deleted", "bg"),
+    ("kind-deleted", "panel"),
+    ("kind-deleted", "mark"),
+    ("kind-deleted", "type-version-tint"),
+    ("kind-modified", "bg"),
+    ("kind-modified", "panel"),
+    ("kind-modified", "mark"),
+    ("kind-modified", "type-version-tint"),
+    ("kind-deferred", "bg"),
+    ("kind-deferred", "panel"),
+    ("kind-deferred", "mark"),
+    ("kind-deferred", "type-version-tint"),
+    ("alert", "bg"),
+    ("alert", "panel"),
+    ("alert", "mark"),
+    ("alert", "type-version-tint"),
+    ("type-act", "type-act-tint"),
+    ("type-version", "type-version-tint"),
+    ("type-provision", "type-provision-tint"),
+    ("type-amending", "type-amending-tint"),
+    ("link", "bg"),
+    ("link", "panel"),
+    ("link", "type-version-tint"),
+    ("edge", "provenance-tint"),
+    ("fg", "notice"),
+    ("type-act", "panel"),
+    ("type-version", "bg"),
 )
-"""Every surface the sheet draws a component boundary on.
+"""Every surface the sheet draws a component boundary on, with the colour it draws it in.
 
-`--edge` borders the change-type pill and the tag, whose extent is the information: a reader
-who cannot find the edge of a pill cannot tell where one label stops and the next begins. The
-three surfaces are the page ground, a panel and the busy `--mark`, which is the pill's own
-default background and therefore the tightest of the three in both schemes.
+`--edge` borders the tags, the search box, the elision chip and the notice, whose extent is the
+information: a reader who cannot find the edge of a tag cannot tell where one label stops and
+the next begins. The change kinds, the alert and the page types draw their own borders, rules
+and rail nodes, so each is checked on the surfaces it sits on, including the busy `--mark` a
+targeted block or a hovered row turns into.
 """
+
+_SEPARATION_MINIMUM = 1.5
+"""How far apart the link and the alert must sit, in the same ratio, in both schemes."""
 
 _BOUNDARY_MINIMUM = 3.0
 """SC 1.4.11, a non-text boundary. Applies to `_BOUNDARY_PAIRS` and to nothing else."""
@@ -121,9 +215,9 @@ def test_every_painted_pair_is_readable_in_both_schemes(
 ) -> None:
     """4.5:1 or the build fails, measured rather than eyeballed on one reviewer's machine.
 
-    Measured on 2026-09-03 over the palette as it stands, which is why no hex moved in the
-    pass that added this test: the weakest pair of the twenty-eight is muted on mark, 5.66
-    light and 5.32 dark, and the strongest is foreground on panel at 17.07.
+    Measured on 2026-09-18 over the palette redrawn that day: the weakest of the hundred and
+    twenty-two checks is the link on the amending-act and version tints, 4.67 light, and in
+    the dark scheme the alert on mark, 5.02; the strongest is foreground on panel at 17.44.
     """
     palette = _palettes()[scheme]
     ratio = contrast(palette[foreground], palette[background])
@@ -139,10 +233,10 @@ def test_every_component_boundary_is_visible_in_both_schemes(
 ) -> None:
     """3:1 or the build fails, the floor SC 1.4.11 sets for a boundary carrying no text.
 
-    Measured on 2026-09-03, the day `--edge` was added: light 3.20 to 3.75 and dark 3.44 to
-    4.42, the tightest of the six being edge on mark in the light scheme. The pill and the tag
-    drew their borders in `--rule` until then, at 1.31:1 light and 1.46:1 dark, which is a
-    boundary a reader has to already know is there.
+    Measured on 2026-09-18 over the palette redrawn that day, the tightest of the seventy-eight
+    checks is edge on the version and amending-act tints, 3.14 light. The search box and the
+    elision chip drew their borders in `--rule` until then, at 1.35:1, which is a boundary a
+    reader has to already know is there.
     """
     palette = _palettes()[scheme]
     ratio = contrast(palette[boundary], palette[surface])
@@ -156,10 +250,11 @@ def test_the_two_line_colours_are_used_for_their_own_job() -> None:
 
     Cheap, and it catches the one way this pass could rot: a later rule drawing a pill-like
     border in `--rule` would be under the 3:1 floor and invisible to the check above, which
-    reads the palette rather than the selectors.
+    reads the palette rather than the selectors. The search box and the elision chip joined
+    the list on 2026-09-18, when both moved off `--rule`.
     """
     assert "--edge: " in STYLE
-    for selector in (".pill {", ".tag {"):
+    for selector in (".pill {", ".tag {", "#search input {", ".elided {"):
         block = STYLE.split(selector)[1].split("}")[0]
         assert "var(--edge)" in block, selector
         assert "var(--rule)" not in block, selector
@@ -181,6 +276,15 @@ def test_the_sheet_serves_both_schemes_and_paper() -> None:
     assert "@media print" in STYLE
 
 
+def _print_block() -> tuple[str, str]:
+    """The screen rules, and the print block alone, stopping where forced colours begin."""
+    screen, marker, rest = STYLE.partition("@media print")
+    assert marker
+    printed, forced, _ = rest.partition(_FORCED)
+    assert forced, "the forced-colours block follows the print block"
+    return screen, printed
+
+
 def test_a_diff_mark_says_which_it_is_without_its_tint() -> None:
     """Colour is never the only marker inside a diff, on screen as on paper.
 
@@ -188,8 +292,7 @@ def test_a_diff_mark_says_which_it_is_without_its_tint() -> None:
     which is why the print block no longer redeclares the underline it used to add for a
     printer with no colour: a compensation in one medium is a gap in the other.
     """
-    screen, marker, printed = STYLE.partition("@media print")
-    assert marker
+    screen, printed = _print_block()
     # Split on the newline too: the rule these two share names `.diff del` in its own selector.
     assert "text-decoration: underline" in screen.split("\n.diff ins {")[1].split("}")[0]
     assert "line-through" in screen.split("\n.diff del {")[1].split("}")[0]
@@ -197,40 +300,54 @@ def test_a_diff_mark_says_which_it_is_without_its_tint() -> None:
 
 
 def test_the_modules_are_concatenated_in_cascade_order() -> None:
-    """Tokens, then the shell, then the pages, then the page furniture, then the evidence.
+    """Faces, tokens, the shell, the pages, the page furniture, the evidence, other media.
 
-    The package is five `Final` strings joined in one place, so what can drift is the order
+    The package is seven `Final` strings joined in one place, so what can drift is the order
     they are joined in, and the order is a contract: a rule in a later module may rely on an
     earlier one and never the reverse. One selector from each module, in the order they must
-    appear, is the cheapest way to hold it. `timeline` was split off `evidence` on 2026-09-05
-    and sits between the pages and the change blocks, which is where the grid the event page's
-    sticky index relies on is declared.
+    appear, is the cheapest way to hold it. The `@font-face` rules come first because they
+    declare the families every later rule names, and print and forced colours come last
+    because each overrides screen rules from every module before it.
     """
+    assert STYLE.index("@font-face") < STYLE.index("--bg:")
     assert STYLE.index("--bg:") < STYLE.index("header.bar")
     assert STYLE.index("header.bar") < STYLE.index(".cardrow")
     assert STYLE.index(".cardrow") < STYLE.index(".timeline")
     assert STYLE.index(".timeline") < STYLE.index(".chg {")
+    assert STYLE.index(".chg {") < STYLE.index("@media print")
+    assert STYLE.index("@media print") < STYLE.index(_FORCED)
 
 
-def test_the_three_shapes_of_a_disagreement_are_told_apart_without_a_hue() -> None:
-    """The badge is graded by border and weight, and all three keep the disputed colour.
+def test_the_three_shapes_of_a_disagreement_are_told_apart_without_a_hue_alone() -> None:
+    """The badge is graded by border and fill, and all three keep the one alert colour.
 
-    Measured 2026-09-05 over the palette as it stands, which is why no hex moved in the pass
-    that graded them: the one surface the grading introduces is the filled badge of the kind
-    contradiction, `--warn` on `--mark`, at 6.52:1 light and 6.36:1 dark, a pair `_PAIRS`
-    already checks. The other two shapes reach for no colour at all: a dashed border for a row
-    with no text and the sheet's plain disputed pill for the evidenced one, which adds no rule.
+    Measured 2026-09-18 over the palette redrawn that day: the one surface the grading
+    introduces is the filled badge of the kind contradiction, `--alert` on `--alert-tint`, at
+    7.93:1 light and 5.35:1 dark, a pair `_PAIRS` already checks. The other two shapes reach
+    for no colour at all: a dashed border for a row with no text and the sheet's plain disputed
+    pill for the evidenced one, which adds no rule.
     """
-    assert ("warn", "mark") in _PAIRS
+    assert ("alert", "alert-tint") in _PAIRS
     graded = [line for line in STYLE.splitlines() if line.startswith((".disp-", ".pill.disp"))]
     assert graded == [
-        ".pill.disp { background: transparent; border-color: var(--warn); color: var(--warn); }",
+        ".pill.disp { background: transparent; border-color: var(--alert); color: var(--alert); }",
         ".disp-none .pill.disp { border-style: dashed; }",
-        ".disp-kind .pill.disp { background: var(--mark); font-weight: 700; }",
+        ".disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }",
     ]
-    # The two grading rules reach for exactly one custom property between them, and it is the
-    # surface the plain pill already sits on rather than a colour of their own.
-    assert re.findall(r"var\((--[a-z-]+)\)", " ".join(graded[1:])) == ["--mark"]
+    # The two grading rules reach for exactly one custom property between them, the alert's own
+    # tint, so the grade is a fill and a border rather than a second hue.
+    assert re.findall(r"var\((--[a-z-]+)\)", " ".join(graded[1:])) == ["--alert-tint"]
+
+
+def test_the_link_and_the_alert_are_told_apart_by_colour_in_both_schemes() -> None:
+    """A link and an alert that share a hue cannot be told apart by it, so they may not.
+
+    The two sat 1.04:1 apart in both schemes until 2026-09-18, when the palette was redrawn and
+    they became 1.64:1 light and 1.72:1 dark. Their separate tokens exist for this fact.
+    """
+    for scheme, palette in _palettes().items():
+        ratio = contrast(palette["link"], palette["alert"])
+        assert ratio >= _SEPARATION_MINIMUM, f"{scheme}: link against alert is {ratio:.2f}:1"
 
 
 def test_a_row_gathered_with_no_text_is_opened_by_the_permalink_that_names_it() -> None:
@@ -253,22 +370,61 @@ def test_every_tint_a_word_already_says_is_stripped_for_print() -> None:
     The blanket rule in the print block is one class deep, so every tint drawn by a selector
     of higher specificity has to be named there again or it survives on paper. That is why the
     two verbatim blocks, the insertion pill and a targeted change block are all listed, and it
-    is why the filled badge of the kind contradiction was added to the list the day it was
-    drawn: `.disp-kind .pill.disp` outranks `.pill` three simple selectors to one.
+    is why the filled badge of the kind contradiction is listed too: `.disp-kind .pill.disp`
+    outranks `.pill` three simple selectors to one.
     """
-    screen, marker, printed = STYLE.partition("@media print")
-    assert marker
-    assert ".disp-kind .pill.disp { background: var(--mark); font-weight: 700; }" in screen
+    screen, printed = _print_block()
+    assert ".disp-kind .pill.disp { background: var(--alert-tint); border-width: 2px; }" in screen
     for selector in (".verbatim.ins", ".verbatim.del", ".pill.ins", ".chg:target"):
         assert selector in printed, selector
     assert ".disp-kind .pill.disp { background: transparent; }" in printed
 
 
-def test_the_sheet_reaches_no_third_party_and_names_no_web_font() -> None:
+def test_forced_colours_keep_every_mark_that_was_drawn_as_a_background() -> None:
+    """In forced colours a background-only mark vanishes, so the rail's nodes are redrawn.
+
+    The timeline's node was a 7px background dot until 2026-09-18 and disappeared entirely under
+    a high-contrast theme. The block now draws both rails' nodes in system colours the browser
+    is told not to override, and every boundary that carries meaning in `CanvasText`.
+    """
+    _, _, forced = STYLE.partition(_FORCED)
+    assert forced
+    assert "forced-color-adjust: none" in forced
+    for selector in (".timeline .event::before", ".chg.step::before", ".elided", ".pill"):
+        assert selector in forced, selector
+    assert "CanvasText" in forced
+
+
+# ------------------------------------------------------------------ fonts
+
+
+_FONT_URL = re.compile(r"url\(([^)]*)\)")
+_FINGERPRINTED_FONT = re.compile(r"[a-z0-9-]+\.[0-9a-f]{8}\.woff2")
+
+
+def test_the_sheet_reaches_no_third_party_and_loads_only_its_own_fonts() -> None:
     """The same promise `tests/site_/test_golden.py` makes over the written file.
 
     Asserted over the constant as well, because this is where a font import would be typed
-    and a failure here names the module that grew it rather than a built artifact.
+    and a failure here names the module that grew it rather than a built artifact. Since
+    2026-09-18 the sheet loads three self-hosted faces, so `url(` is allowed in exactly one
+    form: a bare, relative, fingerprinted `.woff2` name that the build writes at the root beside
+    the stylesheet. An absolute URL, a path climbing out, or any other file stays banned.
     """
-    for banned in ("http://", "https://", "@import", "url("):
+    for banned in ("http://", "https://", "@import"):
         assert banned not in STYLE, banned
+    named = _FONT_URL.findall(STYLE)
+    assert named, "the sheet loads the self-hosted faces"
+    for name in named:
+        assert _FINGERPRINTED_FONT.fullmatch(name), name
+    assert sorted(named) == sorted(FONTS.values())
+
+
+def test_every_web_face_swaps_in_rather_than_hiding_the_text() -> None:
+    """Text is readable before a face arrives, in the metric-matched fallback, never invisible."""
+    faces = STYLE.split("@font-face {")[1:]
+    loaded = [face.split("}")[0] for face in faces if "url(" in face.split("}")[0]]
+    assert len(loaded) == len(FONTS)
+    for face in loaded:
+        assert "font-display: swap;" in face, face
+    assert "font-synthesis: none;" in STYLE

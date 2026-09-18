@@ -34,10 +34,13 @@ sitemap.xml           every page, with the date its content last moved
 sitemap_index.xml     the one address a search engine is given, naming the sitemap
 search-index.json     act and instrument names, aliases, CELEX numbers and touched provisions
 search.<digest>.js    the one script; style.<digest>.css is the one stylesheet
+sans-400.<digest>.woff2, sans-600.<digest>.woff2, serif-400.<digest>.woff2
+                      the three self-hosted faces the stylesheet loads
 icon.svg              the favicon; og.png is the link-preview card
 ```
 
-**Two of those names carry a digest of the file's own bytes**, and that is a caching decision.
+**The stylesheet, the script and the three font files carry a digest of their own bytes in
+their names**, and that is a caching decision.
 An edge that gives an asset a one-day lifetime will happily serve yesterday's stylesheet beside
 today's pages, which is what the live site did on 2026-09-04: the edge held 14 424 bytes of CSS
 where the origin had 22 056, so a layout that had shipped was invisible until somebody purged
@@ -53,10 +56,36 @@ address moves breaks the card every social site has already cached for the pages
 changes either should purge that one path at the edge and expect previews to refresh slowly.
 
 The builder writes its own files and deletes nothing, so a rebuild into a directory a previous
-build wrote leaves the previous stylesheet and script beside the new ones: a few unreferenced
+build wrote leaves the previous stylesheet, script and fonts beside the new ones: a few unreferenced
 kilobytes, harmless, and useful for the seconds in which a reader is still loading a page that
 names them. Sweep them whenever the directory is worth tidying, or let a deployment that
 replaces the directory whole do it.
+
+**The fonts are the site's own files, and so the no-third-party promise holds.** Two open-licence
+families, chosen on 2026-09-18, subset to the characters the corpus and the site use and committed
+as WOFF2 under `src/emendrix/site_/static/fonts/`, beside their SIL Open Font License 1.1 texts
+and a README naming each upstream file by release, URL and SHA-256. `scripts/subset_fonts.py`
+regenerates them from those upstream files and refuses one whose hash differs; the build copies
+the committed bytes and subsets nothing. The serif (Source Serif 4, renamed "Emendrix Serif" as
+the licence requires of a modified copy) is only ever the law's own words: official titles,
+provision text and diffs. The sans (IBM Plex Sans, renamed "Emendrix Sans") is always the site
+speaking. Three files, 66,268 bytes, against a budget of 180 KB and four files that a test holds.
+The stylesheet loads each by a bare relative `url()`, which resolves against the stylesheet at the
+root, so the tree still works from a subpath and from `file://`; a server's content security
+policy has to allow `font-src 'self'` for them. Every face swaps in over a metric-matched system
+fallback, so text is readable before a font arrives and wherever one is refused. Firefox refuses a
+font file above the page's own directory under `file://`, so a local copy opened there reads in the
+fallback below the root, which keeps the layout.
+
+**Colour is spent semantically and nowhere else**, and every colour is a lower-case `#rrggbb`
+token declared in both schemes in `style/tokens.py`, which a test enforces by computing WCAG 2.1
+contrast over every pair the sheet paints: 4.5:1 for text and 3:1 for a component boundary, in
+both schemes. The families are the ground and its text, the two diff tints, one hue for links and
+one kept visibly apart from it for an alert, one colour per kind of change with a neutral pair
+for provenance, and one colour per page type. Colour never carries a meaning alone: an insertion
+is also underlined and a deletion struck through, and a word, a glyph or a border style always
+says what a colour says. `scripts/make_og_image.py` and `static/icon.svg` copy a few of the light
+values by hand and move in the same commit as they do.
 
 Four things about that tree are not visible in the listing. Every page states its own canonical
 address, so the two ways a static host serves one page, with and without the `index.html`, do not
