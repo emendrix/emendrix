@@ -41,6 +41,7 @@ from emendrix.output.markdown import FALLBACK_PREFIX, applies_text, short_label
 from emendrix.site_.dispute import dispute_note
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.outbound import external
+from emendrix.site_.subject import is_capitals, provision_title
 from emendrix.site_.tags import differ_tag
 
 __all__ = [
@@ -107,15 +108,14 @@ room to say which tuple is which.
 def title_span(change: Change) -> Html:
     """The provision's title after its coordinate, only where it says more than the coordinate.
 
-    The rule the provision page's heading applies: a Formex annex is often titled `ANNEX II`,
-    and `Annex II ANNEX II` reads as a rendering accident. The comparison folds case and
-    whitespace; what is printed is the stored title, character for character.
+    `subject.provision_title` decides, and may read an annex's subject from its own text. The
+    comparison folds case and whitespace; what is printed is the title, character for character.
     """
-    heading = change.heading
-    named = change.location.human
-    if not heading or heading.casefold().split() == named.casefold().split():
+    title = provision_title(change)
+    if title is None:
         return Html("")
-    return Html(f' <span class="ttl">{escape(heading)}</span>')
+    caps = " ttl--caps" if is_capitals(title) else ""
+    return Html(f' <span class="ttl{caps}">{escape(title)}</span>')
 
 
 def differ_note(signals: SignalSet, root: str) -> list[Html]:

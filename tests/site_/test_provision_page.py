@@ -21,7 +21,7 @@ from pathlib import Path
 
 from site_entries import attributed_entry, disputed_entry, unattributed_entry
 
-from emendrix.core import Delta, ProvisionTree, VersionId
+from emendrix.core import Delta, ProvisionLocation, ProvisionText, ProvisionTree, VersionId
 from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
@@ -164,7 +164,7 @@ def test_each_step_id_is_the_anchor_the_event_page_publishes_for_that_change() -
 def test_the_header_names_the_act_the_coordinate_and_how_much_history_there_is() -> None:
     rendered, act, history = _page(_entry(2), _entry(1))
     heading = history.steps[0].change.heading
-    assert f"<h1>{history.location.human} · {heading}</h1>" in rendered
+    assert f'<h1>{history.location.human} · <span class="ttl">{heading}</span></h1>' in rendered
     assert act.headline in rendered
     assert f'<p class="caption">Provision history · <a href="../">{act.label}</a></p>' in rendered
     assert "2 changes recorded across 2 versions, newest first." in rendered
@@ -177,7 +177,7 @@ def test_the_official_heading_of_the_newest_step_is_printed_verbatim() -> None:
     rendered, _, history = _page(_entry(1))
     heading = history.steps[0].change.heading
     assert heading
-    assert f"<h1>{history.location.human} · {heading}</h1>" in rendered
+    assert f'<h1>{history.location.human} · <span class="ttl">{heading}</span></h1>' in rendered
     assert '<p class="official">' not in rendered
 
 
@@ -203,6 +203,49 @@ def test_a_title_that_only_repeats_the_coordinate_is_not_printed_under_it() -> N
     rendered, _, _ = _page(shouted)
     assert f"<h1>{first.location.human}</h1>" in rendered
     assert '<p class="official">' not in rendered
+
+
+def _retitled(location: str, heading: str | None, text: str) -> ChangelogEntry:
+    """The toy transition with its first change moved to `location`, titled and worded anew."""
+    entry = _entry(1)
+    first = entry.changes[0].change
+    moved = first.model_copy(
+        update={
+            "provision": first.provision.model_copy(
+                update={"location": ProvisionLocation.parse(location)}
+            ),
+            "heading": heading,
+            "before": ProvisionText(text),
+            "after": ProvisionText(text),
+        }
+    )
+    changes = (entry.changes[0].model_copy(update={"change": moved}), *entry.changes[1:])
+    return entry.model_copy(update={"changes": changes})
+
+
+def _history_page(entry: ChangelogEntry, canonical: str) -> str:
+    site = _site(entry)
+    act = site.acts[0]
+    (history,) = [item for item in histories(act) if item.location.canonical == canonical]
+    return _render(site, act, history)
+
+
+def test_an_annex_titled_only_by_its_number_is_headed_by_the_subject_its_text_opens_with() -> None:
+    """The stored heading is `ANNEX II` and the text's second line is the annex's subject, as
+    the FIC Regulation's Annex II stores it. The subject is printed as the text has it, and
+    marked for the sheet to set in small capitals rather than rewritten in another case."""
+    subject = "SUBSTANCES OR PRODUCTS CAUSING ALLERGIES OR INTOLERANCES"
+    text = f"ANNEX II\n{subject}\n1. Cereals containing gluten, namely: wheat, rye"
+    rendered = _history_page(_retitled("AN II", "ANNEX II", text), "AN II")
+    assert f'<h1>Annex II · <span class="ttl ttl--caps">{subject}</span></h1>' in rendered
+    assert "Annex II: every consolidated version and what changed" in rendered
+    assert "INTOLERANCES:" not in rendered
+
+
+def test_an_article_titled_only_by_its_number_is_headed_by_the_number_alone() -> None:
+    text = "Article 1\nSUBJECT MATTER\nThis Regulation lays down rules."
+    rendered = _history_page(_retitled("AR 1", "Art. 1", text), "AR 1")
+    assert "<h1>Art. 1</h1>" in rendered
 
 
 def test_every_step_states_its_date_its_kind_and_when_it_applies() -> None:

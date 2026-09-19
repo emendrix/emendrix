@@ -20,12 +20,12 @@ The step ids **are** those anchors. Nothing new is minted, so a link that worked
 page works here, a coordinate an event touched twice is two steps with two distinct ids, and
 the pages can be read against each other without either side running its own counter.
 
-The provision's own title is the newest step's `heading`, printed verbatim beside the
-coordinate in the page's heading where the consolidated text carries one that says more than
-the coordinate already does. A heading can change with the text, and the earlier ones are
-visible in the diffs on the event pages; showing one title here and saying which step it belongs
-to is the honest reading, where a list of every title a provision has ever had would be a second
-history nobody asked for.
+The provision's own title is the newest step's, printed verbatim beside the coordinate in the
+page's heading where one says more than the coordinate already does: the stored `heading`, or
+for an annex titled only by its number, the subject its own newest text opens with. A heading
+can change with the text, and the earlier ones are visible in the diffs on the event pages;
+showing one title here and saying which step it belongs to is the honest reading, where a list
+of every title a provision has ever had would be a second history nobody asked for.
 """
 
 from __future__ import annotations
@@ -46,6 +46,7 @@ from emendrix.site_.outbound import external
 from emendrix.site_.pages.prose import applies_line, dates_line, differ_note, permalink, prose
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.seo import provision_json_ld
+from emendrix.site_.subject import is_capitals, provision_title
 from emendrix.site_.tags import SPOKEN_COMMA, kind_tag
 from emendrix.site_.titles import SUFFIX
 from emendrix.site_.trail import provision_trail
@@ -73,12 +74,12 @@ def _header(act: ActSite, history: ProvisionHistory) -> list[Html]:
     in the address. The caption names the page a provision history and links the act, since
     the page below is entirely about one of that act's parts.
 
-    The provision's own title joins the H1, `Annex II · Substances or products causing
-    allergies or intolerances`, only when it says something the coordinate does not, the rule
-    `pages/act.py` prints an act's official title under: the Formex title of an annex is often
-    the words `ANNEX IX`, and `Annex IX · ANNEX IX` reads as a rendering accident. The
-    comparison folds case and whitespace and changes nothing: the title that is printed is the
-    stored one, character for character.
+    The provision's own title joins the H1, `Annex II · SUBSTANCES OR PRODUCTS CAUSING
+    ALLERGIES OR INTOLERANCES`, only where `subject.provision_title` finds one that says more
+    than the coordinate: the Formex title of an annex is often the words `ANNEX IX`, and
+    `Annex IX · ANNEX IX` reads as a rendering accident. An annex so titled may take its
+    subject from its own text. The title is printed character for character, and one with no
+    lower-case letter is marked for the sheet to set in small capitals.
     """
     events = len({step.entry.key for step in history.steps})
     facts = [
@@ -89,16 +90,15 @@ def _header(act: ActSite, history: ProvisionHistory) -> list[Html]:
     if act.eurlex_url:
         facts.append(external(act.eurlex_url, "on EUR-Lex"))
     named = history.location.human
-    heading = history.steps[0].change.heading
-    subject = (
-        f"{named} · {heading}"
-        if heading and heading.casefold().split() != named.casefold().split()
-        else named
-    )
+    title = provision_title(history.steps[0].change)
+    subject = escape(named)
+    if title is not None:
+        caps = " ttl--caps" if is_capitals(title) else ""
+        subject = Html(f'{subject} · <span class="ttl{caps}">{escape(title)}</span>')
     caption = Html(f'Provision history · <a href="../">{escape(act.label)}</a>')
     trail = provision_trail(act, history.location)
     return [
-        *masthead("provision", trail, _DEPTH, caption, escape(subject)),
+        *masthead("provision", trail, _DEPTH, caption, subject),
         Html(f'<p class="facts">{join(facts, " · ")}</p>'),
         Html(
             f'<p class="facts">{escape(count(len(history.steps), "change"))} recorded across '

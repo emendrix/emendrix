@@ -162,7 +162,7 @@ carrying the outbound cue every citation already had: `class="ext"` and a visual
 ` (external, EUR-Lex)`. It is the footer's cost on every page and nothing else; this act has no
 EUR-Lex address of its own, so its facts line did not move."""
 
-_TOTAL_BYTES: Final = 3206355
+_TOTAL_BYTES: Final = 3216380
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -303,6 +303,12 @@ id moved and no measured figure moved with it.
 41 538 bytes heavier on 2026-09-18, later again: 69 bytes on each of the 602 pages, the
 disclaimer's EUR-Lex link gaining the outbound cue's class and its spoken words, and nothing
 else. No anchor or id moved and no measured figure moved with it.
+
+10 025 bytes heavier on 2026-09-19: 25 bytes on each of the 401 provision pages, whose H1 now
+sets the provision's title in the same `<span class="ttl">` a change heading gives it, so the
+sheet can set a title printed in capitals in small capitals wherever it appears. No title here
+is in capitals and none of this corpus's annexes is titled only by its number, so no subject
+was read from a text and no index, version page or measured figure moved.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

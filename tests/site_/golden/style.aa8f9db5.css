@@ -731,6 +731,12 @@ td.meaning { color: var(--muted); }
    invitation to leave it. */
 a.loc { color: inherit; font-weight: 600; }
 .chg .ttl { font-weight: 600; color: var(--fg); }
+/* A title printed in capitals, as Formex prints an annex's subject, set in small capitals so
+   it does not shout. The characters stay the law's; only their size changes. The faces carry
+   no small capitals, so this one synthesis is let back in: scaled capitals are the same
+   letters, where a synthesised weight or slant would not be. */
+.ttl--caps { font-variant-caps: all-small-caps; font-synthesis-small-caps: auto;
+             letter-spacing: .02em; }
 .chg.step h2 .mag { font-size: var(--text-meta); }
 /* The source that named a row with no text, on the heading that is the whole of that row
    until it is opened. Smaller and muted, so the heading stays one coordinate. */

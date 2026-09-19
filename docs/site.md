@@ -274,6 +274,21 @@ both through `pages/prose.py`) is read in this order:
   and a glyph or border style, then the `§` permalink. A screen reader names it `Art. 1 Subject
   matter, Modified`. A provision step's heading is the version's name, linked to the version's
   page, then the tag, then the characters on the newest step only.
+- **The provision's title** is decided once, in `subject.py`, for all four places a coordinate
+  is printed with its title: this heading, the provision page's H1, the version's in-page index
+  and the act page's index. It is the stored heading where that says more than the coordinate
+  (the comparison folds case and whitespace). An annex whose stored heading is only its
+  coordinate, `ANNEX II`, is titled from the first line of its own text under a stated rule:
+  the text's first line must be the annex's title, and its second is taken only if it is 1 to
+  200 characters, holds no lower-case letter and a run of three letters, opens with no
+  numbering token and does not open with `CHAPTER`, `PART`, `SECTION`, `SUBSECTION`, `TITLE`,
+  `ANNEX`, `APPENDIX`, `FOREWORD`, `CONTENTS`, `TABLE`, `INTRODUCTION` or `ENTRY`. When the
+  rule is unsure it says nothing and the coordinate stands alone. The rule reads committed
+  text, so it serves changelogs already published, and `tests/site_/test_subject.py` pins its
+  measurement over the committed Formex packages: on 2026-09-19 it read 18 subjects, all 18
+  agreeing with the XML's own structure, and none wrong. A title is printed character for
+  character; one with no lower-case letter carries `ttl--caps`, which the sheet sets in small
+  capitals so it does not shout, and the letters in the markup stay the law's.
 - **A facts line**: on a version page the characters that moved, then `Applies from:` with a
   date, `no date changed` (the changelog's `unchanged` read as "the provision did not change")
   or `not readable` with its reason and a `why` link to `#applies-from`.
@@ -418,7 +433,7 @@ and the page's own heading. Home keeps its hero, which is its identity, and has 
 |---|---|---|---|
 | `act` | `acts/<celex>/` | `Act · {domain}`, or `Act` with no domain | the act's name |
 | `version` | `acts/<celex>/<key>/` | `Version · {act}`, the act linked | `Version in force 1 April 2025`, or `Version detected …` |
-| `provision` | `acts/<celex>/<prov>/` | `Provision history · {act}`, the act linked | `Annex II · {its heading}`, the heading only where it says more than the coordinate |
+| `provision` | `acts/<celex>/<prov>/` | `Provision history · {act}`, the act linked | `Annex II · {its title}`, the title only where one says more than the coordinate (see the provision's title above) |
 | `amending` | `amendments/<celex>/` | `Amending act` | the amending act's short name |
 | `index` | `acts/`, `amendments/` | `Index` | `All watched acts`, `Amending acts` |
 | `prose` | `dates/`, `methodology/`, `about/`, `feeds/`, `404.html` | what the page is about | its own heading |
@@ -478,9 +493,9 @@ reader there meets the versions first, then the index, then the dates the text n
 sticky and capped at the height of the screen with its own scroll, so a short timeline never
 stands beside a taller box of links. It stays a `<details open>` at every width.
 
-**An act page's index** lists `Touched provisions`, each with its kind tags and, where the title
-says more than the coordinate, the title of its newest change, the one the provision's own page
-is headed by; the sheet cuts it to one line and the markup carries it whole. Then `Versions`,
+**An act page's index** lists `Touched provisions`, each with its kind tags and, where one says
+more than the coordinate, the title of its newest change, the one the provision's own page is
+headed by; the sheet cuts it to one line and the markup carries it whole. Then `Versions`,
 each by its date, `detected` written out where no in-force date is known, and the short name of
 the amending act that made it. No version pair is printed there: an act of two hundred versions
 pays every byte of a row two hundred times. A version card whose code carries another date than

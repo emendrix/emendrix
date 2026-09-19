@@ -807,4 +807,20 @@ first, by the newest version each one made.` **No `id=` moved or went.** Both fe
 `search-index.json`, `sitemap.xml`, `sitemap_index.xml`, `robots.txt`, the script, the fonts,
 `icon.svg` and `og.png` are byte-identical. `_LARGEST_PAGE` moves by 69 bytes, the footer's, and
 no measured figure moved.
+
+Read again on 2026-09-19, when a provision's title came to be decided in one place and an annex
+whose stored heading is only its coordinate started taking its subject from its own text. All 23
+HTML pages moved in the stylesheet's name, `style.aa8f9db5.css` replacing `style.b6443cfb.css`:
+the sheet gained `.ttl--caps`, which sets a title printed in capitals in small capitals and lets
+that one synthesis through the base rules' `font-synthesis: none`. Eleven pages moved in their
+markup besides. MDR Annex IX, stored as `ANNEX IX`, is now titled `CONFORMITY ASSESSMENT BASED
+ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION`, the second line of
+its text, in each of the four places its coordinate is printed with a title: the change heading
+and the index on the MDR version page, the H1 of its provision page and the MDR act page's
+`Touched provisions`, each in `<span class="ttl ttl--caps">`. The eight other MDR provision
+pages set their stored title in the H1 inside `<span class="ttl">`, where it was bare text, with
+its words unchanged. **No `id=` moved or went.** Both feeds, `search-index.json`, `sitemap.xml`,
+`sitemap_index.xml`, `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are
+byte-identical, every `<title>` and description is unchanged, and no measured figure moved.
+`_LARGEST_PAGE` moves by 278 bytes, the subject printed twice on the MDR version page.
 """

@@ -21,6 +21,7 @@ from emendrix.core import (
     ChangeType,
     Delta,
     ProvisionLocation,
+    ProvisionText,
     ProvisionTree,
     Signal,
     SignalClaim,
@@ -410,6 +411,42 @@ def test_a_change_with_no_prose_says_why_rather_than_showing_nothing() -> None:
     )
     rendered = _page(entry)
     assert "the model returned no sentence for this change" in rendered
+
+
+def _retitled(location: str, heading: str | None, text: str) -> str:
+    """One event page whose first change is moved to `location` and titled and worded anew."""
+    delta = _delta()
+    first = delta.changes[0]
+    moved = first.model_copy(
+        update={
+            "provision": first.provision.model_copy(
+                update={"location": ProvisionLocation.parse(location)}
+            ),
+            "heading": heading,
+            "before": ProvisionText(text),
+            "after": ProvisionText(text),
+        }
+    )
+    entry = diff_only_entry(
+        delta.model_copy(update={"changes": (moved, *delta.changes[1:])}), detected_on=OBSERVED
+    )
+    return _page(entry)
+
+
+def test_an_annex_titled_only_by_its_number_is_headed_by_the_subject_its_text_opens_with() -> None:
+    """The FIC Regulation's Annex II stores the heading `ANNEX II` and opens its text with the
+    annex's own title and then its subject. The heading prints the subject as the text has it,
+    marked for the sheet to set in small capitals, and never in a case the law did not use."""
+    subject = "SUBSTANCES OR PRODUCTS CAUSING ALLERGIES OR INTOLERANCES"
+    text = f"ANNEX II\n{subject}\n1. Cereals containing gluten, namely: wheat, rye"
+    rendered = _retitled("AN II", "ANNEX II", text)
+    assert f'Annex II</a> <span class="ttl ttl--caps">{subject}</span>' in rendered
+
+
+def test_an_article_titled_only_by_its_number_prints_no_title_after_it() -> None:
+    rendered = _retitled("AR 1", "Art. 1", "Art. 1\nSUBJECT MATTER\nThis Regulation applies.")
+    assert 'Art. 1</a><span class="visually-hidden">,</span>' in rendered
+    assert "SUBJECT MATTER</span>" not in rendered
 
 
 def _headed(**update: object) -> str:
