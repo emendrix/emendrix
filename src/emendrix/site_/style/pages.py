@@ -3,7 +3,7 @@
 Sixth in the cascade, so everything here may rely on `fonts`, `tokens`, `base` and `tags` and
 nothing here is relied on by them. Three page families live in this module and none of their
 selectors escapes its own page: the home page's hero, stat strip and version cards; the
-rosters' sector jump list and rows; the methodology page's table columns, caveat list, loop
+rosters' jump lists, rows and folded years; the methodology page's table columns, caveat list, loop
 grid and glossary. The feeds page and the about page carry no rule of their own, because
 they are prose the shell already styles, and a class invented for them would be a class
 nothing else could reuse.
@@ -74,6 +74,20 @@ PAGES: Final = """\
 .roster .sub { display: block; max-width: 82ch; margin-top: .15rem; font-family: var(--serif);
                font-size: var(--text-meta); color: var(--fg); }
 .roster .facts { display: block; margin: .15rem 0 0; }
+/* A roster folded by year: the summary is the year's heading, so it keeps the heading's look and
+   trades the default marker for a drawn one with empty alternative text, turned when open. The
+   selectors outrank the generic `summary` and `details[open] > summary` rules in `evidence`. */
+details.year { margin: var(--space-2) 0 0; }
+details.year > summary { list-style: none; color: var(--fg); }
+details.year > summary::-webkit-details-marker { display: none; }
+details.year[open] > summary { margin-bottom: var(--space-3); }
+details.year h2 { margin: 0; }
+details.year h2::before { content: "\\25B8"; content: "\\25B8" / ""; display: inline-block;
+                          width: 1.1em; font-size: .75em; line-height: 1; text-align: center;
+                          vertical-align: .1em; color: var(--link); }
+details.year[open] h2::before { transform: rotate(90deg); }
+details.year .count { margin-left: .35rem; font-size: var(--text-meta); font-weight: 400;
+                      letter-spacing: 0; color: var(--muted); }
 td.result { white-space: nowrap; font-variant-numeric: tabular-nums; }
 td.meaning { color: var(--muted); }
 .caveats { margin: var(--space-3) 0 0; padding-left: 1.1rem; font-size: var(--text-meta);

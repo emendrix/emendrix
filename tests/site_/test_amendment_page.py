@@ -9,6 +9,7 @@ instrument its own change names and under no other, and that the machine-readabl
 from __future__ import annotations
 
 import json
+import re
 from datetime import date
 from pathlib import Path
 
@@ -193,8 +194,74 @@ def test_the_index_lists_every_instrument_with_a_page_under_the_year_of_its_newe
     assert "1 amending act named by a recorded version" in rendered
     assert "2 versions of the watched acts" in rendered
     assert f'<a href="../amendments/{AMENDMENT.key}/">' in rendered
-    assert "<h2>2026</h2>" in rendered
+    assert '<summary><h2>2026 <span class="count">1 amending act</span></h2></summary>' in rendered
     assert rendered.split('<ul class="roster">')[1].split("</ul>")[0].count("<li>") == 1
+
+
+def _yearly(*years: int) -> SiteInputs:
+    """One amending act per year, each the only one to amend its own watched act."""
+    whole = attributed_entry()
+    entries = []
+    for year in years:
+        amender = ActId(corpus="toy", key=f"amender-{year}")
+        changes = tuple(
+            emitted.model_copy(
+                update={"change": emitted.change.model_copy(update={"amending_acts": (amender,)})}
+            )
+            for emitted in whole.changes
+        )
+        entries.append(
+            whole.model_copy(
+                update={
+                    "act": ActId(corpus="toy", key=f"act-{year}"),
+                    "in_force": (date(year, 6, 1),),
+                    "changes": changes,
+                }
+            )
+        )
+    return _site(*entries)
+
+
+def test_the_index_jumps_to_every_year_and_folds_all_but_the_two_newest() -> None:
+    """One link per year, each the id of a `<details>`; the newest two open; no row dropped."""
+    years = (2026, 2025, 2023, 2019)
+    rendered = render_amendments_index(_yearly(*reversed(years)))
+    lede = re.search(r"(\d+) amending acts? named by a recorded version", rendered)
+    assert lede is not None
+    nav = rendered.split('<nav class="sectors years" aria-label="Years">')[1].split("</nav>")[0]
+    assert re.findall(r'<a href="#y(\d+)">', nav) == [str(year) for year in years]
+    sections = re.findall(r'<details class="year" id="y(\d+)"( open)?>', rendered)
+    assert [year for year, _ in sections] == [str(year) for year in years]
+    assert [year for year, opened in sections if opened] == ["2026", "2025"]
+    assert rendered.index("</nav>", rendered.index('aria-label="Years"')) < rendered.index(
+        '<details class="year"'
+    )
+    rows = sum(
+        block.split("</ul>")[0].count("<li>") for block in rendered.split('<ul class="roster">')[1:]
+    )
+    assert rows == int(lede.group(1)) == len(years)
+
+
+def test_an_empty_index_says_so_and_offers_no_jump_list() -> None:
+    rendered = render_amendments_index(
+        _site(
+            attributed_entry().model_copy(
+                update={
+                    "changes": tuple(
+                        emitted.model_copy(
+                            update={
+                                "change": emitted.change.model_copy(update={"amending_acts": ()})
+                            }
+                        )
+                        for emitted in attributed_entry().changes
+                    )
+                }
+            )
+        )
+    )
+    assert "No recorded version names an amending act yet" in rendered
+    assert 'aria-label="Years"' not in rendered
+    assert "<details" not in rendered
 
 
 def test_a_roster_row_names_the_subject_and_the_watched_acts_it_changed() -> None:

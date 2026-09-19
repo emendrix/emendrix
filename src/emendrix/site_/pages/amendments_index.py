@@ -12,7 +12,10 @@ about work the corpus has not recorded.
 The year headings are a fact of each instrument's newest event date and not a claim about when
 the instrument was adopted, which the site does not know. They exist because three hundred rows
 in one list have no rhythm, and each is the year of the row under it, so nothing is grouped by
-anything a reader cannot read off the row itself.
+anything a reader cannot read off the row itself. A jump list of the years follows the lede, and
+every year but the newest `roster_years.OPEN_YEARS` is folded under its heading, so a phone
+reads the recent years and a line per older one rather than every row ever recorded; the rows
+are all still in the page.
 """
 
 from __future__ import annotations
@@ -25,6 +28,7 @@ from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import Amended, amended_by
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.pages.roster_years import OPEN_YEARS, year_jumps, year_section
 from emendrix.site_.titling import subject_cut
 from emendrix.site_.trail import AMENDING_ROSTER
 from emendrix.site_.urls import act_href, amendment_href, amendments_href, depth_of, up
@@ -110,11 +114,9 @@ def render_amendments_index(site: SiteInputs) -> Html:
     ]
     if not found:
         lines.append(Html(f'<p class="none">{escape(_EMPTY)}</p>'))
-    for year in sorted(years, reverse=True):
-        lines.append(Html(f"<h2>{year}</h2>"))
-        lines.append(Html('<ul class="roster">'))
-        lines.extend(years[year])
-        lines.append(Html("</ul>"))
+    lines.extend(year_jumps({year: len(rows) for year, rows in years.items()}))
+    for rank, year in enumerate(sorted(years, reverse=True)):
+        lines.extend(year_section(year, years[year], noun="amending act", open_=rank < OPEN_YEARS))
     return page(
         title=f"{AMENDING_ROSTER} — emendrix",
         description=(

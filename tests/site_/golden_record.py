@@ -869,4 +869,16 @@ words unchanged. **No `id=` moved or went.** Both feeds, `search-index.json`, `s
 `sitemap_index.xml`, `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are
 byte-identical, every `<title>` and description is unchanged, `_LARGEST_PAGE` does not move,
 and no measured figure moved.
+
+Read again on 2026-09-19, last, when the amending-acts roster gained a jump list of its years and
+folded every year but the two newest. All 23 HTML pages moved in the stylesheet's name,
+`style.c1aeab9d.css` replacing `style.84c56560.css`: the sheet gained the `details.year` rules,
+which keep a year's summary looking like the heading it holds, hide the browser's marker and draw
+a `\25B8` mark with empty alternative text, turned when open. One page moved in its markup
+besides: `amendments/index.html` carries a `Years` jump list with one link, `#y2020`, and its one
+year is a `<details id="y2020" open>` whose summary is `<h2>2020 <span class="count">1 amending
+act</span></h2>`, the row under it unchanged. `y2020` is a new id and an address from now on;
+**no `id=` moved or went.** Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
+`robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical, every `<title>`
+and description is unchanged, `_LARGEST_PAGE` does not move, and no measured figure moved.
 """

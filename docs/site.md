@@ -535,6 +535,23 @@ the amending act, its key, its subject (the recorded official title, cut visibly
 watched acts it changed, each linking its page, three by name and the rest counted, then the
 date with its clock. The act names carry the sector.
 
+**The amending-acts roster opens with a jump list of its years** (`site_/pages/roster_years.py`),
+newest first, each with its count, each link the id of that year's section, `#y2026`, an address
+from the day it shipped. Each year is a `<details>` whose summary is the year's `<h2>` and its
+count, as in `2026 23 amending acts`; the two newest years are open and every older one is
+closed, so a phone reads the recent years and one line per older year rather than every row ever
+recorded. Measured on 2026-09-19 over the published changelogs at 390px, the page stood 47,338px
+tall before the fold and 9,299px after it. Nothing is dropped: every row is in the markup, a
+closed year opens on a click or on Enter, and with script off the page behaves the same. A jump
+link lands on the year's summary, which a reader then opens. Folding was chosen over filtering,
+which would need script or state, and over paging, which would move addresses. The cost is
+find-in-page: Chrome and Firefox open a closed `<details>` to show a match inside it, Safari may
+not, and there the jump list and the search box are the way to a row in an older year. The
+summary keeps the heading inside it, which Chromium's accessibility tree exposes as a heading
+under the disclosure control, so the page's outline still lists every year. It draws its
+disclosure mark with empty alternative text, turns it when open, and hides the browser's own
+marker.
+
 **A roster's subtitle keeps what the act is about** (`site_/titling.py`). An official title opens
 with the act's own number and date, which the row already stands for, so both rosters drop that
 opening clause and mark its absence with `[…]`. Where the rest is still over the 120-character

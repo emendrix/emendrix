@@ -513,6 +513,20 @@ main > .masthead:first-child { margin-top: calc(-1 * var(--space-5)); }
 .roster .sub { display: block; max-width: 82ch; margin-top: .15rem; font-family: var(--serif);
                font-size: var(--text-meta); color: var(--fg); }
 .roster .facts { display: block; margin: .15rem 0 0; }
+/* A roster folded by year: the summary is the year's heading, so it keeps the heading's look and
+   trades the default marker for a drawn one with empty alternative text, turned when open. The
+   selectors outrank the generic `summary` and `details[open] > summary` rules in `evidence`. */
+details.year { margin: var(--space-2) 0 0; }
+details.year > summary { list-style: none; color: var(--fg); }
+details.year > summary::-webkit-details-marker { display: none; }
+details.year[open] > summary { margin-bottom: var(--space-3); }
+details.year h2 { margin: 0; }
+details.year h2::before { content: "\25B8"; content: "\25B8" / ""; display: inline-block;
+                          width: 1.1em; font-size: .75em; line-height: 1; text-align: center;
+                          vertical-align: .1em; color: var(--link); }
+details.year[open] h2::before { transform: rotate(90deg); }
+details.year .count { margin-left: .35rem; font-size: var(--text-meta); font-weight: 400;
+                      letter-spacing: 0; color: var(--muted); }
 td.result { white-space: nowrap; font-variant-numeric: tabular-nums; }
 td.meaning { color: var(--muted); }
 .caveats { margin: var(--space-3) 0 0; padding-left: 1.1rem; font-size: var(--text-meta);
