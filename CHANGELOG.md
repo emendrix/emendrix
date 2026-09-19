@@ -166,6 +166,39 @@ Named rather than discovered later; the eval report's disagreement list is the l
   Changelogs already published keep the text they were written with and are corrected forward, not
   rewritten: measured 2026-09-01 over 369 committed change files of an output repository, 246
   carry a run of this class.
+- **An annex titled only by its number is stored with its subject as its heading, since
+  2026-09-19.** Formex often titles an annex `ANNEX II` and names what it is about in the title of
+  a group wrapping everything else, so the parser stored `ANNEX IX` where the document says
+  `CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL
+  DOCUMENTATION`. An annex with no subtitle now takes the title of the one unnumbered `GR.SEQ`
+  that is the sole content of its `CONTENTS`, character for character, unless that title opens
+  with a word that heads a division (`FOREWORD`, `PART`, `ENTRY`, in any case) or with a number,
+  in which case it keeps its bare title. The list of division words is the site's own, held equal
+  to it by a test. Measured over the 44 committed packages: of 323 annex elements without a
+  subtitle, the rule stores a subject for 185, every one a top-level annex (all seventeen MDR
+  annexes in each of its 8 packages, and REACH Annexes II, V and XIII), and declines 37, REACH's
+  unnumbered `Appendices 1 to 6` under `FOREWORD` and Annex XVII's `Appendix 10` under `Entry 43`.
+  No location moved and no stored text did. **The deterministic layer does not move at all**: the
+  whole `EvalRun` over the committed corpus serialises to identical bytes on either side, verified,
+  because no heading enters it. The heading is in the explain prompt, so 3 of the 55 pinned subset
+  prompts changed key (MDR Annexes VIII, IX and I), with the run set's Annex IX exchange and 1 of
+  the 20 judgements, the sampled `32017R0745@20260101 Annex I`: 5 recordings replacing 5, each
+  prompt differing from the one it replaced in its heading line alone. They were recorded one
+  missing key at a time, every other prompt replayed rather than asked again, and the provider's
+  own usage prices them at USD 0.329 against an estimate of USD 0.30 to 0.70 (four explain calls
+  USD 0.236, of which the run set's Annex IX took two requests for one schema repair; one
+  judgement USD 0.093). No change was sent back by the gate. Citation grounding 1.000, quote
+  fallback 0.000 and citation validity 1.000 over 179 keys are unchanged. **Judged faithfulness
+  reads 15 of 20 (0.750) over the new recording**, where it read 16 of 20 (0.800) over the one it
+  replaces: the judge now fails the re-recorded `Annex I` explanation, finding that one sentence
+  says ECHA "may" consult two committees where the text says it "shall". That is one entry at
+  n = 20 where an entry is worth 0.05, a verdict on new prose rather than on the old, and neither
+  an improvement nor a decline of anything; neither rate is adjusted for the other. The one subset
+  entry carrying a truncation marker is still `Annex I`, with the same dropped characters, since
+  only its header grew. `human review` stays `pending`, the sample digest having moved with the
+  header. Changelogs already published keep the headings they were written with and are corrected
+  forward, not rewritten; the site already reads such an annex's subject from the second line of
+  its stored text, and a changelog written after this date carries it in its own heading.
 - **An amending article's own heading was read as the provision it points at, and no longer is.**
   Where an amending act states an instruction in prose instead of in a list, the instruction parser
   built the clause from the whole `ARTICLE` element, heading included, so the reference grammar met
@@ -759,7 +792,9 @@ Named rather than discovered later; the eval report's disagreement list is the l
   exchanges plus one judgement earlier on 2026-08-12 for the `disputed` correction. None of it is
   a claim about models in general. The explanation-faithfulness rate is the weakest number
   published: 16 of 20 (0.800), which is one model's opinion of another's sentences at n = 20,
-  where a single entry moves the rate by 0.05.
+  where a single entry moves the rate by 0.05. Since 2026-09-19 the published rate is 15 of 20 (0.750), over the
+  recording in which the annex-subject heading re-recorded three subset explanations and one
+  judgement; the entry above dated that day says what moved.
 - **The published faithfulness rate has been 0.800, 0.850 and 0.800 in turn, and no two of those
   are comparable.** Nothing in the sequence is evidence that the model improved or declined, and
   it must never be published as though it were. Three things have moved under it, and each changes
@@ -779,7 +814,10 @@ Named rather than discovered later; the eval report's disagreement list is the l
   concluded that the widened question moved nothing on its own sample: no entry there rests a
   coordinate on the header alone, so every tick is one the narrower question would have produced
   too. Every number is published as measured, under its own date, none is adjusted for another,
-  and every verdict stands against the question it answered.
+  and every verdict stands against the question it answered. A fourth judged rate followed on 2026-09-19, 15 of 20
+  (0.750), when the judge failed the re-recorded MDR `Annex I` explanation after its prompt's
+  heading line changed. It is not the 0.800 declining either: it is a verdict on new prose, at
+  n = 20 where that one entry is the whole difference.
 
 
 - **A `<lastmod>` in the future was published until 2026-09-16, and a sitemap index is served

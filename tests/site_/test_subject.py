@@ -27,7 +27,7 @@ from emendrix.core import (
 )
 from emendrix.eu.formex import parse_act
 from emendrix.eu.formex.documents import act_documents, documents_of, unit_elements
-from emendrix.eu.formex.locations import annex_segment
+from emendrix.eu.formex.locations import annex_segment, title_of
 from emendrix.eu.formex.model import CoverageCounter
 from emendrix.eu.formex.text import flat_text
 from emendrix.eu.identifiers import Celex, act_id
@@ -176,21 +176,28 @@ def _reference(annex: Element) -> str | None:
     return None if title is None else flat_text(title)
 
 
-def _references(package: FormexPackage) -> dict[str, str | None]:
-    """Each numbered annex's structural subject, by coordinate, first document first."""
-    found: dict[str, str | None] = {}
+def _references(package: FormexPackage) -> dict[str, tuple[str | None, str | None]]:
+    """Each numbered annex's `(bare heading, structural subject)`, by coordinate, first first.
+
+    The bare heading is the subtitle or else the annex's own title, which is what the parser
+    stored before 2026-09-19 and so what every changelog committed before then carries. The site
+    rule exists for those changelogs, so it is measured against that heading and not against
+    today's parse, which now stores the group's subject itself.
+    """
+    found: dict[str, tuple[str | None, str | None]] = {}
     for document in documents_of(act_documents(package, CoverageCounter())):
         for unit, is_annex in unit_elements(document):
             segment = annex_segment(unit) if is_annex else None
             if segment is not None:
                 code, value = segment
                 location = ProvisionLocation(segments=(LocationSegment(code=code, value=value),))
-                found.setdefault(location.canonical, _reference(unit))
+                bare = title_of(unit, "TITLE/STI", "TITLE/TI") or None
+                found.setdefault(location.canonical, (bare, _reference(unit)))
     return found
 
 
 Reading = tuple[str | None, str | None, str | None]
-"""`(stored heading, structural reference, what the rule read)` for one annex."""
+"""`(heading as stored before 2026-09-19, structural reference, what the rule read)`."""
 
 
 @pytest.fixture(scope="module")
@@ -206,10 +213,11 @@ def readings() -> frozenset[Reading]:
             if len(segments) != 1 or segments[0].code != LocationCode.AN:
                 continue
             human = node.location.human
-            if node.heading and node.heading.casefold().split() != human.casefold().split():
+            heading, reference = references[node.location.canonical]
+            if heading and heading.casefold().split() != human.casefold().split():
                 continue
-            fired = annex_subject(node.heading, human, node.text)
-            seen.add((node.heading, references[node.location.canonical], fired))
+            fired = annex_subject(heading, human, node.text)
+            seen.add((heading, reference, fired))
     assert count == 44
     return frozenset(seen)
 
@@ -232,6 +240,10 @@ def test_the_rule_is_never_wrong_over_the_committed_packages(readings: frozenset
     `Appendices 1 to 6`, whose one group is titled `FOREWORD`, and REACH `Appendix 10`, whose
     group title opens `Entry 43`. Neither is a numbered top-level annex, so neither is a unit, and
     the first is why the structure is the reference rather than the rule.
+
+    Unchanged on 2026-09-19, when the parser began storing the group's subject as the heading:
+    the set is read against the heading committed changelogs carry, which the parser change
+    does not rewrite, so the rule is still measured over the text it serves.
 
     **If a count moves, that is a finding to explain, not a test to update.**
     """

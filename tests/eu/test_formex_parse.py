@@ -20,11 +20,13 @@ from emendrix.core import ProvisionLocation, ProvisionTree, VersionId, normalize
 from emendrix.eu.cellar import CellarClient
 from emendrix.eu.formex import Formex4Parser, parse_act
 from emendrix.eu.formex.documents import act_documents, unit_elements
+from emendrix.eu.formex.locations import DIVISION_WORDS, group_subject, title_of
 from emendrix.eu.formex.model import CoverageCounter
 from emendrix.eu.formex.text import BLOCK_ELEMENTS, DETACHED_ELEMENTS, SKIPPED_SUBTREES
 from emendrix.eu.identifiers import Celex, act_id
 from emendrix.eu.packages import FormexPackage, read_package
 from emendrix.eu.xml_ import NOT_WELL_FORMED, fromstring
+from emendrix.site_ import subject as site_subject
 from eu_pins import (
     AI_ACT,
     AI_ACT_V2,
@@ -109,6 +111,203 @@ def test_reach_appendices_ride_inside_their_annex_rather_than_beside_it(
     appendices = [child.location.canonical for child in annex.children]
     assert "AN XVII APP 1" in appendices
     assert "AN XVII APP 10" in appendices
+
+
+# --------------------------------------------------------------------- annex subject
+
+
+def _annex_heading(contents: str, title: str = "<TI><P>ANNEX II</P></TI>") -> str | None:
+    """The stored heading of a one-annex document built from these two fragments."""
+    document = f"<ANNEX><TITLE>{title}</TITLE><CONTENTS>{contents}</CONTENTS></ANNEX>"
+    blob = io.BytesIO()
+    with zipfile.ZipFile(blob, "w") as archive:
+        archive.writestr("annex.xml", document.encode("utf-8"))
+    fetched = FormexPackage.from_zip(
+        blob.getvalue(),
+        act=act_id(Celex.parse("32011R1169")),
+        requested_version=VersionId("32011R1169"),
+        served_version=VersionId("32011R1169"),
+        language="ENG",
+        source_url="https://example.invalid/",
+        fetched_at=datetime(2026, 9, 19, tzinfo=UTC),
+    )
+    (root,) = parse_act(fetched).tree.roots
+    assert root.location.canonical == "AN II"
+    return root.heading
+
+
+def _group(title: str, body: str = "<P>…</P>") -> str:
+    return f'<GR.SEQ LEVEL="1"><TITLE><TI><P>{title}</P></TI></TITLE>{body}</GR.SEQ>'
+
+
+_FIC_SUBJECT = '<HT TYPE="BOLD">SUBSTANCES OR PRODUCTS CAUSING ALLERGIES OR INTOLERANCES</HT>'
+
+
+def test_an_annex_titled_only_by_its_number_takes_the_subject_of_its_one_group() -> None:
+    """The shape the FIC Regulation (32011R1169) publishes its Annex II in, read 2026-09-19.
+
+    The annex's own title is `ANNEX II`; what it is about is the title of the one `GR.SEQ`
+    wrapping its whole content, set in bold. The bold is inline, and the heading reads through
+    it, exactly as an `STI`-titled annex's heading is read.
+    """
+    heading = _annex_heading(_group(_FIC_SUBJECT))
+    assert heading == "SUBSTANCES OR PRODUCTS CAUSING ALLERGIES OR INTOLERANCES"
+
+
+def test_an_annex_with_two_groups_keeps_its_bare_title() -> None:
+    """Two groups are two divisions, and neither one names the whole annex."""
+    assert _annex_heading(_group(_FIC_SUBJECT) + _group("ANOTHER TITLE")) == "ANNEX II"
+
+
+def test_an_annex_whose_one_group_is_something_else_keeps_its_bare_title() -> None:
+    """Content beside the group, an untitled group or a numbered one: no subject is read."""
+    assert _annex_heading("<P>…</P>" + _group(_FIC_SUBJECT)) == "ANNEX II"
+    assert _annex_heading('<GR.SEQ LEVEL="1"><P>…</P></GR.SEQ>') == "ANNEX II"
+    numbered = f'<GR.SEQ LEVEL="1"><TITLE><TI><P>{_FIC_SUBJECT}</P></TI></TITLE>'
+    numbered += "<NO.GR.SEQ>1.</NO.GR.SEQ><P>…</P></GR.SEQ>"
+    assert _annex_heading(numbered) == "ANNEX II"
+
+
+@pytest.mark.parametrize("title", ["FOREWORD", "Part A", "Entry 43 of a list", "1. A TITLE"])
+def test_a_group_headed_by_a_division_word_or_a_number_keeps_the_bare_title(title: str) -> None:
+    """A title opening a division, in any case, or opening with a number, names no subject."""
+    assert _annex_heading(_group(title)) == "ANNEX II"
+
+
+def test_an_annex_with_a_subtitle_is_unchanged() -> None:
+    """`STI` is the annex's own subject line and still wins over any group inside it."""
+    title = "<TI><P>ANNEX II</P></TI><STI><P>ITS OWN SUBTITLE</P></STI>"
+    assert _annex_heading(_group(_FIC_SUBJECT), title) == "ITS OWN SUBTITLE"
+
+
+def test_the_division_words_are_the_ones_the_site_reads_committed_text_with() -> None:
+    """Two rules answer one question, one at parse time and one over published text.
+
+    The parser may not import the site, so the list is written twice, and this holds them equal.
+    """
+    assert DIVISION_WORDS == site_subject._BLOCK_WORDS
+
+
+_SUBJECTS_FIRED = {
+    ("ANNEX I", "GENERAL SAFETY AND PERFORMANCE REQUIREMENTS"): 8,
+    ("ANNEX II", "TECHNICAL DOCUMENTATION"): 8,
+    ("ANNEX III", "TECHNICAL DOCUMENTATION ON POST-MARKET SURVEILLANCE"): 8,
+    ("ANNEX IV", "EU DECLARATION OF CONFORMITY"): 8,
+    ("ANNEX V", "CE MARKING OF CONFORMITY"): 8,
+    (
+        "ANNEX VI",
+        "INFORMATION TO BE SUBMITTED UPON THE REGISTRATION OF DEVICES AND ECONOMIC OPERATORS IN "
+        "ACCORDANCE WITH ARTICLES 29(4) AND 31, CORE DATA ELEMENTS TO BE PROVIDED TO THE UDI "
+        "DATABASE TOGETHER WITH THE UDI-DI IN ACCORDANCE WITH ARTICLES 28 AND 29, AND THE UDI "
+        "SYSTEM",
+    ): 8,
+    ("ANNEX VII", "REQUIREMENTS TO BE MET BY NOTIFIED BODIES"): 8,
+    ("ANNEX VIII", "CLASSIFICATION RULES"): 8,
+    (
+        "ANNEX IX",
+        "CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF "
+        "TECHNICAL DOCUMENTATION",
+    ): 8,
+    ("ANNEX X", "CONFORMITY ASSESSMENT BASED ON TYPE-EXAMINATION"): 8,
+    ("ANNEX XI", "CONFORMITY ASSESSMENT BASED ON PRODUCT CONFORMITY VERIFICATION"): 8,
+    ("ANNEX XII", "CERTIFICATES ISSUED BY A NOTIFIED BODY"): 8,
+    ("ANNEX XIII", "PROCEDURE FOR CUSTOM-MADE DEVICES"): 8,
+    ("ANNEX XIV", "CLINICAL EVALUATION AND POST-MARKET CLINICAL FOLLOW-UP"): 8,
+    ("ANNEX XV", "CLINICAL INVESTIGATIONS"): 8,
+    (
+        "ANNEX XVI",
+        "LIST OF GROUPS OF PRODUCTS WITHOUT AN INTENDED MEDICAL PURPOSE REFERRED TO IN "
+        "ARTICLE 1(2)",
+    ): 8,
+    ("ANNEX XVII", "CORRELATION TABLE"): 8,
+    ("ANNEX II", "REQUIREMENTS FOR THE COMPILATION OF SAFETY DATA SHEETS"): 10,
+    (
+        "ANNEX V",
+        "EXEMPTIONS FROM THE OBLIGATION TO REGISTER IN ACCORDANCE WITH ARTICLE 2(7)(b)",
+    ): 21,
+    (
+        "ANNEX XIII",
+        "CRITERIA FOR THE IDENTIFICATION OF PERSISTENT, BIOACCUMULATIVE AND TOXIC SUBSTANCES, "
+        "AND VERY PERSISTENT AND VERY BIOACCUMULATIVE SUBSTANCES",
+    ): 18,
+}
+
+
+def test_how_many_annex_headings_the_subject_rule_moves_is_a_measured_number() -> None:
+    """Every annex element of the 44 committed packages whose heading the rule decides.
+
+    Measured 2026-09-19. Of 838 annex elements, 515 carry an `STI` and are untouched. Of the
+    323 without one, 222 hold a sole titled `GR.SEQ`, and the rule reads a subject from 185:
+    all seventeen MDR (32017R0745) annexes, `AN I` to `AN XVII`, in each of its 8 packages,
+    and REACH (32006R1907) `AN V` in 21 packages, `AN XIII` in 18 and `AN II` in 10. Every one
+    is a top-level annex. It declines 37, both nested in REACH `AN XVII`: the unnumbered
+    `Appendices 1 to 6`, whose group is `FOREWORD` (21), and `APP 10`, whose group opens
+    `Entry 43` (16). No location moves: the rule changes what a heading says and nothing else.
+
+    **If a count moves, that is a finding to explain, not a test to update.**
+    """
+    fired: Counter[tuple[str, str]] = Counter()
+    declined: Counter[tuple[str, str]] = Counter()
+    without_subtitle = 0
+    for path in sorted(FIXTURE_DIR.glob("*.fmx4.zip")):
+        for member in read_package(path.read_bytes()):
+            if not member.is_xml:
+                continue
+            try:
+                root = fromstring(member.data)
+            except NOT_WELL_FORMED:  # a corrupt member is somebody else's test
+                continue
+            for unit, is_annex in unit_elements(root):
+                if not is_annex:
+                    continue
+                for annex in unit.iter():
+                    if (
+                        annex.tag not in {"ANNEX", "CONS.ANNEX"}
+                        or annex.find("TITLE/STI") is not None
+                    ):
+                        continue
+                    without_subtitle += 1
+                    bare = title_of(annex, "TITLE/TI")
+                    subject = group_subject(annex)
+                    if subject is not None:
+                        assert annex is unit
+                        fired[(bare, subject)] += 1
+                    elif (sole := _sole_group_title(annex)) is not None:
+                        declined[(bare, sole)] += 1
+    assert without_subtitle == 323
+    assert fired == Counter(_SUBJECTS_FIRED)
+    assert sum(fired.values()) == 185
+    assert declined == Counter(
+        {
+            ("Appendices 1 to 6", "FOREWORD"): 21,
+            ("Appendix 10", "Entry 43 — Azocolourants — List of testing methods"): 16,
+        }
+    )
+
+
+def _sole_group_title(annex: Element) -> str | None:
+    contents = annex.find("CONTENTS")
+    children = [] if contents is None else list(contents)
+    if len(children) != 1 or children[0].tag != "GR.SEQ":
+        return None
+    return title_of(children[0], "TITLE/TI") or None
+
+
+def test_the_subject_reaches_the_stored_heading_and_the_text_is_untouched(
+    client: CellarClient,
+) -> None:
+    """The heading moves; the verbatim text and every location stay as they were."""
+    tree = tree_of(client, MDR, MDR_V2)
+    annex = tree.find("AN IX")
+    assert annex is not None
+    assert annex.heading == (
+        "CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF "
+        "TECHNICAL DOCUMENTATION"
+    )
+    assert annex.text.startswith("ANNEX IX\nCONFORMITY ASSESSMENT BASED ON A QUALITY")
+    appendix = tree_of(client, REACH, "02006R1907-20150323").find("AN XVII APP 10")
+    assert appendix is not None
+    assert appendix.heading == "Appendix 10"
 
 
 # ------------------------------------------------------------------------ locations

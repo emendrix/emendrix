@@ -147,6 +147,11 @@ The faithfulness rate is published as measured and it is the weakest number in t
 over. It is a judge's opinion rather than a computation, and it is an opinion at n = 20: the
 judge marked 16 of the twenty sampled triples faithful, so the table reads 0.800. Read that as
 what one model said about another model's sentences and not as a measurement of correctness.
+The report of 2026-09-19 reads 15 of 20 (0.750). On that date the parser began storing an
+annex's subject as its heading, which moved three subset prompts and one judged triple, and the
+judge failed the re-recorded Annex I explanation of the Medical Devices Regulation. That is one
+verdict on new prose at n = 20, not a decline, and the 0.800 stays a reading of the recording it
+describes.
 
 **That 0.800 is not the 0.850 of the recording before it declining.** The two are different
 recordings of different prompts. On 2026-08-12 stored verbatim text stopped running words together
@@ -227,6 +232,8 @@ against, so the review lapsed on its own and twenty triples are owed a reading b
 hand-reviewed rate is published again. That reading of 17 of 20 stands as a reading of the
 sample it covered, the judged rate beside it is unchanged at 0.800, and no sheet was ticked, no
 sign-off back-dated and no verdict re-scored to avoid the lapse.
+The same holds after the report of 2026-09-19, whose judged rate reads 0.750 and whose sample
+digest moved again with the re-recorded Annex I triple, so `human review` stays `pending`.
 `uv run emendrix eval sample-digest` prints the digest and the entries the next review has to
 cover.
 

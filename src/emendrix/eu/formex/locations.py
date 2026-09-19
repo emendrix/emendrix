@@ -42,12 +42,14 @@ from emendrix.core import LocationCode
 from emendrix.eu.formex.text import flat_text
 
 __all__ = [
+    "DIVISION_WORDS",
     "INLINE",
     "LOCATABLE",
     "TRANSPARENT",
     "annex_segment",
     "article_value",
     "decode_identifier",
+    "group_subject",
     "point_segment",
     "section_value",
     "title_of",
@@ -130,6 +132,28 @@ INLINE: Final = frozenset(
 )
 """Elements whose content is text. Not walked — but their text still reaches every ancestor."""
 
+DIVISION_WORDS: Final = frozenset(
+    {
+        "CHAPTER",
+        "PART",
+        "SECTION",
+        "SUBSECTION",
+        "TITLE",
+        "ANNEX",
+        "APPENDIX",
+        "FOREWORD",
+        "CONTENTS",
+        "TABLE",
+        "INTRODUCTION",
+        "ENTRY",
+    }
+)
+"""First words of a title that heads a division of an annex rather than naming the whole of it.
+
+The same list as `site_/subject.py`'s, which reads an annex's subject back from text already
+published: the two rules answer one question, and a test holds them equal.
+"""
+
 _IDENTIFIER: Final = re.compile(r"^0*(\d+)([A-Za-z]*)$")
 _ARTICLE_TITLE: Final = re.compile(r"\bArticle\s+(\d+\s*[A-Za-z]?)\b", re.IGNORECASE)
 _ANNEX: Final = re.compile(r"\bANNEX\s+([IVXLCDM]+|\d+[A-Za-z]?)\b")
@@ -138,6 +162,7 @@ _SECTION: Final = re.compile(r"^(?:Section|SECTION)\s+([0-9A-Za-z]+(?:\.[0-9A-Za
 _NUMBERED_TITLE: Final = re.compile(r"^(\d+(?:\.\d+)*)\.\s")
 _MARKER: Final = re.compile(r"^\(?([0-9A-Za-z]+)\)?\.?$")
 _ARABIC: Final = re.compile(r"^\d+[a-z]*$", re.IGNORECASE)
+_FIRST_WORD: Final = re.compile(r"[^\W\d_]+")
 # Real characters from the documents, not typographic decoration.
 _DASHES: Final = frozenset({"-", "–", "—", "―", "•", "*", ""})  # noqa: RUF001
 
@@ -163,6 +188,26 @@ def title_of(element: Element, *tags: str) -> str:
         if found is not None:
             return flat_text(found)
     return ""
+
+
+def group_subject(annex: Element) -> str | None:
+    """The title of the one unnumbered `GR.SEQ` holding an annex's whole content, or `None`.
+
+    Formex often titles an annex `ANNEX II` and names what it is about in the title of a group
+    wrapping everything else. That title is the annex's subject only when the group is the sole
+    child of `CONTENTS`, carries no section number of its own, and does not open with a word
+    that heads a division (`FOREWORD`, `PART`), in any case. Otherwise this says nothing.
+    """
+    contents = annex.find("CONTENTS")
+    groups = [] if contents is None else list(contents)
+    if len(groups) != 1 or groups[0].tag != "GR.SEQ" or section_value(groups[0]) is not None:
+        return None
+    title = groups[0].find("TITLE/TI")
+    subject = "" if title is None else flat_text(title)
+    word = _FIRST_WORD.match(subject)
+    if word is None or word.group().upper() in DIVISION_WORDS:
+        return None
+    return subject
 
 
 def article_value(element: Element) -> str | None:

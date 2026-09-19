@@ -245,7 +245,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49642)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49456)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -411,7 +411,13 @@ Each of the nine permalinks gained a `title` naming it as its `aria-label` does,
 and 252 in all; each of the nine `Index` links closing a change gained `class="up"` and lost
 `↑ `, 7 bytes each and 63 in all; `Back to top` gained `class="up-after"` and lost ` ↑`, 13; and
 `What these mean` gained `class="go"` and lost ` →`, 7. No anchor moved, no id went, and nothing
-inside a `<details>` did."""
+inside a `<details>` did.
+
+186 bytes lighter on 2026-09-19, later again, when the parser started storing Annex IX's subject
+as its heading. That heading is in the explain prompt, so Annex IX's explanation is a new
+recording: its sentence is 3 bytes longer and its citation row names the new version alone, 189
+bytes shorter than the pair it replaced. The printed title did not move, because the site already
+read it from the text. Neither number is a measurement of anything."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

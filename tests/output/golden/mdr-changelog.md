@@ -266,11 +266,11 @@ A new point (j) was added stating that Article 59 shall apply from 24 April 2020
 > Article 86(2),
 > Articles 87 and […truncated by emendrix: 1557 characters omitted…]
 
-**DEFERRED · Annex IX — ANNEX IX** · applies from: 2021-05-26
+**DEFERRED · Annex IX — CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION** · applies from: 2021-05-26
 
 *within* `AN IX SCT 5 SCT 5.1 PTA (h)` · *dates* -2020-05-26 +2021-05-26 · *amended by* `32020R0561`
 
-In Section 5.1(h), the date by which the Commission must provide guidance for expert panels on interpreting the criteria in point (c) was changed from 26 May 2020 to 26 May 2021. [Annex IX, v1](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02017R0745-20170505#anx_IX) [Annex IX, v2](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02017R0745-20200424#anx_IX)
+In Section 5.1(h), the deadline by which the Commission must provide guidance to expert panels on interpreting the criteria in point (c) was changed from 26 May 2020 to 26 May 2021. [Annex IX, v2](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02017R0745-20200424#anx_IX)
 
 *before* (`02017R0745-20170505`)
 

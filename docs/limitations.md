@@ -116,7 +116,9 @@ number with no model in it. The readings are not a trend line: the question and 
 both moved between them, so a rising hand-reviewed rate is not the model improving. Nor is the
 judge's 0.800 over the recording of 2026-08-12 the 0.850 before it declining: every prompt changed
 when stored text stopped running words together, so that is a new recording rather than the old
-one moving. [`./evaluation.md`](./evaluation.md) reads the whole sequence, and
+one moving. The same holds for the 0.750 over the recording of 2026-09-19, where the judge
+failed one re-recorded explanation whose prompt had gained an annex's subject in its heading
+line. [`./evaluation.md`](./evaluation.md) reads the whole sequence, and
 [`../CHANGELOG.md`](../CHANGELOG.md) states which of those figures may be compared with which.
 
 **A change whose whole difference falls past the character cap would ship without sentences.** The

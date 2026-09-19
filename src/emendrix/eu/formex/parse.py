@@ -47,6 +47,7 @@ from emendrix.eu.formex.locations import (
     annex_segment,
     article_value,
     decode_identifier,
+    group_subject,
     point_segment,
     section_value,
     title_of,
@@ -154,10 +155,17 @@ class _Siblings:
 
 
 def _heading(element: Element) -> str | None:
+    """A unit's or section's own title, or `None`.
+
+    An annex with no subtitle may name its subject in a group wrapping its whole content, which
+    `group_subject` reads before the bare `ANNEX II` is settled for.
+    """
     if element.tag == "ARTICLE":
         return title_of(element, "STI.ART", "TI.ART") or None
     if element.tag in ANNEX_TAGS:
-        return title_of(element, "TITLE/STI", "TITLE/TI") or None
+        if element.find("TITLE/STI") is not None:
+            return title_of(element, "TITLE/STI") or None
+        return group_subject(element) or title_of(element, "TITLE/TI") or None
     if element.tag == "GR.SEQ":
         return title_of(element, "TITLE/TI") or None
     return None

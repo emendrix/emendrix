@@ -95,6 +95,14 @@ is the deterministic clock's own wording and not the model's. The recording stil
 applicability note on any of the nine changes, and all nine still pass the gate on the first
 answer.
 
+A seventh reading on 2026-09-19, two lines. Annex IX's heading reads `CONFORMITY ASSESSMENT BASED
+ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION` where it read `ANNEX
+IX`, because the parser now stores the title of the one group wrapping an annex's whole content
+as its heading. That line is in the prompt, so this one change was asked again and its sentence is
+a new recording: the same deadline, now cited to the new version alone. The other eight changes,
+the quotes, the counts and both clocks did not move, and all nine still pass the gate on the
+first answer.
+
 To regenerate: run the command in `changelog()` against a scratch directory and copy the
 written file over this one, then *read the diff*, because that is the review."""
 

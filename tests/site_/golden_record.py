@@ -909,4 +909,23 @@ bytes. Its canonical address is unchanged. No other page gained a reference star
 **No `id=` moved or went.** Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
 `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical, every `<title>`
 and description is unchanged, `_LARGEST_PAGE` does not move, and no measured figure moved.
+
+Read again on 2026-09-19, after that, when the parser started storing the title of the one group
+wrapping an annex's whole content as the annex's heading. Three pages moved. Two moved in one
+explanation, the MDR event page and `acts/32017R0745/an-ix/`, and the methodology page moved
+because a measured figure did. Annex IX's heading is now stored as `CONFORMITY
+ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION`
+rather than `ANNEX IX`, and that line is in the explain prompt, so its one change was asked again.
+The new recording says the same deadline moved, in three more bytes of prose, and cites the new
+version alone where the old one cited both, which is the whole of the 186 bytes the event page
+lost. The printed title did not move: the site already read the same words from the stored
+text's second line, and now finds them in the heading instead. **No `id=` moved or went.** Both
+feeds, `search-index.json`, the sitemaps, `robots.txt`, the script, the stylesheet, the fonts,
+`icon.svg` and `og.png` are byte-identical, and every `<title>` and description is unchanged.
+`_LARGEST_PAGE` moves by those 186 bytes, with its own paragraph. The methodology page now reads
+the report of 2026-09-19 at revision `20d3761`, where judged faithfulness is 0.750 over the new
+recording in place of 0.800 over the one it replaced: the judge fails the re-recorded MDR Annex I
+explanation. That is one entry at n = 20 and a verdict on new prose, not a decline. The page's
+size did not change, since `0.750` and `0.800` are the same width and so are the two dates and
+revisions.
 """
