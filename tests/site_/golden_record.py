@@ -852,4 +852,21 @@ moved or went.** Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.
 `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical, and so is every
 `<title>`; the feeds' summaries still say event, which is the feeds' own word. `_LARGEST_PAGE`
 moves by 335 bytes and no measured figure moved.
+
+Read again on 2026-09-19, later still, when a roster row's official title started keeping its
+subject and the methodology tables started stacking on a phone. All 23 HTML pages moved in the
+stylesheet's name, `style.84c56560.css` replacing `style.4bd174c6.css`: the sheet gained one
+`@media (max-width: 40rem)` block that sets each table row out as a block, with every cell under
+its column's words from `data-label`. Three pages moved in their markup besides.
+`amendments/index.html` subtitles Regulation (EU) 2020/561 `[…] as regards the dates of
+application of certain of its provisions (Text with EEA relevance)` where the cut from the start
+stopped at `amending Regulation (EU) […]`; `acts/index.html` subtitles the MDR `[…] on medical
+devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC) No
+1223/2009 […]` where its first 87 characters repeated the act's number and date; and both
+tables of
+`methodology/index.html` carry explicit table roles and a `data-label` on every cell, their
+words unchanged. **No `id=` moved or went.** Both feeds, `search-index.json`, `sitemap.xml`,
+`sitemap_index.xml`, `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are
+byte-identical, every `<title>` and description is unchanged, `_LARGEST_PAGE` does not move,
+and no measured figure moved.
 """

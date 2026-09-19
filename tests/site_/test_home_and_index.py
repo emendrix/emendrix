@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import re
 from datetime import date
 from pathlib import Path
@@ -18,6 +19,7 @@ from emendrix.diff import compute_delta
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry, diff_only_entry
+from emendrix.output.markdown import TITLE_CAP
 from emendrix.site_.inputs import collect_site
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.acts_index import render_acts_index
@@ -29,6 +31,7 @@ from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
 REPORTS = REPO / "reports" / "eval"
+GOLDEN = Path(__file__).resolve().parent / "golden"
 OBSERVED = date(2026, 8, 9)
 
 
@@ -521,3 +524,30 @@ def test_the_hero_names_each_recent_act_as_its_own_page_does() -> None:
     site = site.model_copy(update={"recent": ((named, entry),), "acts": (named,)})
     hero = render_home(site).split('<section class="hero">')[1].split("</section>")[0]
     assert ">The House Rules</a>" in hero
+
+
+def test_every_roster_subtitle_in_the_golden_tree_is_a_marked_cut_of_a_recorded_title() -> None:
+    """Both rosters print an official title cut to about the cap, and nothing but the cut.
+
+    Every fragment between the `[…]` markers must be a run of a title the tree prints whole
+    somewhere else, the amending act's lede or the act's own page, so the cut can drop words
+    but never change one.
+    """
+    whole = [
+        html.unescape(page.read_text(encoding="utf-8"))
+        for page in sorted(GOLDEN.rglob("*.html"))
+        if page.relative_to(GOLDEN).as_posix() not in {"amendments/index.html", "acts/index.html"}
+    ]
+    subtitles = [
+        html.unescape(sub)
+        for roster in ("amendments/index.html", "acts/index.html")
+        for sub in re.findall(
+            r'<span class="sub">(.*?)</span>', (GOLDEN / roster).read_text(encoding="utf-8")
+        )
+    ]
+    assert subtitles
+    for sub in subtitles:
+        assert len(sub) <= TITLE_CAP + 8, sub
+        for fragment in (part.strip() for part in sub.split("[…]")):
+            if fragment:
+                assert any(fragment in page for page in whole), fragment

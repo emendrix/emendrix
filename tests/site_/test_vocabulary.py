@@ -38,7 +38,10 @@ GOLDEN: Final = Path(__file__).resolve().parent / "golden"
 
 _BANNED: Final = re.compile(r"disputed|contested|conflict", re.IGNORECASE)
 
-_EXCEPTION: Final = ("methodology/index.html", "<tr><td>Disputed changes (signals disagree)</td>")
+_EXCEPTION: Final = (
+    "methodology/index.html",
+    '<tr role="row"><td role="cell" data-label="Measure">Disputed changes (signals disagree)</td>',
+)
 """The measured table's row, rendered from the eval harness's metric rows, which the README's
 published table shares; the site does not own its words, its label or its meaning."""
 

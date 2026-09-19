@@ -20,7 +20,8 @@ Two rules hold the page together:
 The loop is stated after the figures because it explains how they came about, and a reader who
 does not care can stop above it. The glossary closes the page: every tag on the site links one
 of its terms, and every heading on the page carries an `id` so a link can land on it. The
-corpus section lives in `pages/methodology_corpus.py` and the glossary in `pages/glossary.py`.
+corpus section and the table markup both sections share live in
+`pages/methodology_corpus.py`, and the glossary in `pages/glossary.py`.
 
 No clock, no network, no model call: `generated_on` arrives from the caller and every other
 value on the page was read off an artifact somebody committed.
@@ -35,7 +36,7 @@ from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, count, escape, inline, join
 from emendrix.site_.pages.glossary import glossary_html
-from emendrix.site_.pages.methodology_corpus import corpus_section
+from emendrix.site_.pages.methodology_corpus import corpus_section, measure_table
 from emendrix.site_.pitch import PITCH
 from emendrix.site_.sources import repo_file
 
@@ -136,24 +137,16 @@ def _metrics(site: SiteInputs) -> list[Html]:
             "rows are the same ones the repository's README publishes, rendered from the same "
             "committed report, so the two cannot disagree.</p>"
         ),
-        Html('<div class="scroll">'),
-        Html("<table>"),
-        Html(
-            "<thead><tr><th>Measure</th><th>Result</th><th>n</th>"
-            "<th>What it means — and what it does not</th></tr></thead>"
-        ),
-        Html("<tbody>"),
     ]
-    for row in metric_rows(run):
-        lines.append(
-            Html(
-                f"<tr><td>{inline(row.measure)}</td>"
-                f'<td class="result">{inline(row.result)}</td>'
-                f"<td>{inline(row.n)}</td>"
-                f'<td class="meaning">{inline(row.meaning)}</td></tr>'
-            )
+    lines.extend(
+        measure_table(
+            "Measure",
+            (
+                (inline(row.measure), inline(row.result), inline(row.n), inline(row.meaning))
+                for row in metric_rows(run)
+            ),
         )
-    lines.extend((Html("</tbody>"), Html("</table>"), Html("</div>")))
+    )
     caveats = synthetic_caveats(run)
     if caveats:
         lines.append(Html('<ul class="caveats">'))

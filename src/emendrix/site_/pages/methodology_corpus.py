@@ -3,16 +3,48 @@
 Split off `methodology.py` on 2026-09-18, when the page gained its glossary and had no room left
 under the size cap. The seam is what the corpus holds against what was measured and how: every
 figure here is rolled up at build time from the committed entries this build renders, where the
-rest of the page reports a dated evaluation of a pinned, labelled set.
+rest of the page reports a dated evaluation of a pinned, labelled set. The table both sections
+print, `measure_table`, lives here too, so the two tables cannot be marked up two ways.
 """
 
 from __future__ import annotations
+
+from collections.abc import Iterable
 
 from emendrix.site_.entries import corpus_rows, counted
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, escape, inline
 
-__all__ = ["corpus_section"]
+__all__ = ["corpus_section", "measure_table"]
+
+_COLUMNS = ("Result", "n", "What it means — and what it does not")
+_CLASSES = ("", ' class="result"', "", ' class="meaning"')
+
+
+def measure_table(first: str, rows: Iterable[tuple[Html, Html, Html, Html]]) -> list[Html]:
+    """A table of measures, each row a measure, its result, its `n` and what it means.
+
+    Every cell carries its column's header as `data-label`, which the sheet prints above the
+    cell when a phone stacks each row into a block. The explicit roles are redundant on a wide
+    screen and are what keep the table a table for a screen reader once the sheet sets its
+    parts to `display: block`, which drops their table semantics in WebKit.
+    """
+    headers = (first, *_COLUMNS)
+    head = "".join(f'<th role="columnheader">{escape(words)}</th>' for words in headers)
+    lines = [
+        Html('<div class="scroll">'),
+        Html('<table role="table">'),
+        Html(f'<thead role="rowgroup"><tr role="row">{head}</tr></thead>'),
+        Html('<tbody role="rowgroup">'),
+    ]
+    for row in rows:
+        cells = "".join(
+            f'<td{css} role="cell" data-label="{escape(words)}">{cell}</td>'
+            for css, words, cell in zip(_CLASSES, headers, row, strict=True)
+        )
+        lines.append(Html(f'<tr role="row">{cells}</tr>'))
+    lines.extend((Html("</tbody>"), Html("</table>"), Html("</div>")))
+    return lines
 
 
 def corpus_section(site: SiteInputs) -> list[Html]:
@@ -35,34 +67,24 @@ def corpus_section(site: SiteInputs) -> list[Html]:
             )
         )
         return lines
-    lines.extend(
-        (
-            Html(
-                f'<p class="small muted">Counted over the '
-                f"{escape(counted(counts.events, 'version'))} and "
-                f"{escape(counted(counts.changes, 'change'))} this site renders, and over "
-                f"nothing else. The measured table below scores emendrix against a small labelled "
-                f"set of transitions instead: a different question over a different denominator, "
-                f"so a figure there is not a better reading of one here, and neither is adjusted "
-                f"for the other.</p>"
-            ),
-            Html('<div class="scroll">'),
-            Html("<table>"),
-            Html(
-                "<thead><tr><th>Over the published corpus</th><th>Result</th><th>n</th>"
-                "<th>What it means — and what it does not</th></tr></thead>"
-            ),
-            Html("<tbody>"),
-        )
-    )
-    lines.extend(
+    lines.append(
         Html(
-            f"<tr><td>{inline(row.measure)}</td>"
-            f'<td class="result">{escape(row.result)}</td>'
-            f"<td>{escape(row.n)}</td>"
-            f'<td class="meaning">{inline(row.meaning)}</td></tr>'
+            f'<p class="small muted">Counted over the '
+            f"{escape(counted(counts.events, 'version'))} and "
+            f"{escape(counted(counts.changes, 'change'))} this site renders, and over "
+            f"nothing else. The measured table below scores emendrix against a small labelled "
+            f"set of transitions instead: a different question over a different denominator, "
+            f"so a figure there is not a better reading of one here, and neither is adjusted "
+            f"for the other.</p>"
         )
-        for row in corpus_rows(counts)
     )
-    lines.extend((Html("</tbody>"), Html("</table>"), Html("</div>")))
+    lines.extend(
+        measure_table(
+            "Over the published corpus",
+            (
+                (inline(row.measure), escape(row.result), escape(row.n), inline(row.meaning))
+                for row in corpus_rows(counts)
+            ),
+        )
+    )
     return lines

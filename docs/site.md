@@ -524,7 +524,7 @@ text; in force from 31 December 2015.`, and a card whose two dates agree says no
 **The acts roster opens with a jump list of its sectors**, each with its count, each link the
 fragment the sector heading has always carried, so no address moved. A row leads with the act's
 name, the label and key beside it one step down, the official title in the law's face cut
-visibly with `[…]`, then the dated words. **Sectors are decided in one place**,
+visibly with `[…]` (the rule is below), then the dated words. **Sectors are decided in one place**,
 `site_/sectors.py`: the watchlist's `domain`, `Other` where none is declared and always last,
 then case-folded order. The acts roster and the feeds page both read it, so an act sits under
 the same sector on both.
@@ -534,6 +534,24 @@ act can change acts in several sectors, and sector headings would list it twice.
 the amending act, its key, its subject (the recorded official title, cut visibly) and the
 watched acts it changed, each linking its page, three by name and the rest counted, then the
 date with its clock. The act names carry the sector.
+
+**A roster's subtitle keeps what the act is about** (`site_/titling.py`). An official title opens
+with the act's own number and date, which the row already stands for, so both rosters drop that
+opening clause and mark its absence with `[…]`. Where the rest is still over the 120-character
+cap, the cut keeps its head and the `as regards …` or `with regard to …` clause, where an
+amending act's title states its subject, with `[…]` for each elision; with no such clause it
+keeps the head alone, marked. A title whose opening the rule does not recognise is cut from the
+start exactly as the changelog's headings cut it. Nothing kept is changed, no-break spaces
+included. Measured on 2026-09-19 over the 140 distinct amending-act titles the published
+changelog repository records, all over the cap: 113 now show their subject clause on the roster,
+where the cut from the start showed 9. The changelog's own `short_title` is not changed, because
+it renders the committed public changelogs.
+
+**The methodology tables stack on a phone.** Under 40rem each row becomes a block: the measure
+as its heading, then the result, `n` and the meaning, each under its column's words, printed
+from the cell's `data-label` by the sheet, so nothing sits off screen in a scroll box. The header
+row is hidden visually and kept for a screen reader, and the markup carries explicit table roles,
+because `display: block` drops a table's semantics in WebKit.
 
 **The feeds page** lists the global feed, then one feed per act under the same sector headings,
 with one clause saying what Atom is. The note about the one reissue of 2026-09-05 follows the

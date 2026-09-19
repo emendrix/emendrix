@@ -17,7 +17,6 @@ anything a reader cannot read off the row itself.
 
 from __future__ import annotations
 
-from emendrix.output.markdown import short_title
 from emendrix.site_.amending import resolve
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date, time_html
@@ -26,6 +25,7 @@ from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import Amended, amended_by
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.titling import subject_cut
 from emendrix.site_.trail import AMENDING_ROSTER
 from emendrix.site_.urls import act_href, amendment_href, amendments_href, depth_of, up
 
@@ -70,15 +70,17 @@ def _changed(amended: Amended) -> Html:
 def _row(site: SiteInputs, key: str, amended: Amended) -> Html:
     """One amending act: its name and identifier, what it is about, and what it changed when.
 
-    The subject is the recorded official title, cut by `short_title` with its visible marker,
-    because it is what says what the instrument was for, and a short name such as a number
-    says nothing about that. The dated words carry their own clock, the one every dated line
-    on the site is built from, so a detection date can never be printed as an in-force one.
+    The subject is the recorded official title, cut by `titling.subject_cut` with every elision
+    marked, because it is what says what the instrument was for, and a short name such as a
+    number says nothing about that. The cut drops the number and date the row's name and key
+    already stand for, and keeps the `as regards` clause, where an amending act's title states
+    its subject. The dated words carry their own clock, the one every dated line on the site is
+    built from, so a detection date can never be printed as an in-force one.
     """
     instrument = resolve(site.amending, key)
     dated = event_date(amended[0][1])
     subject = (
-        Html(f' <span class="sub">{escape(short_title(instrument.title))}</span>')
+        Html(f' <span class="sub">{escape(subject_cut(instrument.title))}</span>')
         if instrument.title
         else Html("")
     )

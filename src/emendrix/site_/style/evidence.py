@@ -6,7 +6,7 @@ This module dresses the evidence rather than the statement about it: the line pi
 long version page, the in-page map of the changes and the sticky column it becomes, the way
 back to it from each change, the gathered rows with no text to show, the
 `<details>` a change's text sits in, the strip naming the two sides compared, the unified diff,
-the verbatim blocks and the metrics table.
+the verbatim blocks and the metrics table, which a phone stacks into one block per row.
 
 `timeline` was split off on 2026-09-05, when the gathered rows needed rules this module had no
 room for under the size cap, and `change` on 2026-09-18, for the same reason. Two decisions
@@ -230,4 +230,18 @@ table { border-collapse: collapse; width: 100%; font-size: var(--text-meta); min
 th, td { text-align: left; vertical-align: top; padding: .5rem .6rem;
          border-bottom: 1px solid var(--rule); }
 th { font-size: var(--text-label); font-weight: 600; color: var(--muted); }
+/* A phone stacks each row into a block under the measure it scores, every other cell under
+   its column's words, read from `data-label`; the header row stays for a screen reader. */
+@media (max-width: 40rem) {
+  .scroll:has(> table) { overflow-x: visible; }
+  table { min-width: 0; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  table, tbody, tr, td { display: block; }
+  tr { border-bottom: 1px solid var(--rule); padding-block: .5rem; }
+  td { border: 0; padding: .15rem 0; }
+  td[data-label]::before { content: attr(data-label); display: block;
+                           font-size: var(--text-label); color: var(--muted); font-weight: 600; }
+  td:first-child { font-weight: 600; }
+  td:first-child::before { content: none; }
+}
 """

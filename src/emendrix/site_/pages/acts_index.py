@@ -27,7 +27,8 @@ because "No amendment recorded" would deny events the act's own page shows.
 A row leads with the name a reader knows the act by, with the label and the key beside it one
 step down in size and colour: an identifier a reader pastes into EUR-Lex belongs on the page
 that lists the acts and not only on each act's own, but it is not the thing the row is about.
-Under the name, the official title, cut visibly, then the dated words.
+Under the name, the official title, cut visibly from its subject rather than from its number,
+then the dated words.
 
 A row's date names its clock, in the words every version card uses: "in force" is the corpus's
 own answer, "detected" is the day emendrix first saw the event. The rule is the one
@@ -37,7 +38,6 @@ own answer, "detected" is the day emendrix first saw the event. The rule is the 
 
 from __future__ import annotations
 
-from emendrix.output.markdown import short_title
 from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import page
@@ -48,6 +48,7 @@ from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pitch import SCOPE, scope_holds
 from emendrix.site_.sectors import groups
+from emendrix.site_.titling import subject_cut
 from emendrix.site_.trail import ACTS_ROSTER
 from emendrix.site_.urls import act_href, depth_of, domain_anchor, up
 
@@ -106,10 +107,12 @@ def _row(site: SiteInputs, act: ActSite) -> Html:
     Which part sits on which line is the stylesheet's decision, so the markup keeps a literal
     space between them: with no stylesheet at all the row still reads as words.
 
-    The official title stays cut, with its visible marker: this is a list, and a whole official
-    title per row is a wall of text. The instrument that made the newest amendment is named
-    beside its date for the opposite reason: it is the fact a reader scanning the roster for
-    one act is looking for, and one short name is a name rather than a wall.
+    The official title stays cut, with its visible markers: this is a list, and a whole official
+    title per row is a wall of text. `titling.subject_cut` drops the number and date the row's
+    identifiers already carry, so what is left is what the act is about. The instrument that
+    made the newest amendment is named beside its date for the opposite reason: it is the fact
+    a reader scanning the roster for one act is looking for, and one short name is a name
+    rather than a wall.
     """
     identity: list[Html] = []
     if act.headline != act.label:
@@ -127,7 +130,7 @@ def _row(site: SiteInputs, act: ActSite) -> Html:
     else:
         last = escape(_QUIET)
     sub = (
-        Html(f' <span class="sub">{escape(short_title(act.entries[0].title))}</span>')
+        Html(f' <span class="sub">{escape(subject_cut(act.entries[0].title))}</span>')
         if act.entries
         else Html("")
     )

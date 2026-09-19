@@ -14,6 +14,8 @@ site holding events rather than the empty one the rest of the module uses.
 
 from __future__ import annotations
 
+import html
+import re
 from datetime import date
 from pathlib import Path
 
@@ -205,8 +207,8 @@ def test_the_character_count_never_becomes_a_row_of_the_measured_table() -> None
     """
     site = _site()
     rendered = render_methodology(site)
-    body = rendered.split("<tbody>")[1].split("</tbody>")[0]
-    assert body.count("<tr>") == len(metric_rows(site.run))
+    body = rendered.split('<tbody role="rowgroup">')[1].split("</tbody>")[0]
+    assert body.count('<tr role="row">') == len(metric_rows(site.run))
     assert "characters" not in body
 
 
@@ -328,7 +330,10 @@ def test_the_dispute_rate_is_broken_down_and_the_shapes_add_up_to_it() -> None:
     for part in (counts.shapes.evidenced, counts.shapes.no_text, counts.shapes.kind):
         assert f"{part:,} ({part / counts.disputed:.3f})" in rendered
     assert f"{counts.disputed:,} changes where sources differ" in rendered
-    assert "<td>Changes where sources differ</td>" in rendered
+    assert (
+        '<td role="cell" data-label="Over the published corpus">Changes where sources differ</td>'
+        in rendered
+    )
     for words in ("not in every list", "no text found", "kinds differ"):
         assert f"…of those, {words}: " in rendered
 
@@ -403,3 +408,28 @@ def test_the_glossary_says_the_table_counts_sources_differ_in_its_own_row() -> N
     glossary = rendered.split('id="glossary"')[1]
     assert "in its row on changes where the signals disagree" in glossary
     assert "isputed" not in glossary
+
+
+def test_every_cell_of_both_tables_carries_its_column_s_words_and_its_role() -> None:
+    """A phone stacks each row and prints a cell's `data-label` above it, so every label must be
+    its column's own header, and the roles keep the stacked parts a table for a screen reader.
+    """
+    rendered = render_methodology(_corpus_site())
+    tables = re.findall(r'<table role="table">(.*?)</table>', rendered, re.DOTALL)
+    assert len(tables) == 2
+    for table in tables:
+        assert '<thead role="rowgroup"><tr role="row">' in table
+        assert '<tbody role="rowgroup">' in table
+        headers = re.findall(r'<th role="columnheader">(.*?)</th>', table)
+        assert len(headers) == 4
+        assert headers[1:] == ["Result", "n", "What it means — and what it does not"]
+        body = table.split('<tbody role="rowgroup">')[1]
+        rows = re.findall(r'<tr role="row">(.*?)</tr>', body, re.DOTALL)
+        assert rows
+        for row in rows:
+            cells = re.findall(r"<td([^>]*)>", row)
+            labels = [re.search(r'data-label="([^"]*)"', cell) for cell in cells]
+            assert all('role="cell"' in cell for cell in cells), row
+            assert [html.unescape(label.group(1)) if label else None for label in labels] == [
+                html.unescape(header) for header in headers
+            ], row
