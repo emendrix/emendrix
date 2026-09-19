@@ -186,7 +186,8 @@ def test_every_change_heading_ends_with_a_permalink_to_its_own_block() -> None:
     assert len(blocks) == len(_entry().changes)
     for anchor, opening in blocks:
         assert opening.endswith(
-            f'<a class="permalink" href="#{anchor}" aria-label="Link to this change">§</a>'
+            f'<a class="permalink" href="#{anchor}" aria-label="Link to this change" '
+            'title="Link to this change">§</a>'
         )
 
 
@@ -217,14 +218,14 @@ def test_a_short_page_carries_no_wrapper_and_no_way_back_to_a_top_it_can_see() -
 def test_a_long_page_ends_with_the_way_back_to_the_top() -> None:
     """Aimed at the id the skip link already targets, so nothing addressable is minted."""
     rendered = _page(_many(_entry(), INDEX_ABOVE))
-    back = '<p class="small backtop"><a href="#content">Back to top ↑</a></p>'
+    back = '<p class="small backtop"><a class="up-after" href="#content">Back to top</a></p>'
     assert rendered.count(back) == 1
     assert rendered.rindex('<div class="chg"') < rendered.index(back)
     assert rendered.index(back) < rendered.index("</section>")
     assert 'id="content"' in rendered
 
 
-_TO_INDEX = '<p class="to-index"><a href="#changes-index">↑ Index</a></p>'
+_TO_INDEX = '<p class="to-index"><a class="up" href="#changes-index">Index</a></p>'
 
 
 def _block_markup(rendered: str) -> list[str]:

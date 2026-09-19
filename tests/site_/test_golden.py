@@ -245,7 +245,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49307)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49642)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -403,7 +403,15 @@ started taking its subject from the first line of its own text. MDR Annex IX is 
 AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION`, which this page now prints twice, in the change
 heading and in the index, each time 139 bytes: a space, `<span class="ttl ttl--caps">`, the
 103 characters and the closing tag. No anchor moved, no id went, and nothing inside a
-`<details>` did."""
+`<details>` did.
+
+335 bytes heavier on 2026-09-19, later again, when the arrows beside a link's words moved into
+the sheet with empty alternative text, so a screen reader names each link by its words alone.
+Each of the nine permalinks gained a `title` naming it as its `aria-label` does, 28 bytes each
+and 252 in all; each of the nine `Index` links closing a change gained `class="up"` and lost
+`↑ `, 7 bytes each and 63 in all; `Back to top` gained `class="up-after"` and lost ` ↑`, 13; and
+`What these mean` gained `class="go"` and lost ` →`, 7. No anchor moved, no id went, and nothing
+inside a `<details>` did."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

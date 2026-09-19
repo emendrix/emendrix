@@ -36,7 +36,7 @@ _DEPTH = depth_of(_PATH)
 """`amendments/index.html`: every internal link on this page climbs one directory first."""
 
 _EMPTY = (
-    "No committed event names an amending instrument yet. Every event the site has seen was "
+    "No recorded version names an amending act yet. Every version the site has seen was "
     "observed by the text comparison alone."
 )
 
@@ -116,7 +116,7 @@ def render_amendments_index(site: SiteInputs) -> Html:
     return page(
         title=f"{AMENDING_ROSTER} — emendrix",
         description=(
-            "Every instrument a committed event names as having amended a watched act, newest "
+            "Every amending act a recorded version names as having amended a watched act, newest "
             "first, with how many acts each one moved and when."
         ),
         body=join(lines, "\n"),

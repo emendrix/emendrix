@@ -207,6 +207,13 @@ code, .id {
 .ext::after { content: "\2197"; content: "\2197" / ""; display: inline-block;
               margin-left: .12em; font-size: .85em;
               text-decoration: none; }
+/* A direction arrow beside a link's words is drawn here, silent in the same way, so the link's
+   accessible name is its words alone. The no-break space keeps the underline unbroken and the
+   arrow on its words' line. */
+.go::after { content: "\00a0\2192"; content: "\00a0\2192" / ""; }
+.back::before { content: "\2190\00a0"; content: "\2190\00a0" / ""; }
+.up::before { content: "\2191\00a0"; content: "\2191\00a0" / ""; }
+.up-after::after { content: "\00a0\2191"; content: "\00a0\2191" / ""; }
 /* Off-screen until it takes focus, then placed over the header rather than moving it, so
    arriving at the page shifts nothing. It is the first focusable element on every page. */
 .skip {

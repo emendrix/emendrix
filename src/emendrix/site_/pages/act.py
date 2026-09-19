@@ -51,7 +51,7 @@ from emendrix.site_.urls import act_href, domain_anchor, up
 __all__ = ["render_act"]
 
 _QUIET = (
-    "No amendment event is recorded for this act: the changelog this site is built from holds "
+    "No version is recorded for this act: the changelog this site is built from holds "
     "no transition between two versions of it."
 )
 """What an empty timeline means, said as a fact about the record rather than about time.
@@ -64,7 +64,7 @@ what has been recorded and not about when watching started.
 """
 
 _QUIET_PUBLISHED = "Its text as published is on EUR-Lex"
-_QUIET_FEED = "the feed above will carry the first event the day one is recorded"
+_QUIET_FEED = "the feed above will carry the first version the day one is recorded"
 """The two things a reader can still do here, each said only where it can be done: a build with
 no site URL mints no feed, and an act outside a corpus with published documents has no link."""
 
@@ -121,7 +121,7 @@ def _related(site: SiteInputs, act: ActSite) -> list[Html]:
     ]
     if len(others) > _RELATED:
         href = escape(f"{up(_DEPTH)}acts/#{domain_anchor(act.domain)}")
-        links.append(Html(f'<a href="{href}">all {escape(str(len(group)))} →</a>'))
+        links.append(Html(f'<a class="go" href="{href}">all {escape(str(len(group)))}</a>'))
     return [
         Html(f'<p class="related">Also watched in {escape(act.domain)}: {join(links, " · ")}</p>')
     ]
@@ -177,7 +177,7 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     if dated is not None:
         facts.append(Html(f"newest amendment {dated.clock} {time_html(dated.on)}"))
     elif act.entries:
-        facts.append(escape("recorded events name no amending act"))
+        facts.append(escape("recorded versions name no amending act"))
     links: list[Html] = []
     if site.site_url:
         href = escape(up(_DEPTH) + feed_path(act))
@@ -243,7 +243,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
     named = f"{act.headline} ({act.label})" if act.headline != act.label else act.label
     title = f"{named}: every version and what changed — emendrix"
     description = (
-        f"Every version emendrix has recorded for {act.headline}. Each event's own page carries "
+        f"Every version emendrix has recorded for {act.headline}. Each version's own page carries "
         "the provision text before and after each change."
     )
     return page(

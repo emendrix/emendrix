@@ -141,20 +141,21 @@ costs a few lines where a column would cost a screen.
 for every device a long version page carries, so a page never has half of them: the index, with
 `id="changes-index"`; a context bar under the version's masthead (`pages/context_bar.py`),
 one line naming the act as a link to its page, the version by its name and `Index`, pinned to
-the top of the screen with `position: sticky` as the page scrolls; a `↑ Index` link closing
+the top of the screen with `position: sticky` as the page scrolls; an `Index` link closing
 every change, gathered rows with no text included, where it shows when the row opens; and
-`Back to top ↑` at the foot. The bar is a `<div>` holding a `<p>`, not a landmark, since the
+`Back to top` at the foot, each with its arrow drawn by the sheet. The bar is a `<div>` holding a `<p>`, not a landmark, since the
 page already names four, and it follows the masthead in the markup so a keyboard reader meets it
 once. Nothing scrolls under it: the page's `scroll-padding-top` is the bar's height wherever the
 bar exists, so a fragment link and a link reached by the keyboard both land below it, and the
-sticky index column starts below it too. The bar and every `↑ Index` are hidden in print. All of
+sticky index column starts below it too. The bar and every `Index` link are hidden in print. All of
 it is CSS; the site's one script is still search. From one to five changes the page carries
 none of these; its masthead names the changes on one line instead, so every page with changes
 maps them near its top, and zero prints neither.
 
 Every change heading, on an event page and on a
 provision page alike, ends with a `§` permalink to that change's own anchor, which is the
-anchor both pages already publish. The citations a change's sentences carry are printed once
+anchor both pages already publish. Its accessible name is `Link to this change`, and a `title`
+carrying the same words says what the symbol is to a sighted reader on hover. The citations a change's sentences carry are printed once
 for the change, in first-mention order and deduplicated by the pair of address and label,
 rather than after every sentence: a change whose sentences all cite the same before-and-after
 pair used to print that pair once per sentence. **This is a rendering decision and nothing
@@ -198,7 +199,13 @@ these, the one on an amending act's own page, an act's and a provision history's
 disclaimer's, is written by `site_/outbound.py`, drawn with an arrow by the sheet and announced
 to a screen reader as external, so none can look like an internal one. The arrow carries empty
 alternative text, as every glyph the sheet draws in place of a word does, so it is not read out
-after the words that already say it. Where a committed document
+after the words that already say it. **No link's words carry an arrow either.** `Previous
+version`, `Next version`, `Index`, `Back to top`, `What these mean` and the other links that
+point somewhere with an arrow get it from a class in the sheet (`.go`, `.back`, `.up`,
+`.up-after`), drawn beside the words with empty alternative text, so a screen reader names the
+link by its words alone; `tests/site_/test_vocabulary.py` asserts that no link's text in the
+golden tree holds `←`, `→`, `↑` or `↗`. The `→` between two version codes is meaning and sits
+outside any link. Where a committed document
 recorded the amending act's official title, the version's masthead prints it verbatim as its
 lede and the version card prints it uncut under the line. None of it is authored: a label is a
 label, a number is mechanical and reversible, and a title is the corpus's own words.
@@ -475,7 +482,11 @@ a menu: a menu would need a script to open, and it would hide the site's structu
 `<time datetime="2025-04-01">`, built from a fixed month table and never from the locale. The ISO
 form stays wherever a machine reads it: every `<title>`, every feed title and entry, the
 `datetime` attribute and the committed changelogs. The JSON, the Markdown, the metrics and the
-code keep `event`, `instrument` and `disputed`.
+code keep `event`, `instrument` and `disputed`. **"Event" is not a reader word**: no page's
+visible text or `<title>` says it, and `tests/site_/test_vocabulary.py` asserts that over the
+golden tree and the scale tree. The one place a page prints it is the law's own verbatim text,
+where the Medical Devices Regulation says "in the event that", and the test counts those per
+page. The feeds' own summaries keep their wording, so a subscriber sees no churn.
 
 ## Every list names things the way the pages it leads to do
 

@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 177264)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 177273)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -167,9 +167,13 @@ masthead with a line naming its changes. The whole of it is that line on the two
 pages, about 420 bytes each: `Changes:` and its four coordinates, each linked to the block it
 names and followed by its title, inside `<nav class="changes-line">`. Every one of its links
 lands on an id of its own page. `_HEAVIEST` does not move, its page being the act's, and no
-anchor or id moved."""
+anchor or id moved.
 
-_TOTAL_BYTES: Final = 3300308
+9 bytes heavier on 2026-09-19, later again: the link to what the tags mean lost its drawn arrow
+from its words and gained `class="go"`, so the sheet draws the arrow with empty alternative
+text (7 bytes), and the description says a version's page where it said an event's (2)."""
+
+_TOTAL_BYTES: Final = 3355678
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -316,6 +320,13 @@ sets the provision's title in the same `<span class="ttl">` a change heading giv
 sheet can set a title printed in capitals in small capitals wherever it appears. No title here
 is in capitals and none of this corpus's annexes is titled only by its number, so no subject
 was read from a text and no index, version page or measured figure moved.
+
+55 370 bytes heavier on 2026-09-19, later again, when every link arrow moved from a link's words
+to the sheet: 28 bytes on each of the 1600 permalinks, which gained a `title` naming them as
+their `aria-label` does; 9 on each of the 398 `Previous version` pager links and 7 on each of
+the 398 `Next version` ones; 7 on each of the 399 older-step links on provision pages and the
+201 links to what the tags mean; and the index's 2 from its description. No anchor or id moved
+and no measured figure moved with it.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

@@ -47,7 +47,7 @@ def render_not_found(site: SiteInputs) -> Html:
         *masthead("prose", (), _DEPTH, Html("Error 404"), Html("Page not found")),
         Html(
             '<p class="lede muted">This address does not match anything the site publishes. '
-            "An act's own page carries its whole watched history, every amendment event on it "
+            "An act's own page carries its whole watched history, every version recorded for it "
             "in one place, so that is usually the page worth reaching for.</p>"
         ),
         Html("<ul>"),

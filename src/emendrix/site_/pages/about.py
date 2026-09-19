@@ -62,8 +62,8 @@ _NOT_THE_MODEL = (
 )
 
 _NOT_A_SUBSTITUTE = (
-    "It is not a lawyer's review, and it is not the official text. Every act and every event "
-    "here links the consolidated version the comparison was computed from, and that document, "
+    "It is not a lawyer's review, and it is not the official text. Every act and every version "
+    "here links the consolidated text the comparison was computed from, and that document, "
     "not this page, is the one to read when an answer has to be right."
 )
 

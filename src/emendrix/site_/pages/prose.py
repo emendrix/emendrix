@@ -143,7 +143,7 @@ def permalink(anchor: str) -> Html:
     """
     return Html(
         f'<a class="permalink" href="#{escape(anchor)}" '
-        f'aria-label="{escape(_PERMALINK_NAME)}">§</a>'
+        f'aria-label="{escape(_PERMALINK_NAME)}" title="{escape(_PERMALINK_NAME)}">§</a>'
     )
 
 

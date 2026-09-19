@@ -36,8 +36,8 @@ _UNCONFIGURED: Final = (
 
 _LEDE: Final = (
     "One Atom feed per watched act, plus one carrying every act. Atom is a format feed readers "
-    "subscribe to. An entry appears when an amendment event is recorded and is identified by "
-    "the permanent link to that event."
+    "subscribe to. An entry appears when a version is recorded and is identified by the "
+    "permanent link to that version."
 )
 
 _REISSUE: Final = (
@@ -59,7 +59,7 @@ def _feed_list(site: SiteInputs) -> list[Html]:
     lines = [
         Html(
             f'<ul><li><a href="{escape(root + feed_path(None))}">All watched acts</a> '
-            f'<span class="muted">every amendment event this site records</span></li></ul>'
+            f'<span class="muted">every version this site records</span></li></ul>'
         )
     ]
     for sector, acts in groups(site.acts):
@@ -90,8 +90,7 @@ def render_feeds_page(site: SiteInputs) -> Html:
     return page(
         title="Feeds — emendrix",
         description=(
-            "Atom feeds of the amendment events emendrix records: one per watched act, plus a "
-            "global feed."
+            "Atom feeds of the versions emendrix records: one per watched act, plus a global feed."
         ),
         body=join(lines, "\n"),
         path=_PATH,

@@ -168,7 +168,7 @@ def _panel(site: SiteInputs, found: DateCoverage) -> list[Html]:
         f"{found.with_a_date:,} that did.",
         f"The forward list holds {counted(found.mentions_ahead, 'mention')} dated after {on}, "
         f"from {found.acts_ahead} of the {counted(found.acts_with_events, 'act')} holding a "
-        f"committed event, leaving {found.acts_with_nothing_ahead} with nothing ahead. It marks "
+        f"recorded version, leaving {found.acts_with_nothing_ahead} with nothing ahead. It marks "
         f"{counted(found.superseded_ahead, 'mention')} whose date a later amendment took back "
         f"out of the same provision.",
         f"It leaves out {counted(found.mentions_behind, 'mention')} dated on or before {on}.",
@@ -179,10 +179,10 @@ def _panel(site: SiteInputs, found: DateCoverage) -> list[Html]:
         f"{counted(found.textless, 'change')} with no text on either side, where there is "
         f"nothing to read a date out of at all, so part of that block describes the corpus's own "
         f"coverage rather than the second clock's reliability.",
-        f"Across the {counted(found.events, 'event')} here, and beyond the opening event of each "
-        f"act, the record has {counted(found.gaps, 'hole')} in it: an event reaching back to a "
-        f"version no other event of its act produced. A date could have moved in a transition "
-        f"this corpus does not hold.",
+        f"Across the {counted(found.events, 'version')} here, and beyond the first version "
+        f"recorded for each act, the record has {counted(found.gaps, 'hole')} in it: a version "
+        f"compared against an earlier one that no other version of its act produced. A date "
+        f"could have moved in a transition this corpus does not hold.",
     ]
     lines = [
         Html("<h2>What this is a view of</h2>"),
@@ -254,7 +254,7 @@ def render_dates(site: SiteInputs) -> Html:
     lede = (
         f"Every date an amendment added to or removed from a provision's text, as the parser "
         f"read it off the source's own date markup, that falls after {on}, with the provision "
-        f"and the event that moved it. {IS_NOT_A_SCHEDULE}"
+        f"and the version that moved it. {IS_NOT_A_SCHEDULE}"
     )
     listing = (
         [sector_nav(forward), *by_sector(forward, root, site.generated_on)]
@@ -283,7 +283,7 @@ def render_dates(site: SiteInputs) -> Html:
         title="Dates ahead — emendrix",
         description=(
             "Every date a committed amendment added to or removed from a watched act's text "
-            "that has not arrived yet, nearest first, with the provision and the event."
+            "that has not arrived yet, nearest first, with the provision and the version."
         ),
         body=body,
         path=_PATH,

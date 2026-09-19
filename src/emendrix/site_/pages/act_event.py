@@ -89,14 +89,14 @@ _WHAT_CHANGED = "What changed"
 """The heading the changes open under, between the version's masthead and its first block, so the
 page reads as a version, then what changed, then each change."""
 
-_BACK_TO_TOP = "Back to top ↑"
+_BACK_TO_TOP = "Back to top"
 """The foot of a page that opened with an index, aimed at the id the skip link already targets.
 
 Only on such a page: below the index threshold the top of the page is still on the screen when
 the last block ends, and a link back to what a reader can see is furniture rather than help.
 """
 
-_TO_INDEX = f'<p class="to-index"><a href="#{INDEX_ID}">↑ Index</a></p>'
+_TO_INDEX = f'<p class="to-index"><a class="up" href="#{INDEX_ID}">Index</a></p>'
 """The close of every change on a page with an index: the way back to the list of changes.
 
 Kept to one element and one class because a long act can print thousands of blocks. In a
@@ -244,7 +244,10 @@ def render_event(
         lines.append(Html('<section class="changes">'))
         lines.extend(blocks)
         lines.append(
-            Html(f'<p class="small backtop"><a href="#content">{escape(_BACK_TO_TOP)}</a></p>')
+            Html(
+                f'<p class="small backtop"><a class="up-after" href="#content">'
+                f"{escape(_BACK_TO_TOP)}</a></p>"
+            )
         )
         lines.extend((Html("</section>"), Html("</div>")))
     else:

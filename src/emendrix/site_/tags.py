@@ -73,10 +73,10 @@ GLOSSARY_OF: Final[dict[str, str]] = {
 A test holds this against the glossary's own ids, so a tag cannot be printed that the page it
 points readers to does not explain."""
 
-HELP_WORDS: Final = "What these mean →"
+HELP_WORDS: Final = "What these mean"
 """The one link a list of tags is followed by, to the glossary that defines every one of them."""
 
-LIST_HELP_WORDS: Final = "What the tags on these versions mean →"
+LIST_HELP_WORDS: Final = "What the tags on these versions mean"
 """The same link, said once above a list of version cards rather than under each of them."""
 
 DEFINE_WORDS: Final = "What this means"
@@ -119,7 +119,7 @@ def differ_tag(signals: SignalSet, root: str) -> Html:
 def tags_help(root: str, words: str = HELP_WORDS) -> Html:
     """The link to the glossary, from a page whose climb to the site root is `root`."""
     return Html(
-        f'<p class="tags-help"><a href="{escape(root)}methodology/#glossary">'
+        f'<p class="tags-help"><a class="go" href="{escape(root)}methodology/#glossary">'
         f"{escape(words)}</a></p>"
     )
 

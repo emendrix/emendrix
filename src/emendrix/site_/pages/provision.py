@@ -62,7 +62,7 @@ location to exist, and it is the same number as `depth_of(provision_href(slug, c
 any pair, which `test_urls.py` pins.
 """
 
-_OLDER = "Text from EUR-Lex, on this version's page →"
+_OLDER = "Text from EUR-Lex, on this version's page"
 """The older step's one link. It promises the block, not a page, because that is where it lands."""
 
 
@@ -158,7 +158,8 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     if text is None:
         lines.append(
             Html(
-                f'<p class="small"><a href="../{escape(entry.key)}/#{escape(step.anchor)}">'
+                f'<p class="small"><a class="go" '
+                f'href="../{escape(entry.key)}/#{escape(step.anchor)}">'
                 f"{escape(_OLDER)}</a></p>"
             )
         )

@@ -182,7 +182,7 @@ def test_an_instrument_no_committed_event_names_gets_no_page(tmp_path: Path) -> 
     written = {path.as_posix() for path in write_site(tmp_path / "site", unnamed)}
     assert "amendments/index.html" in written
     assert not any(name.startswith("amendments/32026R1744") for name in written)
-    assert "No committed event names an amending instrument yet" in render_amendments_index(unnamed)
+    assert "No recorded version names an amending act yet" in render_amendments_index(unnamed)
 
 
 def test_the_index_lists_every_instrument_with_a_page_under_the_year_of_its_newest_event() -> None:

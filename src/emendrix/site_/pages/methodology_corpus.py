@@ -38,8 +38,9 @@ def corpus_section(site: SiteInputs) -> list[Html]:
     lines.extend(
         (
             Html(
-                f'<p class="small muted">Counted over the {escape(counted(counts.events, "event"))}'
-                f" and {escape(counted(counts.changes, 'change'))} this site renders, and over "
+                f'<p class="small muted">Counted over the '
+                f"{escape(counted(counts.events, 'version'))} and "
+                f"{escape(counted(counts.changes, 'change'))} this site renders, and over "
                 f"nothing else. The measured table below scores emendrix against a small labelled "
                 f"set of transitions instead: a different question over a different denominator, "
                 f"so a figure there is not a better reading of one here, and neither is adjusted "

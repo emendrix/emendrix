@@ -834,4 +834,22 @@ silent there, which is the case the golden can show; the line itself is asserted
 `id=` moved or went.** Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
 `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical, every `<title>`
 and description is unchanged, `_LARGEST_PAGE` does not move, and no measured figure moved.
+
+Read again on 2026-09-19, later again, when "event" left every page and the arrows left every
+link's words. All 23 HTML pages moved in the stylesheet's name, `style.4bd174c6.css` replacing
+`style.13f57002.css`: the sheet gained `.go`, `.back`, `.up` and `.up-after`, each drawing its
+arrow and a no-break space with empty alternative text, declared twice as `.ext` is. Twenty-two
+pages moved in their markup besides; only `acts/index.html` did not. Every sentence and
+description that called a recorded transition an event now calls it a version: the three quiet
+act pages, the 404 page, the about page, the feeds page's lede and list, the dates page, the MDR
+act page's dates lede, the methodology page's corpus count and the four act pages' descriptions,
+and the amending-acts roster's description names amending acts where it named instruments. `What
+these mean`, `What the tags on these versions mean`, `or browse all acts`, the home page's
+`Measured, not asserted`, the MDR version page's nine `Index` links and its `Back to top` carry
+a class where they carried a glyph, and every `§` permalink, nine on the version page and one on
+each of the nine MDR provision pages, gained a `title` equal to its `aria-label`. **No `id=`
+moved or went.** Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
+`robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical, and so is every
+`<title>`; the feeds' summaries still say event, which is the feeds' own word. `_LARGEST_PAGE`
+moves by 335 bytes and no measured figure moved.
 """

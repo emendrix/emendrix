@@ -163,16 +163,17 @@ def pager(act: ActSite, entry: ChangelogEntry, *, top: bool) -> list[Html]:
     older = act.entries[at + 1] if at + 1 < len(act.entries) else None
     newer = act.entries[at - 1] if at > 0 else None
     links: list[Html] = []
-    for rel, other, words in (
-        ("prev", older, "← Previous version"),
-        ("next", newer, "Next version →"),
+    for rel, other, arrow, words in (
+        ("prev", older, "back", "Previous version"),
+        ("next", newer, "go", "Next version"),
     ):
         if other is None:
             continue
         dated = event_date(other)
         links.append(
             Html(
-                f'<a rel="{rel}" href="../{escape(other.key)}/"><span>{escape(words)}</span> '
+                f'<a rel="{rel}" href="../{escape(other.key)}/">'
+                f'<span class="{arrow}">{escape(words)}</span> '
                 f'<span class="small">{dated.clock} {time_html(dated.on)}</span></a>'
             )
         )

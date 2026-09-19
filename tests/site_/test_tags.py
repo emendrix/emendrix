@@ -87,7 +87,7 @@ def test_the_help_link_is_printed_only_when_asked_for_and_climbs_from_its_page()
     entry = disputed_entry()
     assert "tags-help" not in "".join(tally(entry, shapes=False))
     rendered = "".join(tally(entry, shapes=True, root="../../../"))
-    assert '<a href="../../../methodology/#glossary">What these mean →</a>' in rendered
+    assert '<a class="go" href="../../../methodology/#glossary">What these mean</a>' in rendered
 
 
 def test_the_help_link_resolves_to_the_glossary_from_every_page_that_prints_it(

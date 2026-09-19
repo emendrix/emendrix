@@ -43,7 +43,7 @@ instead (`pages/version_changes.py`), because on a phone even one change can sta
 first screen. Zero prints neither, so an untouched event never opens with an empty
 map. It is the one threshold both read: the index and its count line, the column it becomes on a
 wide screen, the context bar pinned while the page scrolls (`pages/context_bar.py`), the
-`↑ Index` link closing every change, and the way back to the top all key off it, so a page can
+`Index` link closing every change, and the way back to the top all key off it, so a page can
 never carry half of that set.
 """
 

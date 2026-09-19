@@ -384,7 +384,7 @@ def test_the_index_row_for_an_act_with_only_unnamed_events_says_so() -> None:
         generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=(unattributed_entry(),)
     )
     rendered = render_acts_index(site)
-    assert "Events recorded, none names an amending act" in rendered
+    assert "Versions recorded, none names an amending act" in rendered
     assert "No amendment recorded" not in rendered
     assert "in force <time" not in rendered and "detected <time" not in rendered
 
@@ -412,7 +412,7 @@ def test_a_count_where_sources_differ_never_stands_without_the_link_to_what_it_m
     )
     rendered = render_home(site)
     assert '<span class="tag tag--differ">1 where sources differ</span>' in rendered
-    link = '<p class="tags-help"><a href="methodology/#glossary">'
+    link = '<p class="tags-help"><a class="go" href="methodology/#glossary">'
     assert rendered.index(link) < rendered.index('<article class="cardrow">')
     assert "disputed" not in rendered.lower()
 

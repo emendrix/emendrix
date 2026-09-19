@@ -45,7 +45,7 @@ LINK: Final = "Dates named"
 
 LEDE: Final = (
     "Every date an amendment added to or removed from a provision's text, as the parser read "
-    f"it, with the provision and the event. {IS_NOT_A_SCHEDULE}"
+    f"it, with the provision and the version. {IS_NOT_A_SCHEDULE}"
 )
 """What the list is and what it is not, above the list rather than under it.
 

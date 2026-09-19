@@ -479,6 +479,22 @@ def test_a_glyph_the_sheet_draws_in_place_of_a_word_is_not_read_out(glyph: str) 
     assert f'content: "\\{glyph}"; content: "\\{glyph}" / "";' in STYLE
 
 
+@pytest.mark.parametrize(
+    ("rule", "content"),
+    [
+        (".go::after", "\\00a0\\2192"),
+        (".back::before", "\\2190\\00a0"),
+        (".up::before", "\\2191\\00a0"),
+        (".up-after::after", "\\00a0\\2191"),
+    ],
+)
+def test_a_link_arrow_is_drawn_by_the_sheet_and_silent(rule: str, content: str) -> None:
+    """The arrows beside `Next version`, `Previous version`, `Index` and `Back to top` were
+    characters in the links' words until 2026-09-19, and so part of each link's name. The
+    no-break space the arrow is drawn with is silent with it."""
+    assert f'{rule} {{ content: "{content}"; content: "{content}" / ""; }}' in BASE
+
+
 def test_a_home_card_keeps_its_act_and_its_version_links_apart_by_a_touch_target() -> None:
     """The act caption and the version heading are two links stacked on a home card. With the
     caption a tenth of a rem above the heading, the space around the act link measured 21.4px

@@ -352,7 +352,10 @@ def test_the_tags_are_followed_by_one_link_to_the_glossary_that_defines_them() -
     """The three sources are explained once, on the methodology page, where every tag's word is
     defined; the page links there once, under its tags, and never from a tag itself."""
     rendered = _page(_disputed_entry())
-    assert rendered.count('<a href="../../../methodology/#glossary">What these mean →</a>') == 1
+    assert (
+        rendered.count('<a class="go" href="../../../methodology/#glossary">What these mean</a>')
+        == 1
+    )
     assert "three independent sources" not in rendered
 
 
@@ -635,7 +638,7 @@ def test_an_event_naming_no_amending_act_says_so_and_gains_no_line() -> None:
         '<p class="amending"><span class="tag tag--unattributed">no amending act named</span></p>'
         in rendered
     )
-    assert "No amending act is named for this event" in rendered
+    assert "No amending act is named for this version" in rendered
     label = site.acts[0].label
     assert f"<title>{label}: 4 provisions changed, detected 2026-08-09 — emendrix</title>" in (
         rendered
@@ -667,11 +670,11 @@ def test_the_pager_links_the_versions_either_side_by_direction_with_each_date_un
     assert '<nav class="pager" aria-label="Versions of this act (top)">' in rendered
     assert '<nav class="pager pager--foot" aria-label="Versions of this act">' in rendered
     older = (
-        f'<a rel="prev" href="../{oldest.key}/"><span>← Previous version</span> '
+        f'<a rel="prev" href="../{oldest.key}/"><span class="back">Previous version</span> '
         '<span class="small">detected <time datetime="2026-08-10">10 August 2026</time></span></a>'
     )
     newer = (
-        f'<a rel="next" href="../{newest.key}/"><span>Next version →</span> '
+        f'<a rel="next" href="../{newest.key}/"><span class="go">Next version</span> '
         '<span class="small">detected <time datetime="2026-08-12">12 August 2026</time></span></a>'
     )
     assert rendered.count(older) == 2

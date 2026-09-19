@@ -127,8 +127,8 @@ def test_every_older_step_links_the_block_on_its_own_event_page() -> None:
     rendered, _, history = _page(_entry(2), _entry(1))
     older = history.steps[1]
     assert (
-        f'<a href="../{older.entry.key}/#{older.anchor}">'
-        "Text from EUR-Lex, on this version&#x27;s page →</a>"
+        f'<a class="go" href="../{older.entry.key}/#{older.anchor}">'
+        "Text from EUR-Lex, on this version&#x27;s page</a>"
     ) in rendered
 
 
@@ -314,7 +314,7 @@ def test_every_step_heading_ends_with_a_permalink_to_that_step() -> None:
     for step in history.steps:
         assert (
             f'<a class="permalink" href="#{step.anchor}" '
-            'aria-label="Link to this change">§</a></h2>' in rendered
+            'aria-label="Link to this change" title="Link to this change">§</a></h2>' in rendered
         )
 
 

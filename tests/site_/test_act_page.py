@@ -105,7 +105,7 @@ def test_a_quiet_act_gets_a_page_that_says_so() -> None:
     """The sentence is about the record, not about time: the site has no "last checked" date
     and never invents one, and a backfill can still write an older transition tomorrow."""
     rendered = _quiet()
-    assert "No amendment event is recorded for this act" in rendered
+    assert "No version is recorded for this act" in rendered
     assert "A quiet act is a real answer" in rendered
     assert "since watching began" not in rendered
     assert "checked" not in rendered
@@ -122,11 +122,11 @@ def test_a_quiet_act_offers_only_what_this_build_actually_has() -> None:
     assert "the feed above" not in published
     both = _quiet(published="https://eur-lex.europa.eu/x", site_url="https://example.invalid/site")
     assert (
-        "Its text as published is on EUR-Lex, and the feed above will carry the first event "
+        "Its text as published is on EUR-Lex, and the feed above will carry the first version "
         "the day one is recorded." in both
     )
     feed_only = _quiet(site_url="https://example.invalid/site")
-    assert "The feed above will carry the first event the day one is recorded." in feed_only
+    assert "The feed above will carry the first version the day one is recorded." in feed_only
 
 
 def test_a_quiet_act_links_the_act_as_published_and_says_which_document_it_is() -> None:
@@ -186,7 +186,7 @@ def test_the_related_line_stops_at_six_and_links_the_group_instead() -> None:
     assert "all 7 →" not in six
     seven = _grouped(8)
     assert seven.count('<a href="../../acts/32016R0') == 6
-    assert '<a href="../../acts/#Digital">all 8 →</a>' in seven
+    assert '<a class="go" href="../../acts/#Digital">all 8</a>' in seven
 
 
 def test_an_act_alone_or_ungrouped_gets_no_related_line() -> None:
@@ -362,8 +362,8 @@ def test_an_event_naming_no_amending_act_is_labelled_and_explained_once() -> Non
         '<p class="amending"><span class="tag tag--unattributed">no amending act named</span> '
         "In force date not stated.</p>" in rendered
     )
-    assert rendered.count("No amending act is named for this event") == 1
-    assert "recorded events name no amending act" in rendered
+    assert rendered.count("No amending act is named for this version") == 1
+    assert "recorded versions name no amending act" in rendered
     assert "newest amendment" not in rendered
 
 

@@ -41,7 +41,7 @@ UNATTRIBUTED_LABEL: Final = "no amending act named"
 like "corrigendum": the pipeline established that no act is named, not what happened."""
 
 UNATTRIBUTED_NOTE: Final = (
-    "No amending act is named for this event: the EU's own amendment metadata annotated "
+    "No amending act is named for this version: the EU's own amendment metadata annotated "
     "nothing in this window and there were no amending-act instructions to read, so only the "
     "text comparison observed it. That is a fact about the corpus's records for the window, "
     "not a doubt about the text shown below."

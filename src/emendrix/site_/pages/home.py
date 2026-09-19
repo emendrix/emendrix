@@ -54,9 +54,9 @@ _RECENT_ACTS = 6
 _HEADLINE = "What changed in your regulations?"
 
 _QUIET = (
-    "The changelog repository this page was built from holds no amendment events for the "
-    "watched acts yet.",
-    "No changelog repository was configured for this build, so it had no amendment events to show.",
+    "No version is recorded for the watched acts yet: the changelog repository this page was "
+    "built from holds none.",
+    "No changelog repository was configured for this build, so it has no version to show.",
 )
 """Configured and unconfigured are different answers, and neither of them is an empty page."""
 
@@ -110,7 +110,7 @@ def _hero(site: SiteInputs) -> list[Html]:
         Html(f'<a href="{escape(up(_DEPTH) + act_href(act.slug))}">{escape(act.headline)}</a>')
         for act in _recent_acts(site)
     ]
-    links.append(Html(f'<a href="{up(_DEPTH)}acts/">or browse all acts →</a>'))
+    links.append(Html(f'<a class="go" href="{up(_DEPTH)}acts/">or browse all acts</a>'))
     return [
         Html('<section class="hero">'),
         Html(f'<h1 class="display">{escape(_HEADLINE)}</h1>'),
@@ -225,7 +225,9 @@ def _strip(site: SiteInputs) -> Html:
     quietly omitted: the strip is there either way.
     """
     pair = site.run.metrics.localisation
-    link = Html(f'<a href="{up(_DEPTH)}methodology/#measured">Measured, not asserted →</a>')
+    link = Html(
+        f'<a class="go" href="{up(_DEPTH)}methodology/#measured">Measured, not asserted</a>'
+    )
     if pair is None:
         return Html(
             f'<aside class="stat"><span>No localisation figure is recorded in the report this '

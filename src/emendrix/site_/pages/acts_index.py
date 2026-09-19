@@ -59,7 +59,7 @@ _DEPTH = depth_of(_PATH)
 
 _QUIET = "No amendment recorded"
 
-_UNATTRIBUTED_ONLY = "Events recorded, none names an amending act"
+_UNATTRIBUTED_ONLY = "Versions recorded, none names an amending act"
 """The row's date fact when every recorded event names no amending act. Not `_QUIET`, because
 events were seen; not a date, because dating an "amended" fact by one of them would claim an
 amendment the pipeline did not find."""
