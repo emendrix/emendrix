@@ -895,4 +895,18 @@ or amending-act row moved. **No `id=` moved or went.** Both feeds, `sitemap.xml`
 `sitemap_index.xml`, `robots.txt`, the fonts, `icon.svg` and `og.png` are byte-identical, every
 `<title>` and description is unchanged, `_LARGEST_PAGE` does not move, and no measured figure
 moved.
+
+Read again on 2026-09-19, after that, when the not-found page started writing its references
+from the site URL's path and the phone header row started fading at its start once scrolled.
+All 23 HTML pages moved in the stylesheet's name, `style.9e4c1091.css` replacing
+`style.4c53fc3a.css`: the sheet gained a registered `--fade-start` length, a start stop in the
+phone nav row's mask, and a scroll-timeline animation behind `@supports`, 800 bytes in all. One
+page moved in its markup besides: `404.html`, built with the site URL
+`https://example.invalid/site`, now writes every root-bound reference from `/site/`, the icon,
+the stylesheet, the script, the feed `rel="alternate"`, the wordmark, the six header links,
+`data-root`, the three body links and the footer's about link, so it grew from 3063 to 3157
+bytes. Its canonical address is unchanged. No other page gained a reference starting `/`.
+**No `id=` moved or went.** Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
+`robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical, every `<title>`
+and description is unchanged, `_LARGEST_PAGE` does not move, and no measured figure moved.
 """

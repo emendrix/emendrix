@@ -463,6 +463,23 @@ def test_a_phone_nav_row_ends_at_full_contrast_and_keeps_room_for_a_focus_ring()
     assert "padding: 5px 2.5rem 5px 5px;" in nav
 
 
+def test_a_phone_nav_row_fades_at_its_start_only_once_scrolled_and_only_where_supported() -> None:
+    """At rest the row starts at full contrast; scrolled, its start fades as its end does, so a
+    reader sees there is more behind. Behind `@supports`, so a browser without scroll timelines
+    keeps the end fade alone, and the fallback in `var()` keeps that fade valid even where the
+    custom property is not registered."""
+    assert (
+        '@property --fade-start { syntax: "<length>"; inherits: false; initial-value: 0px; }'
+        in (BASE)
+    )
+    phone = BASE.split("@media (max-width: 40rem) {")[1]
+    nav = phone.split("header.bar nav {")[1].split("}")[0]
+    assert "transparent 0, black var(--fade-start, 0px)" in nav
+    supported = phone.split("@supports (animation-timeline: scroll()) {")[1]
+    assert "animation-timeline: scroll(self inline); animation-range: 0 2.5rem;" in supported
+    assert "@keyframes nav-fade-start { to { --fade-start: 2.5rem; } }" in supported
+
+
 def test_forced_colours_underline_only_the_current_section() -> None:
     """A transparent border is painted in the system colour under forced colours, which drew
     the current-section underline under every item of the header bar (2026-09-18)."""

@@ -19,6 +19,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import pytest
 from helpers import REPORTS, SITE_URL, WATCHLIST, build, runner
@@ -275,13 +276,18 @@ def test_the_pages_that_describe_nothing_a_type_names_declare_nothing(site: Path
 
 
 def test_every_advertised_feed_resolves_to_a_file_the_build_wrote(site: Path) -> None:
-    """A `rel="alternate"` a reader's client cannot fetch is worse than no advertisement."""
+    """A `rel="alternate"` a reader's client cannot fetch is worse than no advertisement.
+
+    The not-found page writes its references from the site URL's path rather than its own
+    directory, so a leading `/` is resolved against the tree's root under that path."""
+    base = urlsplit(SITE_URL).path.rstrip("/") + "/"
     for page in _pages(site):
         found = ALTERNATE.findall(page.read_text(encoding="utf-8"))
         assert found, page
         for title, href in found:
             assert title.startswith("emendrix"), page
-            assert (page.parent / href).resolve().is_file(), f"{page}: {href}"
+            target = site / href.removeprefix(base) if href.startswith("/") else page.parent / href
+            assert target.resolve().is_file(), f"{page}: {href}"
 
 
 def test_an_act_page_offers_its_own_feed_before_the_global_one(site: Path) -> None:

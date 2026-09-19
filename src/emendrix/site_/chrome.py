@@ -3,7 +3,8 @@
 `path` is where the page lives, relative to the site root and with no leading slash, exactly
 as the builder's file table names it. The prefix that climbs back to the root is derived from
 it by `depth_of`, and every internal href and asset link carries that prefix, so the tree works
-from `file://`, a subpath, or a domain root without a base tag. A page is handed its path
+from `file://`, a subpath, or a domain root without a base tag. The not-found page alone may
+hand `page` a root of its own, for the reason `page` gives. A page is handed its path
 rather than its depth because the two are one fact, and because a page that knows its path can
 also state its own absolute address once it is given a base to state it against. The disclaimer
 is part of the shell because a page without it must be unrepresentable, not merely unlikely.
@@ -76,7 +77,7 @@ _SECTIONS: Final[tuple[tuple[str, str], ...]] = (
 """The header bar's destinations as `(path, name)`, in the order the bar prints them."""
 
 
-def nav_links(depth: int, section: str = "") -> Html:
+def nav_links(depth: int, section: str = "", root: str | None = None) -> Html:
     """The header bar: a skip link, the wordmark, the six destinations and the search mount.
 
     The order is the decision. The first two are the site's two rosters, of acts and of the
@@ -95,8 +96,10 @@ def nav_links(depth: int, section: str = "") -> Html:
     them sits between the top of the page and the first word a reader came for. The `<nav>`
     is named, because a page whose provision index is also a `<nav>` would otherwise announce
     two landmarks of the same name and leave a screen reader to guess which is which.
+
+    `root` overrides the climb `depth` implies, for the one page `page` documents.
     """
-    root = up(depth)
+    root = up(depth) if root is None else root
     current = ' aria-current="page"'
     links = " ".join(
         f'<a href="{root}{path}"{current if path == section else ""}>{name}</a>'
@@ -181,6 +184,7 @@ def page(
     feeds: tuple[tuple[str, str], ...] = (),
     structured: Html | None = None,
     section: str = "",
+    root: str | None = None,
 ) -> Html:
     """One complete document: head, header bar, the caller's body, footer. Newline-terminated.
 
@@ -202,9 +206,16 @@ def page(
     eleventh. `head.head_metadata` contributes no line at all without a base address, so a
     build given no site URL writes a head with nothing in it from here rather than one
     carrying a blank line.
+
+    `root` replaces the relative climb `path` implies in every root-bound reference the shell
+    writes: the icon, the stylesheet, the script, the header bar, `data-root` and the footer.
+    Only the not-found page passes it, and only when the build has a site URL, because a host
+    serves that one file under whatever address a reader mistyped, where a relative reference
+    resolves against the wrong directory. Every other page leaves it unset and stays relative,
+    which is what keeps the tree working from `file://` and from a subpath.
     """
     depth = depth_of(path)
-    root = up(depth)
+    root = up(depth) if root is None else root
     robots = (Html('<meta name="robots" content="noindex">'),) if noindex else ()
     return join(
         (
@@ -230,7 +241,7 @@ def page(
             Html(f'<script defer src="{root}{SCRIPT}"></script>'),
             Html("</head>"),
             Html("<body>"),
-            nav_links(depth, section),
+            nav_links(depth, section, root),
             Html('<main id="content">'),
             body,
             Html("</main>"),

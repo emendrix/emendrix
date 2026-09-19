@@ -12,18 +12,21 @@ a reader nothing about this site, and the page holds no content of its own to be
 The page names no specific act and reads no artifact. Only the shell's own footer varies with
 the build, so nothing on it can go stale with respect to the corpus.
 
-Its links are relative to the site root like every other page's, which is right when the file
-is fetched as `/404.html` and is the reason the tree also works from `file://` and from a
-subpath. A host that serves this file's contents under the address the reader actually typed
-leaves the browser at that address, and a relative link then resolves against it: the deeper
-the mistyped path, the further the links point from where they mean. The head carries the
-absolute form, as this page's canonical address. The links in the body stay relative on purpose,
-because a build given no site URL has no base to write them against and relative is the only
-form that works at all in that mode; absolute links would trade a page that is wrong from a
-deep address for a page that is broken everywhere.
+Its references are the one exception to the site's rule that every link is relative. A host
+serves this file's contents under the address the reader actually typed, and leaves the browser
+at that address, so a relative link, stylesheet or script resolves against it: the deeper the
+mistyped path, the further everything points from where it means, and the page renders unstyled.
+So when the build has a site URL, every root-bound reference on this page, the shell's included,
+starts from that URL's path, `/` for a domain root and `/sub/` for a subpath, which is right from
+any address on the host and from `/404.html` itself. Without a site URL they stay relative,
+because such a build has no base to write them against and relative is the only form that works
+at all in that mode, from `file://` included. No other page follows this one: an address it
+publishes is the address it is served at, and relative is what lets the tree move.
 """
 
 from __future__ import annotations
+
+from urllib.parse import quote, urlsplit
 
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
@@ -32,16 +35,31 @@ from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, join
 from emendrix.site_.urls import depth_of, up
 
-__all__ = ["render_not_found"]
+__all__ = ["not_found_root", "render_not_found"]
 
 _PATH = "404.html"
 _DEPTH = depth_of(_PATH)
 """The file sits at the site root, so nothing on it climbs a directory first."""
 
+_PATH_SAFE = "/%:@!$()*+,;=-._~"
+"""RFC 3986 path characters left as written, minus `&` and `'`, which `escape` would rewrite."""
+
+
+def not_found_root(site_url: str) -> str:
+    """Where this page's root-bound references start: the site URL's path, or the relative climb.
+
+    Pure string work on the configured address; nothing is fetched or resolved. The path is
+    percent-encoded apart from the characters a path may carry as they are, so the result can
+    be written into an attribute with no escaping and survives `head`'s own escape unchanged.
+    """
+    if not site_url:
+        return up(_DEPTH)
+    return quote(urlsplit(site_url).path.rstrip("/") + "/", safe=_PATH_SAFE)
+
 
 def render_not_found(site: SiteInputs) -> Html:
     """The not-found page. Deterministic: same inputs, same bytes, no clock, no network."""
-    root = up(_DEPTH)
+    root = not_found_root(site.chrome.site_url)
     lines = [
         # No trail: an address that matches nothing has no place in the tree to show.
         *masthead("prose", (), _DEPTH, Html("Error 404"), Html("Page not found")),
@@ -67,4 +85,5 @@ def render_not_found(site: SiteInputs) -> Html:
         chrome=site.chrome,
         noindex=True,
         feeds=((feed_path(None), feed_title(None)),),
+        root=root,
     )

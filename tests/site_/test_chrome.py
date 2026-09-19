@@ -111,3 +111,35 @@ def test_changelogs_url_is_a_link_only_when_configured() -> None:
     assert "the changelog repository" in _page()
     linked = _page(changelogs_url="https://example.invalid/changelogs")
     assert '<a href="https://example.invalid/changelogs">' in linked
+
+
+def _at(path: str, root: str | None) -> str:
+    return page(
+        title="t",
+        description="d",
+        body=Html("<p>body</p>"),
+        path=path,
+        chrome=PageChrome(generated_on=GENERATED),
+        root=root,
+    )
+
+
+def test_an_unset_root_is_the_relative_climb_the_path_implies() -> None:
+    """Only the not-found page passes a root; every other page must render as it did before
+    the parameter existed, which is the relative climb its own path implies."""
+    default = _page(path="acts/x/y/")
+    assert _at("acts/x/y/", None) == default
+    assert _at("acts/x/y/", "../../../") == default
+    assert 'href="/' not in default
+    assert 'src="/' not in default
+    assert nav_links(3) == nav_links(3, "", None) == nav_links(3, "", "../../../")
+
+
+def test_a_root_given_reaches_every_reference_the_shell_writes() -> None:
+    rendered = _at("404.html", "/sub/")
+    assert f'<link rel="stylesheet" href="/sub/{STYLESHEET}">' in rendered
+    assert f'<script defer src="/sub/{SCRIPT}"></script>' in rendered
+    assert '<link rel="icon" href="/sub/icon.svg"' in rendered
+    assert '<a class="wordmark" href="/sub/">' in rendered
+    assert 'data-root="/sub/"' in rendered
+    assert 'href="/sub/about/">About this site</a>' in rendered

@@ -473,8 +473,24 @@ amending-act pages and their roster mark `Amending acts`, and each page about th
 itself. Home and the not-found page mark nothing. On a phone (up to 40rem) the wordmark heads
 the bar, the six section links sit in one row beside it that scrolls sideways, faded over its
 last 2.5rem so the cut reads as more to come, with as much padding at its end so the last link
-scrolls clear of the fade, and search takes the row under that. Nothing is folded behind
-a menu: a menu would need a script to open, and it would hide the site's structure.
+scrolls clear of the fade, and search takes the row under that. Once the row has been scrolled,
+its start fades too, over the first 2.5rem of scroll, so a reader sees there is more to the left
+as well as to the right; at rest it starts at full contrast. That is CSS alone, a registered
+`--fade-start` length driven by a scroll timeline, behind `@supports (animation-timeline:
+scroll())`, so a browser without scroll timelines keeps the end fade and nothing else changes.
+Nothing is folded behind a menu: a menu would need a script to open, and it would hide the
+site's structure.
+
+**Every link is relative, except on the not-found page of a build given a site URL.** Relative
+links are what let the tree work from `file://`, from a subpath and from a domain root alike. A
+host serves `404.html` under whatever address a reader mistyped, though, and leaves the browser
+there, so a relative stylesheet, script or link on it would resolve against
+`/acts/nope/deeper/` and the page would render unstyled. With `--site-url`, every root-bound
+reference on that one page (its links, the stylesheet, the icon, the script, the header bar and
+the search box's `data-root`) starts from the site URL's path: `/` for `https://emendrix.eu`,
+`/sub/` for `https://example.org/sub`. Without one, the page stays relative like the rest, as a
+build with no base has nothing to write a root path against. A test walks the built tree and
+holds every other page to relative references.
 
 **Pages speak the reader's vocabulary; the stored one does not change.** On a page, an event is a
 *version*, named by its date and the clock that date answers to, and an instrument is an

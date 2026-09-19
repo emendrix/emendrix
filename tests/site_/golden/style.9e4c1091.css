@@ -310,6 +310,9 @@ header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; 
                        text-overflow: ellipsis; color: var(--muted); line-height: 1.35; }
 /* A query that found nothing says so in the panel, as a row that is not an option. */
 #search .results .empty { padding: .45rem .75rem; color: var(--muted); }
+/* How far in the phone nav row's start fade reaches: 0 at rest, grown by scrolling below.
+   Registered as a length so the scroll timeline interpolates it rather than flipping it. */
+@property --fade-start { syntax: "<length>"; inherits: false; initial-value: 0px; }
 /* A phone gets two rows: the wordmark with the navigation beside it, then the search box
    across the width rather than the sliver left beside the links. The header stays under a
    sixth of the screen, and every link stays in the markup and on screen, never in a menu. */
@@ -324,7 +327,15 @@ header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; 
     flex: 1 1 0; min-width: 0; flex-wrap: nowrap; overflow-x: auto; gap: 0 var(--space-3);
     scrollbar-width: none; margin: -5px calc(-1 * var(--gutter)) -5px -5px;
     padding: 5px 2.5rem 5px 5px;
-    mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent);
+    mask-image: linear-gradient(to right, transparent 0, black var(--fade-start, 0px),
+                                black calc(100% - 2.5rem), transparent);
+  }
+  /* Once scrolled, the row fades at its start as well, so the cut there reads as more behind.
+     Where scroll timelines are unsupported the start stop stays at 0 and only the end fades. */
+  @supports (animation-timeline: scroll()) {
+    header.bar nav { animation: nav-fade-start linear both;
+                     animation-timeline: scroll(self inline); animation-range: 0 2.5rem; }
+    @keyframes nav-fade-start { to { --fade-start: 2.5rem; } }
   }
   header.bar nav a { white-space: nowrap; padding: .75rem 0; }
   #search { flex: 1 1 100%; margin-left: 0; }
