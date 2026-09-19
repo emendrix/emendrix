@@ -162,13 +162,6 @@ carrying the outbound cue every citation already had: `class="ext"` and a visual
 ` (external, EUR-Lex)`. It is the footer's cost on every page and nothing else; this act has no
 EUR-Lex address of its own, so its facts line did not move.
 
-83 928 bytes heavier on 2026-09-19, when a version under the index threshold started opening its
-masthead with a line naming its changes. The whole of it is that line on the two hundred event
-pages, about 420 bytes each: `Changes:` and its four coordinates, each linked to the block it
-names and followed by its title, inside `<nav class="changes-line">`. Every one of its links
-lands on an id of its own page. `_HEAVIEST` does not move, its page being the act's, and no
-anchor or id moved.
-
 9 bytes heavier on 2026-09-19, later again: the link to what the tags mean lost its drawn arrow
 from its words and gained `class="go"`, so the sheet draws the arrow with empty alternative
 text (7 bytes), and the description says a version's page where it said an event's (2)."""
@@ -320,6 +313,13 @@ sets the provision's title in the same `<span class="ttl">` a change heading giv
 sheet can set a title printed in capitals in small capitals wherever it appears. No title here
 is in capitals and none of this corpus's annexes is titled only by its number, so no subject
 was read from a text and no index, version page or measured figure moved.
+
+83 928 bytes heavier on 2026-09-19, later the same day, when a version under the index threshold
+started opening its masthead with a line naming its changes. The whole of it is that line on the
+two hundred event pages, about 420 bytes each: `Changes:` and its four coordinates, each linked
+to the block it names and followed by its title, inside `<nav class="changes-line">`. Every one
+of its links lands on an id of its own page. `_HEAVIEST` does not move, its page being the
+act's, and no anchor or id moved.
 
 55 370 bytes heavier on 2026-09-19, later again, when every link arrow moved from a link's words
 to the sheet: 28 bytes on each of the 1600 permalinks, which gained a `title` naming them as
