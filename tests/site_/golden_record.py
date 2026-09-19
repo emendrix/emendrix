@@ -881,4 +881,18 @@ act</span></h2>`, the row under it unchanged. `y2020` is a new id and an address
 **no `id=` moved or went.** Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
 `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical, every `<title>`
 and description is unchanged, `_LARGEST_PAGE` does not move, and no measured figure moved.
+
+Read again on 2026-09-19, after that, when a provision's row in the search index started carrying
+the title its page prints and the script started matching and showing it. All 23 HTML pages
+moved in two names and nothing else: `search.d80bbdfb.js` replacing `search.e4a10d8f.js`, and
+`style.4c53fc3a.css` replacing `style.c1aeab9d.css`, whose result row became a two-column grid
+with the title on a muted line of its own, cut to one line with an ellipsis. `search-index.json`
+grew from 1911 to 2332 bytes: each of its nine provision rows gained a `title`, eight articles'
+stored headings, such as `Subject matter and scope` for Art. 1, and Annex IX's `CONFORMITY
+ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION`.
+With the titles taken out it is byte-identical to the file before, so no act, alias, identifier
+or amending-act row moved. **No `id=` moved or went.** Both feeds, `sitemap.xml`,
+`sitemap_index.xml`, `robots.txt`, the fonts, `icon.svg` and `og.png` are byte-identical, every
+`<title>` and description is unchanged, `_LARGEST_PAGE` does not move, and no measured figure
+moved.
 """

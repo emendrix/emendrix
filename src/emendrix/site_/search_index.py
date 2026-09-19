@@ -5,9 +5,14 @@ written once. What is in it is deliberately narrow:
 
 - **names, not text.** An act by its label, by every alias the watchlist gives it and by its
   own identifier; an amending instrument by the name and number it is shown under and by its
-  own identifier; a provision by its human coordinate. Full text is not indexed, because a
-  substring index over the whole corpus is a different artifact with a different size and this
-  one has to stay a file a browser downloads without noticing.
+  own identifier; a provision by its human coordinate and its title. Full text is not indexed,
+  because a substring index over the whole corpus is a different artifact with a different size
+  and this one has to stay a file a browser downloads without noticing.
+- **a title is a name too.** A reader who knows Annex II as the allergens annex knows it by its
+  title, not its number, so a provision's row carries the title its page prints: the law's own
+  words, decided by `provision_title`, the rule every page uses, from the newest change. A row
+  with nothing to add has no `title` key at all, so the other rows' bytes do not grow. An act's
+  official title is not indexed: it is long, and the act is already found by its names.
 - **touched provisions only.** The site has a page for a provision an amendment moved and
   nothing at all for one it did not, so indexing an untouched coordinate would promise a
   destination that does not exist.
@@ -34,6 +39,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from emendrix.site_.amending import resolve
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
+from emendrix.site_.subject import provision_title
 from emendrix.site_.urls import act_href, amendment_href, provision_href
 
 __all__ = ["IndexEntry", "IndexKind", "search_index_json"]
@@ -50,6 +56,10 @@ class IndexEntry(BaseModel):
     label: str = Field(min_length=1, description="The text the script matches against.")
     kind: IndexKind
     url: str = Field(min_length=1, description="Relative to the site root, like every href.")
+    title: str = Field(
+        default="",
+        description="A provision's title where the page can say more than its coordinate, else ''.",
+    )
 
 
 def _names(act: ActSite) -> list[IndexEntry]:
@@ -73,7 +83,11 @@ def _names(act: ActSite) -> list[IndexEntry]:
 
 
 def _provisions(act: ActSite) -> list[IndexEntry]:
-    """Every coordinate this act's watched history touched, each pointing at its own page."""
+    """Every coordinate this act's watched history touched, each pointing at its own page.
+
+    `act.entries` runs newest first, so the change kept for a coordinate is its newest, and the
+    row's title is the one the provision page's heading prints.
+    """
     entries: list[IndexEntry] = []
     seen: set[str] = set()
     for entry in act.entries:
@@ -87,6 +101,7 @@ def _provisions(act: ActSite) -> list[IndexEntry]:
                     label=f"{location.human} — {act.label}",
                     kind="provision",
                     url=provision_href(act.slug, location.canonical),
+                    title=provision_title(emitted.change) or "",
                 )
             )
     return entries
@@ -119,5 +134,5 @@ def search_index_json(site: SiteInputs) -> str:
     entries = [item for act in site.acts for item in (*_names(act), *_provisions(act))]
     entries.extend(_instruments(site))
     entries.sort(key=lambda item: (item.label.casefold(), item.kind, item.url))
-    payload = {"entries": [item.model_dump() for item in entries]}
+    payload = {"entries": [item.model_dump(exclude_defaults=True) for item in entries]}
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + "\n"

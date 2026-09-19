@@ -293,16 +293,21 @@ header.bar nav a:hover { color: var(--link); border-bottom-color: currentColor; 
   font-size: var(--text-meta);
 }
 #search .results:empty { display: none; }
-#search .results a { display: flex; justify-content: space-between; align-items: baseline;
-                     gap: var(--space-3); padding: .45rem .75rem; color: var(--fg);
-                     text-decoration: none; }
+/* The label and the kind share the first line; a provision's title, where it has one, takes a
+   line of its own under both. */
+#search .results a { display: grid; grid-template-columns: minmax(0, 1fr) auto;
+                     align-items: baseline; gap: 0 var(--space-3); padding: .45rem .75rem;
+                     color: var(--fg); text-decoration: none; }
 /* One declaration for three states, so the row the arrow keys highlight and the row the
    pointer is over cannot come to look different from each other. */
 #search .results a:hover, #search .results a:focus,
 #search .results li.active a { background: var(--mark); }
 /* What kind of thing a result is, said once at the end of the row rather than under it. */
-#search .results .kind { flex: none; font-size: var(--text-label); font-weight: 600;
+#search .results .kind { grid-area: 1 / 2; font-size: var(--text-label); font-weight: 600;
                         color: var(--muted); }
+/* Cut to one line by the sheet only: the whole title stays in the row's accessible name. */
+#search .results .ttl { grid-area: 2 / 1 / 3 / -1; overflow: hidden; white-space: nowrap;
+                       text-overflow: ellipsis; color: var(--muted); line-height: 1.35; }
 /* A query that found nothing says so in the panel, as a row that is not an option. */
 #search .results .empty { padding: .45rem .75rem; color: var(--muted); }
 /* A phone gets two rows: the wordmark with the navigation beside it, then the search box

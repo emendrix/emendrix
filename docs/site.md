@@ -32,7 +32,7 @@ feeds/<celex>.xml     one act's events, for a reader who watches only that act
 robots.txt            what crawlers may read, and where the sitemap index is
 sitemap.xml           every page, with the date its content last moved
 sitemap_index.xml     the one address a search engine is given, naming the sitemap
-search-index.json     act and instrument names, aliases, CELEX numbers and touched provisions
+search-index.json     act and instrument names, aliases, CELEX numbers, touched provisions and their titles
 search.<digest>.js    the one script; style.<digest>.css is the one stylesheet
 sans-400.<digest>.woff2, sans-600.<digest>.woff2, serif-400.<digest>.woff2
                       the three self-hosted faces the stylesheet loads
@@ -580,6 +580,29 @@ still reports no options. Each result's kind is a word in sentence case, `Act`, 
 `Amending act`, where the index holds a code; an alias reads `Act` like the name it stands for,
 and an identifier reads as whichever of the two it leads to. The index's `kind` values are
 unchanged.
+
+**Search finds a provision by its title as well as its coordinate.** A reader who knows the FIC
+Regulation's Annex II as the allergens annex types a word of its subject, so a provision's row in
+`search-index.json` carries the title its own page prints, decided by `provision_title`, the rule
+every page uses, from the newest change: a stored heading that says more than the coordinate, or,
+for an annex headed only by its number, the subject its stored text opens with. `allerg` finds
+`Annex II — FIC Regulation` under `SUBSTANCES OR PRODUCTS CAUSING ALLERGIES OR INTOLERANCES`, and
+`prohibited` finds `Art. 5 — AI Act` under `Prohibited AI practices`. A row with nothing to add
+carries no `title` key at all, and an act's official title is not indexed: it is long, and the
+act is already found by its names. The script ranks every match on the label above every match
+found only in a title, so typing a coordinate or an act's name returns what it did before, and
+prints the title on a line of its own under the label, muted and cut to one line by the sheet
+alone. The whole title stays in the row's text, so a screen reader hears the label, the title and
+the kind as three phrases; a title with no lower-case letter is set in small capitals, as on the
+pages, and its characters stay the law's.
+
+**The titles more than double the index's compressed size, and every one is kept.** Measured on
+2026-09-19 over the deployed watchlist and the published changelogs (3364 pages, 86 acts),
+`search-index.json` grew from 290 547 to 390 668 bytes raw and from 22 083 to 51 764 bytes under
+`gzip -9`, 134% more. The titles are distinct legal prose and compress to about 20.5 KB on their
+own, so no budget much under that growth could hold them all, and a title dropped to fit one is a
+provision a reader cannot find by the name they know it by. Fifty kilobytes is still fetched once,
+on the first keystroke, and never on a page that is not searched.
 
 ## No backend, and that is the more interesting decision
 

@@ -63,12 +63,17 @@
       .then(function (payload) { entries = payload.entries; return entries; });
   }
 
+  // A label match scores below 3 and a title match from 4 up, so every row found
+  // by its name ranks above every row found only by its provision's title.
   function score(entry, query) {
     var label = entry.label.toLowerCase();
     if (label === query) return 0;
     if (label.startsWith(query)) return 1;
     var at = label.indexOf(query);
-    return at < 0 ? -1 : 2 + at / label.length;
+    if (at >= 0) return 2 + at / label.length;
+    var title = (entry.title || "").toLowerCase();
+    at = title.indexOf(query);
+    return at < 0 ? -1 : 4 + at / title.length;
   }
 
   // What each kind of entry in the index is called on screen. An alias leads to
@@ -107,6 +112,15 @@
       var link = document.createElement("a");
       link.href = root + entry.url;
       link.textContent = entry.label + " ";
+      if (entry.title) {
+        // The law's own words, so text and never markup. A title with no lower-case
+        // letter is set in small capitals, the rule the pages use.
+        var title = document.createElement("span");
+        title.className = entry.title === entry.title.toUpperCase() ? "ttl ttl--caps" : "ttl";
+        title.textContent = entry.title;
+        link.appendChild(title);
+        link.appendChild(document.createTextNode(" "));
+      }
       var kind = document.createElement("span");
       kind.className = "kind";
       kind.textContent = kindWord(entry);
