@@ -823,4 +823,15 @@ its words unchanged. **No `id=` moved or went.** Both feeds, `search-index.json`
 `sitemap_index.xml`, `robots.txt`, the script, the fonts, `icon.svg` and `og.png` are
 byte-identical, every `<title>` and description is unchanged, and no measured figure moved.
 `_LARGEST_PAGE` moves by 278 bytes, the subject printed twice on the MDR version page.
+
+Read again on 2026-09-19, later the same day, when a version with one to five changes started
+opening its masthead with a line naming them, `<nav class="changes-line">`. All 23 HTML pages
+moved in the stylesheet's name and in nothing else, `style.13f57002.css` replacing
+`style.aa8f9db5.css`: the sheet gained the `.changes-line` rules. The golden's one version page,
+the MDR postponement, has nine changes and so opens with the in-page index, and the line stays
+silent there, which is the case the golden can show; the line itself is asserted on toy pages in
+`test_version_changes.py` and on the two hundred event pages of the act-at-scale tree. **No
+`id=` moved or went.** Both feeds, `search-index.json`, `sitemap.xml`, `sitemap_index.xml`,
+`robots.txt`, the script, the fonts, `icon.svg` and `og.png` are byte-identical, every `<title>`
+and description is unchanged, `_LARGEST_PAGE` does not move, and no measured figure moved.
 """

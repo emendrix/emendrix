@@ -36,10 +36,12 @@ __all__ = ["INDEX_ABOVE", "INDEX_ID", "touched"]
 INDEX_ABOVE = 6
 """How many changes an event needs before its page opens with a list of them.
 
-Below six the headings are on one screen and a list of them is a second copy of what the
-reader can already see; the MDR postponement in the golden has nine, the AI Act's Digital
-Omnibus event 45. Zero is under the line too, so an untouched event never opens with an
-empty list. It is the one threshold: the index and its count line, the column it becomes on a
+It draws the line between two maps, so every page with changes names them near its top. At or
+above six the page opens with this index; the MDR postponement in the golden has nine, the AI
+Act's Digital Omnibus event 45. From one to five the masthead names the changes on one line
+instead (`pages/version_changes.py`), because on a phone even one change can start below the
+first screen. Zero prints neither, so an untouched event never opens with an empty
+map. It is the one threshold both read: the index and its count line, the column it becomes on a
 wide screen, the context bar pinned while the page scrolls (`pages/context_bar.py`), the
 `↑ Index` link closing every change, and the way back to the top all key off it, so a page can
 never carry half of that set.

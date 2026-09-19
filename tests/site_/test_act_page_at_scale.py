@@ -160,9 +160,16 @@ the index from each change, so no event page moved.
 69 bytes heavier on 2026-09-18, later again, when the disclaimer's EUR-Lex link started
 carrying the outbound cue every citation already had: `class="ext"` and a visually hidden
 ` (external, EUR-Lex)`. It is the footer's cost on every page and nothing else; this act has no
-EUR-Lex address of its own, so its facts line did not move."""
+EUR-Lex address of its own, so its facts line did not move.
 
-_TOTAL_BYTES: Final = 3216380
+83 928 bytes heavier on 2026-09-19, when a version under the index threshold started opening its
+masthead with a line naming its changes. The whole of it is that line on the two hundred event
+pages, about 420 bytes each: `Changes:` and its four coordinates, each linked to the block it
+names and followed by its title, inside `<nav class="changes-line">`. Every one of its links
+lands on an id of its own page. `_HEAVIEST` does not move, its page being the act's, and no
+anchor or id moved."""
+
+_TOTAL_BYTES: Final = 3300308
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.

@@ -24,6 +24,7 @@ from emendrix.site_.clocks import event_date, human_date, time_html
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.pages.version_changes import changes_line
 from emendrix.site_.tags import tag, tally
 from emendrix.site_.untouched import all_textless, textless_note, untouched, untouched_note
 from emendrix.site_.urls import act_href, amendment_href, up
@@ -183,16 +184,27 @@ def pager(act: ActSite, entry: ChangelogEntry, *, top: bool) -> list[Html]:
 
 
 def version_masthead(
-    site: SiteInputs, act: ActSite, entry: ChangelogEntry, acts: tuple[AmendingAct, ...]
+    site: SiteInputs,
+    act: ActSite,
+    entry: ChangelogEntry,
+    acts: tuple[AmendingAct, ...],
+    *,
+    anchors: tuple[str, ...],
 ) -> list[Html]:
     """Everything between the version's heading and its first change, as one block.
 
     It carries the version's key as its `id`, the fragment the version page has always answered
-    to. The facts sit in two groups: what the version is and did on the left, and how to check
-    it and what else its amending acts did on the right, which the sheet sets side by side on a
-    wide screen and one under the other on a phone.
+    to. A version too short for the in-page index opens with a line naming its changes, linked
+    on `anchors`, the page's own fragment per change, so its first screen says what changed
+    before the amending act's official title does. The facts sit in two groups: what the
+    version is and did on the left, and how to check it and what else its amending acts did on
+    the right, which the sheet sets side by side on a wide screen and one under the other on a
+    phone.
     """
-    lines = [Html(f'<div class="version-masthead" id="{escape(entry.key)}">')]
+    lines = [
+        Html(f'<div class="version-masthead" id="{escape(entry.key)}">'),
+        *changes_line(entry, anchors),
+    ]
     if acts:
         lines.extend((*made_by(acts, up(_DEPTH), verb="Made by"), *official_titles(acts)))
     elif unattributed(entry):

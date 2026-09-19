@@ -75,7 +75,7 @@ def render_event_page(
     body = join(
         (
             *_header(act, entry),
-            *version_masthead(site, act, entry, acts),
+            *version_masthead(site, act, entry, acts, anchors=anchors),
             *context_bar(act, entry, _DEPTH),
             *render_event(entry, anchors, texts, site.changelogs_url),
             *pager(act, entry, top=False),

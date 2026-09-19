@@ -148,7 +148,9 @@ page already names four, and it follows the masthead in the markup so a keyboard
 once. Nothing scrolls under it: the page's `scroll-padding-top` is the bar's height wherever the
 bar exists, so a fragment link and a link reached by the keyboard both land below it, and the
 sticky index column starts below it too. The bar and every `↑ Index` are hidden in print. All of
-it is CSS; the site's one script is still search.
+it is CSS; the site's one script is still search. From one to five changes the page carries
+none of these; its masthead names the changes on one line instead, so every page with changes
+maps them near its top, and zero prints neither.
 
 Every change heading, on an event page and on a
 provision page alike, ends with a `§` permalink to that change's own anchor, which is the
@@ -222,8 +224,14 @@ older one and carries `rel="prev"`, the timeline running newest first.
 ## A version: its masthead, its card, its tags
 
 A version appears in two places and is drawn two ways. **On its own page it has a masthead**
-(`pages/version_masthead.py`), under the page's H1 and before its changes, in the version's band:
-`Made by` the amending act, its official title as a readable serif lede, a status sentence
+(`pages/version_masthead.py`), under the page's H1 and before its changes, in the version's band.
+A version with one to five changes, too few for the in-page index, opens it with a line naming
+them (`pages/version_changes.py`): `Changes: Annex II · SUBSTANCES OR PRODUCTS CAUSING ALLERGIES
+OR INTOLERANCES`, each coordinate a link to its block on the anchor the page already computed,
+its title after it outside the link, in the entry's own order. On a phone the amending act's
+official title can fill the first screen, and this line is what says there what changed. It is a
+landmark, `Changes in this version`, the name the index carries, since a page has one or the
+other and never both. Then `Made by` the amending act, its official title as a readable serif lede, a status sentence
 placing the version in its act's history (`Version 5 of 5 recorded for FIC Regulation, the
 newest.`), a dates line that states the clock the heading did not name (`First seen by emendrix
 on 4 September 2026, …; that is not a legal date.`, or `In force date not stated.`), the tally,
