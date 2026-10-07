@@ -718,7 +718,10 @@ formula and so is the same float. The key is a SHA-256 over the algorithm's iden
 texts in full, so an answer is only ever asked for by the texts it was computed from, under the
 matcher that computed it. The algorithm's identity names the interpreter's version, since
 `difflib` ships with it: a Python upgrade costs one slow build and never reuses another matcher's
-answer.
+answer. The matcher is `cydifflib`, `difflib` compiled rather than another algorithm, verified on
+2026-10-07 to return `difflib`'s exact opcodes and ratio for every comparison the production site
+makes, and a test holds the two equal; it is why a cold build takes about a minute rather than
+eight.
 
 **A stored answer is checked before it is used, every time.** It must name the granularity the
 current code picks for the two texts and their exact token counts, its opcodes must cover both

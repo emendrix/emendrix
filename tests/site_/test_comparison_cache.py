@@ -85,6 +85,26 @@ def test_the_ratio_derived_from_the_opcodes_is_difflibs_own_float() -> None:
         assert worddiff.assemble(tokens, worddiff.opcodes(tokens)).ratio == expected
 
 
+def _same_as_difflib(a: list[str], b: list[str]) -> None:
+    expected = SequenceMatcher(None, a, b, autojunk=False)
+    compiled = worddiff._matcher(a, b)
+    assert compiled.get_opcodes() == expected.get_opcodes()
+    assert compiled.ratio() == expected.ratio()
+
+
+def test_the_compiled_matcher_answers_exactly_as_difflib_does() -> None:
+    for before, after in CORPUS:
+        tokens = tokenise(before, after)
+        _same_as_difflib(list(tokens.a), list(tokens.b))
+
+
+def test_the_compiled_matcher_answers_exactly_as_difflib_does_line_by_line() -> None:
+    # Whole lines as tokens, repeated often enough that many alignments tie on length.
+    rows = [f"row {row % 37} " + "x " * (row % 11) for row in range(600)]
+    moved = rows[:100] + rows[400:450] + rows[100:400] + ["new row"] * 3 + rows[450:590]
+    _same_as_difflib(rows, moved)
+
+
 def test_with_no_table_a_comparison_is_the_one_compare_makes() -> None:
     for before, after in CORPUS:
         assert compare_known(before, after, NO_COMPARISONS) == compare(before, after)

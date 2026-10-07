@@ -856,3 +856,8 @@ Named rather than discovered later; the eval report's disagreement list is the l
   truncated, one emptied to `{}`, one with an `equal` run's bounds moved) the next build reported
   `3 rejected`, wrote the same tree and left all three repaired. There is no default directory and
   without the flag the build runs exactly as before. **No page, feed, sitemap or golden moved.**
+  The matcher became `cydifflib`, a compiled build of `difflib`, the same day, once its opcodes
+  and ratio were found identical to `difflib`'s on all 2809 of those comparisons: the same build
+  then took 75.0 s with a cold cache where it took 476.0 s, and 63.0 s with none, the four CLP
+  Annex VI comparisons together 33.5 s where they took 379.2 s, and a tree built at the previous
+  commit was byte-identical to all three.

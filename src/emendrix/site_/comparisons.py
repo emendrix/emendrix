@@ -60,15 +60,16 @@ __all__ = [
 ]
 
 ALGORITHM: Final = (
-    f"difflib-autojunk-off/ceiling-{LINE_TOKEN_CEILING}/tokens-1"
+    f"cydifflib-autojunk-off/ceiling-{LINE_TOKEN_CEILING}/tokens-1"
     f"/py{sys.version_info[0]}.{sys.version_info[1]}"
 )
 """Everything that decides what the matcher returns for two texts, as one string in the key.
 
-The interpreter's version is in it because `difflib` ships with the interpreter. `tokens-1` moves
-whenever tokenisation or the choice of granularity changes behaviour. Any change to what the
-matcher returns for a given input must change this string: it is the only way stored answers are
-invalidated, and it is safe because an old entry is then simply never asked for.
+The interpreter's version is in it because `difflib`, which `cydifflib` compiles, ships with the
+interpreter. `tokens-1` moves whenever tokenisation or the choice of granularity changes
+behaviour. Any change to what the matcher returns for a given input must change this string: it
+is the only way stored answers are invalidated, and it is safe because an old entry is then
+simply never asked for.
 """
 
 

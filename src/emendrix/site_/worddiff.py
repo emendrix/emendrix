@@ -29,6 +29,7 @@ from collections.abc import Sequence
 from difflib import SequenceMatcher
 from typing import Final, Literal
 
+from cydifflib import SequenceMatcher as CompiledMatcher  # type: ignore[import-untyped]
 from pydantic import BaseModel, ConfigDict, Field
 
 __all__ = [
@@ -236,7 +237,9 @@ def _matcher(a: list[str], b: list[str]) -> SequenceMatcher[str]:
     # the rendering depend on text length in a way no reader could predict. It is also the
     # reason `LINE_TOKEN_CEILING` exists: with the heuristic off, cost grows with the square
     # of the token count, and a 266 000-token provision takes tens of seconds a side.
-    return SequenceMatcher(a=a, b=b, autojunk=False)
+    # `cydifflib` is `difflib` compiled, not another algorithm; a test holds its output equal.
+    matcher: SequenceMatcher[str] = CompiledMatcher(a=a, b=b, autojunk=False)
+    return matcher
 
 
 def similarity(before: str, after: str) -> float:

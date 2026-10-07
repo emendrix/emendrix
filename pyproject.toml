@@ -17,6 +17,9 @@ classifiers = [
 ]
 # Runtime dependencies are added with `uv add`, never with `pip`.
 dependencies = [
+    # A compiled build of the standard library's `difflib`, the matcher of `site_/worddiff.py`,
+    # adopted because its opcodes and ratio were verified identical on every pair the site compares.
+    "cydifflib>=1.2.0",
     # Every XML document this project reads came off a socket, and the stdlib parser expands
     # internal entities. `emendrix.eu.xml_` is the only module allowed to import it.
     "defusedxml>=0.7.1",
