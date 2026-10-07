@@ -68,6 +68,7 @@ from pathlib import Path
 
 from emendrix.site_.amending import resolve
 from emendrix.site_.assets import font_files, icon_svg, og_png, search_js
+from emendrix.site_.comparisons import NO_COMPARISONS, Comparisons
 from emendrix.site_.discovery import (
     ROBOTS,
     SITEMAP,
@@ -116,7 +117,9 @@ CARD = "og.png"
 """The favicon and the link-preview card, both at the root every page links relative to."""
 
 
-def act_pages(site: SiteInputs, act: ActSite) -> dict[str, str]:
+def act_pages(
+    site: SiteInputs, act: ActSite, *, comparisons: Comparisons = NO_COMPARISONS
+) -> dict[str, str]:
     """One act's whole page tree, path -> contents: its timeline, its events, its provisions.
 
     Factored out of `_files` because the scale suite needs exactly this slice, one act's index
@@ -128,9 +131,12 @@ def act_pages(site: SiteInputs, act: ActSite) -> dict[str, str]:
     An event page shows every one of its entry's blocks and a provision page shows the one
     belonging to its newest step, so a diff that would otherwise be built twice is built once
     however many pages carry it. That is the whole reason the cache exists: the texts are the
-    expensive part of this tree by orders of magnitude.
+    expensive part of this tree by orders of magnitude. With a table of `comparisons` from an
+    earlier build, most of those diffs are not computed at all.
     """
-    blocks = {entry.key: text_blocks(entry, act.entries) for entry in act.entries}
+    blocks = {
+        entry.key: text_blocks(entry, act.entries, comparisons=comparisons) for entry in act.entries
+    }
     files: dict[str, str] = {f"{act_href(act.slug)}index.html": render_act(site, act)}
     for entry in act.entries:
         files[f"{event_href(act.slug, entry.key)}index.html"] = render_event_page(
@@ -144,7 +150,7 @@ def act_pages(site: SiteInputs, act: ActSite) -> dict[str, str]:
     return files
 
 
-def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
+def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[str, str | bytes]:
     """Every file the site is, as `relative path -> contents`. Pure; writes nothing."""
     files: dict[str, str | bytes] = {
         "index.html": render_home(site, limit=home_limit),
@@ -165,7 +171,7 @@ def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
     for name, content in font_files():
         files[FONTS[name]] = content
     for act in site.acts:
-        files.update(act_pages(site, act))
+        files.update(act_pages(site, act, comparisons=comparisons))
     # Only an instrument a committed event names gets a page: a declared short name for one
     # nothing has been attributed to would be a page about work the corpus has not recorded.
     for key, amended in amended_by(site).items():
@@ -181,18 +187,25 @@ def _files(site: SiteInputs, home_limit: int) -> dict[str, str | bytes]:
     return files
 
 
-def write_site(out: Path, site: SiteInputs, *, home_limit: int = 20) -> tuple[Path, ...]:
+def write_site(
+    out: Path,
+    site: SiteInputs,
+    *,
+    home_limit: int = 20,
+    comparisons: Comparisons = NO_COMPARISONS,
+) -> tuple[Path, ...]:
     """Write the site into `out` and return the relative paths written, sorted.
 
     Directories are created as needed and nothing else in `out` is touched: the operator owns
-    that directory. Two calls with one `SiteInputs` write byte-identical files.
+    that directory. Two calls with one `SiteInputs` write byte-identical files, whatever table
+    of `comparisons` either is handed.
 
     Bytes and text take separate branches because `write_bytes` accepts no newline argument and
     the card and the fonts must reach the tree exactly as committed, neither decoded nor
     re-encoded.
     """
     written: list[Path] = []
-    for name, content in sorted(_files(site, home_limit).items()):
+    for name, content in sorted(_files(site, home_limit, comparisons).items()):
         target = out / name
         target.parent.mkdir(parents=True, exist_ok=True)
         if isinstance(content, bytes):

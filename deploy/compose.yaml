@@ -85,11 +85,16 @@ services:
   # the poller writes it to and mounted read-only here: with it the about page says the date the
   # corpus was last checked and how many consolidations are waiting for their text. A build that
   # finds nothing there says nothing about polling and writes every other page unchanged.
+  # `--comparison-cache` keeps the before/after comparisons between builds, in `comparisons/`
+  # beside the HTTP response cache's `emendrix/` on the same disposable volume, which is why
+  # `cache` is mounted here and mounted writable. It changes how long a build takes, never what
+  # it writes, and deleting the directory costs one slow build.
   page:
     image: ghcr.io/emendrix/emendrix:0.1.0
     volumes:
       - changelogs:/work/changelogs:ro
       - site:/work/site
+      - cache:/home/emendrix/.cache
       - state:/home/emendrix/.local/share:ro
       - ./watchlist.toml:/work/watchlist.toml:ro
     command:
@@ -109,9 +114,11 @@ services:
       - "https://github.com/emendrix/changelogs"
       - "--watch-state"
       - "/home/emendrix/.local/share/emendrix/watch-state.json"
+      - "--comparison-cache"
+      - "/home/emendrix/.cache/comparisons"
 
 volumes:
   changelogs:  # the output git repository: yours, never pushed by emendrix
   site:        # the generated site: pages, feeds, the search index and its script
-  cache:       # the HTTP response cache; disposable, rebuilt on demand
+  cache:       # the HTTP response cache and the site's comparisons; disposable, rebuilt on demand
   state:       # the watcher's seen-state cursor; NOT disposable

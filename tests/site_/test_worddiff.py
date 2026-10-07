@@ -12,8 +12,11 @@ from emendrix.site_.worddiff import (
     LINE_TOKEN_CEILING,
     SIMILARITY_FLOOR,
     DiffSpan,
+    assemble,
     compare,
+    opcodes,
     similarity,
+    tokenise,
     word_diff,
 )
 
@@ -168,3 +171,26 @@ def test_similarity_and_word_diff_agree_with_compare_on_a_large_text() -> None:
     result = compare(before, after)
     assert similarity(before, after) == result.ratio
     assert word_diff(before, after) == result.spans
+
+
+# ------------------------------------------------------------------ the matcher seam
+
+
+def test_assembling_the_matchers_opcodes_is_compare() -> None:
+    """`compare` is tokenise, run the matcher, assemble, and each step can be taken alone."""
+    big = _big(3000)
+    examples = [
+        ("pay within one month of receipt", "pay within two weeks of receipt"),
+        ("same text", "same text"),
+        ("a  b\nc", "a b c"),
+        ("title\nold body", "title\nnew body"),
+        ("in Article 30\nthe information", "in Article 27\nthe information"),
+        ("a b c", "a c"),
+        ("a c", "a b c"),
+        ("a b c", "x y z"),
+        ("", ""),
+        (big, big.replace("r1500c0", "CHANGED", 1)),
+    ]
+    for before, after in examples:
+        tokens = tokenise(before, after)
+        assert assemble(tokens, opcodes(tokens)) == compare(before, after)

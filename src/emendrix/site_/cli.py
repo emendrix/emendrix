@@ -52,8 +52,10 @@ from emendrix.eval_.runner import EvalRun
 from emendrix.output import resolve_repo_path
 from emendrix.site_ import boundary
 from emendrix.site_.build import write_site
+from emendrix.site_.comparison_store import StoreUnwritable, read_stored, write_stored
+from emendrix.site_.comparisons import NO_COMPARISONS, Comparisons, comparison_key, pairs, resolve
 from emendrix.site_.entries import read_entries
-from emendrix.site_.inputs import collect_site
+from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.markup import count
 from emendrix.site_.polled import read_polled
 from emendrix.watch.config import Watchlist, load_watchlist
@@ -73,6 +75,12 @@ _WATCH_STATE = typer.Option(
     help="The poller's state file; with it the site says when the corpus was last checked.",
 )
 
+_COMPARISON_CACHE = typer.Option(
+    "--comparison-cache",
+    help="Directory the before/after comparisons are kept in between builds. "
+    "Changes how fast a build is, never what it writes.",
+)
+
 
 def _watchlist(path: Path) -> Watchlist | None:
     """The watchlist if there is one. Its absence is a mode, not an error.
@@ -83,6 +91,29 @@ def _watchlist(path: Path) -> Watchlist | None:
     changelog repository is shown instead.
     """
     return load_watchlist(path) if path.is_file() else None
+
+
+def _comparisons(directory: Path, site: SiteInputs) -> tuple[Comparisons, str]:
+    """Every comparison the build will make, reused from `directory` where an entry fits.
+
+    What had to be computed is written back. A directory that cannot be written is said once on
+    stderr and the build goes on with the table it already holds, which is the whole site.
+    """
+    keys = {comparison_key(before, after) for before, after in pairs(site.acts)}
+    read = read_stored(directory, sorted(keys))
+    resolved = resolve(pairs(site.acts), read.found)
+    try:
+        write_stored(directory, {key: resolved.table[key] for key in resolved.computed})
+    except StoreUnwritable as error:
+        typer.echo(
+            f"--comparison-cache could not be written ({error}); "
+            "the build continues without saving its comparisons",
+            err=True,
+        )
+    return resolved.table, (
+        f"comparisons: {resolved.reused} reused, {len(resolved.computed)} computed, "
+        f"{resolved.rejected + len(read.unreadable)} rejected"
+    )
 
 
 @app.command("build")
@@ -134,6 +165,7 @@ def build(
         typer.Option("--contact", help="Address readers may write to, for the about page."),
     ] = "",
     watch_state: Annotated[Path | None, _WATCH_STATE] = None,
+    comparison_cache: Annotated[Path | None, _COMPARISON_CACHE] = None,
     generated_on: Annotated[
         datetime | None,
         typer.Option(
@@ -157,6 +189,12 @@ def build(
     record and the about page says nothing about polling, because a build that failed over a
     file it was handed as a courtesy would take the whole site down for a fact it can live
     without.
+
+    `--comparison-cache` is the one flag that changes how long a build takes and not what it
+    writes. Every comparison is looked up there by a hash of the algorithm and both texts, an
+    entry is used only once it is shown to fit the texts it claims to describe, and whatever is
+    missing or does not fit is computed and written back. Like `--watch-state` it can never fail
+    a build: an unreadable entry is computed again and an unwritable directory is reported once.
     """
     for name, value in (
         ("--repo-url", repo_url),
@@ -209,7 +247,10 @@ def build(
         version_dates=version_dates,
         polled=read_polled(watch_state),
     )
-    written = write_site(out, site, home_limit=home_limit)
+    comparisons, reuse = NO_COMPARISONS, ""
+    if comparison_cache is not None:
+        comparisons, reuse = _comparisons(comparison_cache, site)
+    written = write_site(out, site, home_limit=home_limit, comparisons=comparisons)
     pages = sum(1 for path in written if path.suffix == ".html")
     # The sitemap is an `.xml` file at the site root and is not a feed, so the feeds are counted
     # by where they live rather than by their extension.
@@ -219,3 +260,5 @@ def build(
         f"{count(len(site.acts), 'act')}, "
         f"numbers from {chosen} ({run.run_date.isoformat()}, {run.revision})"
     )
+    if reuse:
+        typer.echo(reuse)

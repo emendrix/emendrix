@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from emendrix.output import ChangelogEntry
 from emendrix.site_.clocks import event_date
+from emendrix.site_.comparisons import NO_COMPARISONS, Comparisons
 from emendrix.site_.diffview import Rendered, Sides, render_texts
 
 __all__ = ["RenderedText", "sides", "text_blocks"]
@@ -49,13 +50,20 @@ def sides(entry: ChangelogEntry, history: tuple[ChangelogEntry, ...] = ()) -> Si
 
 
 def text_blocks(
-    entry: ChangelogEntry, history: tuple[ChangelogEntry, ...] = ()
+    entry: ChangelogEntry,
+    history: tuple[ChangelogEntry, ...] = (),
+    *,
+    comparisons: Comparisons = NO_COMPARISONS,
 ) -> tuple[RenderedText, ...]:
     """Every change of one entry as its evidence block, in the entry's own order.
 
     Called once per entry per build. A page never calls `render_texts` itself, which is the
     property that stops one diff being computed twice now that two page kinds show it.
-    `history` is the act's entries, which date the previous version's side.
+    `history` is the act's entries, which date the previous version's side. With a table of
+    `comparisons` from an earlier build, most blocks are assembled without running a diff at all.
     """
     named = sides(entry, history)
-    return tuple(render_texts(emitted.change, entry, named) for emitted in entry.changes)
+    return tuple(
+        render_texts(emitted.change, entry, named, comparisons=comparisons)
+        for emitted in entry.changes
+    )

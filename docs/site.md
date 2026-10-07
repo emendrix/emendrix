@@ -703,6 +703,47 @@ courtesy is worse than a page with one fewer sentence. Nothing is imported from 
 it, the site being a rendering of documents somebody else wrote; the file's shape is pinned by a
 test that builds a real state file and reads it back.
 
+## `--comparison-cache`: the one flag that changes speed and not output
+
+Almost all of a build's time is the before/after comparisons the change pages show: a word diff
+of two provision texts, or a line diff where a text is too large for words, and a classification
+table compared line by line takes minutes. The texts of a committed changelog entry never change,
+so neither does their comparison, and without this flag every build computes every one again.
+`--comparison-cache <dir>` keeps them between builds.
+
+**What is stored is the matcher's answer and nothing else.** One JSON file per comparison, at
+`<dir>/<key[:2]>/<key>.json`, holding the two token counts, the granularity and the opcodes
+`difflib` returned: no text, and no ratio, which is derived from the opcodes by `difflib`'s own
+formula and so is the same float. The key is a SHA-256 over the algorithm's identity and both
+texts in full, so an answer is only ever asked for by the texts it was computed from, under the
+matcher that computed it. The algorithm's identity names the interpreter's version, since
+`difflib` ships with it: a Python upgrade costs one slow build and never reuses another matcher's
+answer.
+
+**A stored answer is checked before it is used, every time.** It must name the granularity the
+current code picks for the two texts and their exact token counts, its opcodes must cover both
+texts from start to end with no gap or overlap and alternate between unchanged and changed runs
+the way `difflib` emits them, and every run it calls unchanged must be token-for-token identical
+on both sides. An entry that fails any of it, or that is missing,
+truncated, unreadable or of another schema, is computed again and written back. A build with no
+cache, a cold one and a warm one therefore writes byte-identical trees, and a test builds all
+three and compares them.
+
+**There is no default directory.** The site never decides where a file lives outside the tree it
+is given; only the HTTP response cache and the poller's state do that. Without the flag the build
+runs exactly as it did before the flag existed. The directory is the tool's and is disposable:
+deleting it costs one slow build and nothing else, and nothing should be put in it by hand. It
+should be a directory of its own rather than the HTTP response cache's; the reference deployment
+puts it at `comparisons/` beside that cache's `emendrix/` on the same volume.
+
+Two builders may share one directory. Every entry is written to a temporary file of its own and
+renamed into place, and two writers of one key write identical bytes, so a race costs a
+comparison computed twice and never a torn file. A directory that cannot be written is said once
+on stderr and the build finishes with the site it would have written anyway. With the flag the
+summary gains a second line, `comparisons: N reused, N computed, N rejected`, where `rejected`
+counts entries that were there and could not be used, unreadable or not fitting, each of which
+was computed again and is counted among the computed too.
+
 ## The honesty rule, made structural
 
 What all of this makes structural rather than aspirational is the honesty rule. Every page is a

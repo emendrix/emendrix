@@ -839,3 +839,20 @@ Named rather than discovered later; the eval report's disagreement list is the l
   engine to keep, behind which the sitemap may be split or renamed without that address moving.
   No deterministic figure moved and no page or feed did; the golden moves by three files, the two
   discovery files and the new index.
+
+- **A site build can reuse the comparisons it made before, since 2026-10-07, and writes the same
+  bytes either way.** The before and after texts of a committed entry never change, yet every
+  build compared every pair again, and that was 99% of the build: profiled on 2026-10-07, the
+  hourly build spent 443 of 450 seconds in `difflib`, four comparisons of CLP's Annex VI alone
+  taking 79% of it. `emendrix site build --comparison-cache <dir>` keeps the matcher's opcodes,
+  one file per comparison keyed by a SHA-256 of the algorithm and both texts in full, and checks
+  every stored answer against the tokens of the texts it claims to describe before using it; an
+  entry that is missing, unreadable or does not fit is computed again and written back. The ratio
+  is derived from the opcodes by `difflib`'s own formula rather than stored, and is tested equal to
+  `SequenceMatcher.ratio()` exactly. Measured on 2026-10-07 over the public changelogs and the
+  deployed watchlist (86 acts, 3403 pages, 87 feeds, 2809 distinct comparisons): 508.7 s with no
+  cache, 476.0 s with a cold one, 14.0 s with a warm one, and `diff -r` over the three trees
+  printed nothing. The directory held 2809 files in 14 MB. With three entries damaged by hand (one
+  truncated, one emptied to `{}`, one with an `equal` run's bounds moved) the next build reported
+  `3 rejected`, wrote the same tree and left all three repaired. There is no default directory and
+  without the flag the build runs exactly as before. **No page, feed, sitemap or golden moved.**

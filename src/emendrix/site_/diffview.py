@@ -40,13 +40,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix.core import Change
 from emendrix.output import ChangelogEntry
+from emendrix.site_.comparisons import NO_COMPARISONS, Comparisons, compare_known
 from emendrix.site_.markup import Html, escape, join
-from emendrix.site_.worddiff import (
-    SIMILARITY_FLOOR,
-    Comparison,
-    Granularity,
-    compare,
-)
+from emendrix.site_.worddiff import SIMILARITY_FLOOR, Comparison, Granularity
 
 __all__ = ["Rendered", "Sides", "render_texts", "summary_words"]
 
@@ -226,11 +222,19 @@ def summary_words(change: Change) -> str:
     return "Text from EUR-Lex: none to show"
 
 
-def render_texts(change: Change, entry: ChangelogEntry, sides: Sides | None = None) -> Rendered:
+def render_texts(
+    change: Change,
+    entry: ChangelogEntry,
+    sides: Sides | None = None,
+    *,
+    comparisons: Comparisons = NO_COMPARISONS,
+) -> Rendered:
     """Whatever evidence the change carries, in the most legible honest form, and its size.
 
     `sides` names the two versions compared, by role and where the caller knows it by date;
-    without one they are named by role alone.
+    without one they are named by role alone. `comparisons` holds answers an earlier build
+    computed, used only where they fit these texts, so it changes how long this takes and
+    never what it returns.
     """
     named = sides or Sides()
     before, after = change.before, change.after
@@ -238,7 +242,7 @@ def render_texts(change: Change, entry: ChangelogEntry, sides: Sides | None = No
         # One comparison, used for all three questions: whether the unified view is worth
         # showing, what it contains, and how much of the provision moved. Asking them
         # separately built the matcher twice.
-        comparison = compare(before, after)
+        comparison = compare_known(before, after, comparisons)
         unified = comparison.ratio >= SIMILARITY_FLOOR
         return Rendered(
             html=(

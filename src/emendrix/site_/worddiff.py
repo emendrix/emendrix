@@ -25,6 +25,7 @@ blocks and says so.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from difflib import SequenceMatcher
 from typing import Final, Literal
 
@@ -36,8 +37,13 @@ __all__ = [
     "Comparison",
     "DiffSpan",
     "Granularity",
+    "Opcode",
+    "Tokens",
+    "assemble",
     "compare",
+    "opcodes",
     "similarity",
+    "tokenise",
     "word_diff",
 ]
 
@@ -68,6 +74,9 @@ _WHITESPACE: Final = re.compile(r"\s+")
 
 Granularity = Literal["word", "line"]
 """What a token was, and therefore what a reported change is a change to."""
+
+Opcode = tuple[Literal["equal", "replace", "delete", "insert"], int, int, int, int]
+"""One `SequenceMatcher.get_opcodes()` row: what to do, and the two token ranges it covers."""
 
 Separator = Literal[" ", "\n", ""]
 """What sits between two tokens once the run of whitespace is reduced to its one decision.
@@ -124,7 +133,7 @@ def _split(text: str) -> tuple[list[str], list[Separator]]:
     return tokens, separators
 
 
-def _render(tokens: list[str], separators: list[Separator], lo: int, hi: int) -> str:
+def _render(tokens: Sequence[str], separators: Sequence[Separator], lo: int, hi: int) -> str:
     """Tokens `lo:hi` rejoined with the separators that stood between them."""
     parts: list[str] = []
     for index in range(lo, hi):
@@ -134,7 +143,7 @@ def _render(tokens: list[str], separators: list[Separator], lo: int, hi: int) ->
     return "".join(parts)
 
 
-def _following(separators: list[Separator], hi: int) -> Separator:
+def _following(separators: Sequence[Separator], hi: int) -> Separator:
     """What followed the last token of a run ending at `hi`."""
     return separators[hi - 1] if 0 < hi <= len(separators) else " "
 
@@ -159,6 +168,58 @@ def _granularity(before: str, after: str) -> Granularity:
     return "line" if longest > LINE_TOKEN_CEILING else "word"
 
 
+class Tokens(BaseModel):
+    """Both texts cut into the tokens the matcher compares, and the separators the page renders.
+
+    Cut once per comparison. The matcher and the renderer both read it, and so does the check
+    that a stored answer still describes these texts, so none of them tokenises again.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    granularity: Granularity = Field(description="What a token is: a word or a whole line.")
+    a: tuple[str, ...] = Field(description="The tokens of the older text, in order.")
+    a_separators: tuple[Separator, ...] = Field(description="What followed each token of `a`.")
+    b: tuple[str, ...] = Field(description="The tokens of the newer text, in order.")
+    b_separators: tuple[Separator, ...] = Field(description="What followed each token of `b`.")
+
+
+def tokenise(before: str, after: str) -> Tokens:
+    """Both texts as tokens, at the granularity their size allows."""
+    granularity = _granularity(before, after)
+    split = _split if granularity == "word" else _split_lines
+    a, a_separators = split(before)
+    b, b_separators = split(after)
+    return Tokens(
+        granularity=granularity,
+        a=tuple(a),
+        a_separators=tuple(a_separators),
+        b=tuple(b),
+        b_separators=tuple(b_separators),
+    )
+
+
+def opcodes(tokens: Tokens) -> tuple[Opcode, ...]:
+    """What the matcher makes of two token sequences. The one place a matcher is run."""
+    return tuple(_matcher(list(tokens.a), list(tokens.b)).get_opcodes())
+
+
+def assemble(tokens: Tokens, ops: Sequence[Opcode]) -> Comparison:
+    """The comparison the page renders, built from the tokens and the matcher's opcodes.
+
+    The ratio is `difflib`'s own formula, `2 * M / T` with `M` the tokens inside matching
+    blocks, and the matching blocks of non-zero size are exactly the `equal` opcodes, so this is
+    the float `SequenceMatcher.ratio()` returns for the same input, not an approximation of it.
+    """
+    matched = sum(a1 - a0 for tag, a0, a1, _, _ in ops if tag == "equal")
+    total = len(tokens.a) + len(tokens.b)
+    return Comparison(
+        granularity=tokens.granularity,
+        ratio=2.0 * matched / total if total else 1.0,
+        spans=_spans(ops, tokens.a, tokens.a_separators, tokens.b, tokens.b_separators),
+    )
+
+
 def compare(before: str, after: str) -> Comparison:
     """Both texts as one sequence of spans, plus the ratio and the granularity used.
 
@@ -166,16 +227,8 @@ def compare(before: str, after: str) -> Comparison:
     `similarity` and then `word_diff` does, doubles the cost of the most expensive thing the
     site build does.
     """
-    granularity = _granularity(before, after)
-    split = _split if granularity == "word" else _split_lines
-    a, a_separators = split(before)
-    b, b_separators = split(after)
-    matcher = _matcher(a, b)
-    return Comparison(
-        granularity=granularity,
-        ratio=matcher.ratio(),
-        spans=_spans(matcher, a, a_separators, b, b_separators),
-    )
+    tokens = tokenise(before, after)
+    return assemble(tokens, opcodes(tokens))
 
 
 def _matcher(a: list[str], b: list[str]) -> SequenceMatcher[str]:
@@ -197,11 +250,11 @@ def word_diff(before: str, after: str) -> tuple[DiffSpan, ...]:
 
 
 def _spans(
-    matcher: SequenceMatcher[str],
-    a: list[str],
-    a_separators: list[Separator],
-    b: list[str],
-    b_separators: list[Separator],
+    ops: Sequence[Opcode],
+    a: Sequence[str],
+    a_separators: Sequence[Separator],
+    b: Sequence[str],
+    b_separators: Sequence[Separator],
 ) -> tuple[DiffSpan, ...]:
     """The opcodes rendered back into spans, in reading order."""
     spans: list[DiffSpan] = []
@@ -212,7 +265,7 @@ def _spans(
         if text:
             spans.append(DiffSpan(kind=kind, text=text, sep=sep))
 
-    for tag, a0, a1, b0, b1 in matcher.get_opcodes():
+    for tag, a0, a1, b0, b1 in ops:
         if tag == "equal":
             add("equal", _render(a, a_separators, a0, a1), _following(a_separators, a1))
             continue
