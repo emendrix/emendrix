@@ -252,15 +252,19 @@ def test_an_instruction_dated_past_the_window_is_not_claimed_in_it(
     client: CellarClient,
 ) -> None:
     """Article 10a is ordered into existence from 10 January 2025 and is not in the text of
-    9 July 2024. Read whole, the amending act put it here anyway: a unit with no text on either
-    side, `disputed` against two signals that had never heard of it, on a page whose reader
-    could do nothing with it. Scoped, the transition agrees three ways over its five units.
+    9 July 2024. Read whole, the amending act still names it here: a unit with no text on
+    either side, which two signals had never heard of. Scoped, the transition agrees three ways
+    over its five units.
+
+    Unscoped, it was a textless change shipped `disputed` until 2026-10-08. Since then a unit
+    only the instruction parse names is listed in the report by name and not appended as a
+    change, so the unscoped reading holds five changes and no dispute: the same claim, published
+    in the report rather than in the change list, not the window having become unnecessary.
     """
     unscoped = mdr_2024(client, scoped=False)
-    assert [change.unit.canonical for change in unscoped.delta.changes if change.textless] == [
-        "AR 10a"
-    ]
-    assert unscoped.disputed == 1
+    assert unscoped.report.instruction_only_units == (ProvisionLocation.parse("AR 10a"),)
+    assert not any(change.textless for change in unscoped.delta.changes)
+    assert unscoped.disputed == 0
 
     scoped = mdr_2024(client, scoped=True)
     assert [item.count for item in scoped.report.signals] == [5, 5, 5]

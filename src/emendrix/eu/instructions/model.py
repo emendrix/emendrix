@@ -214,12 +214,26 @@ def instruction_signal(
     `window` is the consolidation's own `(after, until]`, passed down from the composition
     root. Without one the whole act is claimed under the unbounded window, which is what a
     caller holding no dates can honestly say, and the note counts the nothing it excluded.
+
+    **An amending act that claims nothing in the window is unavailable, not silent.** It was
+    read and has no reading of this consolidation, so there is nothing for the diff to disagree
+    with; reported as available it would leave every unit the diff found `ABSENT` and ship each
+    of them disputed on the strength of silence. This is the rule `metadata_signal` follows for
+    an unannotated window, so the two second opinions of one pair agree about when they have
+    nothing to say. The note keeps the coverage figure, because that is how a reader tells an
+    act the parser could not read from one it read and found claiming nothing here.
     """
     claimed = parse.in_window(act, window)
     head = (
         note
         or f"{parse.act.key}: {len(claimed.records)} instructions read, {len(parse.unread)} unread"
     )
+    if not claimed.records:
+        return SignalReport.unavailable(
+            Signal.INSTRUCTION_PARSE,
+            note=f"{head}, {claimed.summary}, nothing claimed in this window, "
+            "so this signal has no reading of it",
+        )
     return SignalReport(
         signal=Signal.INSTRUCTION_PARSE,
         claims=tuple(record.to_claim(amending_act=parse.act) for record in claimed.records),

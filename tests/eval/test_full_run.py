@@ -175,7 +175,17 @@ def test_the_annex_numbering_mismatch_is_published_not_hidden(run: EvalRun) -> N
 
 
 def test_nothing_is_dropped_across_the_whole_corpus(run: EvalRun) -> None:
-    """12 disputed of 100 changes, and every one of them ships.
+    """6 disputed of 100 changes, and every one of them ships.
+
+    Until 2026-10-08 this read 12 of 100. Six REACH transitions (`@20121009`, `@20160308`,
+    `@20190702`, `@20220501`, `@20240606`, `@20260511`) each shipped one change disputed by an
+    instruction signal that had read its amending act and claimed nothing in that window. Such
+    a signal is `UNAVAILABLE` now, the rule the metadata signal has followed since 2026-08-12,
+    so silence there is no longer counted as dissent. **6 of 100 is not 12 of 100 improved.**
+    The rows are the same 100; the question changed, from "did every signal that read something
+    name this unit" to "did every signal that claimed something in this window name it". No
+    unit is named by the instruction parse alone anywhere in the corpus, so the rule that lists
+    such units in the report rather than appending them moves no row here.
 
     Until 2026-09-05 this read 13 of 101, with `(4, 3)` for the two unit counts: the third
     signal read an amending act whole and claimed every instruction in it in every window that
@@ -214,9 +224,57 @@ def test_nothing_is_dropped_across_the_whole_corpus(run: EvalRun) -> None:
     beside the `AN I` unit every other signal used. That shipped four phantom units and five
     false disputes on `32017R0745@20260101`, which now agrees three ways.
     """
-    assert (run.metrics.changes, run.metrics.disputed) == (100, 12)
+    assert (run.metrics.changes, run.metrics.disputed) == (100, 6)
     assert (run.metrics.diff_only_units, run.metrics.metadata_only_units) == (4, 2)
-    assert sum(len(case.report.disagreements) for case in run.cases if case.report) == 12
+    assert run.metrics.instruction_only_units == 0
+    assert sum(len(case.report.disagreements) for case in run.cases if case.report) == 6
+
+
+SILENT_THIRD_SIGNAL = (
+    "32006R1907@20121009",
+    "32006R1907@20160308",
+    "32006R1907@20190702",
+    "32006R1907@20220501",
+    "32006R1907@20240606",
+    "32006R1907@20260511",
+)
+"""The REACH windows whose amending act was read and claimed nothing inside them."""
+
+
+def test_a_third_signal_that_claims_nothing_in_its_window_takes_no_part(run: EvalRun) -> None:
+    """Both instruction pairings over 7 transitions, where they were over 13 until 2026-10-08.
+
+    Until then the six windows above each entered both pairings with an empty instruction set,
+    scoring 0.000 against one unit, and read diff against instruction parse P 0.917 / R 1.000 /
+    F1 0.957, macro 0.538, and metadata against instruction parse P 0.889 / R 0.970 / F1 0.928,
+    macro 0.462. Those signals are `UNAVAILABLE` now and leave the denominator. **The figures
+    below are not the instruction parse getting more accurate**: they are computed over a
+    smaller set of transitions, the seven where the third signal claimed something, and the
+    right-hand side of each pairing is the same 66 units it was before. The parse still read
+    all thirteen windows, which is what the coverage line counts.
+    """
+    for case_id in SILENT_THIRD_SIGNAL:
+        case = next(item for item in run.cases if item.case_id == case_id)
+        assert case.report is not None
+        assert (case.changes, case.disputed) == (1, 0), case_id
+        assert case.instruction_coverage is not None, case_id
+        third = next(s for s in case.report.signals if s.signal is Signal.INSTRUCTION_PARSE)
+        assert third.available is False, case_id
+        assert third.note is not None and "nothing claimed in this window" in third.note
+
+    prose = run.metrics.instruction_agreement
+    assert prose is not None
+    assert (prose.cases, prose.left_units, prose.right_units, prose.shared) == (7, 66, 66, 66)
+    assert (prose.micro_precision, prose.micro_recall, prose.micro_f1) == (1.0, 1.0, 1.0)
+    assert prose.macro_f1 == 1.0
+
+    meta = run.metrics.metadata_instruction
+    assert meta is not None
+    assert (meta.cases, meta.left_units, meta.right_units, meta.shared) == (7, 66, 66, 64)
+    assert round(meta.micro_precision, 3) == 0.970
+    assert round(meta.micro_recall, 3) == 0.970
+    assert round(meta.micro_f1, 3) == 0.970
+    assert round(meta.macro_f1, 3) == 0.857
 
 
 def test_the_parser_accounts_for_every_element_it_read(run: EvalRun) -> None:
@@ -301,6 +359,9 @@ def test_the_committed_floors_are_cleared(run: EvalRun) -> None:
 
 def test_the_third_signal_publishes_its_own_coverage(run: EvalRun) -> None:
     """Read on 13 of 18 windows; the rest name several amending acts, and say so.
+
+    Read is not the same as available: since 2026-10-08 six of the thirteen claim nothing in
+    their window and are `UNAVAILABLE`, so the pairings count seven while this counts thirteen.
 
     The six unread instructions are one shape: a REACH annex amender whose article delegates the
     work to its own annex ("Annex XVII to Regulation (EC) No 1907/2006 is amended in accordance

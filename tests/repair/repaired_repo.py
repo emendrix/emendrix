@@ -36,6 +36,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from textless_rows import with_instruction_only_row
+
 from emendrix.core import (
     ActId,
     ProvisionLocation,
@@ -115,14 +117,20 @@ def poisoned_repo(source: Path, destination: Path) -> Path:
     Two defects, because a corrected signal fixes two different things: a unit it invented,
     which leaves the entry entirely, and a unit it failed to see, whose change was marked
     disputed and whose explanation was written under a prompt saying the signals disagreed.
+
+    Since 2026-10-08 the merge lists a unit only the instruction parse names in the report
+    rather than appending it, so the phantom is put back as the textless row entries published
+    before that date carry (`textless_rows.py`). That is the row a repair over the published
+    record meets, and the one it now drops whether or not the corrected parse still names it.
     """
     shutil.copytree(source, destination)
     repository = OutputRepo.open(destination)
     for target in read_targets(repository.path):
         spoiled = repair(target, _misread(target))
         assert spoiled.entry is not None, target.path
-        repository.write(spoiled.entry)
-        repository.write(_neighbour(spoiled.entry))
+        entry = with_instruction_only_row(spoiled.entry, PHANTOM)
+        repository.write(entry)
+        repository.write(_neighbour(entry))
     return repository.path
 
 

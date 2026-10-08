@@ -112,10 +112,20 @@ the text the model sees and a count in the run statistics.
 
 Failure is a value, as everywhere else: a provider error yields `ExplanationUnavailable` on that one
 change and the other forty-four still ship. The same applies to a change with nothing *to* explain.
-Corroboration appends one per unit that another signal named and the diff did not, and since the
-diff is the only signal carrying text (33 of REACH's 41 changes are disputed, one of them
+Corroboration appends one per unit that the corpus metadata named and the diff did not, and since
+the diff is the only signal carrying text (33 of REACH's 41 changes are disputed, one of them
 textless), those reach this stage with no quotable text at all. They keep their slot, carry the
-reason, and never raise. Token usage is a field, not a log line, because cost control is a stated
+reason, and never raise.
+
+Two rules, both in force since 2026-10-08, keep a signal from saying more than it knows. An
+instruction parse that read its amending act and claims nothing in the consolidation's window is
+`UNAVAILABLE`, with a note saying so and keeping its coverage figure, because silence in a window
+is not dissent; the metadata signal has followed the same rule since 2026-08-12. And a unit only
+the instruction parse names, which neither the diff nor the metadata names, is not appended as a
+textless change: it is published by name in the entry's corroboration report as
+`instruction_only_units` and counted by the eval beside `metadata_only_units`. One signal that
+carries no text, naming a unit no other signal names, is not evidence of a change in this
+consolidation, so it is moved from the change list to the report and never dropped. Token usage is a field, not a log line, because cost control is a stated
 goal of the project: at the pinned model's published rates the whole 55-change explanation subset,
 of which the AI Act's flagship delta is 45 changes, cost **$1.0197** to explain end to end over
 404 846 input and 20 998 output tokens, measured over the recording of 2026-08-12 and printed in

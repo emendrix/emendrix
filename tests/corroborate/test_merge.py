@@ -7,6 +7,7 @@ vocabulary. The real-corpus numbers live in `test_eu_corroboration.py`.
 
 from __future__ import annotations
 
+import json
 from datetime import date
 
 import pytest
@@ -24,6 +25,9 @@ from emendrix.core import (
 from emendrix.corroborate import agreement, corroborate
 from emendrix.corroborate.report import SignalUnits
 from emendrix.diff import compute_delta
+from emendrix.gate import GateOutcome
+from emendrix.graph.report import EmittedChange, EmittedDelta
+from emendrix.output import ChangelogEntry
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 OBSERVED_ON = date(2026, 8, 6)
@@ -259,6 +263,99 @@ def test_all_three_signals_are_recorded_and_scored_pairwise(delta: Delta) -> Non
     assert against_prose.recall == 1.0
     # `AN I` is seen by the diff and the metadata but not by the instruction parse.
     assert merged.disputed == 1
+
+
+def test_a_unit_only_the_instruction_parse_names_is_listed_and_not_appended(
+    delta: Delta,
+) -> None:
+    """One textless signal naming a unit nothing else names is not evidence of a change.
+
+    The unit is published by name in the report instead of shipping as a textless change that
+    is disputed against two signals that never heard of it. It still counts in the instruction
+    parse's own unit set, so the agreement figures read exactly what that signal claimed.
+    """
+    instructions = report(
+        Signal.INSTRUCTION_PARSE,
+        claim("AR 2", ChangeType.MODIFIED),
+        claim("AR 9", ChangeType.MODIFIED),
+        claim("AR 7", ChangeType.INSERTED),
+    )
+    merged = corroborate(delta, instructions=instructions)
+    assert units(merged.delta) == {"AR 2", "AR 3", "AR 4", "AN I"}
+    assert merged.report.instruction_only_units == (
+        ProvisionLocation.parse("AR 7"),
+        ProvisionLocation.parse("AR 9"),
+    )
+    assert merged.report.metadata_only_units == ()
+    named = {unit.canonical for unit in merged.report.units_of(Signal.INSTRUCTION_PARSE)}
+    assert named == {"AR 2", "AR 7", "AR 9"}
+
+
+def test_a_unit_the_instruction_parse_names_against_silent_metadata_is_listed(
+    delta: Delta,
+) -> None:
+    """Available metadata that does not name the unit is no more a corroboration than none."""
+    merged = corroborate(
+        delta,
+        metadata=report(Signal.CORPUS_METADATA, claim("AR 2", ChangeType.MODIFIED)),
+        instructions=report(Signal.INSTRUCTION_PARSE, claim("AR 9", ChangeType.MODIFIED)),
+    )
+    assert "AR 9" not in units(merged.delta)
+    assert merged.report.instruction_only_units == (ProvisionLocation.parse("AR 9"),)
+
+
+def test_a_unit_the_metadata_also_names_is_still_appended(delta: Delta) -> None:
+    """The metadata is the reference set: a unit it names and the diff missed is a dissent."""
+    merged = corroborate(
+        delta,
+        metadata=report(Signal.CORPUS_METADATA, claim("AR 9", ChangeType.MODIFIED)),
+        instructions=report(Signal.INSTRUCTION_PARSE, claim("AR 9", ChangeType.MODIFIED)),
+    )
+    extra = next(c for c in merged.delta.changes if c.unit.canonical == "AR 9")
+    assert extra.textless and extra.disputed
+    assert extra.signals.instruction_parse.observed
+    assert merged.report.metadata_only_units == (ProvisionLocation.parse("AR 9"),)
+    assert merged.report.instruction_only_units == ()
+
+
+def test_a_unit_only_the_metadata_names_is_still_appended_and_disputed(delta: Delta) -> None:
+    """With the instruction parse available and silent on it, the metadata's unit still ships."""
+    merged = corroborate(
+        delta,
+        metadata=report(Signal.CORPUS_METADATA, claim("AR 9", ChangeType.MODIFIED)),
+        instructions=report(Signal.INSTRUCTION_PARSE, claim("AR 2", ChangeType.MODIFIED)),
+    )
+    extra = next(c for c in merged.delta.changes if c.unit.canonical == "AR 9")
+    assert extra.textless and extra.disputed
+    assert extra.signals.instruction_parse.status is SignalStatus.ABSENT
+    assert merged.report.instruction_only_units == ()
+
+
+def test_an_instruction_only_unit_is_in_the_published_payload(delta: Delta) -> None:
+    """Not appended is not dropped: the report rides in every entry, and the unit with it."""
+    merged = corroborate(
+        delta, instructions=report(Signal.INSTRUCTION_PARSE, claim("AR 9", ChangeType.MODIFIED))
+    )
+    entry = ChangelogEntry.of(
+        EmittedDelta(
+            act=merged.delta.act,
+            from_version=merged.delta.from_version,
+            to_version=merged.delta.to_version,
+            summary=merged.delta.summary,
+            changes=tuple(
+                EmittedChange(change=change, outcome=GateOutcome.UNEXPLAINED)
+                for change in merged.delta.changes
+            ),
+            corroboration=merged.report,
+        ),
+        detected_on=OBSERVED_ON,
+        diff_only=True,
+    )
+    payload = json.loads(entry.to_json())
+    assert payload["corroboration"]["instruction_only_units"] == ["AR 9"]
+    read_back = ChangelogEntry.model_validate_json(entry.to_json())
+    assert read_back.corroboration is not None
+    assert read_back.corroboration.instruction_only_units == (ProvisionLocation.parse("AR 9"),)
 
 
 def test_an_explicitly_unavailable_signal_takes_no_part_in_the_scores(delta: Delta) -> None:

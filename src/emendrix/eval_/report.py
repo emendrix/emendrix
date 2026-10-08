@@ -69,6 +69,10 @@ def _headline(metrics: EvalMetrics) -> list[str]:
         "**not** as false positives (see point 2 above).",
         f"- **Metadata-only units** — {metrics.metadata_only_units}, shipped as changes with a "
         "location, a kind and no text.",
+        f"- **Instruction-only units**: {metrics.instruction_only_units}, named by the "
+        "instruction parse alone and listed in each transition's corroboration report rather "
+        "than shipped as changes, because one textless signal naming a unit no other signal "
+        "names is not evidence of a change.",
         f"- **Reference labels consumed** — {metrics.annotations} modification annotations.",
         "",
     ]
@@ -109,8 +113,9 @@ def _per_act(metrics: EvalMetrics) -> list[str]:
     lines = [
         "## Per act",
         "",
-        "| Act | Transitions | Micro F1 | Macro F1 | Changes | Disputed | Diff-only | Meta-only |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Act | Transitions | Micro F1 | Macro F1 | Changes | Disputed | Diff-only | Meta-only "
+        "| Instruction-only |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for act in metrics.per_act:
         pair = act.localisation
@@ -119,7 +124,7 @@ def _per_act(metrics: EvalMetrics) -> list[str]:
             f"| {_pct(None if pair is None else pair.micro_f1)} "
             f"| {_pct(None if pair is None else pair.macro_f1)} "
             f"| {act.changes} | {act.disputed} | {act.diff_only_units} "
-            f"| {act.metadata_only_units} |"
+            f"| {act.metadata_only_units} | {act.instruction_only_units} |"
         )
     lines.append("")
     return lines

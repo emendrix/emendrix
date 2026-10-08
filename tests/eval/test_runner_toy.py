@@ -203,3 +203,28 @@ def test_an_unavailable_signal_is_not_a_pairing(delta: Delta) -> None:
     metrics = aggregate((score("toy@v2", merged),))
     assert metrics.instruction_agreement is None
     assert metrics.localisation is not None
+
+
+def test_a_unit_only_the_instruction_parse_names_is_counted_beside_metadata_only(
+    delta: Delta,
+) -> None:
+    """Listed in the report rather than shipped, and counted, so the eval can say how many.
+
+    It is not a change, so it moves neither the change count nor the disputed count; it is
+    still one of the instruction parse's units, so the pairing that signal enters reads it.
+    """
+    instructions = SignalReport(
+        signal=Signal.INSTRUCTION_PARSE,
+        claims=tuple(
+            SignalClaim(location=ProvisionLocation.parse(unit), change_type=kind)
+            for unit, kind in {**CHANGED, "AR 9": ChangeType.MODIFIED}.items()
+        ),
+    )
+    result = score("toy@v2", corroborate(delta, metadata=labels(), instructions=instructions))
+    assert (result.changes, result.disputed) == (4, 0)
+    assert (result.metadata_only_units, result.instruction_only_units) == (0, 1)
+    metrics = aggregate((result, result))
+    assert metrics.instruction_only_units == 2
+    assert metrics.per_act[0].instruction_only_units == 2
+    assert metrics.instruction_agreement is not None
+    assert metrics.instruction_agreement.right_units == 10

@@ -51,6 +51,7 @@ class ActMetrics(BaseModel):
     disputed: int = Field(default=0, ge=0)
     diff_only_units: int = Field(default=0, ge=0)
     metadata_only_units: int = Field(default=0, ge=0)
+    instruction_only_units: int = Field(default=0, ge=0)
 
 
 class EvalMetrics(BaseModel):
@@ -70,6 +71,7 @@ class EvalMetrics(BaseModel):
     disputed: int = Field(default=0, ge=0)
     diff_only_units: int = Field(default=0, ge=0)
     metadata_only_units: int = Field(default=0, ge=0)
+    instruction_only_units: int = Field(default=0, ge=0)
     annotations: int = Field(default=0, ge=0)
     parser: CoverageStats = CoverageStats()
     instruction_cases: int = Field(default=0, ge=0)
@@ -139,6 +141,7 @@ def _act_metrics(results: tuple[CaseResult, ...]) -> tuple[ActMetrics, ...]:
             disputed=sum(result.disputed for result in slice_),
             diff_only_units=sum(result.diff_only_units for result in slice_),
             metadata_only_units=sum(result.metadata_only_units for result in slice_),
+            instruction_only_units=sum(result.instruction_only_units for result in slice_),
         )
         for act in acts
         if (slice_ := tuple(result for result in results if result.act == act))
@@ -166,6 +169,7 @@ def aggregate(results: tuple[CaseResult, ...]) -> EvalMetrics:
         disputed=sum(result.disputed for result in results),
         diff_only_units=sum(result.diff_only_units for result in results),
         metadata_only_units=sum(result.metadata_only_units for result in results),
+        instruction_only_units=sum(result.instruction_only_units for result in results),
         annotations=sum(result.annotations for result in results),
         parser=parser,
         instruction_cases=sum(1 for r in results if r.instruction_coverage is not None),

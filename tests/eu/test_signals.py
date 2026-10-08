@@ -178,6 +178,46 @@ def test_the_same_amending_act_claims_different_units_in_two_windows(
     assert early_units < late_units
 
 
+def test_an_amending_act_that_claims_nothing_in_the_window_is_unavailable(
+    client: CellarClient,
+) -> None:
+    """Read, and silent about this consolidation: that is no reading of it, not dissent.
+
+    The MDR's 2024 amender against a window that closes a year before it was adopted. Every one
+    of its fourteen instructions is dated outside it. Reported available, the signal would mark
+    every unit the diff found `ABSENT` and ship each of them disputed on the strength of
+    silence, which is the rule the metadata signal has followed since 2026-08-12 and this one
+    since 2026-10-08. The coverage figure stays in the note, because it is what tells an act the
+    parser could not read from one it read and found claiming nothing here.
+    """
+    silent = instruction_signal_for(
+        client, Celex.parse("32024R1860"), MDR_ACT, window=(date(2023, 3, 20), date(2023, 6, 1))
+    )
+    assert silent.signal is Signal.INSTRUCTION_PARSE
+    assert silent.available is False
+    assert silent.claims == ()
+    assert silent.note == (
+        "32024R1860, 1.000 of its instruction clauses read, "
+        "14 dated outside the window, 0 undated and claimed, "
+        "nothing claimed in this window, so this signal has no reading of it"
+    )
+
+
+def test_an_amending_act_that_claims_something_in_the_window_is_unchanged_by_that_rule(
+    client: CellarClient,
+) -> None:
+    """The same act over the window it took effect in: available, five units, the same note."""
+    claimed = instruction_signal_for(
+        client, Celex.parse("32024R1860"), MDR_ACT, window=(date(2023, 3, 20), date(2024, 7, 9))
+    )
+    assert claimed.available is True
+    assert len(claimed.units) == 5
+    assert claimed.note == (
+        "32024R1860, 1.000 of its instruction clauses read, "
+        "1 dated outside the window, 0 undated and claimed"
+    )
+
+
 def test_an_acts_published_dates_are_read_again_once_its_notice_has_aged(
     fixture_cache: FixtureResponseCache, tmp_path: Path
 ) -> None:

@@ -9,9 +9,13 @@ writes what it finds onto every `Change`:
   A signal that could not be computed is `UNAVAILABLE` and **never** dissents;
 - `Change.disputed` follows from those verdicts (it is derived in `core.delta`, not asserted
   here) and is true when the signals disagree on presence *or* on kind;
-- a unit another signal names and the diff does not is appended to the delta as a change with
+- a unit the metadata names and the diff does not is appended to the delta as a change with
   no text and `structural_diff = ABSENT`. It ships `disputed`. It is never dropped, and it is
   never merged into a neighbour;
+- a unit only the instruction parse names is not appended. It is published by name in
+  `CorroborationReport.instruction_only_units`: one signal that carries no text, naming a unit
+  no other signal names, is not evidence of a change in this consolidation, and a change row
+  with no text, no reference label and no diff would claim one;
 - `Change.in_force` is filled from whatever date the metadata gives the unit (clock 1).
 
 Everything is core types. No corpus vocabulary reaches this module: the roles, the verbs and the
@@ -87,9 +91,12 @@ def corroborate(
 
     merged = [_merge_change(change, others, kinds, in_force) for change in delta.changes]
     seen = {change.unit.canonical for change in delta.changes}
-    extra = _missing_units(delta, others, kinds, in_force, seen)
+    extra, instruction_only = _missing_units(delta, others, kinds, in_force, seen)
     updated = delta.model_copy(update={"changes": _interleave(merged, extra)})
-    return Corroboration(delta=updated, report=report_of(updated, others, kinds))
+    return Corroboration(
+        delta=updated,
+        report=report_of(updated, others, kinds, instruction_only=instruction_only),
+    )
 
 
 def _interleave(ordered: list[Change], extra: list[Change]) -> tuple[Change, ...]:
@@ -199,22 +206,28 @@ def _missing_units(
     kinds: dict[Signal, dict[str, frozenset[ChangeType]]],
     in_force: dict[str, date],
     seen: set[str],
-) -> list[Change]:
+) -> tuple[list[Change], tuple[ProvisionLocation, ...]]:
     """Units another signal names that the diff never produced a change for.
 
-    They ship as changes with no text: the diff is the only signal that has any, so
-    "the metadata says Article 12 changed and the diff disagrees" is a change with a location,
-    a kind, no quotable text and `disputed=True`.
+    A unit the metadata names ships as a change with no text: the diff is the only signal that
+    has any, so "the metadata says Article 12 changed and the diff disagrees" is a change with a
+    location, a kind, no quotable text and `disputed=True`. A unit only the instruction parse
+    names is returned apart, in location order, for the report to publish by name: neither
+    signal that could corroborate it did, and the one that named it carries no text either.
     """
-    # Signals are consulted in the fixed order `Signal` declares, so which one supplies an
-    # appended change never depends on dict iteration order.
+    # Signals are consulted in the fixed order `Signal` declares, so the metadata has appended
+    # every unit it names before the instruction parse is read.
     extra: dict[str, Change] = {}
+    instruction_only: dict[str, ProvisionLocation] = {}
     for report in others:
         if not report.available:
             continue
         for unit in report.units:
             key = unit.canonical
             if key in seen or key in extra:
+                continue
+            if report.signal is Signal.INSTRUCTION_PARSE:
+                instruction_only[key] = unit
                 continue
             diff = SignalObservation(
                 status=SignalStatus.ABSENT, detail=Signal.STRUCTURAL_DIFF.value
@@ -228,7 +241,8 @@ def _missing_units(
                 disputed=signals.disagreement,
                 amending_acts=_amending_acts(others, unit),
             )
-    return list(extra.values())
+    listed = tuple(sorted(instruction_only.values(), key=lambda unit: unit.sort_key))
+    return list(extra.values()), listed
 
 
 def _claimed_kind(

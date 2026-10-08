@@ -114,6 +114,7 @@ class CaseResult(BaseModel):
     disputed: int = Field(default=0, ge=0)
     diff_only_units: int = Field(default=0, ge=0)
     metadata_only_units: int = Field(default=0, ge=0)
+    instruction_only_units: int = Field(default=0, ge=0)
     annotations: int = Field(default=0, ge=0)
     confusion: tuple[ConfusionCell, ...] = ()
     parser: CoverageStats = NO_COVERAGE
@@ -170,6 +171,7 @@ def score(
         disputed=corroboration.disputed,
         diff_only_units=diff_only,
         metadata_only_units=len(corroboration.report.metadata_only_units),
+        instruction_only_units=len(corroboration.report.instruction_only_units),
         annotations=annotations,
         confusion=tuple(
             ConfusionCell(diff=diff, metadata=metadata, count=count)

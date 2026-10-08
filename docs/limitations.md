@@ -96,6 +96,20 @@ and reading their statements in full places the staging on 4 of them. All of it 
 rather than approximated, and an instruction whose date could not be read is claimed exactly as
 it was before the date existed.
 
+**What the third signal claims alone is published in the report, not as a change.** An undated
+instruction belongs to every window its act touches, so a staged act names units in
+consolidations whose text does not yet, or no longer, show them changing. Since 2026-10-08 a unit
+only the instruction parse names, which neither the structural diff nor the corpus metadata
+names, is not appended as a textless change: it is listed by name in the entry's corroboration
+report as `instruction_only_units`, where a reader can still see it, and the eval counts it. A
+unit the metadata names and the diff does not still ships as a textless change, `disputed`. From
+the same date an instruction parse that claims nothing in a window is `UNAVAILABLE` there, with a
+note that keeps its coverage figure, rather than available and silent, so it no longer marks every
+unit the diff found as one it failed to see. Neither rule makes the parse read more: the clauses
+it cannot date or cannot read are exactly the gap they were, and an instruction-only unit may
+still be a real amendment the other two signals missed, which is why it is published rather than
+dropped.
+
 **`applies_from` is `unknown` far more often than not.** The dates are machine-tagged but the
 binding that says which provision they govern is prose. It is populated only when the change
 itself moves a date in the act's own application article; otherwise the answer is `unknown`, with

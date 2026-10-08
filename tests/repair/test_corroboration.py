@@ -26,6 +26,7 @@ from repaired_repo import (
     units_of,
     with_stale_reason,
 )
+from textless_rows import named_by_metadata
 from typer.testing import CliRunner
 
 from emendrix.cli import app
@@ -90,14 +91,21 @@ def test_a_payload_whose_window_closed_earlier_claims_none_of_the_act_s_instruct
     The postponement's orders all take effect on the day it was published, so a consolidation
     that closed before that day is entitled to none of them, and the same act read the same way
     claims nothing. Today's date is not an input to either reading.
+
+    Until 2026-10-08 that reading was an available signal with no claims, which marked every
+    unit the diff found as one the parse failed to see. An act that claims nothing in a window
+    is `UNAVAILABLE` there now, and its note says it was read and claimed nothing, so silence
+    is not dissent. The question this asks, whether the window reaches the parse, is the same.
     """
     entry = poisoned_target(spoiled).entry
     earlier = entry.model_copy(update={"to_version": VersionId("02017R0745-20190101")})
     assert window_of(earlier) == (date(2017, 5, 5), date(2019, 1, 1))
 
     scoped = signal_for(earlier, window_of(earlier))
-    assert scoped.available and scoped.claims == ()
-    assert signal_for(entry, window_of(entry)).claims
+    assert not scoped.available and scoped.claims == ()
+    assert scoped.note is not None and "nothing claimed in this window" in scoped.note
+    whole = signal_for(entry, window_of(entry))
+    assert whole.available and whole.claims
 
 
 def test_a_change_with_no_text_has_its_stated_reason_restated_rather_than_carried(
@@ -108,13 +116,18 @@ def test_a_change_with_no_text_has_its_stated_reason_restated_rather_than_carrie
     Nothing was ever asked about a unit with no text, so there is no model prose to preserve.
     Carrying the stored sentence over would leave a wording this project has since corrected
     standing on the page for as long as the entry does.
+
+    Since 2026-10-08 the poisoned entry's phantom is a row only the instruction parse named,
+    and a repair drops such a row rather than restating it. The row restated here is one the
+    committed metadata also names, which the merge still ships as a textless change.
     """
-    target = with_stale_reason(poisoned_target(spoiled), "an older wording of the same reason")
+    named = named_by_metadata(poisoned_target(spoiled), PHANTOM)
+    target = with_stale_reason(named, "an older wording of the same reason")
     result = repair(target, instructions_of(target.entry))
     assert result.entry is not None
 
     restated = [item for item in result.entry.changes if item.change.textless]
-    assert restated
+    assert [item.change.unit.canonical for item in restated] == [PHANTOM.canonical]
     assert {item.unexplained for item in restated} == {NOTHING_TO_EXPLAIN}
     assert {item.unexplained_kind for item in restated} == {"nothing_to_explain"}
     assert [item.sentences for item in result.entry.changes if not item.change.textless] == [
@@ -122,14 +135,38 @@ def test_a_change_with_no_text_has_its_stated_reason_restated_rather_than_carrie
     ]
 
 
+def test_a_committed_row_only_the_instruction_parse_named_is_dropped_by_any_repair(
+    spoiled: Path,
+) -> None:
+    """Handed the very signal the entry was committed with, the repair still drops the row.
+
+    Since 2026-10-08 the merge lists a unit only the instruction parse names in the report as
+    `instruction_only_units`, by name, instead of appending it. That is how the rule reaches an
+    entry published before it: the row leaves the change list and the unit stays on the page.
+    """
+    target = poisoned_target(spoiled)
+    result = repair(target, instructions_of(target.entry))
+    assert result.entry is not None and result.entry.corroboration is not None
+    assert PHANTOM.canonical not in units_of(result.entry)
+    assert result.entry.corroboration.instruction_only_units == (PHANTOM,)
+    assert PHANTOM.canonical in signal_of(result.entry, Signal.INSTRUCTION_PARSE)
+    assert f"dropped {PHANTOM.canonical}" in result.detail
+
+
 def test_a_phantom_unit_the_corrected_signal_no_longer_names_is_dropped(spoiled: Path) -> None:
     """A unit only the misreading signal ever saw leaves the entry, and takes its dispute with it.
 
     It carries no text, so nothing was ever asked about it and nothing is lost by its going:
     what it cost was a unit on a published page that no version of the act has.
+
+    Since 2026-10-08 a row only the instruction parse named is one no merge appends, so a
+    repair drops every such committed row, and the corrected parse no longer naming it is
+    the second reason it goes rather than the only one.
     """
     target = poisoned_target(spoiled)
     assert PHANTOM.canonical in units_of(target.entry)
+    phantom = next(i for i in target.entry.changes if i.change.unit.canonical == PHANTOM.canonical)
+    assert phantom.change.textless and phantom.change.disputed
     result = corrected(target)
     assert result.entry is not None
     assert PHANTOM.canonical not in units_of(result.entry)

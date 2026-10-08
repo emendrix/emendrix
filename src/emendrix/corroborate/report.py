@@ -129,7 +129,15 @@ class CorroborationReport(BaseModel):
     agreements: tuple[SignalAgreement, ...] = ()
     disagreements: tuple[Disagreement, ...] = ()
     metadata_only_units: tuple[ProvisionLocation, ...] = Field(
-        default=(), description="Units another signal named and the structural diff did not."
+        default=(),
+        description="Units the structural diff did not name, shipped as textless changes "
+        "because the corpus metadata named them.",
+    )
+    instruction_only_units: tuple[ProvisionLocation, ...] = Field(
+        default=(),
+        description="Units only the instruction parse named; published here and not appended "
+        "as changes, because one signal that carries no text naming a unit no other signal "
+        "names is not evidence of a change in this consolidation.",
     )
 
     @property
@@ -185,10 +193,13 @@ def report_of(
     delta: Delta,
     others: tuple[SignalReport, ...],
     kinds: dict[Signal, dict[str, frozenset[ChangeType]]],
+    *,
+    instruction_only: tuple[ProvisionLocation, ...] = (),
 ) -> CorroborationReport:
     """Measure an already-merged delta: who saw what, how far they agree, and where they do not.
 
     Read off `Change.signals`, so the report cannot drift from what the delta actually ships.
+    `instruction_only` is the one thing the delta cannot say, because those units are not in it.
     """
     diff_units = SignalUnits(
         signal=Signal.STRUCTURAL_DIFF,
@@ -216,6 +227,7 @@ def report_of(
             for change in delta.changes
             if change.signals.structural_diff.status is SignalStatus.ABSENT
         ),
+        instruction_only_units=instruction_only,
     )
 
 

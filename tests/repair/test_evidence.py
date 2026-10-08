@@ -28,6 +28,7 @@ from repaired_repo import (
     stale_target,
     with_run_on,
 )
+from textless_rows import named_by_metadata
 from typer.testing import CliRunner
 
 import stub_engine
@@ -118,11 +119,31 @@ def test_a_unit_that_has_always_carried_no_text_moves_nothing(
     Its evidence is a value of its own and it reads as matching, which keeps every entry holding
     one out of a pass that has nothing to do to it. Without that, an entry would be rebuilt for
     the constant it already carries.
+
+    Since 2026-10-08 the poisoned entry's own phantom is a row only the instruction parse named,
+    which today's merge does not append, so this asks it of a row the committed metadata also
+    names: the textless change a re-derivation still produces.
     """
-    target = poisoned_target(poisoned_repo(changelog_repo, tmp_path / "textless"))
+    poisoned = poisoned_target(poisoned_repo(changelog_repo, tmp_path / "textless"))
+    target = named_by_metadata(poisoned, PHANTOM)
     plan = rederived(target).plan
     assert plan.restated and not plan.emptied
     assert not plan.moves
+
+
+def test_a_row_only_the_instruction_parse_named_is_withdrawn(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """A textless row the merge stopped appending on 2026-10-08 leaves the entry by name.
+
+    Today's re-derivation lists such a unit in the report rather than shipping it as a change,
+    so the committed row is a change today's parse does not find, and it is withdrawn and
+    counted like any other.
+    """
+    target = poisoned_target(poisoned_repo(changelog_repo, tmp_path / "instruction-only"))
+    plan = rederived(target).plan
+    assert plan.withdrawn == (PHANTOM.canonical,)
+    assert not plan.restated
 
 
 def test_a_change_whose_evidence_moved_is_asked_again_and_its_siblings_keep_their_bytes(
