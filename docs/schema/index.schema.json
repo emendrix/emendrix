@@ -1,0 +1,135 @@
+{
+  "$defs": {
+    "ActRow": {
+      "description": "One act as the root index lists it: where its index is, and what it counts.",
+      "properties": {
+        "changes": {
+          "description": "Provision rows the act index lists.",
+          "minimum": 0,
+          "title": "Changes",
+          "type": "integer"
+        },
+        "corpus": {
+          "description": "The act's corpus namespace.",
+          "title": "Corpus",
+          "type": "string"
+        },
+        "disputed": {
+          "description": "Provision rows marked disputed.",
+          "minimum": 0,
+          "title": "Disputed",
+          "type": "integer"
+        },
+        "events": {
+          "description": "Events the act index lists.",
+          "minimum": 0,
+          "title": "Events",
+          "type": "integer"
+        },
+        "first_detected_on": {
+          "description": "The earliest `detected_on` over the events.",
+          "format": "date",
+          "title": "First Detected On",
+          "type": "string"
+        },
+        "index": {
+          "description": "Path of the act's index relative to the repository root.",
+          "title": "Index",
+          "type": "string"
+        },
+        "index_sha256": {
+          "description": "Hex sha256 of that index file's bytes.",
+          "title": "Index Sha256",
+          "type": "string"
+        },
+        "key": {
+          "description": "The act's key within its corpus.",
+          "title": "Key",
+          "type": "string"
+        },
+        "newest_in_force": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The latest in-force date of the newest event, null when it reports none.",
+          "title": "Newest In Force"
+        },
+        "newest_version": {
+          "description": "The newest event's `to_version`.",
+          "title": "Newest Version",
+          "type": "string"
+        },
+        "provisions": {
+          "description": "Distinct top-level locations it lists.",
+          "minimum": 0,
+          "title": "Provisions",
+          "type": "integer"
+        },
+        "title": {
+          "description": "The newest event's title for the act.",
+          "title": "Title",
+          "type": "string"
+        },
+        "updated_on": {
+          "description": "The latest `updated_on` over the events.",
+          "format": "date",
+          "title": "Updated On",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corpus",
+        "key",
+        "title",
+        "index",
+        "index_sha256",
+        "events",
+        "changes",
+        "provisions",
+        "disputed",
+        "newest_version",
+        "newest_in_force",
+        "first_detected_on",
+        "updated_on"
+      ],
+      "title": "ActRow",
+      "type": "object"
+    }
+  },
+  "$id": "index.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The repository's index: one row per act holding at least one event.",
+  "properties": {
+    "acts": {
+      "description": "One row per act, sorted by (corpus, key).",
+      "items": {
+        "$ref": "#/$defs/ActRow"
+      },
+      "title": "Acts",
+      "type": "array"
+    },
+    "disclaimer": {
+      "default": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+      "description": "Not legal advice.",
+      "title": "Disclaimer",
+      "type": "string"
+    },
+    "index_schema": {
+      "default": "1.0",
+      "description": "The index format's version.",
+      "title": "Index Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "acts"
+  ],
+  "title": "index",
+  "type": "object"
+}
