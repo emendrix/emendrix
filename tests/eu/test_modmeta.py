@@ -239,3 +239,82 @@ def test_a_window_the_corpus_did_annotate_stays_available_and_can_still_be_disse
     report = metadata_signal(window)
     assert report.available is True
     assert len(report.units) == 1
+
+
+# ------------------------------------------------- codes that are not the markup's units
+
+_AUTHORITY = "http://publications.europa.eu/resource/authority"
+
+
+def _annotation(code: str, value: str) -> str:
+    return (
+        f"<ANNOTATION><ROLE2>{{R|{_AUTHORITY}/fd_375/R}}</ROLE2>"
+        f"<REFERENCE_TO_MODIFIED_LOCATION>{{{code}|{_AUTHORITY}/fd_370/{code}}} {value}"
+        "</REFERENCE_TO_MODIFIED_LOCATION>"
+        "<START_OF_VALIDITY>2008-10-12</START_OF_VALIDITY></ANNOTATION>"
+    )
+
+
+_MINIMAL_NOTICE = (
+    '<?xml version="1.0" encoding="UTF-8"?><NOTICE><WORK>'
+    "<ID_CELEX><VALUE>32006R1907</VALUE></ID_CELEX>"
+    "<RESOURCE_LEGAL_AMENDED_BY_RESOURCE_LEGAL>"
+    "<SAMEAS><URI><TYPE>celex</TYPE><IDENTIFIER>32008R0987</IDENTIFIER></URI></SAMEAS>"
+    f"{_annotation('AN', '4')}{_annotation('CHA', 'III')}"
+    "</RESOURCE_LEGAL_AMENDED_BY_RESOURCE_LEGAL></WORK></NOTICE>"
+)
+
+
+def test_an_arabic_annex_is_claimed_as_the_roman_unit_and_a_chapter_is_only_counted() -> None:
+    """`AN 4` is the markup's `AN IV`; `CHA III` names no unit and becomes no claim."""
+    mods = parse_branch_modifications(_MINIMAL_NOTICE.encode())
+    assert len(mods.records) == 2
+    assert mods.container_locations == (("CHA", 1),)
+    assert mods.unconverted_annexes == 0
+    assert mods.clean
+    assert [unit.canonical for unit in touched_units(mods.records)] == ["AN IV"]
+
+    report = metadata_signal(mods.records, note="2 annotations in (2007-11-23, 2008-10-12]")
+    assert [unit.canonical for unit in report.units] == ["AN IV"]
+    assert report.note == (
+        "2 annotations in (2007-11-23, 2008-10-12]; 1 annotations named a part, chapter, "
+        "title or recital and are not counted as units"
+    )
+
+
+def test_a_window_holding_only_containers_reports_unavailable_and_says_why() -> None:
+    chapter = parse_branch_modifications(_MINIMAL_NOTICE.encode()).records[1]
+    report = metadata_signal((chapter,))
+    assert report.available is False
+    assert report.note == (
+        "1 annotations named a part, chapter, title or recital and are not counted as units"
+    )
+
+
+def test_the_reach_notice_reads_its_legacy_annex_numbers_as_the_markups(
+    client: CellarClient,
+) -> None:
+    """Measured 2026-10-08 on the pinned REACH notice: 5 Arabic annex codes, 1 title.
+
+    `AN 4`, `AN 5`, `AN 11` and twice `AN 17` are read as `AN IV`, `AN V`, `AN XI` and
+    `AN XVII`; `TIT XI` is a title and is counted, not claimed. Every annotation is still a
+    record, so the 391 above and every window's annotation count are unchanged.
+    """
+    reach = notice(client, REACH)
+    assert len(reach.records) == 391
+    assert reach.container_locations == (("TIT", 1),)
+    assert reach.unconverted_annexes == 0
+    found = {record.location.canonical for record in reach.records if record.gap is None}
+    assert not found & {"AN 4", "AN 5", "AN 11", "AN 17"}
+    assert {"AN IV", "AN V", "AN XI", "AN XVII"} <= found
+
+    window = reach.between(date(2007, 11, 23), date(2008, 10, 12))
+    assert {unit.canonical for unit in metadata_signal(window).units} == {"AN IV", "AN V"}
+
+    title = reach.between(date(2008, 10, 12), date(2009, 1, 20))
+    report = metadata_signal(title, note=f"{len(title)} annotations")
+    assert "TIT XI" not in {unit.canonical for unit in report.units}
+    assert report.note is not None
+    assert report.note.endswith(
+        "; 1 annotations named a part, chapter, title or recital and are not counted as units"
+    )

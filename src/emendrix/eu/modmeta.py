@@ -17,7 +17,8 @@ histogram among them.
    the date window of the version pair, is load-bearing.
 2. **Both fields are `{CODE|authority-uri}` templates**, and legacy notices mix expanded and
    bare codes in one location value. `core.normalize_location` strips the template; the role
-   is stripped here by the same rule.
+   is stripped here by the same rule. `eu/cellar_locations.py` then reads the code as the unit
+   the markup names, or as a container that is counted and never claimed.
 3. **The role vocabulary has no published English labels**, so it is empirical and lives in
    `eu/mod_roles.py` with the evidence for each reading. Anything outside it is carried as
    `UnknownRole` and counted.
@@ -51,6 +52,7 @@ from emendrix.core import (
     SignalReport,
     normalize_location,
 )
+from emendrix.eu.cellar_locations import ContainerKey, UnconvertedAnnex, gap_note, unit_code
 from emendrix.eu.dates import iso_date
 from emendrix.eu.identifiers import CORPUS
 from emendrix.eu.mod_roles import RoleCode, UnknownRole, change_type_of, parse_role
@@ -78,6 +80,9 @@ class ModificationRecord(BaseModel):
     location: ProvisionLocation
     role: RoleCode | None = Field(default=None, union_mode="left_to_right")
     start_of_validity: date | None = None
+    gap: ContainerKey | UnconvertedAnnex | None = Field(
+        default=None, description="Why `location` names no unit of change; `None` for a unit."
+    )
 
     @property
     def unit(self) -> ProvisionLocation:
@@ -135,13 +140,20 @@ class ModificationSet(BaseModel):
     unreadable_dates: int = Field(
         default=0, ge=0, description="`START_OF_VALIDITY` values no date rule accepted."
     )
+    container_locations: tuple[tuple[str, int], ...] = Field(
+        default=(), description="Container or recital head code → count: annotations not units."
+    )
+    unconverted_annexes: int = Field(
+        default=0, ge=0, description="Arabic annex numbers beyond the converter's range."
+    )
     amending_acts: tuple[str, ...] = Field(
         default=(), description="Every amending CELEX the notice links, in document order."
     )
 
     @property
     def clean(self) -> bool:
-        return not (self.unknown_roles or self.unreadable_locations or self.unreadable_dates)
+        gaps = self.unreadable_locations + self.unreadable_dates + self.unconverted_annexes
+        return not (self.unknown_roles or gaps)
 
     def by_amending_act(self, celex: str) -> tuple[ModificationRecord, ...]:
         """Only the annotations of one amending act — the notice carries every one of them."""
@@ -182,7 +194,8 @@ def parse_branch_modifications(
     records: list[ModificationRecord] = []
     linked: list[str] = []
     unknown: dict[str, int] = {}
-    missing_roles = unreadable_locations = unreadable_dates = 0
+    containers: dict[str, int] = {}
+    missing_roles = unreadable_locations = unreadable_dates = unconverted = 0
 
     for link in work.findall(_LINK):
         celex = _link_celex(link)
@@ -191,10 +204,16 @@ def parse_branch_modifications(
         if amending_celex is not None and celex != amending_celex:
             continue
         for annotation in link.findall("ANNOTATION"):
-            raw_location = annotation.findtext("REFERENCE_TO_MODIFIED_LOCATION")
-            if not normalize_location(raw_location or ""):
+            raw_location = annotation.findtext("REFERENCE_TO_MODIFIED_LOCATION") or ""
+            if not normalize_location(raw_location):
                 unreadable_locations += 1
                 continue
+            code = unit_code(raw_location)
+            gap, location = (None, code) if isinstance(code, str) else (code, code.raw)
+            if isinstance(gap, ContainerKey):
+                containers[gap.kind.value] = containers.get(gap.kind.value, 0) + 1
+            elif gap is not None:
+                unconverted += 1
             role = parse_role(annotation.findtext("ROLE2"))
             if role is None:
                 missing_roles += 1
@@ -207,9 +226,10 @@ def parse_branch_modifications(
             records.append(
                 ModificationRecord(
                     amending_celex=celex,
-                    location=ProvisionLocation.parse(raw_location or ""),
+                    location=ProvisionLocation.parse(location),
                     role=role,
                     start_of_validity=validity,
+                    gap=gap,
                 )
             )
 
@@ -220,6 +240,8 @@ def parse_branch_modifications(
         missing_roles=missing_roles,
         unreadable_locations=unreadable_locations,
         unreadable_dates=unreadable_dates,
+        container_locations=tuple(sorted(containers.items())),
+        unconverted_annexes=unconverted,
         amending_acts=tuple(linked),
     )
 
@@ -240,7 +262,7 @@ def touched_units(records: Iterable[ModificationRecord]) -> tuple[ProvisionLocat
     markup keeps (`AR 3 PO 14` for `AR 3 ALN 1 PO 14`), so the two vocabularies agree
     on the unit and not always below it.
     """
-    seen = {record.unit.canonical: record.unit for record in records}
+    seen = {record.unit.canonical: record.unit for record in records if record.gap is None}
     return tuple(sorted(seen.values(), key=lambda unit: unit.sort_key))
 
 
@@ -271,7 +293,9 @@ def metadata_signal(
     records gives, so the two second opinions of one pair agree about when they have nothing to
     say.
     """
-    claims = tuple(record.to_claim() for record in records)
+    window = tuple(records)
+    claims = tuple(record.to_claim() for record in window if record.gap is None)
+    note = gap_note(note, tuple(record.gap for record in window))
     if not claims:
         return SignalReport.unavailable(Signal.CORPUS_METADATA, note=note)
     return SignalReport(signal=Signal.CORPUS_METADATA, claims=claims, note=note)

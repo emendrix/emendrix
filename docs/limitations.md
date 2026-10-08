@@ -18,11 +18,21 @@ capped on purpose: emendrix reports a renumbering, it does not attempt to rewrit
 cross-references that break because of one. **Whole-provision deletion is unexercised for the same
 reason.**
 
-**Annexes are where the two location vocabularies stop agreeing.** Legacy REACH notices number
-some annexes in Arabic (`AN 4`, `AN 5`) where the Formex markup and the newer notices use Roman
-(`AN IV`, `AN V`). The same annex then appears as two units neither signal shares. Measured
-2026-08-06: 4 of REACH's 20 annotated annex units. They ship `disputed` rather than being
-reconciled by a guess.
+**The metadata names some changes by a code that is not a unit, and those are counted, not
+resolved.** Since 2026-10-08 the corpus metadata's location codes are read as the units the
+Formex markup names before they are compared: a legacy annex number in Arabic (`AN 4`) is the
+markup's Roman one (`AN IV`), by an explicit converter that refuses rather than guesses beyond
+Annex L, and a dotted article (`AR 3.1`) is the article it sits in (`AR 3`). Until that date
+REACH's `AN 4` and `AN 5` shipped as two textless units beside the `AN IV` and `AN V` the diff
+found, all four `disputed`; that was a difference of notation, and the published entries written
+before the date still carry it until they are repaired. A code naming a part, chapter, title,
+section or recital (`PRT`, `CHA`, `TIT`, `TIS`, `SCT`, `SECTION`, `P`, `CONSID`, or a bare `AN`)
+is not a unit of change at all. It is no longer appended as a textless change: the metadata
+signal's note says how many annotations in the window named one. **The articles under such a
+container are not resolved from it**, because that needs the provision tree the notice does not
+carry, so a diff unit whose only annotation names its chapter still reads as one the metadata
+did not name, and ships `disputed`. A dotted annex code (`AN I.7`) is not rewritten either and
+still reads as its own unit.
 
 **Text extraction degrades on older Formex generations.** Structure is stable from the 2006 schema
 to the 2016 one; whitespace at element boundaries is not, and uncorrected it once reported *every*

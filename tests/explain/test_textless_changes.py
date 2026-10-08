@@ -8,9 +8,12 @@ the REACH transition produces 32 of them.
 Contexts are built before a single coroutine exists, so a stage that raised on one of these
 would destroy the explanations of every other change in the delta as well. That is the opposite
 of both non-negotiables this stage sits between, "a change is never dropped" and "first-class
-states, never exceptions", so it gets both a fast unit test of the shape and, at the end, the
-real thing: the REACH corroboration, whose `TIT XI` is a genuine metadata-only unit the diff
-cannot key at all.
+states, never exceptions", so it gets a fast unit test of the shape and, at the end, the real
+REACH corroboration handed over exactly as the loop hands it. Until 2026-10-08 that
+corroboration carried `TIT XI` as a metadata-only unit the diff cannot key at all. A title is
+not a unit of change, and since that date the metadata signal counts it in its note rather
+than claiming it, so the real delta now carries no textless change and the shape is exercised
+by the unit test alone.
 
 The second change no model is asked about lives here too: one whose two texts are identical once
 the prompt's character cap has cut them, so the prompt carries no evidence of the difference at
@@ -264,13 +267,15 @@ def test_a_change_with_no_evidence_in_its_prompt_never_reaches_the_model() -> No
 # --------------------------------------------------- and now the real corroboration
 
 
-def test_the_real_reach_corroboration_explains_around_its_metadata_only_unit(
+def test_the_real_reach_corroboration_reaches_this_stage_with_its_title_counted_not_claimed(
     client: CellarClient,
 ) -> None:
-    """`TIT XI` is a title, not an article or an annex, so the diff has no unit for it.
+    """`TIT XI` is a title, not an article or an annex, so it is not a change to explain.
 
-    It reaches this stage from the actual corroborator, over the actual fixtures, exactly as
-    the loop hands it over. Everything else in that delta is still explained.
+    Until 2026-10-08 it reached this stage as a textless metadata-only change and was skipped
+    as `NOTHING_TO_EXPLAIN` while the rest of the delta was explained. It is counted in the
+    metadata signal's note now and never becomes a change, so every change of the real delta,
+    from the actual corroborator over the actual fixtures, reaches the model.
     """
     computed = compute_delta(
         parse_act(package(client, REACH, REACH_2008)).tree,
@@ -282,12 +287,11 @@ def test_the_real_reach_corroboration_explains_around_its_metadata_only_unit(
         metadata=metadata_signal(notice.between(date(2008, 10, 12), date(2009, 1, 20))),
         instructions=SignalReport.unavailable(Signal.INSTRUCTION_PARSE, note="unpinned amender"),
     )
-    stray = next(c for c in merged.delta.changes if c.unit.canonical == "TIT XI")
-    assert stray.before is None and stray.after is None and stray.disputed
+    assert ProvisionLocation.parse("TIT XI") not in {c.unit for c in merged.delta.changes}
+    assert all(c.before is not None or c.after is not None for c in merged.delta.changes)
+    metadata = next(s for s in merged.report.signals if s.signal is Signal.CORPUS_METADATA)
+    assert metadata.note is not None and "title or recital" in metadata.note
 
     run = asyncio.run(engine().explain_delta(merged.delta))
-    assert run.stats.changes == len(merged.delta.changes)
-    skipped = next(r for r in run.results if r.provision.location.canonical == "TIT XI")
-    assert skipped.unavailable is not None
-    assert skipped.unavailable.reason == NOTHING_TO_EXPLAIN
-    assert run.stats.explained == len(merged.delta.changes) - 1
+    assert run.stats.changes == len(merged.delta.changes) == 40
+    assert run.stats.explained == len(merged.delta.changes)

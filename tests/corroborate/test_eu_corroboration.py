@@ -183,38 +183,51 @@ def test_the_blanket_amendment_disagrees_and_ships_the_disagreement(
 ) -> None:
     """CELLAR annotates "throughout the text" once and does not enumerate where it lands.
 
-    The diff finds 40 units, the annotations name 9. That is a defect in the *reference* set,
+    The diff finds 40 units, the annotations name 8. That is a defect in the *reference* set,
     and the corroborator's job is to publish it, not to resolve it.
+
+    Until 2026-10-08 the annotations named 9 units and this read R 0.889 / F1 0.327: the ninth
+    was `TIT XI`, a title, which is now counted as a container rather than claimed as a unit. The
+    metadata names the same 8 articles and annexes either way, so recall reaching 1.000 is the
+    right-hand side losing a key that could never be a unit, not the reference set improving.
     """
     pair = reach.report.agreement_of(Signal.STRUCTURAL_DIFF, Signal.CORPUS_METADATA)
     assert pair is not None
-    assert (pair.left_units, pair.right_units, pair.shared) == (40, 9, 8)
+    assert (pair.left_units, pair.right_units, pair.shared) == (40, 8, 8)
     assert round(pair.precision, 3) == 0.200
-    assert round(pair.recall, 3) == 0.889
-    assert round(pair.f1, 3) == 0.327
+    assert round(pair.recall, 3) == 1.000
+    assert round(pair.f1, 3) == 0.333
     assert pair.kind_mismatches == 0
 
 
 def test_nothing_is_dropped_when_the_signals_disagree(reach: Corroboration) -> None:
-    """32 units only the diff saw, 1 only the metadata named: 33 disputed, 0 lost."""
-    assert len(reach.delta.changes) == 41
-    assert reach.disputed == 33
-    assert len(reach.report.disagreements) == 33
+    """32 units only the diff saw, none only the metadata named: 32 disputed, 0 lost.
 
-
-def test_a_unit_the_diff_cannot_key_still_ships(reach: Corroboration) -> None:
-    """`TIT XI` is a title, not an article or an annex, so it has no diff-side unit.
-
-    Discarding such a unit is forbidden, and it is the difference between counting 8 metadata
-    units on this transition and counting 9. Here it is a metadata-only change: a location, a
-    kind, no text, and `disputed`.
+    Until 2026-10-08 this read 41 changes and 33 disputed. The one unit only the metadata named
+    was `TIT XI`, a title, which no structural diff can key; it is counted in the metadata
+    note now, not appended as a textless change. The 32 the diff alone saw are untouched.
     """
-    assert reach.report.metadata_only_units == (ProvisionLocation.parse("TIT XI"),)
-    stray = next(c for c in reach.delta.changes if c.unit.canonical == "TIT XI")
-    assert stray.before is None and stray.after is None
-    assert stray.signals.structural_diff.status is SignalStatus.ABSENT
-    assert stray.disputed
-    assert stray.in_force == date(2009, 1, 20)
+    assert len(reach.delta.changes) == 40
+    assert reach.disputed == 32
+    assert len(reach.report.disagreements) == 32
+
+
+def test_a_title_the_metadata_names_is_counted_not_shipped_as_a_change(
+    reach: Corroboration,
+) -> None:
+    """`TIT XI` is a title, not an article or an annex, so it is not a unit of change.
+
+    Until 2026-10-08 it shipped as a metadata-only change: a location, a kind, no text, and
+    `disputed`, against a structural diff that can never key a title. It is counted now, in the
+    metadata signal's own note, so a reader still sees that the corpus spoke about a title in
+    this window; the articles under it are not resolved from it, and that is a counted gap.
+    """
+    assert reach.report.metadata_only_units == ()
+    assert ProvisionLocation.parse("TIT XI") not in {c.unit for c in reach.delta.changes}
+    metadata = next(item for item in reach.report.signals if item.signal is Signal.CORPUS_METADATA)
+    assert metadata.note == (
+        "1 annotations named a part, chapter, title or recital and are not counted as units"
+    )
 
 
 def test_an_unpinned_amending_act_is_silence_not_dissent(reach: Corroboration) -> None:
