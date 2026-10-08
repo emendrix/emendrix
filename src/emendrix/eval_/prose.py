@@ -105,9 +105,11 @@ KNOWN_CLASSES = """\
 ## Known systematic disagreements
 
 Honesty rule 4: a tool that documents its own holes is more trustworthy than one that appears to
-have none. Four classes below account for most of the disagreement in this report, and each is a
-property of the sources rather than a tuning problem. None of the transitions they affect was
-removed from the corpus.
+have none. Four classes are named below, and each is a property of the sources rather than a
+tuning problem. Three of them still account for most of the disagreement a report can show; the
+third was a difference of notation and has produced no dispute since 2026-10-08, and it stays
+listed with its date so the reports before that date can still be read. None of the transitions
+they affect was removed from the corpus.
 
 1. **Blanket amendments are annotated once.** *"…shall be replaced by … throughout the text"* is
    one annotation and dozens of touched provisions. The diff finds them all; precision against the
@@ -123,10 +125,14 @@ removed from the corpus.
    every such change `disputed`. The MDR's first consolidation is this case, and it is why the
    `n transitions` column of the localisation row can be lower than the number of transitions
    scored.
-3. **The two location vocabularies do not always spell an annex the same way.** Legacy notices
-   number some REACH annexes in Arabic (`AN 4`, `AN 5`, `AN 11`, `AN 17`) where the Formex markup
-   and the newer notices use Roman (`AN IV`, `AN V`, …). The same annex then appears as two units
-   that neither signal shares. Measured 2026-08-06: 4 of REACH's 20 annotated annex units.
+3. **The two location vocabularies do not always spell an annex the same way, and since
+   2026-10-08 that is read as notation.** Legacy notices number some REACH annexes in Arabic
+   (`AN 4`, `AN 5`, `AN 11`, `AN 17`) where the Formex markup and the newer notices use Roman
+   (`AN IV`, `AN V`, …). Until 2026-10-08 the same annex then appeared as two units that neither
+   signal shared, and every one of them shipped `disputed`; measured 2026-08-06, that was 4 of
+   REACH's 20 annotated annex units. The metadata's annex numbers are now read as the units the
+   markup names, so one annex is one unit to both signals, and this class no longer produces a
+   dispute. A report dated before 2026-10-08 counts it.
 4. **The instruction parse has two named blind spots.** It cannot read an instruction that
    delegates to the amending act's own annex, or one that expresses a range (*"Annexes VI to X"*),
    and it names an annex section without its annex when the prose does. These are counted as

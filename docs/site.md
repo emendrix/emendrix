@@ -168,7 +168,10 @@ and its clock, linked to that version's page, the change type, the instrument th
 applies-from line and the sentences that survived the gate. The path segment is the slug of the canonical location string
 (`ar-6`, `an-xvii`, and `an` or `tit` for a change keyed to a whole annex or title), never a
 human reading of it, because a second numbering for one coordinate is a second thing to keep in
-step and the corpus writes both `AN 4` and `AN IV`. **The newest step carries its verbatim text
+step and the published corpus writes both `AN 4` and `AN IV`. Since 2026-10-08 the pipeline
+reads a legacy `AN 4` as the `AN IV` the markup names, but changelogs published before that date
+keep `AN 4` until `emendrix repair signals` corrects them forward, so the site still meets both.
+**The newest step carries its verbatim text
 in full and every older step links the block on the event page that holds its own**: one
 committed change carries 4.1 million characters of before-and-after text and one coordinate has
 been touched by 47 events, so a page repeating the evidence per step would multiply the heaviest

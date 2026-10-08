@@ -861,3 +861,65 @@ Named rather than discovered later; the eval report's disagreement list is the l
   then took 75.0 s with a cold cache where it took 476.0 s, and 63.0 s with none, the four CLP
   Annex VI comparisons together 33.5 s where they took 379.2 s, and a tree built at the previous
   commit was byte-identical to all three.
+
+- **A change ships `disputed` only when a signal that had something to say disagrees, and says
+  which, since 2026-10-08.** Four rules came in that day. An instruction parse that read its
+  amending act and claims nothing in the consolidation's window is `UNAVAILABLE` there, with a
+  note saying so, which is the rule the metadata signal has followed since 2026-08-12: silence is
+  not dissent. The metadata's location codes are read as the units the markup names, a legacy
+  `AN 4` as `AN IV` and `AR 3.1` as `AR 3`, and a key naming a part, chapter, title, section or
+  recital is counted in the signal's note instead of claimed as a unit; this is EU vocabulary and
+  lives in the EU adapter. A unit only the instruction parse names, which neither the structural
+  diff nor the metadata names, is no longer appended as a textless change: it is published by
+  name in the entry's report as `instruction_only_units`, and nothing leaves the record. Every
+  disputed change carries a `dispute_reason`, a code read off its own signals alone that says
+  which signal disagreed and how, in the JSON payload, the Markdown marker and the page;
+  `schema_version` stays `1.2`, because a payload written before the field reads back with it
+  filled in. Over the committed corpus, scored offline from the fixtures, the disputed rate reads
+  2 of 98 changes (0.020) where it read 12 of 100 (0.120), both of them `metadata_silent`
+  (REACH's `AN I` at 2015-03-23 and `AN XIV` at 2021-02-15), and `metadata_only_units` reads 0
+  where it read 2. Localisation reads P 0.976 / R 1.000 / F1 0.988, macro F1 0.974, over the
+  same 17 transitions and 83 diff units where it read P 0.952 / R 0.975 / F1 0.963, macro F1
+  0.915, and classification reads 1.000 over 81 units where it read 1.000 over 79. Both
+  instruction pairings read P 1.000 / R 1.000 / F1 1.000, macro F1 1.000, over 7 transitions
+  where the structural diff against the parse read P 0.917 / R 1.000 / F1 0.957, macro F1 0.538,
+  and the metadata against the parse read P 0.889 / R 0.970 / F1 0.928, macro F1 0.462, both over
+  13. **None of these is the pipeline getting better.** The disputed rate is computed over
+  different rows, because two of the 100 were REACH's Annexes IV and V under a second spelling,
+  and over a narrower question, because six REACH windows each counted as dissent an instruction
+  parse that claimed nothing in them; the parse is still read on 13 of 18 transitions, and the
+  pairings are computed only over the 7 where it claims something, so their 1.000s are over a
+  smaller denominator. Localisation moved because the metadata set it pairs against was re-keyed,
+  which makes this the first correction to the corroboration to move that figure: the earlier
+  statement that such corrections leave localisation alone held for every correction to the
+  instruction parse and does not hold for the metadata side. The diff did not move, and recall
+  stops reporting a notation gap rather than finding anything new. Both sets are published under
+  their own dates, in `reports/eval/2026-09-19-20d3761.md` and
+  `reports/eval/2026-10-08-dfe620a.md`, which also counts the disputed changes by reason, and
+  neither is adjusted for the other; the three localisation floors moved to the new figures with
+  the reason in their comment. **The REACH annex-numbering disagreement is retired as of
+  2026-10-08.** It was a difference of notation between a legacy notice and the markup, not of
+  substance, so the known limitation above that annex structure is flattened where the two
+  vocabularies spell an annex differently no longer holds for an annex the converter reads, and
+  the eval report's third known class no longer produces a dispute. On REACH 2008 → 2009 the
+  metadata names 8 units where it named 9, the ninth having been `TIT XI`, a title, so that
+  transition ships 40 changes and 32 disputed where it shipped 41 and 33. Exactly one prompt of
+  the pinned explanation subset changed key, REACH's 2008-10-12 `AN IV`, which lost the line
+  saying it was disputed and gained its in-force date; that one explanation and its one judgement
+  were recorded again, USD 0.045 billed, and the two superseded recordings deleted. The new
+  judgement is faithful, as the old one was, so judged faithfulness still reads 15 of 20 (0.750),
+  and grounding (1.000), fallback (0.000) and the 179 valid keys do not move. The sample digest
+  moved, so `human review` remains `pending`, and no sheet was ticked or sign-off back-dated to
+  avoid it. The flagship does not move: 45 changes, 0 disputed, 42 touched units, F1 1.000. The
+  changelogs already published keep the bytes they were written with until `emendrix repair
+  signals` corrects them forward: it rebuilds both second opinions from the claims each committed
+  entry already carries, fetches nothing, calls no model, carries every explanation over
+  byte-identical and records a repair of kind `signals` on each entry it rewrites. As a dry run
+  on 2026-10-08 over a local copy of the published changelogs, 446 entries across 72 acts and
+  smaller than the hosted record, it reads 3,662 changes where there were 4,948 and 1,063
+  disputed where there were 2,558 (0.290 where it was 0.517): 1,290 textless rows are no longer
+  appended, four of which come back under a re-keyed unit, 1,165 instruction-only units are
+  listed, 209 changes stop being disputed and none starts, and 200 of the 446 entries would be
+  rewritten. Those are figures about that copy, not about what is served, and the hosted record
+  has to be measured again before it is repaired; a page served today may still show a dispute
+  these rules no longer raise.

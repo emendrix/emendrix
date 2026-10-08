@@ -32,6 +32,7 @@ from pathlib import Path
 import pytest
 
 from emendrix.core import Signal
+from emendrix.core.changes import DisputeReason
 from emendrix.eu.adapter import EuCorpusAdapter
 from emendrix.eu.cache import FixtureResponseCache
 from emendrix.eu.cellar import CellarClient
@@ -40,6 +41,7 @@ from emendrix.eval_.corpus import EvalCorpus, load_corpus
 from emendrix.eval_.judge import Triple, sample
 from emendrix.eval_.model_metrics import SUBSET_CASSETTE_DIR
 from emendrix.eval_.model_run import SubsetRun, attach_model_layer, replay_engine, run_subset
+from emendrix.eval_.report import dispute_reasons
 from emendrix.eval_.runner import CorpusReader, EvalRun, run_corpus
 from emendrix.eval_.signoff import PENDING, latest_signoff, review_status, sample_digest
 from emendrix.eval_.thresholds import FLOORS, check
@@ -268,6 +270,20 @@ SILENT_THIRD_SIGNAL = (
     "32006R1907@20260511",
 )
 """The REACH windows whose amending act was read and claimed nothing inside them."""
+
+
+def test_both_disputed_changes_are_the_metadata_falling_silent(run: EvalRun) -> None:
+    """The report's reason table over the corpus: 2 disputed, both `metadata_silent`.
+
+    REACH's `@20150323` `AN I` and `@20210215` `AN XIV`: the structural diff found each and the
+    annotations of a window the corpus did annotate do not name it. Every other code reads zero,
+    and the counts sum to the disputed figure, so no disputed change is left without a reason.
+    """
+    reasons = dispute_reasons(run)
+    assert sum(reasons.values()) == run.metrics.disputed == 2
+    assert {reason: total for reason, total in reasons.items() if total} == {
+        DisputeReason.METADATA_SILENT: 2
+    }
 
 
 def test_a_third_signal_that_claims_nothing_in_its_window_takes_no_part(run: EvalRun) -> None:

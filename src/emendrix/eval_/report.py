@@ -22,16 +22,19 @@ the numbers come out well.
 
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
-from emendrix.core import Signal
+from emendrix.core import Signal, SignalObservation, SignalSet, SignalStatus
+from emendrix.core.changes import DisputeReason
+from emendrix.corroborate import Disagreement
 from emendrix.eval_.aggregate import EvalMetrics, PairMetrics
 from emendrix.eval_.corpus import EvalCorpus
 from emendrix.eval_.model_report import render_faithfulness, render_model_layer
 from emendrix.eval_.prose import DISCLAIMER, KNOWN_CLASSES, MEANING
 from emendrix.eval_.runner import EvalRun
 
-__all__ = ["DEFAULT_REPORT_DIR", "render_markdown", "write_report"]
+__all__ = ["DEFAULT_REPORT_DIR", "dispute_reasons", "render_markdown", "write_report"]
 
 DEFAULT_REPORT_DIR = Path("reports/eval")
 
@@ -180,6 +183,50 @@ def _confusion(metrics: EvalMetrics) -> list[str]:
     return lines
 
 
+def _reason_of(item: Disagreement) -> DisputeReason | None:
+    """The change's code: a signal neither observing nor absent was unavailable."""
+    kinds = dict(item.kinds)
+    status = {signal: SignalStatus.UNAVAILABLE for signal in Signal}
+    status |= {signal: SignalStatus.ABSENT for signal in item.absent_from}
+    status |= {signal: SignalStatus.OBSERVED for signal in item.observed_by}
+    seen = {
+        signal: SignalObservation(status=status[signal], change_types=kinds.get(signal, ()))
+        for signal in Signal
+    }
+    return SignalSet(
+        structural_diff=seen[Signal.STRUCTURAL_DIFF],
+        corpus_metadata=seen[Signal.CORPUS_METADATA],
+        instruction_parse=seen[Signal.INSTRUCTION_PARSE],
+    ).reason
+
+
+def dispute_reasons(run: EvalRun) -> dict[DisputeReason, int]:
+    """Disputed changes by `dispute_reason`, every code present, in the order they are declared."""
+    found = Counter(
+        _reason_of(item)
+        for case in run.cases
+        if case.report is not None
+        for item in case.report.disagreements
+    )
+    return {reason: found[reason] for reason in DisputeReason}
+
+
+def _by_reason(run: EvalRun) -> list[str]:
+    lines = [
+        "## Disputed changes, by reason",
+        "",
+        "Each disputed change carries one `dispute_reason`, read off its own signals alone: which "
+        "signal disagreed, and how. Every code is listed, a zero included, and the counts sum to "
+        "the disputed figure above.",
+        "",
+        "| Reason | Disputed changes |",
+        "|---|---|",
+    ]
+    lines.extend(f"| `{reason}` | {total} |" for reason, total in dispute_reasons(run).items())
+    lines.append("")
+    return lines
+
+
 def _disagreements(run: EvalRun) -> list[str]:
     lines = [
         "## Disagreements, verbatim",
@@ -245,6 +292,7 @@ def render_markdown(run: EvalRun, corpus: EvalCorpus) -> str:
     ]
     body = [
         *_headline(run.metrics),
+        *_by_reason(run),
         KNOWN_CLASSES,
         *_per_act(run.metrics),
         *_confusion(run.metrics),

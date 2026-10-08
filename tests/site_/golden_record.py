@@ -928,4 +928,21 @@ recording in place of 0.800 over the one it replaced: the judge fails the re-rec
 explanation. That is one entry at n = 20 and a verdict on new prose, not a decline. The page's
 size did not change, since `0.750` and `0.800` are the same width and so are the two dates and
 revisions.
+
+Read again on 2026-10-08, when the signal rules changed and the newest report moved with them.
+Two files moved, and only because a measured figure did: the home page's localisation stat and
+the methodology page's lede, table and provenance line, which read the report of 2026-10-08 at
+revision `dfe620a` in place of the one of 2026-09-19 at `20d3761`. Localisation reads
+P 0.976 / R 1.000 / F1 0.988 where it read P 0.952 / R 0.975 / F1 0.963, over the same 17
+transitions, because the metadata's legacy `AN 4` and `AN 5` are read as the `AN IV` and `AN V`
+the markup names; the instruction pairing reads 1.000 over 7 transitions where it read F1 0.957
+over 13, because a parse that claims nothing in a window is unavailable there; the disputed rate
+reads 0.020 over 98 changes where it read 0.120 over 100; classification is over 81 units where
+it was 79. None of those is the pipeline getting better: the keys, the rows and the denominators
+differ, and both reports stay in the tree. The home page kept its size, and the methodology page
+lost two bytes, `100` and `13` becoming `98` and `7`. No changelog in the golden build carries a
+disputed change, so no act or event page moved. **No `id=` moved or went.** Both feeds,
+`search-index.json`, the sitemaps, `robots.txt`, the script, the stylesheet, the fonts,
+`icon.svg` and `og.png` are byte-identical, every `<title>` and description is unchanged, and
+`_LARGEST_PAGE` does not move.
 """

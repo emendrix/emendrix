@@ -53,7 +53,7 @@ class Floors(BaseModel):
 
 
 FLOORS: Final = Floors(
-    source="reports/eval/2026-09-04-984347f.md",
+    source="reports/eval/2026-10-08-dfe620a.md",
     # Recall is the number that matters most: across every transition traced since 2026-08-05 the
     # structural diff has missed exactly the provisions the two location vocabularies spell
     # differently (`AN 4` vs `AN IV`, that report's known-class 3) and no others. Micro precision
@@ -85,9 +85,16 @@ FLOORS: Final = Floors(
     # two signals both named. Neither the disputed rate nor either instruction pairing is floored
     # at all, deliberately, because the instruction parse is a measured cross-check rather than a
     # reference set, which is why the largest movement of that day is absent from this list.
-    localisation_micro_f1=0.963,
-    localisation_micro_recall=0.975,
-    localisation_macro_f1=0.915,
+    #
+    # The three localisation floors rose on 2026-10-08, and they are not the old ones improved.
+    # The metadata's location codes are read as the units the markup names since that date, so
+    # REACH's legacy `AN 4` and `AN 5` are counted as the `AN IV` and `AN V` the diff always
+    # found: the same 17 transitions and 83 diff units, the right-hand side re-keyed rather than
+    # re-measured. Recall therefore stops reporting the notation gap the comment above names.
+    # Silence of the instruction parse and its lone claims moved nothing here the same day.
+    localisation_micro_f1=0.988,
+    localisation_micro_recall=1.000,
+    localisation_macro_f1=0.974,
     classification_accuracy=1.000,
     cases_scored=18,
     max_parser_unknown_elements=0,

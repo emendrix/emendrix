@@ -34,21 +34,34 @@ Three rules govern the merge, and the first two are the reason the numbers are w
   from the start and false of the EU adapter until 2026-08-12, which is why the disputed rate
   published before that date answers a different question. Where the corpus did annotate the
   window, a unit missing from the annotations is a real disagreement and still ships `disputed`.
+  The instruction parse has followed the same rule since 2026-10-08: an amending act read whole
+  that claims nothing in the consolidation's window is `UNAVAILABLE` there, not silent.
 - **Disagreement ships.** A unit the metadata names and the diff missed is appended to the delta as
   a change with a location, a kind and *no text*, since the diff is the only signal that carries
-  text, and marked `disputed`. Nothing is dropped and nothing is merged away.
+  text, and marked `disputed`. Nothing is dropped and nothing is merged away. A unit only the
+  instruction parse names, which neither the diff nor the metadata names, is not appended as a
+  change since 2026-10-08: it is published by name in the report as `instruction_only_units`,
+  because one textless signal naming a unit nobody else names is not evidence of a change in
+  that consolidation. Every disputed change carries a `dispute_reason` saying which signal
+  disagreed and how, and the report counts them by reason.
 - **The unit is where signals are compared.** The two location vocabularies agree on the article or
   annex and not always below it, so an annotation on `AR 5 PA 1 ALN 1 PTA (bb)` is a claim about
   `AR 5`; inserting a point *into* Article 5 is a modification of it, not an insertion of it.
+  Since 2026-10-08 the metadata's location codes are read as the units the markup names before
+  they are compared: a legacy Arabic annex number is the markup's Roman one (`AN 4` is `AN IV`),
+  a dotted article is the article it sits in (`AR 3.1` is `AR 3`), and a key naming a part,
+  chapter, title or recital is counted in the signal's note rather than claimed as a unit.
 
 On the AI Act's Digital Omnibus amendment all three signals name the same 45 units and classify
 every one of them the same way: precision, recall and F1 of 1.000 on all three pairings, zero
 disputes. On the MDR's one-year postponement, the same. On REACH 2008 → 2009 they disagree loudly,
-the diff finds 40 changed units and the metadata names 9, and the disagreement is *correct*: the
+the diff finds 40 changed units and the metadata names 8, and the disagreement is *correct*: the
 CLP Regulation ordered one word replaced "throughout the text", and the corpus annotates such a
-blanket amendment once without enumerating where it lands. That transition ships 33 disputed
+blanket amendment once without enumerating where it lands. That transition ships 32 disputed
 changes rather than being quietly dropped from the corpus, which is the whole argument for
-publishing the disagreements.
+publishing the disagreements. Until 2026-10-08 it read 9 units and 33 disputed changes: the ninth
+was `TIT XI`, a title, shipped as a textless change no diff could key, and counted in the
+metadata's note since.
 
 ## Measured, on a corpus that supplies its own labels
 
@@ -67,13 +80,16 @@ without the sentence that says what it does not mean.
 comments. It is generated, and there is one of it: a second copy here would be a hand-typed number
 with nothing regenerating it, which is the failure this project exists to avoid.
 
-Corpus coverage is **18 of the 70 transitions the four acts offer**, and 101 changes ship, 13 of
-them marked `disputed`.
+Corpus coverage is **18 of the 70 transitions the four acts offer**, and in the report of
+2026-10-08 98 changes ship, 2 of them marked `disputed`, both because the metadata of a window it
+did annotate does not name a unit the diff found. The reports of 2026-09-04 and 2026-09-19 read
+13 of 101 and 12 of 100; why those figures and this one answer different questions is below.
 
 What those numbers do *not* mean is written into the report itself, in fixed text that does not
-soften when a result is flattering. The short version: precision is dragged down by two named
-classes where the *reference set* is the silent one, a blanket amendment CELLAR annotates once
-and one act whose annexes the notices number in Arabic and the markup in Roman. A third class,
+soften when a result is flattering. The short version: precision is dragged down by a named class
+where the *reference set* is the silent one, a blanket amendment CELLAR annotates once. Until
+2026-10-08 a second class sat beside it, one act whose annexes the notices number in Arabic and
+the markup in Roman; that was a difference of notation, and it is read as one unit now. A third class,
 the corrigendum consolidation, does not enter the pairing at all: nobody annotated its window,
 so there is no reference set to score against and the transition contributes neither units nor a
 score. Until 2026-08-12 it was scored as a reference set that contradicted every unit the diff
@@ -86,6 +102,38 @@ article number, so the denominator differs, and the third signal now reads the a
 article numbers where it read the amending act's. Those transitions all stay in the corpus, their
 disagreements are printed verbatim, and the units only the diff found are counted as their own
 class rather than as errors.
+
+**Three rules came into force on 2026-10-08, and they do not move the same figures.** None of them
+is the pipeline getting better; each makes a signal say less when it knows less, and none makes a
+signal agree where it disagrees.
+
+- *A silent instruction parse is unavailable.* Six REACH windows each shipped one change disputed
+  by an instruction parse that read its amending act and claimed nothing there. That rule moves the
+  disputed figure (12 of 100 to 6 of 100, the same rows under a narrower question) and both
+  instruction pairings, which are now computed over the 7 transitions where the parse claims
+  something instead of 13, and read 1.000 over a smaller denominator. The parse is still *read* on
+  13 of 18 transitions, and the report's coverage line still says so. Localisation and
+  classification never consult the parse and do not move under it.
+- *A unit only the instruction parse names moves to the report.* No such unit exists in the
+  committed corpus, so this rule moves no eval figure at all: `instruction_only_units` reads 0. It
+  moves the published changelogs, where such rows were common.
+- *The metadata's codes are read as the units the markup names.* This is the one that moves
+  localisation, because it re-keys the reference set that pairing reads. REACH's `AN 4` and `AN 5`
+  are counted as the `AN IV` and `AN V` the diff always found, so over the same 17 transitions and
+  83 diff units localisation reads P 0.976 / R 1.000 / F1 0.988, macro 0.974, where it read
+  P 0.952 / R 0.975 / F1 0.963, macro 0.915; classification is over 81 units where it was 79,
+  still 1.000; and the disputed figure reads 2 of 98 where it read 6 of 100, because four
+  disputed changes cleared: the textless `AN 4` and `AN 5` rows, which were the same annexes
+  under a second spelling and are no longer rows at all, and the `AN IV` and `AN V` the diff
+  found, which all three signals now name. The earlier statement in this file, that
+  corrections to the corroboration leave localisation alone, held for every correction to the
+  instruction parse and stops holding here: this one changes the metadata side.
+
+Every figure before and after that date is published under its own date
+(`reports/eval/2026-09-19-20d3761.md` and `reports/eval/2026-10-08-dfe620a.md`), and neither set is
+adjusted for the other. The committed floors under localisation moved to the new figures with the
+reason in their comment. The flagship does not move: 45 changes, 0 disputed, 42 touched units,
+F1 1.000.
 
 ```bash
 uv run emendrix eval run --fixture-dir tests/fixtures/eu   # offline, what CI runs on every push
@@ -233,7 +281,12 @@ hand-reviewed rate is published again. That reading of 17 of 20 stands as a read
 sample it covered, the judged rate beside it is unchanged at 0.800, and no sheet was ticked, no
 sign-off back-dated and no verdict re-scored to avoid the lapse.
 The same holds after the report of 2026-09-19, whose judged rate reads 0.750 and whose sample
-digest moved again with the re-recorded Annex I triple, so `human review` stays `pending`.
+digest moved again with the re-recorded Annex I triple, so `human review` stays `pending`. It holds
+again after the report of 2026-10-08: REACH's 2008 `AN IV` stopped being disputed when the
+metadata's annex numbers were read as the markup's, its prompt lost the line saying so and changed
+key, and that one explanation and its one judgement were recorded again. The new judgement is
+faithful, as the old one was, so the judged rate still reads 15 of 20 (0.750); the sample digest
+moved, and `human review` stays `pending`.
 `uv run emendrix eval sample-digest` prints the digest and the entries the next review has to
 cover.
 

@@ -13,6 +13,7 @@ import pytest
 from test_runner_toy import CHANGED, labels, tree
 
 from emendrix.core import ProvisionLocation, Signal, SignalClaim, SignalReport
+from emendrix.core.changes import DisputeReason
 from emendrix.corroborate import corroborate
 from emendrix.diff import compute_delta
 from emendrix.eval_.aggregate import aggregate
@@ -23,7 +24,7 @@ from emendrix.eval_.metrics import score
 from emendrix.eval_.model_metrics import ModelMetrics
 from emendrix.eval_.model_report import render_faithfulness, render_model_layer
 from emendrix.eval_.prose import DISCLAIMER, KNOWN_CLASSES, MEANING, count
-from emendrix.eval_.report import render_markdown, write_report
+from emendrix.eval_.report import dispute_reasons, render_markdown, write_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.eval_.thresholds import FLOORS, Floors, check
 from emendrix.gate import GateStats
@@ -110,6 +111,22 @@ def test_the_report_states_what_it_does_not_measure(run: EvalRun, corpus: EvalCo
     assert KNOWN_CLASSES in rendered
     assert "it measures *citation validity*, not explanation quality" in rendered
     assert "**Never free.** Reported separately" in rendered
+
+
+def test_the_reason_counts_sum_to_the_disputed_count(run: EvalRun, corpus: EvalCorpus) -> None:
+    """Every disputed change has exactly one code, so the table accounts for every one of them.
+
+    The thin transition's metadata leaves out `AN I`, which the diff found and no instruction
+    parse was given to read: the metadata is the signal that is silent.
+    """
+    reasons = dispute_reasons(run)
+    assert list(reasons) == list(DisputeReason)
+    assert sum(reasons.values()) == run.metrics.disputed == 1
+    assert reasons[DisputeReason.METADATA_SILENT] == 1
+    rendered = render_markdown(run, corpus)
+    assert "## Disputed changes, by reason" in rendered
+    assert "| `metadata_silent` | 1 |" in rendered
+    assert "| `kind_mismatch` | 0 |" in rendered
 
 
 def test_every_report_carries_the_disclaimer(run: EvalRun, corpus: EvalCorpus) -> None:
@@ -254,7 +271,15 @@ def test_a_run_with_no_disagreement_says_so(corpus: EvalCorpus) -> None:
 
 
 def test_a_number_that_falls_breaches_its_floor(run: EvalRun) -> None:
-    floors = FLOORS.model_copy(update={"localisation_micro_f1": 0.99, "cases_scored": 2})
+    """Only the floor set above the toy run's figure breaches; the others are set below it."""
+    floors = FLOORS.model_copy(
+        update={
+            "localisation_micro_f1": 0.99,
+            "localisation_micro_recall": 0.5,
+            "localisation_macro_f1": 0.5,
+            "cases_scored": 2,
+        }
+    )
     breached = check(run.metrics, floors)
     assert [item.metric for item in breached] == ["localisation micro F1"]
     assert "floor 0.990" in str(breached[0])

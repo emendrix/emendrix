@@ -142,7 +142,10 @@ judge's 0.800 over the recording of 2026-08-12 the 0.850 before it declining: ev
 when stored text stopped running words together, so that is a new recording rather than the old
 one moving. The same holds for the 0.750 over the recording of 2026-09-19, where the judge
 failed one re-recorded explanation whose prompt had gained an annex's subject in its heading
-line. [`./evaluation.md`](./evaluation.md) reads the whole sequence, and
+line. It holds again on 2026-10-08, when one explanation and its judgement were recorded again
+because the prompt of a REACH annex no longer said its change was disputed: the new verdict is
+faithful as the old one was, the rate still reads 15 of 20, and the sample digest moved, so the
+hand review stays owed. [`./evaluation.md`](./evaluation.md) reads the whole sequence, and
 [`../CHANGELOG.md`](../CHANGELOG.md) states which of those figures may be compared with which.
 
 **A change whose whole difference falls past the character cap would ship without sentences.** The
