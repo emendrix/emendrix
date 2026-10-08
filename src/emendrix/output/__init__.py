@@ -26,6 +26,7 @@ Layout:
 - `changelog.py`: the `CHANGELOG.md` file: header, entry markers, newest version first.
 - `git.py`: the git command line, scoped so it cannot touch anything but that repository.
 - `repo.py`: the writer: open-or-init, write, commit, never push, idempotent.
+- `index_model.py`, `index.py`: the text-free change index over the committed payloads.
 - `config.py`: where the repository lives: flag > environment > `watchlist.toml`.
 """
 
@@ -34,6 +35,9 @@ from emendrix.output.config import OUTPUT_REPO_ENV, resolve_repo_path
 from emendrix.output.counts import EntryCounts
 from emendrix.output.disclaimer import MARKDOWN_DISCLAIMER
 from emendrix.output.git import AUTHOR_EMAIL, AUTHOR_NAME, GitError
+from emendrix.output.index import act_index, index_files, root_index
+from emendrix.output.index import render as render_index
+from emendrix.output.index_model import INDEX_FILE, INDEX_SCHEMA, ActIndex, RootIndex
 from emendrix.output.json_out import (
     DIFF_ONLY_NOTE,
     SCHEMA_VERSION,
@@ -70,6 +74,8 @@ __all__ = [
     "AUTHOR_NAME",
     "DIFF_ONLY_NOTE",
     "DIGEST_PREFIX",
+    "INDEX_FILE",
+    "INDEX_SCHEMA",
     "MARKDOWN_DISCLAIMER",
     "MARKER",
     "MARKER_FILE",
@@ -77,6 +83,7 @@ __all__ = [
     "QUOTE_CHAR_CAP",
     "SCHEMA_VERSION",
     "TRUNCATION_MARKER",
+    "ActIndex",
     "ChangelogEntry",
     "EntryCounts",
     "EvidenceCheck",
@@ -86,7 +93,9 @@ __all__ = [
     "GitError",
     "NestedRepository",
     "OutputRepo",
+    "RootIndex",
     "WriteResult",
+    "act_index",
     "changelog_text",
     "checked",
     "diff_only_entry",
@@ -94,9 +103,12 @@ __all__ = [
     "entries_for",
     "evidence_for",
     "header_for",
+    "index_files",
     "recorded_digests",
     "render_entry",
+    "render_index",
     "render_standalone",
     "resolve_repo_path",
+    "root_index",
     "split_entries",
 ]
