@@ -5,6 +5,7 @@ uv run emendrix repair corroboration --dry-run                  # what would mov
 uv run emendrix repair explanations --cassettes live --limit 20 # a tranche of the changes
 uv run emendrix repair unexplained --dry-run                    # notes quoting a library
 uv run emendrix repair evidence --dry-run                       # stale evidence, and the price
+uv run emendrix repair signals --dry-run                        # the signal rules, as counts
 ```
 
 This module is the EU composition root for the repair commands: it reads the clock once, here,
@@ -31,6 +32,10 @@ nothing. It spends money: `--limit` counts **changes**, and `--dry-run` prices t
 written before the curated reasons existed carry, and stamps the counted kind beside it. It
 reads the committed document alone: no model, no network, no key.
 
+`signals` rebuilds both second opinions from the claims an entry already carries, under the
+rules they follow today, and merges again. It reads the committed document alone: no notice,
+no package, no model, no key.
+
 `evidence` is the one verb that re-parses both versions and re-derives the delta, because the
 defect it addresses is in the stored text itself: an extractor fix corrects the evidence a
 published explanation was written about, and no payload can show that. It carries over every
@@ -42,6 +47,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 from typing import Annotated
 
@@ -52,20 +58,24 @@ from emendrix.eu.http import POLITE_DELAY_ENV, POLITE_DELAY_S, today_utc
 from emendrix.eu.identifiers import ConsolidatedId, parse_identifier
 from emendrix.eu.identifiers import celex_of as celex_for
 from emendrix.eu.instructions import Window
-from emendrix.eu.signals import instruction_signal_for
+from emendrix.eu.signals import committed_metadata, instruction_signal_for
 from emendrix.explain import CassetteMode, ExplainSettings
 from emendrix.graph.cli import SummaryFormat
 from emendrix.output import ChangelogEntry, OutputRepo, resolve_repo_path
 from emendrix.repair import evidence as evidence_repair
 from emendrix.repair import explanations as explain_repair
+from emendrix.repair import options as opt
+from emendrix.repair import signals as signals_repair
 from emendrix.repair import unexplained as unexplained_repair
 from emendrix.repair.commit import (
     NO_COORDINATES,
     corroborated_subject,
     explained_subject,
+    finish,
     rederived_subject,
     repository,
     restated_subject,
+    signalled_subject,
     write_all,
 )
 from emendrix.repair.corroborate import KIND, amending_act_of, needs, repair
@@ -78,11 +88,21 @@ from emendrix.repair.render import (
     report_results,
     report_selection,
     report_summary,
+    report_tallies,
+    report_withheld,
 )
-from emendrix.repair.select import for_act, read_targets
+from emendrix.repair.select import for_act, read_targets, walk
 from emendrix.session import adapter_for, deps_for
 
-__all__ = ["app", "corroboration", "evidence", "explanations", "unexplained", "window_of"]
+__all__ = [
+    "app",
+    "corroboration",
+    "evidence",
+    "explanations",
+    "signals",
+    "unexplained",
+    "window_of",
+]
 
 app = typer.Typer(
     name="repair",
@@ -90,31 +110,12 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 
-_WATCHLIST = Path("watchlist.toml")
-
-_LIST = typer.Option("--watchlist", help="Where the output repository is configured.")
-_REPO = typer.Option("--output-repo", help="The repository to repair. Required.")
-_DRY = typer.Option("--dry-run", help="Print what would move, write nothing at all.")
 _ACT = typer.Option("--act", help="Restrict the pass to one CELEX.")
-_LIMIT = typer.Option("--limit", min=1, help="Stop after this many entries that would change.")
-_FIXTURE = typer.Option("--fixture-dir", help="Read from a pinned fixture set, never the network.")
 _DELAY = typer.Option(
     "--polite-delay",
     min=0.0,
     help=f"Seconds between network calls. Defaults to {POLITE_DELAY_ENV} or {POLITE_DELAY_S}.",
 )
-_REPAIRED = typer.Option(
-    "--repaired-on",
-    formats=["%Y-%m-%d"],
-    help="Date the repair record is stamped with. Defaults to today (UTC).",
-)
-_SUMMARY = typer.Option(
-    "--summary", help="The stderr summary: `text` for a person, `json` for a log collector."
-)
-_CHANGES = typer.Option(
-    "--limit", min=1, help="Stop after this many changes. Changes are what a call is paid for."
-)
-_CASSETTES = typer.Option("--cassettes", help="How the explain stage meets its cassette store.")
 
 
 def window_of(entry: ChangelogEntry) -> Window | None:
@@ -151,15 +152,15 @@ def _opened(
 
 @app.command("corroboration")
 def corroboration(
-    watchlist_path: Annotated[Path, _LIST] = _WATCHLIST,
-    output_repo: Annotated[Path | None, _REPO] = None,
-    dry_run: Annotated[bool, _DRY] = False,
+    watchlist_path: Annotated[Path, opt.LIST] = opt.WATCHLIST,
+    output_repo: Annotated[Path | None, opt.REPO] = None,
+    dry_run: Annotated[bool, opt.DRY] = False,
     act: Annotated[str | None, _ACT] = None,
-    limit: Annotated[int | None, _LIMIT] = None,
-    fixture_dir: Annotated[Path | None, _FIXTURE] = None,
+    limit: Annotated[int | None, opt.LIMIT] = None,
+    fixture_dir: Annotated[Path | None, opt.FIXTURE] = None,
     polite_delay_s: Annotated[float | None, _DELAY] = None,
-    repaired_on: Annotated[datetime | None, _REPAIRED] = None,
-    summary: Annotated[SummaryFormat, _SUMMARY] = SummaryFormat.TEXT,
+    repaired_on: Annotated[datetime | None, opt.REPAIRED] = None,
+    summary: Annotated[SummaryFormat, opt.SUMMARY] = SummaryFormat.TEXT,
 ) -> None:
     """Recompute the third signal on every committed entry that has one, and correct what moved.
 
@@ -167,48 +168,31 @@ def corroboration(
     model is called either way, and every committed explanation is carried over untouched.
     """
     stamp = repaired_on.date() if repaired_on is not None else today_utc()
-    delay = delay_of(polite_delay_s)
     repo, targets = _opened(watchlist_path, output_repo, act)
-    results: list[RepairResult] = []
-    examined = 0
-    with adapter_for(fixture_dir, stamp, polite_delay_s=delay) as adapter:
-        for target in targets:
-            # Counted before the candidate test, so `examined` says how many entries this pass
-            # actually looked at rather than how many the repository holds: with `--limit` those
-            # are different numbers and reporting the second would read as a whole-repository pass.
-            examined += 1
-            amender = amending_act_of(target.entry) if needs(target) else None
-            if amender is None:
-                continue
-            found = repair(
-                target,
-                instruction_signal_for(
-                    adapter.client,
-                    celex_for(amender),
-                    target.entry.act,
-                    window=window_of(target.entry),
-                ),
+    with adapter_for(fixture_dir, stamp, polite_delay_s=delay_of(polite_delay_s)) as adapter:
+
+        def corrected(target: RepairTarget) -> RepairResult:
+            amender = amending_act_of(target.entry)
+            assert amender is not None, "`needs` admits only an entry naming one amending act"
+            signal = instruction_signal_for(
+                adapter.client, celex_for(amender), target.entry.act, window=window_of(target.entry)
             )
-            results.append(found)
-            if limit is not None and sum(1 for item in results if item.would_change) >= limit:
-                break
-    report_results(results)
-    written = 0 if dry_run else write_all(repo, results, KIND, stamp, corroborated_subject)
-    if dry_run:
-        typer.echo("dry run: nothing written, nothing committed.")
-    report_summary(summary, results, kind=KIND, examined=examined, written=written)
+            return repair(target, signal)
+
+        results, examined = walk(targets, needs, corrected, limit=limit)
+    finish(repo, results, examined, KIND, corroborated_subject, stamp, dry_run, summary)
 
 
 @app.command("explanations")
 def explanations(
-    watchlist_path: Annotated[Path, _LIST] = _WATCHLIST,
-    output_repo: Annotated[Path | None, _REPO] = None,
-    dry_run: Annotated[bool, _DRY] = False,
+    watchlist_path: Annotated[Path, opt.LIST] = opt.WATCHLIST,
+    output_repo: Annotated[Path | None, opt.REPO] = None,
+    dry_run: Annotated[bool, opt.DRY] = False,
     act: Annotated[str | None, _ACT] = None,
-    limit: Annotated[int | None, _CHANGES] = None,
-    cassettes: Annotated[CassetteMode | None, _CASSETTES] = None,
-    repaired_on: Annotated[datetime | None, _REPAIRED] = None,
-    summary: Annotated[SummaryFormat, _SUMMARY] = SummaryFormat.TEXT,
+    limit: Annotated[int | None, opt.CHANGES] = None,
+    cassettes: Annotated[CassetteMode | None, opt.CASSETTES] = None,
+    repaired_on: Annotated[datetime | None, opt.REPAIRED] = None,
+    summary: Annotated[SummaryFormat, opt.SUMMARY] = SummaryFormat.TEXT,
 ) -> None:
     """Ask the model again for every committed change that shipped with no explanation.
 
@@ -247,13 +231,13 @@ def explanations(
 
 @app.command("unexplained")
 def unexplained(
-    watchlist_path: Annotated[Path, _LIST] = _WATCHLIST,
-    output_repo: Annotated[Path | None, _REPO] = None,
-    dry_run: Annotated[bool, _DRY] = False,
+    watchlist_path: Annotated[Path, opt.LIST] = opt.WATCHLIST,
+    output_repo: Annotated[Path | None, opt.REPO] = None,
+    dry_run: Annotated[bool, opt.DRY] = False,
     act: Annotated[str | None, _ACT] = None,
-    limit: Annotated[int | None, _LIMIT] = None,
-    repaired_on: Annotated[datetime | None, _REPAIRED] = None,
-    summary: Annotated[SummaryFormat, _SUMMARY] = SummaryFormat.TEXT,
+    limit: Annotated[int | None, opt.LIMIT] = None,
+    repaired_on: Annotated[datetime | None, opt.REPAIRED] = None,
+    summary: Annotated[SummaryFormat, opt.SUMMARY] = SummaryFormat.TEXT,
 ) -> None:
     """Restate every committed note that quoted the provider library instead of the reader.
 
@@ -262,40 +246,55 @@ def unexplained(
     verbatim text and every note this project curated is carried over untouched.
     """
     stamp = repaired_on.date() if repaired_on is not None else today_utc()
-    kind = unexplained_repair.KIND
     repo, targets = _opened(watchlist_path, output_repo, act)
-    results: list[RepairResult] = []
-    examined = 0
-    for target in targets:
-        examined += 1
-        if not unexplained_repair.needs(target):
-            continue
-        results.append(unexplained_repair.repair(target))
-        if limit is not None and sum(1 for item in results if item.would_change) >= limit:
-            break
-    report_results(results)
-    left = sum(result.remaining for result in results)
-    if left:
-        noun = "note" if left == 1 else "notes"
-        typer.echo(f"{left} {noun} {unexplained_repair.WITHHELD_NOTE}")
-    written = 0 if dry_run else write_all(repo, results, kind, stamp, restated_subject)
-    if dry_run:
-        typer.echo("dry run: nothing written, nothing committed.")
-    report_summary(summary, results, kind=kind, examined=examined, written=written)
+    results, examined = walk(
+        targets, unexplained_repair.needs, unexplained_repair.repair, limit=limit
+    )
+    kind = unexplained_repair.KIND
+    finish(
+        repo, results, examined, kind, restated_subject, stamp, dry_run, summary, report_withheld
+    )
+
+
+@app.command("signals")
+def signals(
+    watchlist_path: Annotated[Path, opt.LIST] = opt.WATCHLIST,
+    output_repo: Annotated[Path | None, opt.REPO] = None,
+    dry_run: Annotated[bool, opt.DRY] = False,
+    act: Annotated[str | None, _ACT] = None,
+    limit: Annotated[int | None, opt.LIMIT] = None,
+    repaired_on: Annotated[datetime | None, opt.REPAIRED] = None,
+    summary: Annotated[SummaryFormat, opt.SUMMARY] = SummaryFormat.TEXT,
+) -> None:
+    """Bring every committed entry with a corroboration block under today's signal rules.
+
+    Start with `--dry-run`: it prints, per act and in total, the rows and the disputes before
+    and after. Nothing is fetched and no model is called either way, and every committed
+    explanation is carried over untouched.
+    """
+    stamp = repaired_on.date() if repaired_on is not None else today_utc()
+    repo, targets = _opened(watchlist_path, output_repo, act)
+
+    corrected = partial(signals_repair.repair, normalise_metadata=committed_metadata)
+    results, examined = walk(targets, signals_repair.needs, corrected, limit=limit)
+    kind = signals_repair.KIND
+    finish(
+        repo, results, examined, kind, signalled_subject, stamp, dry_run, summary, report_tallies
+    )
 
 
 @app.command("evidence")
 def evidence(
-    watchlist_path: Annotated[Path, _LIST] = _WATCHLIST,
-    output_repo: Annotated[Path | None, _REPO] = None,
-    dry_run: Annotated[bool, _DRY] = False,
+    watchlist_path: Annotated[Path, opt.LIST] = opt.WATCHLIST,
+    output_repo: Annotated[Path | None, opt.REPO] = None,
+    dry_run: Annotated[bool, opt.DRY] = False,
     act: Annotated[str | None, _ACT] = None,
-    limit: Annotated[int | None, _CHANGES] = None,
-    cassettes: Annotated[CassetteMode | None, _CASSETTES] = None,
-    fixture_dir: Annotated[Path | None, _FIXTURE] = None,
+    limit: Annotated[int | None, opt.CHANGES] = None,
+    cassettes: Annotated[CassetteMode | None, opt.CASSETTES] = None,
+    fixture_dir: Annotated[Path | None, opt.FIXTURE] = None,
     polite_delay_s: Annotated[float | None, _DELAY] = None,
-    repaired_on: Annotated[datetime | None, _REPAIRED] = None,
-    summary: Annotated[SummaryFormat, _SUMMARY] = SummaryFormat.TEXT,
+    repaired_on: Annotated[datetime | None, opt.REPAIRED] = None,
+    summary: Annotated[SummaryFormat, opt.SUMMARY] = SummaryFormat.TEXT,
 ) -> None:
     """Rebuild every entry whose stored evidence a later parser fix has corrected.
 

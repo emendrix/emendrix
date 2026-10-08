@@ -125,8 +125,24 @@ the instruction parse names, which neither the diff nor the metadata names, is n
 textless change: it is published by name in the entry's corroboration report as
 `instruction_only_units` and counted by the eval beside `metadata_only_units`. One signal that
 carries no text, naming a unit no other signal names, is not evidence of a change in this
-consolidation, so it is moved from the change list to the report and never dropped. Token usage is a field, not a log line, because cost control is a stated
-goal of the project: at the pinned model's published rates the whole 55-change explanation subset,
+consolidation, so it is moved from the change list to the report and never dropped.
+
+**Entries published before these rules are brought under them by `emendrix repair signals`.**
+It applies the two rules above and one more, also in force since 2026-10-08: the metadata's
+location codes are read as the units they name (`AR 3.1` as `AR 3`, a legacy `AN 4` as `AN IV`),
+and a part, chapter, title or recital key is counted in the signal's note rather than claimed. It
+rebuilds both second opinions from the claims the committed entry already carries and merges
+again over the entry's own changes, so it needs **no network**: no notice is re-fetched, which
+matters because a notice is a listing that changes and would bring in annotations made after
+publication. No model is called either. The rows it stops appending carry no text and were never
+asked about, every explanation is carried over byte-identical, and each entry it rewrites records
+a repair of kind `signals` with how many changes it addressed and moved. Run it once after
+upgrading to a release carrying these rules, with `--dry-run` first: that prints, per act and in
+total, the changes and the disputed changes before and after, the textless rows no longer
+appended, the instruction-only units listed and the changes flipping disputed each way, and writes
+nothing. A second run over a repaired repository commits nothing.
+
+Token usage is a field, not a log line, because cost control is a stated goal of the project: at the pinned model's published rates the whole 55-change explanation subset,
 of which the AI Act's flagship delta is 45 changes, cost **$1.0197** to explain end to end over
 404 846 input and 20 998 output tokens, measured over the recording of 2026-08-12 and printed in
 [`../reports/eval/2026-08-12-4f9a9c0.md`](../reports/eval/2026-08-12-4f9a9c0.md).

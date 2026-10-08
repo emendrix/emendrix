@@ -11,13 +11,13 @@ it. This module walks the tree and knows nothing about what any repair does.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 
 from emendrix.output import ChangelogEntry
-from emendrix.repair.entry import RepairTarget
+from emendrix.repair.entry import RepairResult, RepairTarget
 
-__all__ = ["for_act", "read_targets"]
+__all__ = ["for_act", "read_targets", "walk"]
 
 
 def read_targets(root: Path) -> tuple[RepairTarget, ...]:
@@ -41,3 +41,28 @@ def for_act(targets: Iterable[RepairTarget], key: str) -> tuple[RepairTarget, ..
     string the entry carries and never parses it.
     """
     return tuple(target for target in targets if target.entry.act.key == key)
+
+
+def walk(
+    targets: Iterable[RepairTarget],
+    needs: Callable[[RepairTarget], bool],
+    repair: Callable[[RepairTarget], RepairResult],
+    *,
+    limit: int | None = None,
+) -> tuple[tuple[RepairResult, ...], int]:
+    """Every candidate repaired in order, up to `limit` entries that would change.
+
+    Returned with how many entries the pass looked at, counted before the candidate test: with
+    `--limit` that is fewer than the repository holds, and reporting the second would read as a
+    pass over the whole repository.
+    """
+    results: list[RepairResult] = []
+    examined = 0
+    for target in targets:
+        examined += 1
+        if not needs(target):
+            continue
+        results.append(repair(target))
+        if limit is not None and sum(1 for item in results if item.would_change) >= limit:
+            break
+    return tuple(results), examined

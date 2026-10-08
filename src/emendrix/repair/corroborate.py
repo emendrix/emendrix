@@ -45,6 +45,7 @@ __all__ = [
     "amending_act_of",
     "instructions_of",
     "needs",
+    "remerge",
     "repair",
     "signals_of",
     "textless_change",
@@ -111,8 +112,20 @@ def repair(target: RepairTarget, instructions: SignalReport | None) -> RepairRes
     The rebuilt entry rides on the result only when it differs from what is committed, so a
     caller may run this over a whole repository and write nothing where it has nothing to say.
     """
+    return remerge(target, metadata=signals_of(target.entry), instructions=instructions)
+
+
+def remerge(
+    target: RepairTarget, *, metadata: SignalReport | None, instructions: SignalReport | None
+) -> RepairResult:
+    """Merge two signals over the committed entry's own delta, carrying every explanation over.
+
+    The one merge every corroboration-shaped repair runs, so they cannot disagree about what a
+    rebuilt entry carries or about how its counts are recorded. The rebuilt entry rides on the
+    result only when it differs from what is committed.
+    """
     entry = target.entry
-    merged = corroborate(delta_of(entry), metadata=signals_of(entry), instructions=instructions)
+    merged = corroborate(delta_of(entry), metadata=metadata, instructions=instructions)
     rebuilt = rebuild(
         entry,
         delta=merged.delta,

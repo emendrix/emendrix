@@ -25,22 +25,27 @@ from pathlib import Path
 import typer
 
 from emendrix.backfill.inputs import repository_at
+from emendrix.graph.cli import SummaryFormat
 from emendrix.output import GitError, OutputRepo
 from emendrix.output.json_out import ChangelogEntry, RepairRecord
 from emendrix.repair import corroborate as corroboration_repair
 from emendrix.repair import evidence as evidence_repair
 from emendrix.repair import explanations as explain_repair
+from emendrix.repair import signals as signals_repair
 from emendrix.repair import unexplained as unexplained_repair
 from emendrix.repair.entry import RepairResult, with_record
+from emendrix.repair.render import report_results, report_summary
 
 __all__ = [
     "NO_COORDINATES",
     "Subject",
     "corroborated_subject",
     "explained_subject",
+    "finish",
     "rederived_subject",
     "repository",
     "restated_subject",
+    "signalled_subject",
     "write_all",
 ]
 
@@ -120,6 +125,31 @@ def write_all(
     return written
 
 
+def finish(
+    repo: OutputRepo,
+    results: Sequence[RepairResult],
+    examined: int,
+    kind: str,
+    subject: Subject,
+    repaired_on: date,
+    dry_run: bool,
+    summary: SummaryFormat,
+    report: Callable[[Sequence[RepairResult]], object] | None = None,
+) -> None:
+    """The end of every pass that calls no model: the table, the commits, and the closing line.
+
+    `examined` is how many entries the pass looked at, which `--limit` can make fewer than the
+    repository holds. `report` prints what one kind says beside the table, before any write.
+    """
+    report_results(results)
+    if report is not None:
+        report(results)
+    written = 0 if dry_run else write_all(repo, results, kind, repaired_on, subject)
+    if dry_run:
+        typer.echo("dry run: nothing written, nothing committed.")
+    report_summary(summary, results, kind=kind, examined=examined, written=written)
+
+
 def corroborated_subject(entry: ChangelogEntry, result: RepairResult) -> str:
     """`32019R2088: 02019R2088-20260702 corroboration repaired (2 changes)`."""
     return _message(entry, f"{corroboration_repair.KIND} repaired ({result.repaired} changes)")
@@ -155,6 +185,16 @@ def restated_subject(entry: ChangelogEntry, result: RepairResult) -> str:
         f"{unexplained_repair.KIND} notes restated "
         f"({result.repaired} of {result.addressed} changes)"
     )
+    return _message(entry, phrase)
+
+
+def signalled_subject(entry: ChangelogEntry, result: RepairResult) -> str:
+    """`32006R1907: 02006R1907-20081012 signals repaired (2 of 4 changes)`.
+
+    Both counts, because the changes this repair moves include rows it stops appending, and a
+    subject naming those alone would hide how many rows the entry held.
+    """
+    phrase = f"{signals_repair.KIND} repaired ({result.repaired} of {result.addressed} changes)"
     return _message(entry, phrase)
 
 

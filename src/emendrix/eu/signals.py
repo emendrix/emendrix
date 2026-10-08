@@ -38,9 +38,10 @@ from __future__ import annotations
 
 from datetime import date
 
-from emendrix.core import ActId, Signal, SignalReport, VersionId
+from emendrix.core import ActId, ProvisionLocation, Signal, SignalClaim, SignalReport, VersionId
 from emendrix.corroborate.sources import TransitionSignals
 from emendrix.eu.cellar import ABSENT_STATUSES, CellarClient
+from emendrix.eu.cellar_locations import CodeGap, gap_note, unit_code
 from emendrix.eu.http import ACCEPT_TREE_NOTICE
 from emendrix.eu.identifiers import Celex, ResourceRef, celex_of
 from emendrix.eu.instructions import (
@@ -54,7 +55,7 @@ from emendrix.eu.modmeta import ModificationSet, parse_branch_modifications
 from emendrix.eu.modmeta import metadata_signal as build_metadata_signal
 from emendrix.eu.packages import FormexPackage
 
-__all__ = ["EuSignalSource", "act_dates", "instruction_signal_for"]
+__all__ = ["EuSignalSource", "act_dates", "committed_metadata", "instruction_signal_for"]
 
 
 def act_dates(client: CellarClient, celex: Celex) -> ActDates:
@@ -116,6 +117,35 @@ def instruction_signal_for(
         window=window,
         note=f"{celex}, {parsed.coverage:.3f} of its instruction clauses read",
     )
+
+
+def committed_metadata(report: SignalReport | None) -> SignalReport | None:
+    """A metadata signal already published, with its claims read as the units they name.
+
+    The same reading the metadata reader applies to an annotation as it parses the notice
+    (`eu/cellar_locations.py`), applied to the claims an entry already carries, so a repair can
+    bring a published entry under it from the payload alone: re-fetching the notice would bring
+    in annotations made since publication, because a notice is a listing that changes. A claim
+    naming a container is dropped and counted into the note exactly as the reader counts it, and
+    a signal left with no claim is unavailable, as the reader reports a window of containers.
+    Idempotent: a signal already read this way comes back equal to itself.
+    """
+    if report is None or not report.available:
+        return report
+    claims: list[SignalClaim] = []
+    gaps: list[CodeGap] = []
+    for claim in report.claims:
+        code = unit_code(claim.location.canonical)
+        if not isinstance(code, str):
+            gaps.append(code)
+        elif code == claim.location.canonical:
+            claims.append(claim)
+        else:
+            claims.append(claim.model_copy(update={"location": ProvisionLocation.parse(code)}))
+    note = gap_note(report.note, gaps)
+    if not claims:
+        return SignalReport.unavailable(Signal.CORPUS_METADATA, note=note)
+    return report.model_copy(update={"claims": tuple(claims), "note": note})
 
 
 class EuSignalSource:

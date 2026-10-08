@@ -28,6 +28,8 @@ from emendrix.graph.cli import SummaryFormat
 from emendrix.repair.entry import RepairResult, UnitShift, shift_between
 from emendrix.repair.evidence import EntryPlan, PassCounts
 from emendrix.repair.pricing import Estimate, Selection, estimate_over
+from emendrix.repair.signals import SignalTally, by_act
+from emendrix.repair.unexplained import WITHHELD_NOTE
 
 __all__ = [
     "RepairSummary",
@@ -37,6 +39,8 @@ __all__ = [
     "report_results",
     "report_selection",
     "report_summary",
+    "report_tallies",
+    "report_withheld",
     "shift_of",
 ]
 
@@ -214,3 +218,30 @@ def report_plan(
     typer.echo("dry run: nothing written, nothing asked, no engine built.")
     selections = [item.selection for item in plans if item.selection is not None]
     return report_estimate(format_, estimate_over(selections, model_id=model_id))
+
+
+def report_tallies(results: Sequence[RepairResult]) -> SignalTally:
+    """Per act and in total: the rows and the disputes before and after, and what flipped.
+
+    Printed as counts on both sides rather than as a rate, because the rows a pass stops
+    appending leave the two sides over different denominators.
+    """
+    acts, total = by_act(results)
+    for tally in (*acts, total):
+        typer.echo(
+            f"{tally.act}: {tally.entries} entries addressed · {tally.changed} would change · "
+            f"changes {tally.changes_before} -> {tally.changes_after} · "
+            f"disputed {tally.disputed_before} -> {tally.disputed_after} · "
+            f"textless rows {tally.textless_before} -> {tally.textless_after} · "
+            f"{tally.instruction_only} instruction-only units listed · "
+            f"{tally.cleared} disputed to undisputed · {tally.raised} undisputed to disputed"
+        )
+    return total
+
+
+def report_withheld(results: Sequence[RepairResult]) -> None:
+    """How many notes a restating pass read and declined to touch, when it declined any."""
+    left = sum(result.remaining for result in results)
+    if left:
+        noun = "note" if left == 1 else "notes"
+        typer.echo(f"{left} {noun} {WITHHELD_NOTE}")
