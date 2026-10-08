@@ -1,0 +1,54 @@
+{
+  "acts": [
+    {
+      "aliases": [
+        "garden rules"
+      ],
+      "corpus": "toy",
+      "domain": "Housing",
+      "eurlex_url": "",
+      "events": {
+        "v2": "https://example.org/acts/garden-rules/v2/"
+      },
+      "feed": "https://example.org/feeds/garden-rules.xml",
+      "key": "garden-rules",
+      "label": "Garden Rules of Flat 3B",
+      "long_name": "",
+      "provisions": {
+        "AN I": "https://example.org/acts/garden-rules/an-i/",
+        "AR 2": "https://example.org/acts/garden-rules/ar-2/",
+        "AR 3": "https://example.org/acts/garden-rules/ar-3/",
+        "AR 4": "https://example.org/acts/garden-rules/ar-4/",
+        "AR 9": "https://example.org/acts/garden-rules/ar-9/"
+      },
+      "url": "https://example.org/acts/garden-rules/"
+    },
+    {
+      "aliases": [
+        "house rules"
+      ],
+      "corpus": "toy",
+      "domain": "Housing",
+      "eurlex_url": "",
+      "events": {
+        "v2": "https://example.org/acts/house-rules/v2/",
+        "v3": "https://example.org/acts/house-rules/v3/"
+      },
+      "feed": "https://example.org/feeds/house-rules.xml",
+      "key": "house-rules",
+      "label": "House Rules of Flat 3B",
+      "long_name": "",
+      "provisions": {
+        "AN I": "https://example.org/acts/house-rules/an-i/",
+        "AR 2": "https://example.org/acts/house-rules/ar-2/",
+        "AR 3": "https://example.org/acts/house-rules/ar-3/",
+        "AR 4": "https://example.org/acts/house-rules/ar-4/",
+        "AR 9": "https://example.org/acts/house-rules/ar-9/"
+      },
+      "url": "https://example.org/acts/house-rules/"
+    }
+  ],
+  "catalogue_schema": "1.0",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "provenance": "Derived by the site build from the watchlist and the committed changelogs; not part of the record."
+}

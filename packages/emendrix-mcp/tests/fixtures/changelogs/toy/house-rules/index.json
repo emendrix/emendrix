@@ -1,0 +1,286 @@
+{
+  "index_schema": "1.0",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "corpus": "toy",
+  "key": "house-rules",
+  "title": "House Rules of Flat 3B",
+  "events": [
+    {
+      "to_version": "v3",
+      "from_version": "v1",
+      "detected_on": "2026-08-09",
+      "in_force": [],
+      "updated_on": "2026-08-10",
+      "schema_version": "1.2",
+      "path": "toy/house-rules/changes/v3.json",
+      "sha256": "380c59d6f8a0ef23495e7939d2a3c1c2146000845d2efa9fe41e521e2c60c396",
+      "diff_only": true,
+      "counts": {
+        "touched": 5,
+        "substantive": 4,
+        "date_only": 0,
+        "textless": 1,
+        "disputed": 1,
+        "quoted": 0,
+        "unexplained": 0
+      },
+      "repairs": [
+        {
+          "kind": "signals",
+          "repaired_on": "2026-08-10"
+        }
+      ],
+      "evidence": false,
+      "metadata_only_units": [
+        "AR 9"
+      ],
+      "instruction_only_units": [
+        "AR 7"
+      ]
+    },
+    {
+      "to_version": "v2",
+      "from_version": "v1",
+      "detected_on": "2026-08-06",
+      "in_force": [],
+      "updated_on": "2026-08-06",
+      "schema_version": "1.2",
+      "path": "toy/house-rules/changes/v2.json",
+      "sha256": "b868c7e5fe5eaf34737c96265c7b790abbf8648a658ba5249d4c0633434a46d3",
+      "diff_only": false,
+      "counts": {
+        "touched": 4,
+        "substantive": 4,
+        "date_only": 0,
+        "textless": 0,
+        "disputed": 0,
+        "quoted": 3,
+        "unexplained": 0
+      },
+      "repairs": [],
+      "evidence": false,
+      "metadata_only_units": [],
+      "instruction_only_units": []
+    }
+  ],
+  "provisions": {
+    "AN I": [
+      {
+        "version": "v3",
+        "change_type": "MODIFIED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "both",
+        "in_force": null,
+        "applies_from": "unchanged",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [
+          "AN I",
+          "AN I SLOT 2"
+        ],
+        "occurrence": 1
+      },
+      {
+        "version": "v2",
+        "change_type": "MODIFIED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "unavailable",
+          "instruction_parse": "unavailable"
+        },
+        "text": "both",
+        "in_force": null,
+        "applies_from": "unchanged",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "fallback",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [
+          "AN I",
+          "AN I SLOT 2"
+        ],
+        "occurrence": 1
+      }
+    ],
+    "AR 2": [
+      {
+        "version": "v3",
+        "change_type": "MODIFIED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "both",
+        "in_force": null,
+        "applies_from": "unchanged",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [
+          "AR 2"
+        ],
+        "occurrence": 1
+      },
+      {
+        "version": "v2",
+        "change_type": "MODIFIED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "unavailable",
+          "instruction_parse": "unavailable"
+        },
+        "text": "both",
+        "in_force": null,
+        "applies_from": "unchanged",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "passed",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [
+          "AR 2"
+        ],
+        "occurrence": 1
+      }
+    ],
+    "AR 3": [
+      {
+        "version": "v3",
+        "change_type": "DELETED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "before",
+        "in_force": null,
+        "applies_from": "unknown",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [],
+        "occurrence": 1
+      },
+      {
+        "version": "v2",
+        "change_type": "DELETED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "unavailable",
+          "instruction_parse": "unavailable"
+        },
+        "text": "before",
+        "in_force": null,
+        "applies_from": "unknown",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "fallback",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [],
+        "occurrence": 1
+      }
+    ],
+    "AR 4": [
+      {
+        "version": "v3",
+        "change_type": "INSERTED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "after",
+        "in_force": null,
+        "applies_from": "unknown",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [],
+        "occurrence": 1
+      },
+      {
+        "version": "v2",
+        "change_type": "INSERTED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "unavailable",
+          "instruction_parse": "unavailable"
+        },
+        "text": "after",
+        "in_force": null,
+        "applies_from": "unknown",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "fallback",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [],
+        "occurrence": 1
+      }
+    ],
+    "AR 9": [
+      {
+        "version": "v3",
+        "change_type": "MODIFIED",
+        "previous_location": null,
+        "disputed": true,
+        "dispute_reason": "textless_metadata_only",
+        "signals": {
+          "structural_diff": "absent",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "none",
+        "in_force": null,
+        "applies_from": "unknown",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [],
+        "occurrence": 1
+      }
+    ]
+  }
+}

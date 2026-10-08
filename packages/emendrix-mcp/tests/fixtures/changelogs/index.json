@@ -1,0 +1,36 @@
+{
+  "index_schema": "1.0",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "acts": [
+    {
+      "corpus": "toy",
+      "key": "garden-rules",
+      "title": "Garden Rules of Flat 3B",
+      "index": "toy/garden-rules/index.json",
+      "index_sha256": "f495486ebc4e43626a6c72f6444612082e9db91ac179ffb8a17c5f5b8780712c",
+      "events": 1,
+      "changes": 5,
+      "provisions": 5,
+      "disputed": 1,
+      "newest_version": "v2",
+      "newest_in_force": null,
+      "first_detected_on": "2026-08-06",
+      "updated_on": "2026-08-06"
+    },
+    {
+      "corpus": "toy",
+      "key": "house-rules",
+      "title": "House Rules of Flat 3B",
+      "index": "toy/house-rules/index.json",
+      "index_sha256": "d6f3d05fa0ccb591e25981ef79fdec66af33c14ac3b45b5e7dc95f1c3759c27c",
+      "events": 2,
+      "changes": 9,
+      "provisions": 5,
+      "disputed": 1,
+      "newest_version": "v3",
+      "newest_in_force": null,
+      "first_detected_on": "2026-08-06",
+      "updated_on": "2026-08-10"
+    }
+  ]
+}

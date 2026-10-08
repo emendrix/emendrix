@@ -1,0 +1,160 @@
+{
+  "index_schema": "1.0",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "corpus": "toy",
+  "key": "garden-rules",
+  "title": "Garden Rules of Flat 3B",
+  "events": [
+    {
+      "to_version": "v2",
+      "from_version": "v1",
+      "detected_on": "2026-08-06",
+      "in_force": [],
+      "updated_on": "2026-08-06",
+      "schema_version": "1.2",
+      "path": "toy/garden-rules/changes/v2.json",
+      "sha256": "a6173393ef49f3ba5f21ab97e4b3d9549294692cd51845aee1d6f4ff83e07fcb",
+      "diff_only": true,
+      "counts": {
+        "touched": 5,
+        "substantive": 4,
+        "date_only": 0,
+        "textless": 1,
+        "disputed": 1,
+        "quoted": 0,
+        "unexplained": 0
+      },
+      "repairs": [],
+      "evidence": false,
+      "metadata_only_units": [],
+      "instruction_only_units": []
+    }
+  ],
+  "provisions": {
+    "AN I": [
+      {
+        "version": "v2",
+        "change_type": "MODIFIED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "both",
+        "in_force": null,
+        "applies_from": "unchanged",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [
+          "AN I",
+          "AN I SLOT 2"
+        ],
+        "occurrence": 1
+      }
+    ],
+    "AR 2": [
+      {
+        "version": "v2",
+        "change_type": "MODIFIED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "both",
+        "in_force": null,
+        "applies_from": "unchanged",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [
+          "AR 2"
+        ],
+        "occurrence": 1
+      }
+    ],
+    "AR 3": [
+      {
+        "version": "v2",
+        "change_type": "DELETED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "before",
+        "in_force": null,
+        "applies_from": "unknown",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [],
+        "occurrence": 1
+      }
+    ],
+    "AR 4": [
+      {
+        "version": "v2",
+        "change_type": "INSERTED",
+        "previous_location": null,
+        "disputed": false,
+        "dispute_reason": null,
+        "signals": {
+          "structural_diff": "observed",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "after",
+        "in_force": null,
+        "applies_from": "unknown",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [],
+        "occurrence": 1
+      }
+    ],
+    "AR 9": [
+      {
+        "version": "v2",
+        "change_type": "MODIFIED",
+        "previous_location": null,
+        "disputed": true,
+        "dispute_reason": "textless_metadata_only",
+        "signals": {
+          "structural_diff": "absent",
+          "corpus_metadata": "observed",
+          "instruction_parse": "unavailable"
+        },
+        "text": "none",
+        "in_force": null,
+        "applies_from": "unknown",
+        "dates_added": [],
+        "dates_removed": [],
+        "outcome": "unexplained",
+        "unexplained_kind": "",
+        "amending_acts": [],
+        "changed_within": [],
+        "occurrence": 1
+      }
+    ]
+  }
+}

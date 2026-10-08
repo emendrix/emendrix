@@ -71,13 +71,27 @@ dev = [
     # so no module under `src/emendrix/` may import `fontTools` or `brotli`.
     "fonttools>=4.65.0",
     "brotli>=1.2.0",
+    # The MCP server beside the pipeline, installed here so the gate checks it and the two
+    # main-suite tests that hold its models to this package's can import both. It is a
+    # workspace member of its own and never depends on `emendrix`.
+    "emendrix-mcp",
 ]
+
+# --- uv workspace -------------------------------------------------------------
+# The MCP server is a distribution of its own beside the pipeline, so its image carries neither
+# `langgraph` nor `pydantic-ai` and it cannot import the explain stage.
+[tool.uv.workspace]
+members = ["packages/emendrix-mcp"]
+
+[tool.uv.sources]
+emendrix-mcp = { workspace = true }
 
 # --- ruff ---------------------------------------------------------------------
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-src = ["src", "tests"]
+# The MCP member's sources and tests, so import sorting knows them as first-party.
+src = ["src", "tests", "packages/emendrix-mcp/src", "packages/emendrix-mcp/tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
@@ -93,20 +107,24 @@ allowed-confusables = ["−"]
 [tool.mypy]
 strict = true
 python_version = "3.12"
-# `mypy` with no arguments checks exactly what CI and the local gate check.
-files = ["src", "tests"]
+# `mypy` with no arguments checks exactly what CI and the local gate check, the MCP member's
+# source and tests included.
+files = ["src", "tests", "packages/emendrix-mcp/src", "packages/emendrix-mcp/tests"]
 # `scripts/validation/` is one-off validation code outside the package, exempt
 # (see scripts/validation/README.md). Excluded explicitly so it stays out even if
 # it is ever passed on the command line.
 exclude = ["^scripts/"]
-mypy_path = "src"
+# The member's `src` too, so its tests and the two main-suite tests importing it resolve it
+# from source under the same strict settings.
+mypy_path = "src:packages/emendrix-mcp/src"
 warn_unreachable = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 
 # --- pytest -------------------------------------------------------------------
 [tool.pytest.ini_options]
 minversion = "8.0"
-testpaths = ["tests"]
+# The MCP member's own tests run in the same gate, so a green suite covers both distributions.
+testpaths = ["tests", "packages/emendrix-mcp/tests"]
 # Live-network tests are opt-in: `uv run pytest -m live`. CI never touches the network.
 # `record` rewrites committed cassettes, so it is opt-in for a second reason: a default run
 # must never mutate an artifact the rest of the suite asserts against.

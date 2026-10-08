@@ -1,0 +1,339 @@
+{
+  "schema_version": "1.2",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "act": {
+    "corpus": "toy",
+    "key": "house-rules",
+    "display_name": "House Rules of Flat 3B"
+  },
+  "from_version": "v1",
+  "to_version": "v2",
+  "detected_on": "2026-08-06",
+  "in_force": [],
+  "diff_only": false,
+  "summary": {
+    "inserted": 1,
+    "modified": 2,
+    "deleted": 1,
+    "renumbered": 0,
+    "deferred": 0,
+    "touched_units": 4,
+    "unchanged_units": 1,
+    "disputed": 0
+  },
+  "counts": {
+    "touched": 4,
+    "substantive": 4,
+    "date_only": 0,
+    "textless": 0,
+    "disputed": 0,
+    "quoted": 3,
+    "unexplained": 0
+  },
+  "changes": [
+    {
+      "change": {
+        "change_type": "MODIFIED",
+        "provision": {
+          "act": {
+            "corpus": "toy",
+            "key": "house-rules",
+            "display_name": "House Rules of Flat 3B"
+          },
+          "version": "v2",
+          "location": "AR 2"
+        },
+        "heading": "Bins",
+        "before": "The bins go out on Tuesday evening.",
+        "after": "The bins go out on Tuesday evening,  and the recycling on the first Tuesday.",
+        "previous_location": null,
+        "changed_within": [
+          "AR 2"
+        ],
+        "amending_acts": [],
+        "dates_removed": [],
+        "dates_added": [],
+        "in_force": null,
+        "applies_from": {
+          "kind": "unchanged"
+        },
+        "signals": {
+          "structural_diff": {
+            "status": "observed",
+            "detail": "structural_diff",
+            "change_types": []
+          },
+          "corpus_metadata": {
+            "status": "unavailable",
+            "detail": null,
+            "change_types": []
+          },
+          "instruction_parse": {
+            "status": "unavailable",
+            "detail": null,
+            "change_types": []
+          }
+        },
+        "disputed": false,
+        "dispute_reason": null
+      },
+      "outcome": "passed",
+      "sentences": [
+        {
+          "text": "Something about this provision changed.",
+          "fallback": false,
+          "citations": [
+            {
+              "ref": {
+                "act": {
+                  "corpus": "toy",
+                  "key": "house-rules",
+                  "display_name": "House Rules of Flat 3B"
+                },
+                "version": "v2",
+                "location": "AR 2"
+              },
+              "url": "https://example.invalid/house-rules/v2#ar-2",
+              "label": "Art. 2, v2"
+            }
+          ]
+        }
+      ],
+      "applicability_note": null,
+      "unexplained": "",
+      "unexplained_kind": ""
+    },
+    {
+      "change": {
+        "change_type": "DELETED",
+        "provision": {
+          "act": {
+            "corpus": "toy",
+            "key": "house-rules",
+            "display_name": "House Rules of Flat 3B"
+          },
+          "version": "v1",
+          "location": "AR 3"
+        },
+        "heading": "Guests",
+        "before": "Guests staying more than three nights are announced in the group chat.",
+        "after": null,
+        "previous_location": null,
+        "changed_within": [],
+        "amending_acts": [],
+        "dates_removed": [],
+        "dates_added": [],
+        "in_force": null,
+        "applies_from": {
+          "kind": "unknown",
+          "reason": "a deleted provision has no application date to move"
+        },
+        "signals": {
+          "structural_diff": {
+            "status": "observed",
+            "detail": "structural_diff",
+            "change_types": []
+          },
+          "corpus_metadata": {
+            "status": "unavailable",
+            "detail": null,
+            "change_types": []
+          },
+          "instruction_parse": {
+            "status": "unavailable",
+            "detail": null,
+            "change_types": []
+          }
+        },
+        "disputed": false,
+        "dispute_reason": null
+      },
+      "outcome": "fallback",
+      "sentences": [
+        {
+          "text": "Something about this provision changed.",
+          "fallback": true,
+          "citations": [
+            {
+              "ref": {
+                "act": {
+                  "corpus": "toy",
+                  "key": "house-rules",
+                  "display_name": "House Rules of Flat 3B"
+                },
+                "version": "v1",
+                "location": "AR 3"
+              },
+              "url": "https://example.invalid/house-rules/v1#ar-3",
+              "label": "Art. 3, v1"
+            }
+          ]
+        }
+      ],
+      "applicability_note": null,
+      "unexplained": "",
+      "unexplained_kind": ""
+    },
+    {
+      "change": {
+        "change_type": "INSERTED",
+        "provision": {
+          "act": {
+            "corpus": "toy",
+            "key": "house-rules",
+            "display_name": "House Rules of Flat 3B"
+          },
+          "version": "v2",
+          "location": "AR 4"
+        },
+        "heading": "Parcels",
+        "before": null,
+        "after": "Parcels left in the hallway are moved to the shelf by whoever finds them.",
+        "previous_location": null,
+        "changed_within": [],
+        "amending_acts": [],
+        "dates_removed": [],
+        "dates_added": [],
+        "in_force": null,
+        "applies_from": {
+          "kind": "unknown",
+          "reason": "an inserted provision states its own application date only in prose"
+        },
+        "signals": {
+          "structural_diff": {
+            "status": "observed",
+            "detail": "structural_diff",
+            "change_types": []
+          },
+          "corpus_metadata": {
+            "status": "unavailable",
+            "detail": null,
+            "change_types": []
+          },
+          "instruction_parse": {
+            "status": "unavailable",
+            "detail": null,
+            "change_types": []
+          }
+        },
+        "disputed": false,
+        "dispute_reason": null
+      },
+      "outcome": "fallback",
+      "sentences": [
+        {
+          "text": "Something about this provision changed.",
+          "fallback": true,
+          "citations": [
+            {
+              "ref": {
+                "act": {
+                  "corpus": "toy",
+                  "key": "house-rules",
+                  "display_name": "House Rules of Flat 3B"
+                },
+                "version": "v2",
+                "location": "AR 4"
+              },
+              "url": "https://example.invalid/house-rules/v2#ar-4",
+              "label": "Art. 4, v2"
+            }
+          ]
+        }
+      ],
+      "applicability_note": null,
+      "unexplained": "",
+      "unexplained_kind": ""
+    },
+    {
+      "change": {
+        "change_type": "MODIFIED",
+        "provision": {
+          "act": {
+            "corpus": "toy",
+            "key": "house-rules",
+            "display_name": "House Rules of Flat 3B"
+          },
+          "version": "v2",
+          "location": "AN I"
+        },
+        "heading": "Cleaning rota",
+        "before": "Kitchen: Ada.   Bathroom: Bo.   Hallway: Cy.",
+        "after": "Kitchen: Bo.   Bathroom: Cy.   Hallway: Ada.",
+        "previous_location": null,
+        "changed_within": [
+          "AN I",
+          "AN I SLOT 2"
+        ],
+        "amending_acts": [],
+        "dates_removed": [],
+        "dates_added": [],
+        "in_force": null,
+        "applies_from": {
+          "kind": "unchanged"
+        },
+        "signals": {
+          "structural_diff": {
+            "status": "observed",
+            "detail": "structural_diff",
+            "change_types": []
+          },
+          "corpus_metadata": {
+            "status": "unavailable",
+            "detail": null,
+            "change_types": []
+          },
+          "instruction_parse": {
+            "status": "unavailable",
+            "detail": null,
+            "change_types": []
+          }
+        },
+        "disputed": false,
+        "dispute_reason": null
+      },
+      "outcome": "fallback",
+      "sentences": [
+        {
+          "text": "Something about this provision changed.",
+          "fallback": true,
+          "citations": [
+            {
+              "ref": {
+                "act": {
+                  "corpus": "toy",
+                  "key": "house-rules",
+                  "display_name": "House Rules of Flat 3B"
+                },
+                "version": "v2",
+                "location": "AN I"
+              },
+              "url": "https://example.invalid/house-rules/v2#an-i",
+              "label": "Annex I, v2"
+            }
+          ]
+        }
+      ],
+      "applicability_note": null,
+      "unexplained": "",
+      "unexplained_kind": ""
+    }
+  ],
+  "corroboration": null,
+  "explain": null,
+  "gate": {
+    "changes": 0,
+    "passed_first": 0,
+    "passed_on_retry": 0,
+    "fallback": 0,
+    "unexplained": 0,
+    "retries": 0,
+    "sentences": 0,
+    "citations": 0,
+    "citations_rejected": 0,
+    "notes_dropped": 0,
+    "coordinates_unsupported": 0
+  },
+  "repairs": [],
+  "evidence": []
+}
