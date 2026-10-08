@@ -10,6 +10,11 @@ were found. It stays on the front page rather than only on the methodology page 
 limitation it carries is the one a reader most needs, and it keeps its sentence, its number and
 its caveat whole wherever it sits.
 
+The ways to take the record away as data come after the measured claim and before the lines
+counting what the list leaves out: a stranger meets the versions, then how they were found,
+then how to carry them into their own tools, and the counted remainder still closes the page,
+so the window never reads as the whole record. The block is `take_away`'s, worded there once.
+
 Four things this page will not do:
 
 - **No explanation prose.** A card carries the act, the version, the amending act, the tally
@@ -38,6 +43,7 @@ from emendrix.site_.clocks import version_heading
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.pages.take_away import take_away
 from emendrix.site_.seo import website_json_ld
 from emendrix.site_.tags import LIST_HELP_WORDS, tag, tags_help, tally
 from emendrix.site_.urls import act_href, depth_of, event_href, up
@@ -250,7 +256,8 @@ def render_home(site: SiteInputs, *, limit: int = 20) -> Html:
     address, so a build without one carries no block rather than an incomplete one.
     """
     listed, rest = _versions(site, limit)
-    body = join((*_hero(site), *listed, _strip(site), *rest), "\n")
+    doors = take_away(up(_DEPTH), heading="Take the record with you")
+    body = join((*_hero(site), *listed, _strip(site), doors, *rest), "\n")
     description = _pitch(site)
     return page(
         title="emendrix — provision-level changelogs for EU regulations",

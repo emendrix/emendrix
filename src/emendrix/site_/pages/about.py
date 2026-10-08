@@ -23,6 +23,11 @@ The section also states what the roster does not cover, from the same constant t
 prints and under the same condition: `pitch.SCOPE` claims no Directive is watched, so both
 pages render it from `SiteInputs.kinds` and drop it the day one is.
 
+"Use the record in your own tools" follows "The code and the data" because it is the same
+promise read by a program: the section is `take_away`'s block under the page's own heading,
+with one sentence of its own, so the doors are worded as they are on the home page and on
+`/api/`, and the section is one named region rather than a heading with a list beside it.
+
 No JSON-LD: there is no schema.org type that describes a page about a tool honestly, and the
 rule in `seo.py` is that a page declares a type or declares nothing.
 
@@ -36,6 +41,7 @@ from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.identity import page_masthead
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.pages.take_away import take_away
 from emendrix.site_.pitch import PITCH, SCOPE, scope_holds
 from emendrix.site_.polled import PolledState
 from emendrix.site_.urls import depth_of, up
@@ -77,6 +83,8 @@ _PRIVACY = (
     "script it loads is served from here and fetches this site's own search index, so a search "
     "runs in the browser and reaches nobody. Nothing about a reader is stored anywhere."
 )
+
+_TOOLS = "Every change this site shows is also published for a program to read."
 
 _MAILBOX = (
     "A message sent to that address arrives in the operator's own mailbox and goes nowhere else."
@@ -192,6 +200,7 @@ def render_about(site: SiteInputs) -> Html:
                 f"committed to those two places, so anything the site shows can be traced back "
                 f"to something a reader can open.</p>"
             ),
+            take_away(root, heading="Use the record in your own tools", note=_TOOLS),
             Html("<h2>On your machine</h2>"),
             Html(f"<p>{escape(_PRIVACY)}</p>"),
         ),

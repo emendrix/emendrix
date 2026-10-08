@@ -245,7 +245,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49456)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49581)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -417,7 +417,13 @@ inside a `<details>` did.
 as its heading. That heading is in the explain prompt, so Annex IX's explanation is a new
 recording: its sentence is 3 bytes longer and its citation row names the new version alone, 189
 bytes shorter than the pair it replaced. The printed title did not move, because the site already
-read it from the text. Neither number is a measurement of anything."""
+read it from the text. Neither number is a measurement of anything.
+
+125 bytes heavier on 2026-10-08, when every page started pointing at the API: the header bar's
+seventh link, `API`, costs 32 bytes at this depth with the space before it, and the footer's
+sentence naming `JSON and to model clients over MCP` 93. Every page on the site gained the same
+two edits at its own depth, and the stylesheet's fingerprinted name kept its length. Nothing in
+the page's own body moved, no anchor did and no id went."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

@@ -18,11 +18,11 @@
 <meta property="og:image:alt" content="emendrix: provision-level changelogs for EU legislation">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../style.9e4c1091.css">
+<link rel="stylesheet" href="../style.c8f27896.css">
 <script defer src="../search.d80bbdfb.js"></script>
 </head>
 <body>
-<a class="skip" href="#content">Skip to content</a><header class="bar"><a class="wordmark" href="../">emendrix</a><nav aria-label="Site"><a href="../acts/">All acts</a> <a href="../amendments/">Amending acts</a> <a href="../dates/">Dates ahead</a> <a href="../methodology/">Methodology</a> <a href="../about/" aria-current="page">About</a> <a href="../feeds/">Feeds</a></nav><div id="search" data-root="../"></div></header>
+<a class="skip" href="#content">Skip to content</a><header class="bar"><a class="wordmark" href="../">emendrix</a><nav aria-label="Site"><a href="../acts/">All acts</a> <a href="../amendments/">Amending acts</a> <a href="../dates/">Dates ahead</a> <a href="../methodology/">Methodology</a> <a href="../about/" aria-current="page">About</a> <a href="../feeds/">Feeds</a> <a href="../api/">API</a></nav><div id="search" data-root="../"></div></header>
 <main id="content">
 <header class="masthead masthead--prose">
 <nav class="trail" aria-label="Breadcrumb"><ol><li><a href="../">emendrix</a></li><li aria-current="page">About emendrix</li></ol></nav>
@@ -40,12 +40,21 @@
 <p>Nothing here is selected to flatter the tool. Every figure the project measures is published with the sentence saying what it does not mean, the cases it fails included.</p>
 <h2>The code and the data</h2>
 <p>The generator is open source in the emendrix repository, and the changelog documents it writes are public in the changelog repository. Every page here is a rendering of files committed to those two places, so anything the site shows can be traced back to something a reader can open.</p>
+<section class="doors" aria-labelledby="take-away">
+<h2 id="take-away">Use the record in your own tools</h2>
+<p>Every change this site shows is also published for a program to read.</p>
+<ul>
+<li><a href="../api/">The JSON API</a> <span>Every change as JSON files: an index per act, one file per version, fetched with curl.</span></li>
+<li><a href="../api/#mcp">The MCP server</a> <span>Ask a model client about the record, read-only, with no key.</span></li>
+<li><a href="../api/#watch-in-ci">Watch from CI</a> <span>Open an issue when a provision you depend on changes.</span></li>
+</ul>
+</section>
 <h2>On your machine</h2>
 <p>This site sets no cookies, counts no readers and asks nothing of any other host. The one script it loads is served from here and fetches this site&#x27;s own search index, so a search runs in the browser and reaches nobody. Nothing about a reader is stored anywhere.</p>
 </main>
 <footer>
 <p class="disclaimer"><strong>Not legal advice:</strong> this output is machine-computed from published texts, carries no lawyer&#x27;s review, and is engineering assistance only. Read the official consolidated text <a class="ext" href="https://eur-lex.europa.eu/">on EUR-Lex<span class="visually-hidden"> (external, EUR-Lex)</span></a>.</p>
-<p>Generated on 2026-08-06 from artifacts committed in the emendrix repository; the changelog data it renders is public in the changelog repository. One small script for search; no cookies, no analytics, no third-party requests. <a href="../about/">About this site</a>.</p>
+<p>Generated on 2026-08-06 from artifacts committed in the emendrix repository; the changelog data it renders is public in the changelog repository. One small script for search; no cookies, no analytics, no third-party requests. The record is also served as <a href="../api/">JSON and to model clients over MCP</a>. <a href="../about/">About this site</a>.</p>
 </footer>
 </body>
 </html>

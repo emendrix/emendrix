@@ -562,3 +562,24 @@ def test_every_web_face_swaps_in_rather_than_hiding_the_text() -> None:
     for face in loaded:
         assert "font-display: swap;" in face, face
     assert "font-synthesis: none;" in STYLE
+
+
+def test_the_doors_are_drawn_in_rules_alone_so_every_medium_keeps_them_as_they_are() -> None:
+    """The ways to take the record away are neither the stat panel nor the notice: a rule in the
+    text colour over each door and no fill. A border is repainted in the system's text colour
+    under forced colours and costs no tint on paper, which is why neither block names them, and
+    every colour they paint is a pair `_PAIRS` already checks in both schemes."""
+    rules = PAGES.split("/* The ways to take the record away")[1].split("/* Rosters")[0]
+    assert "background" not in rules
+    assert "--type-act" not in rules and "--notice" not in rules
+    assert ".doors li { border-top: 2px solid var(--fg);" in rules
+    for pair in (("fg", "bg"), ("link", "bg"), ("muted", "bg")):
+        assert pair in _PAIRS, pair
+    assert ".doors" not in STYLE.partition("@media print")[2]
+
+
+def test_the_doors_stack_on_a_phone_and_never_scroll_sideways() -> None:
+    """A column is never wider than the screen: `min(100%, 14rem)` gives the grid one column at
+    320px and three side by side on a wide screen, with no media query of its own."""
+    grid = PAGES.split(".doors ul {")[1].split("}")[0]
+    assert "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))" in grid

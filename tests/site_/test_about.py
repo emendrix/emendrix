@@ -207,3 +207,14 @@ def test_a_build_handed_no_state_file_renders_the_page_it_renders_today() -> Non
 def test_the_polling_sentences_leave_the_disclaimer_alone() -> None:
     """The footer carries it here as everywhere, exactly once, whatever the section holds."""
     assert text_of(_about(polled=POLLED)).count(escape(DISCLAIMER)) == 1
+
+
+def test_the_record_in_your_own_tools_is_one_section_linking_the_three_doors() -> None:
+    rendered = _about()
+    assert rendered.count('<section class="doors"') == 1
+    assert rendered.count('<h2 id="take-away">Use the record in your own tools</h2>') == 1
+    assert rendered.index("<h2>The code and the data</h2>") < rendered.index(
+        '<section class="doors"'
+    )
+    for href in ("../api/", "../api/#mcp", "../api/#watch-in-ci"):
+        assert f'<li><a href="{href}">' in rendered, href

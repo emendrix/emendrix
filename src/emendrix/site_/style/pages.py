@@ -4,9 +4,10 @@ Sixth in the cascade, so everything here may rely on `fonts`, `tokens`, `base` a
 nothing here is relied on by them. Three page families live in this module and none of their
 selectors escapes its own page: the home page's hero, stat strip and version cards; the
 rosters' jump lists, rows and folded years; the methodology page's table columns, caveat list, loop
-grid and glossary. The feeds page and the about page carry no rule of their own, because
-they are prose the shell already styles, and a class invented for them would be a class
-nothing else could reuse.
+grid and glossary. The one exception is `.doors`, the ways to take the record away, which home
+prints and the About page and `/api/` print too, from one renderer. The feeds page and the
+about page carry no other rule of their own, because they are prose the shell already styles,
+and a class invented for them would be a class nothing else could reuse.
 
 Two hierarchy decisions are worth stating, because they are what the markup is shaped for:
 
@@ -61,6 +62,16 @@ PAGES: Final = """\
   font-size: var(--text-meta);
 }
 .stat strong { font-size: var(--text-h2); line-height: 1; font-variant-numeric: tabular-nums; }
+/* The ways to take the record away: a rule in the text colour over each door and no fill, so
+   it is neither the stat panel nor the notice, and print and forced colours keep it as drawn. */
+.doors { margin: var(--space-5) 0; }
+.doors h2 { margin: 0 0 var(--space-3); }
+.doors ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+            gap: var(--space-4); max-width: 62rem; list-style: none; padding: 0; margin: 0; }
+.doors li { border-top: 2px solid var(--fg); padding-top: var(--space-2); }
+.doors li > a { font-size: var(--text-explain); font-weight: 600; }
+.doors li > span { display: block; max-width: 40ch; margin-top: var(--space-1);
+                   font-size: var(--text-meta); line-height: 1.5; color: var(--muted); }
 /* Rosters (acts, amending acts): one row per object, name first, identifier demoted. */
 .sectors ul { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); list-style: none;
               padding: 0; margin: 0 0 var(--space-5); font-size: var(--text-meta); }

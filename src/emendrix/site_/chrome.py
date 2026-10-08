@@ -73,17 +73,19 @@ _SECTIONS: Final[tuple[tuple[str, str], ...]] = (
     ("methodology/", "Methodology"),
     ("about/", "About"),
     ("feeds/", "Feeds"),
+    ("api/", "API"),
 )
 """The header bar's destinations as `(path, name)`, in the order the bar prints them."""
 
 
 def nav_links(depth: int, section: str = "", root: str | None = None) -> Html:
-    """The header bar: a skip link, the wordmark, the six destinations and the search mount.
+    """The header bar: a skip link, the wordmark, the seven destinations and the search mount.
 
     The order is the decision. The first two are the site's two rosters, of acts and of the
     amending acts that changed them; the third is the only one of the three facing forward, so
     it sits with them and not among the pages that are about the site rather than about the
-    corpus. Everything after it describes the tool.
+    corpus. Everything after it describes the tool. `API` closes the bar beside `Feeds`
+    because the two are the ways to take the record away from the site.
 
     `section` is the path of the destination the page belongs to, and that link alone carries
     `aria-current="page"`: an act, a version and a provision all sit under `acts/`, an amending
@@ -150,11 +152,11 @@ def disclaimer_html() -> Html:
 
 
 def _footer(chrome: PageChrome, root: str) -> Html:
-    """The disclaimer, the build date and what the site does on the reader's machine.
+    """The disclaimer, the build date, what the site does on the reader's machine, and the API.
 
     `root` is the page's own climb back to the site root, passed in rather than read off the
     chrome model: which directory a page sits in is a fact about the page, and the footer's
-    one internal link has to resolve from wherever the file was written.
+    internal links have to resolve from wherever the file was written.
     """
     source, changelogs = repository_links(chrome)
     return join(
@@ -164,8 +166,9 @@ def _footer(chrome: PageChrome, root: str) -> Html:
             Html(
                 f"<p>Generated on {chrome.generated_on.isoformat()} from artifacts committed in "
                 f"{source}; the changelog data it renders is public in {changelogs}. One small "
-                f"script for search; no cookies, no analytics, no third-party requests. "
-                f'<a href="{root}about/">About this site</a>.</p>'
+                f"script for search; no cookies, no analytics, no third-party requests. The "
+                f'record is also served as <a href="{root}api/">JSON and to model clients over '
+                f'MCP</a>. <a href="{root}about/">About this site</a>.</p>'
             ),
             Html("</footer>"),
         ),

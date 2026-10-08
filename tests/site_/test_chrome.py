@@ -42,14 +42,15 @@ def test_the_disclaimer_says_not_legal_advice_once_with_its_lead_in_bold() -> No
     assert escape(DISCLAIMER) in text_of(paragraph)
 
 
-def test_the_header_carries_the_six_destinations_in_one_order() -> None:
-    """Two rosters, the list of dates ahead, the two prose pages and the feeds.
+def test_the_header_carries_the_seven_destinations_in_one_order() -> None:
+    """Two rosters, the list of dates ahead, the two prose pages, the feeds and the API.
 
     Pinned as one string because the order is the decision: `Amending acts` sits beside `All
     acts` because the two are the site's two rosters, and a reader who has just met an
     amending act's name on a version page looks for it next to where the acts are. `Dates ahead`
     follows them because it is the third view of the corpus and the only one facing forward;
-    everything after it is about the site rather than about the corpus.
+    everything after it is about the site rather than about the corpus. `API` closes the bar
+    beside `Feeds`, the two being the ways to take the record away.
     """
     assert (
         '<nav aria-label="Site"><a href="acts/">All acts</a> '
@@ -57,8 +58,27 @@ def test_the_header_carries_the_six_destinations_in_one_order() -> None:
         '<a href="dates/">Dates ahead</a> '
         '<a href="methodology/">Methodology</a> '
         '<a href="about/">About</a> '
-        '<a href="feeds/">Feeds</a></nav>' in nav_links(0)
+        '<a href="feeds/">Feeds</a> '
+        '<a href="api/">API</a></nav>' in nav_links(0)
     )
+
+
+def test_the_api_link_marks_itself_on_the_api_page_and_nowhere_else() -> None:
+    marked = nav_links(1, "api/")
+    assert marked.count('aria-current="page"') == 1
+    assert '<a href="../api/" aria-current="page">API</a>' in marked
+    for section in ("", "acts/", "amendments/", "dates/", "methodology/", "about/", "feeds/"):
+        assert '<a href="../api/">API</a>' in nav_links(1, section), section
+
+
+def test_the_footer_links_the_api_page_from_whatever_depth_the_page_sits_at() -> None:
+    """One sentence, inside the paragraph that already says what the site does, so the
+    footer stays one paragraph after the disclaimer."""
+    for path, root in (("", ""), ("about/", "../"), ("acts/x/y/", "../../../")):
+        footer = _page(path=path).split("<footer>")[1]
+        assert f'served as <a href="{root}api/">JSON and to model clients over MCP</a>.' in footer
+        assert footer.count("<p>") == 1
+    assert '<a href="/sub/api/">JSON and to model clients over MCP</a>' in _at("404.html", "/sub/")
 
 
 def test_the_header_marks_the_section_a_page_belongs_to_and_only_that_one() -> None:

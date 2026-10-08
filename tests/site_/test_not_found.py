@@ -88,6 +88,7 @@ def test_with_a_site_url_every_reference_starts_from_the_site_urls_path(subpath:
         '<a href="/sub/acts/">All acts</a>',
         '<div id="search" data-root="/sub/">',
         '<a href="/sub/acts/">All watched acts</a>',
+        '<li><a href="/sub/api/">The JSON API</a>, the record as files and over MCP</li>',
         '<a href="/sub/about/">About this site</a>',
     ):
         assert expected in subpath, expected
@@ -112,6 +113,7 @@ def test_without_a_site_url_its_references_stay_relative_and_climb_no_directory(
         'href="acts/"',
         'href="methodology/"',
         'href="feeds/"',
+        '<li><a href="api/">The JSON API</a>, the record as files and over MCP</li>',
     ):
         assert expected in unaddressed, expected
     assert 'rel="canonical"' not in unaddressed

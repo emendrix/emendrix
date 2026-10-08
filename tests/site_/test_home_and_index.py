@@ -95,6 +95,30 @@ def test_the_measured_claim_follows_the_list_and_precedes_the_counted_remainder(
     assert strip < rendered.index("1 older version is on the act pages.")
 
 
+def test_the_doors_follow_the_measured_claim_and_precede_the_counted_remainder() -> None:
+    """Hero, the list, the measured claim, the ways to take the record away, then the counted
+    remainder, which still closes the page so the window never reads as the whole record."""
+    entries = tuple(
+        _entry().model_copy(update={"in_force": (date(2020, 1, day),)}) for day in (1, 2, 3)
+    )
+    site = collect_site(
+        generated_on=OBSERVED, run=_run(), report=Path("r.json"), entries=entries, configured=True
+    )
+    rendered = render_home(site, limit=2)
+    order = [
+        rendered.index('<section class="hero">'),
+        rendered.index("<h2>Latest versions</h2>"),
+        rendered.rindex('<article class="cardrow">'),
+        rendered.index('<aside class="stat">'),
+        rendered.index('<section class="doors"'),
+        rendered.index("1 older version is on the act pages."),
+    ]
+    assert order == sorted(order)
+    assert '<h2 id="take-away">Take the record with you</h2>' in rendered
+    for href in ("api/", "api/#mcp", "api/#watch-in-ci"):
+        assert f'<li><a href="{href}">' in rendered, href
+
+
 def test_a_card_leads_with_the_act_and_carries_the_version_pair_below_it() -> None:
     """The caption names the act and goes to its page; the heading names the version and goes
     to its page; the identifiers are a line of their own, one step down."""

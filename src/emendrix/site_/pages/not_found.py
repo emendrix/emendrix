@@ -2,7 +2,7 @@
 
 `404.html` at the site root, which is the file a static host serves for an unmatched path. It
 is a real page rather than the host's generic one: it carries the shell, so it has the header
-bar, the search box, the disclaimer and three links back into the site. A reader who mistyped
+bar, the search box, the disclaimer and four links back into the site. A reader who mistyped
 an act's identifier is one search away from the page they wanted, and search is the useful
 thing here because the address they guessed is the one piece of information the page has.
 
@@ -32,7 +32,8 @@ from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import SiteInputs
-from emendrix.site_.markup import Html, join
+from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.pages.take_away import DOORS
 from emendrix.site_.urls import depth_of, up
 
 __all__ = ["not_found_root", "render_not_found"]
@@ -72,6 +73,10 @@ def render_not_found(site: SiteInputs) -> Html:
         Html(f'<li><a href="{root}acts/">All watched acts</a>, the full roster</li>'),
         Html(f'<li><a href="{root}methodology/">Methodology</a>, what the numbers mean</li>'),
         Html(f'<li><a href="{root}feeds/">Feeds</a>, one per act and one for everything</li>'),
+        Html(
+            f'<li><a href="{root}{DOORS[0].href}">{escape(DOORS[0].name)}</a>, the record as '
+            "files and over MCP</li>"
+        ),
         Html("</ul>"),
     ]
     return page(

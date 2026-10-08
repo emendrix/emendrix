@@ -75,6 +75,16 @@ def test_the_page_carries_the_disclaimer_and_the_ci_anchor(page: str) -> None:
     assert page.count('id="watch-in-ci"') == 1
 
 
+def test_the_index_under_the_lede_jumps_to_three_ids_each_present_once(page: str) -> None:
+    """The three ways in are fragments on this page, and no id they land on moved or doubled."""
+    index = page.split('<section class="doors"')[1].split("</section>")[0]
+    assert re.findall(r'<a href="([^"]*)"', index) == ["#layout", "#mcp", "#watch-in-ci"]
+    for anchor in ("layout", "examples", "mcp", "watch-in-ci", "take-away"):
+        assert page.count(f'id="{anchor}"') == 1, anchor
+    assert page.index('<p class="lede">') < page.index('<section class="doors"')
+    assert page.index('<section class="doors"') < page.index('<h2 id="layout">')
+
+
 def test_every_address_in_the_layout_table_is_under_the_site_url(page: str) -> None:
     table = _TABLE.search(page)
     assert table is not None

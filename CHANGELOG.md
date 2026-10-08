@@ -991,3 +991,15 @@ Named rather than discovered later; the eval report's disagreement list is the l
   that relied on the address written into the file must create that file before its next `up`.
   **No published figure moved**: the eval layer, the payloads and the changelogs are
   byte-identical to before.
+
+- **Every page points at the API and the MCP server, since 2026-10-08.** The header bar gains a
+  seventh destination, `API`, after `Feeds`; the footer says on every page that the record is
+  also served as JSON and to model clients over MCP, linking `/api/`; and the not-found page
+  lists the JSON API among its ways back. The home page, after its measured claim, and the About
+  page, after `The code and the data`, print the same three doors, the JSON API, the MCP server
+  and watching a provision from CI, each a name and one line of purpose worded once in
+  `site_/pages/take_away.py`, and `/api/` opens with them as an index into itself. The block is
+  drawn in rules and type alone, in the site's own tokens, and restates no fact the API page
+  carries. No existing anchor moved, and the stylesheet's fingerprinted name moved with its new
+  rules. **No published figure moved**: the eval layer, the payloads, the feeds and the
+  changelogs are byte-identical to before.

@@ -15,7 +15,7 @@ uv run emendrix site build --out site/ \
 A directory of files, not a page:
 
 ```
-index.html            search, the latest versions, and the one measured claim after them
+index.html            search, the latest versions, the one measured claim, and the ways to take the record away
 404.html              the page a mistyped address gets, with a way back
 acts/index.html       every watched act, by the sector the watchlist gives it, with a jump list
 acts/<celex>/         one page per act: the whole watched history, newest first, as cards
@@ -31,7 +31,7 @@ feeds/all.xml         every amendment event, as Atom
 feeds/<celex>.xml     one act's events, for a reader who watches only that act
 feeds/acts/<celex>/<prov>.xml       one touched provision's changes, newest first, as Atom
 feeds/acts/<celex>/provisions.opml  every provision feed of one act, for a feed reader's import
-api/                  the JSON API: its layout, its fields, and an example that watches one provision from CI
+api/                  the JSON API: three ways in, its layout, its fields, the MCP server, and a CI example
 api/v1/catalogue.json every watched act's names, and the address of each of its pages and its feed
 api/v1/schema/        the JSON Schema of each document the API serves, one file each
 robots.txt            what crawlers may read, and where the sitemap index is
@@ -487,8 +487,8 @@ two different trails.
 **The header bar marks the section a page belongs to** with `aria-current="page"`, by weight and
 an underline rather than by colour alone: act, version and provision pages mark `All acts`,
 amending-act pages and their roster mark `Amending acts`, and each page about the site marks
-itself. Home and the not-found page mark nothing. On a phone (up to 40rem) the wordmark heads
-the bar, the six section links sit in one row beside it that scrolls sideways, faded over its
+itself, `API` on `/api/` included. Home and the not-found page mark nothing. On a phone (up to 40rem) the wordmark heads
+the bar, the seven section links sit in one row beside it that scrolls sideways, faded over its
 last 2.5rem so the cut reads as more to come, with as much padding at its end so the last link
 scrolls clear of the fade, and search takes the row under that. Once the row has been scrolled,
 its start fades too, over the first 2.5rem of scroll, so a reader sees there is more to the left
@@ -537,7 +537,10 @@ localisation figure in the sentence that says what it does not mean, set large b
 them, and the sentence, the number and the caveat are unchanged. It links the methodology
 page's `#measured` section. Versions past the cap and versions naming no amending act are
 counted in words, never dropped silently. The hero's act links use the long name where the
-watchlist gives one, the name the act's own heading uses.
+watchlist gives one, the name the act's own heading uses. After the stat strip and before the
+counted lines comes `Take the record with you`, the three ways to take the record away as data
+(see `/api/` below), so a stranger meets the versions, then how they were found, then how to
+carry them into their own tools, and the counted remainder still closes the page.
 
 **An act page's index follows its timeline in the markup.** A phone reads in markup order, so a
 reader there meets the versions first, then the index, then the dates the text names; from
@@ -683,6 +686,22 @@ API's addresses are not known for the build, as `/feeds/` does, links only the f
 writes beside it and shows its examples against the hosted instance, marked as examples. The
 licence is named only when `--changelogs-url` says where the record is published, because the
 repository there is what states it.
+
+**Every page points at it, and only points.** The header bar's seventh destination is `API`,
+last, beside `Feeds`, the two being the ways to take the record away; the footer's paragraph
+says on every page that the record is also served as JSON and to model clients over MCP, linking
+`api/`; and the not-found page lists `The JSON API` beside its other ways back. Three pages print
+the same block, `site_/pages/take_away.py`, which words the three doors once: the JSON API at
+`api/`, the MCP server at `api/#mcp` and watching a provision from CI at `api/#watch-in-ci`,
+each a name and one line of purpose. Home prints it as `Take the record with you`, About as
+`Use the record in your own tools` after `The code and the data`, and `/api/` itself, under its
+lede, as `Three ways in`, where each door is a jump down the same page and the first lands on
+`#layout`. The block is drawn in rules alone, a 2px rule in the text colour over each door and
+no fill, so it reads as neither the stat strip nor the not-legal-advice notice, and print and
+forced colours keep it as drawn with no rule of their own. Three columns on a wide screen stack
+into one on a phone. It reads nothing from the build, so it is the same bytes on every build,
+and no fact about the API is restated in it: those stay on `/api/` and in
+[`./api.md`](./api.md).
 
 `api/v1/catalogue.json` is what the record cannot know: every watched act, quiet ones included,
 sorted by corpus and key, with the watchlist's label, long name, aliases and sector, the act's

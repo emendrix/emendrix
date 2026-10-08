@@ -18,11 +18,11 @@
 <meta property="og:image:alt" content="emendrix: provision-level changelogs for EU legislation">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../style.9e4c1091.css">
+<link rel="stylesheet" href="../style.c8f27896.css">
 <script defer src="../search.d80bbdfb.js"></script>
 </head>
 <body>
-<a class="skip" href="#content">Skip to content</a><header class="bar"><a class="wordmark" href="../">emendrix</a><nav aria-label="Site"><a href="../acts/">All acts</a> <a href="../amendments/">Amending acts</a> <a href="../dates/">Dates ahead</a> <a href="../methodology/">Methodology</a> <a href="../about/">About</a> <a href="../feeds/">Feeds</a></nav><div id="search" data-root="../"></div></header>
+<a class="skip" href="#content">Skip to content</a><header class="bar"><a class="wordmark" href="../">emendrix</a><nav aria-label="Site"><a href="../acts/">All acts</a> <a href="../amendments/">Amending acts</a> <a href="../dates/">Dates ahead</a> <a href="../methodology/">Methodology</a> <a href="../about/">About</a> <a href="../feeds/">Feeds</a> <a href="../api/" aria-current="page">API</a></nav><div id="search" data-root="../"></div></header>
 <main id="content">
 <header class="masthead masthead--prose">
 <nav class="trail" aria-label="Breadcrumb"><ol><li><a href="../">emendrix</a></li><li aria-current="page">The JSON API</li></ol></nav>
@@ -30,6 +30,14 @@
 <h1>The JSON API</h1>
 </header>
 <p class="lede">The record this site renders, as files a program can fetch. There is no query endpoint, no account and no key: every answer is a file, and the record&#x27;s files are the committed bytes of the changelogs repository, at the same relative paths as in a clone of it.</p>
+<section class="doors" aria-labelledby="take-away">
+<h2 id="take-away">Three ways in</h2>
+<ul>
+<li><a href="#layout">The JSON API</a> <span>Every change as JSON files: an index per act, one file per version, fetched with curl.</span></li>
+<li><a href="#mcp">The MCP server</a> <span>Ask a model client about the record, read-only, with no key.</span></li>
+<li><a href="#watch-in-ci">Watch from CI</a> <span>Open an issue when a provision you depend on changes.</span></li>
+</ul>
+</section>
 <h2 id="layout">Layout</h2>
 <div class="scroll"><table role="table">
 <thead role="rowgroup"><tr role="row"><th role="columnheader">Path</th><th role="columnheader">What it is</th><th role="columnheader">From</th></tr></thead><tbody role="rowgroup">
@@ -115,7 +123,7 @@ jobs:
 </main>
 <footer>
 <p class="disclaimer"><strong>Not legal advice:</strong> this output is machine-computed from published texts, carries no lawyer&#x27;s review, and is engineering assistance only. Read the official consolidated text <a class="ext" href="https://eur-lex.europa.eu/">on EUR-Lex<span class="visually-hidden"> (external, EUR-Lex)</span></a>.</p>
-<p>Generated on 2026-08-06 from artifacts committed in the emendrix repository; the changelog data it renders is public in the changelog repository. One small script for search; no cookies, no analytics, no third-party requests. <a href="../about/">About this site</a>.</p>
+<p>Generated on 2026-08-06 from artifacts committed in the emendrix repository; the changelog data it renders is public in the changelog repository. One small script for search; no cookies, no analytics, no third-party requests. The record is also served as <a href="../api/">JSON and to model clients over MCP</a>. <a href="../about/">About this site</a>.</p>
 </footer>
 </body>
 </html>

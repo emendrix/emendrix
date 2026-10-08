@@ -9,6 +9,10 @@ is configuration a fork changes. The workflow is published here and in the API's
 document, and a test holds the two to one constant. The page closes with the MCP server, whose
 install line names this build's own `/mcp` when it knows its address. The words themselves live
 in `api_prose.py`; this module lays them out.
+
+Under the lede, the three ways in are an index into the page itself: `take_away`'s block, with
+each door a fragment here, so the words are the ones the home and About pages print and a
+reader reaches the layout table, the MCP server or the workflow in one jump.
 """
 
 from __future__ import annotations
@@ -42,6 +46,7 @@ from emendrix.site_.pages.api_prose import (
     SNIPPET_TEMPLATE,
     UNCONFIGURED,
 )
+from emendrix.site_.pages.take_away import take_away
 from emendrix.site_.urls import depth_of, up
 
 __all__ = ["SNIPPET_TEMPLATE", "render_api_page", "snippet"]
@@ -202,6 +207,7 @@ def render_api_page(site: SiteInputs) -> Html:
     ]
     if not site.site_url:
         lines.append(Html(f'<p class="none">{escape(UNCONFIGURED)}</p>'))
+    lines.append(take_away(root, heading="Three ways in", here=True))
     lines.extend((Html('<h2 id="layout">Layout</h2>'), _layout(site), _schemas(site)))
     lines.extend((*_prose(FIELDS), *_prose(_REASONS), _methodology(root), *_prose(RECORD)))
     lines.extend(_licence(site.changelogs_url))

@@ -983,4 +983,25 @@ after it. **No `id=` moved or went**; the one new id is `mcp`. Every feed, `sear
 the sitemaps, `robots.txt`, the script, the stylesheet, the fonts, `icon.svg`, `og.png`, the
 catalogue and schemas under `api/v1/` and every other page are byte-identical, the page's
 `<title>` and description are unchanged, and `_LARGEST_PAGE` does not move.
+
+Read again on 2026-10-08, later still, when every page began pointing at the API. All 24 pages
+moved, and the stylesheet with them. Every page gained the header bar's seventh link, `API`,
+last after `Feeds`, which carries `aria-current="page"` on `api/index.html` alone, and one
+sentence in the footer's paragraph before `About this site`, `The record is also served as JSON
+and to model clients over MCP`, its link to `api/`; on `404.html` both are rooted at `/site/`
+like the rest of that page. Three pages gained a block: `index.html` a section headed `Take the
+record with you` between the stat strip and the end of the page, `about/index.html` a section
+headed `Use the record in your own tools` after `The code and the data`, with one sentence of
+its own, and `api/index.html` a section headed `Three ways in` between the lede and `#layout`,
+whose three links are fragments on that page; each section is the same three doors, the JSON
+API, the MCP server and watching a provision from CI, linking `api/`, `api/#mcp` and
+`api/#watch-in-ci`. `404.html` gained a fourth item, `The JSON API`. Home grew 613 bytes, About
+713, the API page 623, the not-found page 200, and every other page 113 to 125 by the header and
+the footer alone. The stylesheet gained the `.doors` rules, so its fingerprinted name moved from
+`style.9e4c1091.css` to `style.c8f27896.css` in every page's head, at the same length. **No
+existing `id=` moved or went**; the one new id is `take-away`, once on each of the three pages
+carrying a block. Every feed, `search-index.json`, the sitemaps, `robots.txt`, the script, the
+fonts, `icon.svg`, `og.png`, the catalogue and the schemas under `api/v1/` are byte-identical,
+every `<title>` and description is unchanged, and `_LARGEST_PAGE` moved by the 125 bytes of
+chrome its docstring states.
 """

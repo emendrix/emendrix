@@ -62,7 +62,7 @@ _EVENTS: Final = 200
 """Enough events to put the generated tree well past any act the live site has served. A round
 number rather than a tuned one: being over that mark is the point, tracking it is not."""
 
-_HEAVIEST: Final = ("acts/house-rules/index.html", 177273)
+_HEAVIEST: Final = ("acts/house-rules/index.html", 177392)
 """The heaviest page in the generated tree, path and exact bytes, measured 2026-08-31 the day
 the tree split. It is the index, because two hundred toy events of four small changes each make
 light event pages and a long timeline; on the live site, where one event can carry hundreds of
@@ -164,9 +164,13 @@ EUR-Lex address of its own, so its facts line did not move.
 
 9 bytes heavier on 2026-09-19, later again: the link to what the tags mean lost its drawn arrow
 from its words and gained `class="go"`, so the sheet draws the arrow with empty alternative
-text (7 bytes), and the description says a version's page where it said an event's (2)."""
+text (7 bytes), and the description says a version's page where it said an event's (2).
 
-_TOTAL_BYTES: Final = 3355678
+119 bytes heavier on 2026-10-08, when every page started pointing at the API: the header bar's
+seventh link (29 bytes at this depth with its space) and the footer's sentence naming the JSON
+and the MCP server (90). Nothing on the cards moved."""
+
+_TOTAL_BYTES: Final = 3430922
 """The whole tree's exact bytes over 201 pages, measured 2026-08-31: the number that catches
 weight quietly spreading back onto the index without any one page growing past the heaviest.
 Before the split this input rendered as one page, which is the shape 6.1 MB arrived in.
@@ -332,6 +336,13 @@ Unmoved on 2026-10-08, when every provision page gained its own feed in the head
 linking that feed and the CI example: this tree is built with no site URL, so no feed exists for
 either to name and the page renders neither. It is a size pin over the act's pages, not a
 published figure, and a build with a base pays about 320 bytes a provision page for the two.
+
+75 244 bytes heavier on 2026-10-08, later the same day, when every page started pointing at the
+API: 119 bytes on the index and 125 on each of the six hundred and one event and provision
+pages, which sit a directory deeper and pay three bytes more for each of the two relative paths.
+Each is the header bar's seventh link and the footer's one sentence; no page gained anything
+else, since the doors themselves are printed only on home, About and `/api/`, none of which
+this tree holds. No anchor or id moved and no measured figure moved with it.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')
