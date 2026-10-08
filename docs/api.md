@@ -5,7 +5,8 @@ Not legal advice: this output is machine-computed from published texts, carries 
 The record emendrix publishes, as files a program can fetch: what the API is, where each file
 lives, what every date, signal and dispute reason means, how a correction shows, how often to
 poll, what the API is not, how to watch one provision from CI, and the MCP server that hands the
-same record to a model. The documents themselves are
+same record to a model. A model can start at `/llms.txt`, which names these files and the MCP
+server in plain Markdown. The documents themselves are
 described in [`./output-format.md`](./output-format.md); this page is about reading them over
 HTTP. Every address below is the hosted instance's, `https://emendrix.eu/api/v1/`; a
 self-hosted site serves the same layout under its own address.

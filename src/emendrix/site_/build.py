@@ -11,6 +11,7 @@ serif-400.<digest>.woff2        the serif face the law's own words are set in
 icon.svg                        the favicon every head links
 og.png                          the link-preview card, the one raster image published
 robots.txt                      the crawl policy, and where the sitemap is
+llms.txt                        what the site offers a model, and how to fetch the record instead
 search-index.json               what that script fetches, prebuilt
 sitemap.xml                     every page, with the date its content last moved
 sitemap_index.xml               the one address a search engine is given, naming the sitemap
@@ -42,11 +43,12 @@ be two strings. The font files carry a digest too and sit at the root beside the
 because the sheet loads them by a bare relative `url()`, which resolves against the sheet and
 so works from every page depth, from `file://` and from a subpath. `robots.txt`, `sitemap.xml`
 and `sitemap_index.xml` sit at the root because that is the only place a crawler looks for any
-of them.
+of them. `llms.txt` sits there for the same reason: it is where an agent looks.
 
-The feeds and the sitemap are the one conditional, and it is one rule rather than two: a feed's
-links and a sitemap's locations are both absolute, so without a site URL `render_feed` and
-`sitemap_xml` refuse and no `.xml` or `.opml` is written. The feeds page then says so in words
+The feeds, the sitemap and `llms.txt` are the one conditional, and it is one rule rather than
+three: a feed's links, a sitemap's locations and `llms.txt`'s links are all absolute, so without
+a site URL `render_feed`, `sitemap_xml` and `llms_txt` refuse and no `.xml`, `.opml` or
+`llms.txt` is written. The feeds page then says so in words
 rather than listing files that are not there, and `robots.txt` loses only its `Sitemap:` line,
 because a crawl policy is about paths and needs no base to state one. The icon and the card are
 written unconditionally: what needs a base address is the reference to an asset, never the asset,
@@ -89,6 +91,7 @@ from emendrix.site_.fingerprint import FONTS, SCRIPT, STYLESHEET
 from emendrix.site_.history import histories
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
+from emendrix.site_.llms import LLMS, llms_txt
 from emendrix.site_.pages.about import render_about
 from emendrix.site_.pages.act import render_act
 from emendrix.site_.pages.acts_index import render_acts_index
@@ -192,6 +195,7 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
     if site.site_url:
         files[SITEMAP] = sitemap_xml(site)
         files[SITEMAP_INDEX] = sitemap_index_xml(site)
+        files[LLMS] = llms_txt(site)
         files[feed_path(None)] = render_feed(site, None)
         for act in site.acts:
             files[feed_path(act)] = render_feed(site, act)

@@ -1004,4 +1004,13 @@ carrying a block. Every feed, `search-index.json`, the sitemaps, `robots.txt`, t
 fonts, `icon.svg`, `og.png`, the catalogue and the schemas under `api/v1/` are byte-identical,
 every `<title>` and description is unchanged, and `_LARGEST_PAGE` moved by the 125 bytes of
 chrome its docstring states.
+
+Read again on 2026-10-08, last of the day, when the site began telling a model how to use the
+record. One file is new, `llms.txt` at the root, 3031 bytes of ASCII: `# emendrix`, the pitch as
+a blockquote, the disclaimer, then four sections, `The JSON API`, `The MCP server`, `Watch from
+CI` and `Optional`, every link absolute under `https://example.invalid/site/`, and the install
+line at `https://example.invalid/site/mcp`, the line `api/index.html` prints. Nothing else moved:
+every page, every feed, `search-index.json`, the sitemaps, `robots.txt`, the script, the
+stylesheet, the fonts, `icon.svg`, `og.png`, the catalogue and the schemas under `api/v1/` are
+byte-identical, **no `id=` moved or went**, and `_LARGEST_PAGE` does not move.
 """

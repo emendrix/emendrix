@@ -35,6 +35,7 @@ api/                  the JSON API: three ways in, its layout, its fields, the M
 api/v1/catalogue.json every watched act's names, and the address of each of its pages and its feed
 api/v1/schema/        the JSON Schema of each document the API serves, one file each
 robots.txt            what crawlers may read, and where the sitemap index is
+llms.txt              what the site offers a model, and how to fetch the record instead of the pages
 sitemap.xml           every page, with the date its content last moved
 sitemap_index.xml     the one address a search engine is given, naming the sitemap
 search-index.json     act and instrument names, aliases, CELEX numbers, touched provisions and their titles
@@ -720,6 +721,20 @@ would answer with whatever the last build saw. How the route is set up is in
 [`./api.md`](./api.md) §"Serving it yourself". `api/` carries no `<lastmod>` in the sitemap,
 because its content moves with the build rather than with the corpus.
 
+**`/llms.txt` tells a model the same thing in Markdown.** It follows the llms.txt convention's
+shape: one `#` heading, the pitch as a blockquote, the disclaimer, then `##` sections of
+`- [name](url): note` lines, the last `## Optional`. It reuses the API page's own text rather
+than paraphrasing it: the lede, the MCP section whole, with its install line and client
+configuration filled by the same expressions `/api/` uses, the three doors' names and purposes
+from `take_away.py`, and links to the root index, the catalogue, the schemas, the CI example,
+`/feeds/`, `/methodology/` and `/about/`. The only words of its own are the link names and their
+short notes. Every link is absolute, so it is written only with `--site-url`, like the feeds and
+the sitemap, and a test checks that each resolves in the built tree, save the root index, which
+the deployment serves from the record. Its bytes are ASCII because a static host serves `.txt`
+as `text/plain` with no charset, and ASCII decodes the same under every guess a client makes. It
+is not a page: the sitemap does not list it, no page's head links it and `robots.txt` does not
+name it.
+
 ## No backend, and that is the more interesting decision
 
 A minimal backend is the obvious alternative, and this project has **none**. Static generation wins
@@ -755,7 +770,7 @@ planned.
 
 `--site-url` is the one fact the generator cannot infer, and everything absolute needs it: an Atom
 link, an entry ID, a canonical address, an `og:image` and a sitemap `<loc>` are all absolute by
-definition. Without it no feed file, no `sitemap.xml` and no `sitemap_index.xml` is written, `/feeds/` says
+definition. Without it no feed file, no `sitemap.xml`, no `sitemap_index.xml` and no `llms.txt` is written, `/feeds/` says
 why, and no page carries a canonical, an Open Graph tag or a JSON-LD block at all. All of it or none of it,
 per page: a page carrying `og:title` with no `og:url` renders a preview that is wrong, which is
 worse than a page with no preview. Entry IDs are the address an event is published at, the

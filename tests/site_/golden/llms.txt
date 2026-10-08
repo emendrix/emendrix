@@ -1,0 +1,56 @@
+# emendrix
+
+> Your regulatory dependencies, with a changelog. emendrix watches EU legislation, computes provision-level diffs when it is amended, and explains what changed in plain English where every sentence cites a provision you can click.
+
+Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.
+
+The record is published three ways besides these pages: as JSON files, to model clients over MCP, and as feeds. Prefer them to reading the HTML.
+
+## The JSON API
+
+The record this site renders, as files a program can fetch. There is no query endpoint, no account and no key: every answer is a file, and the record's files are the committed bytes of the changelogs repository, at the same relative paths as in a clone of it.
+
+- [The JSON API](https://example.invalid/site/api/): Every change as JSON files: an index per act, one file per version, fetched with curl.
+- [Root index](https://example.invalid/site/api/v1/index.json): one row per act, naming its act index
+- [Catalogue](https://example.invalid/site/api/v1/catalogue.json): every watched act's names and page addresses
+- [JSON Schemas](https://example.invalid/site/api/#layout): one per document the API serves
+
+## The MCP server
+
+The same record, for a model: a read-only MCP server at `/mcp`, answering streamable HTTP with one
+JSON response per request, with no session, no key and no account. Its seven tools are
+`list_acts`, `find_provisions`, `changes_since`, `provision_history`, `get_change`, `get_event`
+and `list_disputed`, and its four resources `emendrix://acts`, `emendrix://acts/{act}`,
+`emendrix://changes/{act}/{version}/{location}` and `emendrix://methodology`. Every result carries
+the disclaimer and the file each fact was read from, with that file's `sha256`.
+
+It decides nothing: it does not read or interpret law, cannot search law text and cannot resolve
+a free reference such as `Art. 50(2)`. Name an act by its key and a provision by its canonical
+location, as `list_acts` and `find_provisions` give them.
+
+A client that takes a URL needs only `https://example.invalid/site/mcp`. In Claude Code:
+
+    claude mcp add --transport http emendrix https://example.invalid/site/mcp
+
+In a client configured by a JSON file:
+
+    {
+      "mcpServers": {
+        "emendrix": {
+          "type": "http",
+          "url": "https://example.invalid/site/mcp"
+        }
+      }
+    }
+
+- [The MCP server](https://example.invalid/site/api/#mcp): Ask a model client about the record, read-only, with no key.
+
+## Watch from CI
+
+- [Example GitHub Actions workflow](https://example.invalid/site/api/#watch-in-ci): Open an issue when a provision you depend on changes.
+- [Feeds](https://example.invalid/site/feeds/): Atom, one per act and one per touched provision, and OPML per act
+
+## Optional
+
+- [Methodology](https://example.invalid/site/methodology/): what every figure means and does not mean
+- [About](https://example.invalid/site/about/): who runs this instance and what it is not

@@ -87,6 +87,7 @@ def test_the_command_writes_every_surface(tmp_path: Path, changelog_repo: Path) 
         "icon.svg",
         "og.png",
         "robots.txt",
+        "llms.txt",
         "search-index.json",
         "sitemap.xml",
         "acts/index.html",
@@ -290,7 +291,8 @@ def test_without_a_site_url_no_feed_files_are_written(tmp_path: Path, changelog_
     """The crawl policy is written either way, because it needs no absolute address.
 
     The `.xml` sweep below guards two artifacts rather than one: a sitemap's locations are
-    absolute for the same reason a feed's links are, so neither file is written without a base.
+    absolute for the same reason a feed's links are, so neither file is written without a base,
+    and nor is `llms.txt`, whose links are absolute too.
     """
     arguments = [
         "site",
@@ -310,6 +312,7 @@ def test_without_a_site_url_no_feed_files_are_written(tmp_path: Path, changelog_
     assert result.exit_code == 0, result.output
     assert not (tmp_path / "site" / "feeds" / "all.xml").exists()
     assert not list((tmp_path / "site").rglob("*.xml"))
+    assert not (tmp_path / "site" / "llms.txt").exists()
     robots = (tmp_path / "site" / "robots.txt").read_text(encoding="utf-8")
     assert robots.startswith("User-agent: *")
     assert "Sitemap:" not in robots

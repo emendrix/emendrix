@@ -1003,3 +1003,15 @@ Named rather than discovered later; the eval report's disagreement list is the l
   carries. No existing anchor moved, and the stylesheet's fingerprinted name moved with its new
   rules. **No published figure moved**: the eval layer, the payloads, the feeds and the
   changelogs are byte-identical to before.
+
+- **A model is told how to use the record, since 2026-10-08.** Every build with a site URL
+  writes `/llms.txt` at the site root, in the llms.txt convention's shape: the site's own pitch,
+  the not-legal-advice disclaimer, then the JSON API's lede and files, the `/api/` page's MCP
+  section with the same install line and client configuration that page prints, the CI example
+  and the feeds, and the methodology and About pages under `Optional`. It is assembled from the
+  constants the pages already render, so it adds no second wording of any fact, every link in it
+  is absolute and resolves in the built tree, and its bytes are ASCII because a static host
+  serves `.txt` with no charset. A build without a site URL writes none, as it writes no feed and
+  no sitemap. It is not a page, so the sitemap does not list it and `robots.txt` is unchanged.
+  **No published figure moved**: the eval layer, the payloads, the feeds and every page are
+  byte-identical to before.
