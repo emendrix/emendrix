@@ -4,7 +4,8 @@ Not legal advice: this output is machine-computed from published texts, carries 
 
 The record emendrix publishes, as files a program can fetch: what the API is, where each file
 lives, what every date, signal and dispute reason means, how a correction shows, how often to
-poll, what the API is not, and how to watch one provision from CI. The documents themselves are
+poll, what the API is not, how to watch one provision from CI, and the MCP server that hands the
+same record to a model. The documents themselves are
 described in [`./output-format.md`](./output-format.md); this page is about reading them over
 HTTP. Every address below is the hosted instance's, `https://emendrix.eu/api/v1/`; a
 self-hosted site serves the same layout under its own address.
@@ -266,6 +267,88 @@ counted.
 
 ## MCP server
 
-The MCP server is documented here once it is served.
+The same record, for a model: a read-only [Model Context Protocol](https://modelcontextprotocol.io)
+server at `https://emendrix.eu/mcp`. It answers MCP over streamable HTTP, stateless, with one
+JSON response per request: no session, no stream held open, no `initialize` it needs first. There
+is no key and no account; any rate limit is applied at the edge, in front of the server. Its
+source is the workspace member [`../packages/emendrix-mcp/`](../packages/emendrix-mcp/).
+
+In Claude Code:
+
+```bash
+claude mcp add --transport http emendrix https://emendrix.eu/mcp
+```
+
+A client configured by a JSON file takes the same address, in the shape most of them read:
+
+```json
+{
+  "mcpServers": {
+    "emendrix": {
+      "type": "http",
+      "url": "https://emendrix.eu/mcp"
+    }
+  }
+}
+```
+
+A connector form that asks only for a URL, with no key and no header, needs nothing else: give it
+`https://emendrix.eu/mcp`.
+
+Seven tools, every one read-only:
+
+| Tool | Answers |
+|---|---|
+| `list_acts` | the acts the record holds, with their labels, aliases, sector, newest version and counts |
+| `find_provisions` | the touched provisions of one act whose location or stored heading contains a string |
+| `changes_since` | recorded changes on or after a date, by `updated_on`, `detected_on` or `in_force` |
+| `provision_history` | every recorded change to one top-level provision, newest first |
+| `get_change` | one change in full: the verbatim texts, paged behind a visible marker, its citations, signals and dates |
+| `get_event` | one event of one act: its counts, repairs, stored corroboration and every row |
+| `list_disputed` | disputed changes grouped by `dispute_reason`, with the sentence the site prints for each |
+
+Four resources, each the JSON of the tool result that answers the same question:
+`emendrix://acts`, `emendrix://acts/{act}`, `emendrix://changes/{act}/{version}/{location}` and
+`emendrix://methodology`.
+
+Every result carries the disclaimer and the file each fact was read from, with that file's
+`sha256`, so an answer can be checked against the files above. Every fact is returned as stored.
+A page address is one the site's `catalogue.json` states, or the result says it is unavailable.
+
+**What it will not do.** It gives no legal advice and decides nothing: it never works out whether,
+where or how something changed, never infers a date, and has no model, no diff and no classifier.
+It does not read or interpret law, cannot search law text, and cannot resolve a free reference
+such as "Art. 50(2)": an act is named by its key and a provision by its canonical location string,
+as `list_acts` and `find_provisions` give them. It covers only the acts the record holds, and an
+empty answer means nothing was recorded in the window the record covers, not that nothing happened.
+
+### Running it yourself
+
+The server reads two things, both read-only: the directory of a changelogs repository and,
+optionally, the `api/v1/catalogue.json` a site build wrote. It is configured only through its
+environment, and each variable has a flag of the same name that wins over it:
+
+| Variable | Flag | Required | Meaning |
+|---|---|---|---|
+| `EMENDRIX_MCP_CHANGELOGS` | `--changelogs` | yes | the directory of a changelogs repository |
+| `EMENDRIX_MCP_CATALOGUE` | `--catalogue` | no | a site build's `api/v1/catalogue.json`; without it every permalink is reported unavailable |
+| `EMENDRIX_MCP_ALLOWED_HOSTS` | `--allowed-hosts` | yes | comma-separated `Host` values to answer, such as `mcp.example.org,localhost:8080`; there is no default |
+| `EMENDRIX_MCP_BIND` | `--bind` | no | the address to listen on, default `0.0.0.0` |
+| `EMENDRIX_MCP_PORT` | `--port` | no | the port to listen on, default `8000` |
+
+A request whose `Host` is not one of the allowed hosts is refused, and so is one whose `Origin` is
+anything but absent or `https`: the endpoint has nothing a cross-origin page could act on, and the
+check refuses the shapes DNS rebinding takes. `GET /healthz` answers `ok` when the root index can
+be read, for a container's probes.
+
+The reference deployment runs it as the `mcp` service of
+[`../deploy/compose.yaml`](../deploy/compose.yaml), behind the `location = /mcp` block of
+[`../deploy/default.conf`](../deploy/default.conf), with the changelogs and site volumes mounted
+read-only and no port of its own. Copy
+`deploy/.env.example` to `deploy/.env` and set `EMENDRIX_PUBLIC_HOST`, the one variable that names
+the deployment's host for the site's links and for the hosts the server answers, then
+`docker compose up -d web mcp`. The endpoint is then `<your site URL>/mcp`. Its image is built
+from [`../packages/emendrix-mcp/Dockerfile`](../packages/emendrix-mcp/Dockerfile) and carries the
+server and its dependencies only, not the pipeline.
 
 Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.

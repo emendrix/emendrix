@@ -38,8 +38,48 @@ Two locations it is given, both read-only, both read again on every call:
 A payload whose bytes differ from the `sha256` its index row states is still returned, marked
 as a mismatch: it means the repository is being rewritten while it is read.
 
-There is no HTTP client, no cache and no clock: the server reads files, so it needs none. It is
-served over streamable HTTP only; there is no stdio mode.
+There is no HTTP client, no cache and no clock: the server reads files, so it needs none.
+
+## Where it answers
+
+At `<site URL>/mcp`: MCP over streamable HTTP, stateless, one JSON response per request, with no
+session and no stream held open, so any replica can answer any request. There is no other mode.
+The path `/mcp` is fixed in the code and nothing else of the address is: the host is the
+deployment's, and every page address the server returns is read from the catalogue the site
+build wrote under its own `--site-url`. The hosted instance's address, the line that adds it to a
+client and what each tool answers are in [`../../docs/api.md`](../../docs/api.md) §"MCP server".
+
+A request is answered only when its `Host` is one of the configured hosts and its `Origin` is
+absent or `https`; anything else is refused before the SDK sees it, and so is any method but
+`POST` on `/mcp`. `GET /healthz` answers `ok` when the root index can be read, whatever the
+`Host`, for a container's probes.
+
+## Settings
+
+Each comes from its environment variable, and a flag of the same name wins over it. A required
+one that is missing stops the process with one line naming the variable and the flag, before
+anything is read or bound. `--help` lists them all.
+
+| Variable | Flag | Required | Meaning |
+|---|---|---|---|
+| `EMENDRIX_MCP_CHANGELOGS` | `--changelogs` | yes | the directory of a changelogs repository, read-only |
+| `EMENDRIX_MCP_CATALOGUE` | `--catalogue` | no | a site build's `api/v1/catalogue.json`; without it every permalink is reported unavailable |
+| `EMENDRIX_MCP_ALLOWED_HOSTS` | `--allowed-hosts` | yes | comma-separated `Host` values to answer, spaces trimmed; there is no default |
+| `EMENDRIX_MCP_BIND` | `--bind` | no | the address to listen on, default `0.0.0.0` |
+| `EMENDRIX_MCP_PORT` | `--port` | no | the port to listen on, default `8000` |
+
+From a clone, over a changelogs repository and a site build of your own:
+
+```bash
+uv run python -m emendrix_mcp --changelogs <repo> --catalogue <site>/api/v1/catalogue.json \
+  --allowed-hosts localhost:8000
+```
+
+The image is built from the repository root with
+`docker build -f packages/emendrix-mcp/Dockerfile .`; it installs this member and its
+dependencies only, runs as a non-root user and is entered as `python -m emendrix_mcp`. The
+reference deployment's `mcp` service in [`../../deploy/compose.yaml`](../../deploy/compose.yaml)
+runs it behind the site's nginx, with both volumes read-only.
 
 ## Layout
 
@@ -51,11 +91,21 @@ served over streamable HTTP only; there is no stdio mode.
 | `emendrix_mcp/reasons.py` | `REASON_SENTENCES`, one sentence per `dispute_reason` code |
 | `emendrix_mcp/reads.py` | what a read returns: `PayloadRead`, `ChangeRead`, `Unavailable` |
 | `emendrix_mcp/record.py` | `Record`, which reads all of the above off disk |
+| `emendrix_mcp/tools.py` | what every tool result shares: the sentences a caller is told, the row view |
+| `emendrix_mcp/tools_read.py` | `list_acts`, `find_provisions`, `changes_since` |
+| `emendrix_mcp/tools_event.py` | `provision_history`, `get_event`, `list_disputed` |
+| `emendrix_mcp/tools_text.py` | `get_change`, with each verbatim side paged behind a visible marker |
+| `emendrix_mcp/resources.py` | the four resources |
+| `emendrix_mcp/server.py` | `build_server(record)`: the seven tools and four resources, no transport |
+| `emendrix_mcp/settings.py` | `Settings`, and the fixed path `/mcp` |
+| `emendrix_mcp/app.py` | `create_app` and `serve`: the HTTP app, its Host and Origin check, `/healthz` |
+| `emendrix_mcp/cli.py` | the settings from the environment and the command line |
+| `emendrix_mcp/__main__.py` | `python -m emendrix_mcp`, the image's entry point |
 
 `tests/test_mcp_architecture.py` checks over the source that no module imports `emendrix`, an
 HTTP client or a model SDK, reads a clock, writes a file or mentions stdio; that only `app.py`
-may listen and only `cli.py` may read the environment; and that every module stays under the
-line cap.
+may listen and only `cli.py` may read the environment; that no string in the source is an
+address; and that every module stays under the line cap.
 
 ## The SDK it is built on
 
@@ -74,5 +124,8 @@ Resolved by `uv` on 2026-10-08 and read from the installed sources, not from doc
   stateless_http=True, transport_security=TransportSecuritySettings(...))` returns a Starlette
   app for uvicorn. `mcp.server.transport_security.TransportSecuritySettings` takes
   `allowed_hosts` and `allowed_origins`, each matched exactly or by a `host:*` port wildcard; a
-  missing `Origin` is accepted. It cannot express "any `https` origin", so a policy of that shape
-  needs a check of its own in front of the app.
+  missing `Origin` is accepted. It cannot express "any `https` origin", so `app.py` switches it
+  off and puts a check of its own in front of the app.
+- Stateless JSON mode answers a JSON-RPC POST with no `initialize` before it and no session
+  header. A `GET` on the path would open an event stream, which this server never uses, so
+  `app.py` answers it `405` before it reaches the SDK.

@@ -676,7 +676,9 @@ lists of units no change carries, how a correction shows and how to poll. Its `c
 the first act and provision the build holds a change to, so a command copied off the page answers
 on the deployment it came from, and it closes with an example GitHub Actions workflow at
 `#watch-in-ci`, the same bytes as the one in `api.md` with the site's own address in it, which a
-test holds. Every address on it is absolute under `--site-url`; without one the page says the
+test holds. Just before it, `#mcp` documents the MCP endpoint: its tools and resources, what it
+will not do, and the install line and a client's JSON configuration at `<site URL>/mcp`, or,
+without a site URL, that the endpoint's address is not known for the build. Every address on it is absolute under `--site-url`; without one the page says the
 API's addresses are not known for the build, as `/feeds/` does, links only the files the build
 writes beside it and shows its examples against the hosted instance, marked as examples. The
 licence is named only when `--changelogs-url` says where the record is published, because the

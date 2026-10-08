@@ -11,9 +11,11 @@ what the current release does and does not do.
    but proves nothing about a second real corpus.
 3. **Notification integrations**: webhook, email, a bot. Cheap, and it is what makes the tool
    something people run rather than something people read about.
-4. **An MCP server** over the changelog and the diff, so agents can query regulatory change. Cheap;
-   note that several EU-law MCP servers already exist, so this is a convenience, not a
-   differentiator.
+4. **An MCP server** ships with the reference deployment, at `/mcp` beside the site (see
+   [`./api.md`](./api.md) §"MCP server"): read-only, keyless, handing a model the stored record
+   with the file each fact came from. A survey of EU-law MCP servers on 2026-10-08 found one paid
+   server with a change-tracking tool and none publishing its accuracy or a flag for when its
+   sources disagree.
 5. **Impact filtering**: "here is my situation, tell me what changed *for me*". It is a filter over
    a verified delta rather than a standalone claim about the world, which is the only order in
    which it is worth having: it goes on top of a measured foundation, never underneath one.

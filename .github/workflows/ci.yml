@@ -1,4 +1,4 @@
-# CI on a GitHub-hosted runner: the quality gate, the offline eval, and a best-effort image build.
+# CI on a GitHub-hosted runner: the quality gate, the offline eval, and best-effort image builds.
 #
 # The gate mirrors the local four-command quality gate exactly:
 #   uv run ruff format . && uv run ruff check . && uv run mypy && uv run pytest
@@ -119,3 +119,24 @@ jobs:
 
       - name: The image runs the shipped CLI
         run: docker run --rm emendrix:ci --help
+
+  image-mcp:
+    # The MCP server's image, best-effort for the same reason as `image`, with the same smoke
+    # run and the check that the pipeline is not in it. Nothing is pushed from here.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build the MCP image
+        run: docker build -f packages/emendrix-mcp/Dockerfile -t emendrix-mcp:ci .
+
+      - name: The image runs the server's CLI
+        run: docker run --rm emendrix-mcp:ci --help
+
+      - name: The image carries the server and not the pipeline
+        run: |
+          docker run --rm --entrypoint python emendrix-mcp:ci -c "import emendrix_mcp"
+          docker run --rm --entrypoint python emendrix-mcp:ci -c \
+            "import importlib.util, sys; sys.exit(importlib.util.find_spec('emendrix') is not None)"

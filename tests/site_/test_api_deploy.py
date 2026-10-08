@@ -1,4 +1,4 @@
-"""The reference deployment's route for the recorded half of the API, checked as text.
+"""The reference deployment's routes for the API and for `/mcp`, and its compose file, as text.
 
 nginx is not run here: CI has no web server and needs none to check what the location admits.
 The pattern is compiled with Python's `re`, whose syntax agrees with nginx's PCRE for every
@@ -82,3 +82,49 @@ def test_the_web_service_mounts_the_record_read_only_and_owns_its_server_block()
     assert "      - changelogs:/srv/changelogs:ro\n" in compose
     assert "      - ./default.conf:/etc/nginx/conf.d/default.conf:ro\n" in compose
     assert "error_page  404              /404.html;" in CONF.read_text(encoding="utf-8")
+
+
+_MCP = re.compile(r"location = /mcp \{(.*?)\n    \}", re.DOTALL)
+
+
+def _service(compose: str, name: str) -> str:
+    """One service's block of `compose.yaml`, up to the next service or top-level key."""
+    found = re.search(rf"\n  {name}:\n(.*?)(?=\n  [a-z]+:\n|\n[a-z]+:)", compose, re.DOTALL)
+    assert found is not None, name
+    return found.group(1)
+
+
+def test_the_mcp_location_proxies_uncached_and_repeats_its_headers() -> None:
+    found = _MCP.search(CONF.read_text(encoding="utf-8"))
+    assert found is not None
+    block = found.group(1)
+    for directive in (
+        "proxy_pass http://mcp:8000/mcp;",
+        "proxy_buffering off;",
+        "expires off;",
+        "client_max_body_size 64k;",
+        'add_header X-Content-Type-Options "nosniff" always;',
+        "add_header Strict-Transport-Security",
+    ):
+        assert directive in block, directive
+
+
+def test_the_mcp_service_reads_both_volumes_and_publishes_no_port() -> None:
+    mcp = _service(COMPOSE.read_text(encoding="utf-8"), "mcp")
+    assert "      - changelogs:/srv/changelogs:ro\n" in mcp
+    assert "      - site:/srv/site:ro\n" in mcp
+    assert "read_only: true" in mcp
+    assert "ports:" not in mcp
+    assert "EMENDRIX_MCP_CATALOGUE: /srv/site/api/v1/catalogue.json" in mcp
+
+
+def test_one_variable_names_the_deployments_host() -> None:
+    compose = COMPOSE.read_text(encoding="utf-8")
+    assert "emendrix.eu" not in compose
+    assert "github.com/emendrix/changelogs" not in compose
+    page = _service(compose, "page")
+    assert '      - "--site-url"\n      - "https://${EMENDRIX_PUBLIC_HOST:?' in page
+    assert '      - "--changelogs-url"\n      - "${EMENDRIX_CHANGELOGS_URL:-}"\n' in page
+    assert 'EMENDRIX_MCP_ALLOWED_HOSTS: "${EMENDRIX_PUBLIC_HOST:?' in _service(compose, "mcp")
+    example = (REPO / "deploy" / ".env.example").read_text(encoding="utf-8")
+    assert re.search(r"^EMENDRIX_PUBLIC_HOST=\S+$", example, re.MULTILINE)

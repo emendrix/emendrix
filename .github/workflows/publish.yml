@@ -1,4 +1,5 @@
-# Builds the runtime image on a push to `main` and publishes it to the GitHub Container Registry.
+# Builds the two runtime images on a push to `main` and publishes them to the GitHub Container
+# Registry: `emendrix`, the pipeline, and `emendrix-mcp`, the read-only MCP server beside it.
 #
 # What it guarantees: an image reaches the registry only from a commit that passed the same
 # four-command quality gate `ci.yml` runs, and only after the built image has been executed once.
@@ -109,5 +110,56 @@ jobs:
       # The digest is the thing a deployment actually pins, so print it into the log where the
       # run that produced it can be read next to it, rather than making someone go and ask the
       # registry which build this was.
+      - name: Report the digest
+        run: docker inspect --format '{{join .RepoDigests "\n"}}' "${IMAGE}:${SHORT_SHA}"
+
+  # The MCP server's image, built by the same steps from its own Dockerfile, so it moves only
+  # from a gated commit and is executed before it is pushed. It is a second job rather than more
+  # steps in the first so that one image failing to build never holds back the other's tags.
+  publish-mcp:
+    needs: gate
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ghcr.io/emendrix/emendrix-mcp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Derive the image tag
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_ENV"
+
+      - name: Build the MCP image
+        run: |
+          docker build -f packages/emendrix-mcp/Dockerfile \
+            --build-arg VERSION="${SHORT_SHA}" \
+            -t "${IMAGE}:${SHORT_SHA}" \
+            -t "${IMAGE}:main" \
+            .
+
+      - name: The image runs the server's CLI
+        run: docker run --rm "${IMAGE}:${SHORT_SHA}" --help
+
+      # The server must not be able to reach the pipeline's model stage, so the pipeline must not
+      # be in the image at all. A positive import first, so a broken interpreter cannot pass the
+      # negative check by failing every import.
+      - name: The image carries the server and not the pipeline
+        run: |
+          docker run --rm --entrypoint python "${IMAGE}:${SHORT_SHA}" -c "import emendrix_mcp"
+          docker run --rm --entrypoint python "${IMAGE}:${SHORT_SHA}" -c \
+            "import importlib.util, sys; sys.exit(importlib.util.find_spec('emendrix') is not None)"
+
+      - name: Login to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the immutable tag
+        run: docker push "${IMAGE}:${SHORT_SHA}"
+
+      - name: Move the :main pointer
+        run: docker push "${IMAGE}:main"
+
       - name: Report the digest
         run: docker inspect --format '{{join .RepoDigests "\n"}}' "${IMAGE}:${SHORT_SHA}"

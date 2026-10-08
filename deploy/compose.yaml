@@ -1,4 +1,5 @@
-# Reference deployment: a web server that serves a directory of files, and two one-shot jobs.
+# Reference deployment: a web server that serves a directory of files, a read-only MCP server
+# behind it, and two one-shot jobs.
 #
 # There is no scheduler container. The schedule is **host cron**, calling `docker compose run`,
 # and that is a decision rather than an omission: a scheduler service is a third image to keep
@@ -11,14 +12,19 @@
 # The README's "Running it on a server" section is the runbook: what runs when, which volumes
 # hold what, what breaks when the notification endpoint moves, and how to re-run a missed window.
 #
+#   cp .env.example .env                      # then set EMENDRIX_PUBLIC_HOST to your own host
 #   docker compose build
-#   docker compose up -d web                  # serve the site volume, and the record at /api/v1/
+#   docker compose up -d web mcp              # the site, the record at /api/v1/, MCP at /mcp
 #   docker compose run --rm poller            # one poll → diff → explain → gate → commit
 #   docker compose run --rm page              # regenerate the static site
 #
-# Secrets: `OPENROUTER_API_KEY` (or `ANTHROPIC_API_KEY`) comes from `deploy/.env`, which is
-# gitignored and never baked into an image. Without one the explain stage cannot run live; the
-# deterministic half of the loop does not need it.
+# Configuration: `deploy/.env`, which is gitignored and never baked into an image, and which
+# `deploy/.env.example` documents. `EMENDRIX_PUBLIC_HOST` is required: it is the one place the
+# deployment's host is named, so the site's links, its feeds' ids, the catalogue the MCP server
+# reads and the hosts that server answers cannot name two different places, and compose refuses
+# to start without it rather than build a site that links to someone else's. Secrets:
+# `OPENROUTER_API_KEY` (or `ANTHROPIC_API_KEY`) comes from the same file. Without one the explain
+# stage cannot run live; the deterministic half of the loop does not need it.
 
 name: emendrix
 
@@ -55,6 +61,31 @@ services:
     tmpfs:
       - /var/cache/nginx
       - /var/run
+    # nginx resolves the `/mcp` upstream once, when it starts, and refuses to start if it
+    # cannot, so the server it proxies to is started first. It keeps that address, so after
+    # `mcp` is recreated `docker compose restart web` points it at the new container.
+    depends_on:
+      - mcp
+
+  # The MCP server, answering streamable HTTP at `/mcp` through `web`: stateless, keyless and
+  # read-only over the same record and the catalogue the site build writes. It publishes no
+  # port of its own; `web` reaches it on the compose network. It is configured only through its
+  # environment, and it answers only requests naming one of `EMENDRIX_MCP_ALLOWED_HOSTS`: the
+  # public host, and `localhost:8080` for a reader trying the deployment on the machine itself.
+  mcp:
+    build:
+      context: ..
+      dockerfile: packages/emendrix-mcp/Dockerfile
+    image: ghcr.io/emendrix/emendrix-mcp:0.1.0
+    restart: unless-stopped
+    environment:
+      EMENDRIX_MCP_CHANGELOGS: /srv/changelogs
+      EMENDRIX_MCP_CATALOGUE: /srv/site/api/v1/catalogue.json
+      EMENDRIX_MCP_ALLOWED_HOSTS: "${EMENDRIX_PUBLIC_HOST:?set EMENDRIX_PUBLIC_HOST in deploy/.env (see .env.example)},localhost:8080"
+    volumes:
+      - changelogs:/srv/changelogs:ro
+      - site:/srv/site:ro
+    read_only: true
 
   # One poll of the notification feed, end to end, ending in a commit in the changelog
   # repository. Exits when it is done: this is a cron job, not a daemon.
@@ -86,10 +117,12 @@ services:
   #
   # `--site-url` is the deployment's own address and the one fact the generator cannot infer.
   # A feed's links and entry IDs are absolute by definition, so without it no feed file is
-  # written at all and `/feeds/` says why. Change it here when the site moves, and nowhere
-  # else. `--repo-url` is the public home of the source and `--changelogs-url` the public home
-  # of the changelog data: with them every page's footer links both repositories, without them
-  # the footer names each in plain words rather than rendering a dead link.
+  # written at all and `/feeds/` says why. It is built from `EMENDRIX_PUBLIC_HOST` in
+  # `deploy/.env`: change it there when the site moves, and nowhere else. `--repo-url` is the
+  # public home of the source, the same for every deployment, and `--changelogs-url`, from
+  # `EMENDRIX_CHANGELOGS_URL`, is where this deployment publishes its changelog data: with a
+  # value every page's footer links that repository, and left empty the footer names the data
+  # in plain words rather than linking someone else's.
   # The watchlist is read from `/work/watchlist.toml`, the default relative to the image's
   # `WORKDIR`, which is the file mounted below.
   # `--watch-state` points at the file the poller keeps its own record in, on the same volume
@@ -118,11 +151,11 @@ services:
       - "--report-dir"
       - "/app/reports/eval"
       - "--site-url"
-      - "https://emendrix.eu"
+      - "https://${EMENDRIX_PUBLIC_HOST:?set EMENDRIX_PUBLIC_HOST in deploy/.env (see .env.example)}"
       - "--repo-url"
       - "https://github.com/emendrix/emendrix"
       - "--changelogs-url"
-      - "https://github.com/emendrix/changelogs"
+      - "${EMENDRIX_CHANGELOGS_URL:-}"
       - "--watch-state"
       - "/home/emendrix/.local/share/emendrix/watch-state.json"
       - "--comparison-cache"

@@ -973,4 +973,14 @@ script, the stylesheet, the fonts, `icon.svg`, `og.png`, everything under `api/`
 page are byte-identical, every `<title>` and description is unchanged, and `_LARGEST_PAGE` does
 not move. `_TOTAL_BYTES` in `test_act_page_at_scale.py` does not move either: that tree is built
 without a site URL, so its provision pages carry neither the feed nor the line.
+
+Read again on 2026-10-08, later still, when the page about the API began naming its MCP server.
+One file moved: `api/index.html` gained a section between the `curl` examples and the CI
+workflow, 1508 bytes, headed `id="mcp"`, which names the seven tools and four resources, says
+what the server will not do, and gives the install line for Claude Code and a client's JSON
+configuration, both at `https://example.invalid/site/mcp`, the golden's own site URL with `/mcp`
+after it. **No `id=` moved or went**; the one new id is `mcp`. Every feed, `search-index.json`,
+the sitemaps, `robots.txt`, the script, the stylesheet, the fonts, `icon.svg`, `og.png`, the
+catalogue and schemas under `api/v1/` and every other page are byte-identical, the page's
+`<title>` and description are unchanged, and `_LARGEST_PAGE` does not move.
 """

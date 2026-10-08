@@ -3,7 +3,8 @@
 The server cannot import `emendrix`, so it carries its own models of the index, the catalogue
 and one payload, its own copy of the disclaimer and its own copy of the dispute-reason
 sentences. This module and `test_mcp_fixture.py` are the only places that import both, and
-this one holds every copy to its original.
+this one holds every copy to its original, and the tools `docs/api.md` and the `/api/` page
+list to the ones the server registers.
 
 The models are compared through their JSON Schemas, walked recursively: `emendrix`'s in
 serialisation mode, which is what it writes, against the member's in validation mode, which is
@@ -16,10 +17,13 @@ type the member accepts.
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+import anyio
+import mcp
 import pytest
 from pydantic import BaseModel
 
@@ -30,11 +34,15 @@ from emendrix.output import ChangelogEntry
 from emendrix.output import index_model as written
 from emendrix.site_ import api_files
 from emendrix.site_.dispute import REASON_SENTENCES
+from emendrix.site_.pages.api_prose import MCP
 from emendrix_mcp import models as read
 from emendrix_mcp import payload as payload_models
 from emendrix_mcp.reasons import REASON_SENTENCES as MCP_REASON_SENTENCES
+from emendrix_mcp.record import Record
+from emendrix_mcp.server import build_server
 
-FIXTURES = Path(__file__).resolve().parents[2] / "packages" / "emendrix-mcp" / "tests" / "fixtures"
+REPO = Path(__file__).resolve().parents[2]
+FIXTURES = REPO / "packages" / "emendrix-mcp" / "tests" / "fixtures"
 
 Schema = dict[str, Any]
 
@@ -219,3 +227,27 @@ def test_every_member_model_parses_the_fixture() -> None:
             assert ours.change.provision.location == theirs.change.location.canonical
             assert ours.change.before == theirs.change.before
             assert ours.change.after == theirs.change.after
+
+
+def _registered() -> list[str]:
+    server = build_server(Record(FIXTURES / "changelogs", FIXTURES / "catalogue.json"))
+
+    async def main() -> list[str]:
+        async with mcp.Client(server) as client:
+            return [tool.name for tool in (await client.list_tools()).tools]
+
+    return anyio.run(main)
+
+
+def test_the_documented_tools_are_the_ones_the_server_registers() -> None:
+    """`docs/api.md` lists every tool in a table, in the order the server registers them."""
+    text = (REPO / "docs" / "api.md").read_text(encoding="utf-8")
+    section = text.split("\n## MCP server\n", 1)[1].split("\n### ", 1)[0]
+    documented = re.findall(r"^\| `([a-z_]+)` \|", section, re.MULTILINE)
+    assert documented == _registered()
+
+
+def test_the_api_page_names_the_tools_the_server_registers() -> None:
+    """The `/api/` page lists the tools in one sentence, in the order the server registers them."""
+    listed = MCP.split("seven tools are", 1)[1].split("four resources", 1)[0]
+    assert re.findall(r"`([a-z_]+)`", listed) == _registered()

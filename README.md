@@ -93,11 +93,17 @@ builds no provider client at all.
 
 ```bash
 docker build -f deploy/Dockerfile --build-arg VERSION=0.1.0 -t ghcr.io/emendrix/emendrix:0.1.0 .
-cd deploy && docker compose up -d web && docker compose run --rm poller && docker compose run --rm page
+cd deploy && cp .env.example .env    # then set EMENDRIX_PUBLIC_HOST to your own host
+docker compose up -d web mcp && docker compose run --rm poller && docker compose run --rm page
 ```
 
+Compose refuses to start until `deploy/.env` sets `EMENDRIX_PUBLIC_HOST`, the one place the
+deployment's host is named: the site's links and feed ids, and the hosts the MCP server at `/mcp`
+answers, are all built from it.
+
 A two-stage build (`uv sync --frozen`, non-root runtime, `git` and nothing else beside the
-interpreter), an `nginx` serving the generated directory, and two one-shot jobs. There is
+interpreter), an `nginx` serving the generated directory, the read-only MCP server it proxies `/mcp`
+to, and two one-shot jobs. There is
 deliberately **no scheduler container**: the schedule is host cron calling `docker compose run`,
 because a scheduler image is a third thing to keep patched and a second place a failure can hide.
 `deploy/compose.yaml` documents what runs when and which volumes are disposable, and `VERSION` is
@@ -195,11 +201,11 @@ a finding about shared state.
 [`docs/README.md`](./docs/README.md) indexes the reference material by question: the architecture,
 the pipeline stage by stage, the evaluation, the output format (repository layout, Markdown shape,
 versioned JSON schema, every cap that can truncate a quote), the site, the JSON API the site serves
-the record through (with an example workflow that watches one provision from CI), the limitations,
-the roadmap, and HTML walkthroughs of the shipped code. The empirical grounding is seven
-end-to-end traces against live Publications Office endpoints, across three acts spanning 2006 to
-2026, and any data-source claim made anywhere else in this repository is subordinate to what those
-traces measured. They were produced by [`scripts/validation/`](./scripts/validation/), kept only so the
+the record through (with an example workflow that watches one provision from CI) and the MCP server
+that hands the same record to a model, the limitations, the roadmap, and HTML walkthroughs of the
+shipped code. The empirical grounding is seven end-to-end traces against live Publications Office
+endpoints, across three acts spanning 2006 to 2026, and any data-source claim made anywhere else in
+this repository is subordinate to what those traces measured. They were produced by [`scripts/validation/`](./scripts/validation/), kept only so the
 published numbers are reproducible artifacts, with the reports committed beside it; it is the only
 code here that hits the network outside the opt-in `live` tests, and CI never runs it.
 

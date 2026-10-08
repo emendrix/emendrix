@@ -8,6 +8,7 @@ the same bytes. The hosted address the reference document uses is read from `pyp
 from __future__ import annotations
 
 import html
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -86,8 +87,23 @@ def test_the_page_links_the_methodology_page(page: str) -> None:
     assert 'href="../methodology/"' in page
 
 
-def test_the_page_names_no_endpoint_it_does_not_serve(page: str) -> None:
-    assert "mcp" not in page.lower()
+def _mcp_section(rendered: str) -> str:
+    """The MCP section: from its heading to the CI section that closes the page."""
+    return rendered.split('<h2 id="mcp">', 1)[1].split('<section id="watch-in-ci">', 1)[0]
+
+
+def test_the_mcp_section_names_the_endpoint_under_the_site_url(page: str) -> None:
+    endpoint = f"{SITE_URL}/mcp"
+    blocks = [html.unescape(block) for block in _PRE.findall(_mcp_section(page))]
+    assert blocks[0] == f"claude mcp add --transport http emendrix {endpoint}"
+    config = json.loads(blocks[1])
+    assert config == {"mcpServers": {"emendrix": {"type": "http", "url": endpoint}}}
+    assert page.count('id="mcp"') == 1
+
+
+def test_the_page_names_no_mcp_address_but_its_own(page: str) -> None:
+    for found in re.findall(r"https?://[^\s\"<]*mcp\b", html.unescape(page)):
+        assert found == f"{SITE_URL}/mcp", found
 
 
 def test_the_snippet_on_the_page_is_pointed_at_the_site_it_is_on(page: str) -> None:
@@ -119,6 +135,10 @@ def test_without_a_site_url_the_page_says_so_and_shows_the_hosted_example(
     ]
     for link in re.findall(r'href="(v1/[^"]+)"', text):
         assert (out / "api" / link).is_file(), link
+    mcp = _mcp_section(text)
+    assert "address is not known for this build" in mcp
+    assert "<pre>" not in mcp and "claude mcp add" not in mcp
+    assert "<code>get_change</code>" in mcp
 
 
 def test_the_licence_is_named_only_with_a_changelogs_url(

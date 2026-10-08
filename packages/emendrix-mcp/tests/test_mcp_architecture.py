@@ -4,8 +4,9 @@ The server sits beside the pipeline: it reads published files and hands them to 
 model, and it can change nothing about what changed. So it imports nothing of `emendrix`, opens
 no outbound connection, reads no clock, calls no model and writes no file. Exactly one module
 may listen (`app.py`) and exactly one may read the environment (`cli.py`), so each side effect
-is in one place a reader can find. Each test fails the moment one of these appears anywhere
-else, including in modules not yet written.
+is in one place a reader can find. No module carries an address, because the host is the
+deployment's. Each test fails the moment one of these appears anywhere else, including in
+modules not yet written.
 """
 
 from __future__ import annotations
@@ -65,9 +66,8 @@ def offenders(pattern: str, allowed: AbstractSet[str] = frozenset()) -> list[str
 
 
 def test_the_scan_sees_the_modules() -> None:
-    assert {"__init__.py", "models.py", "payload.py", "reasons.py", "record.py"} <= {
-        path for path, _ in modules()
-    }
+    expected = {"__init__.py", "app.py", "cli.py", "models.py", "record.py", "settings.py"}
+    assert expected <= {path for path, _ in modules()}
 
 
 def test_nothing_imports_the_pipeline() -> None:
@@ -107,6 +107,30 @@ def test_no_stdio_entry_point() -> None:
 
 def test_only_the_cli_reads_the_environment() -> None:
     assert offenders(r"\benviron\b|getenv", {CONFIGURATION}) == []
+
+
+def literals(source: str) -> Iterator[str]:
+    """Every string constant in `source`, docstrings and f-string parts included."""
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            yield node.value
+
+
+def test_no_address_is_written_into_the_server() -> None:
+    """The host is the deployment's: it comes from the settings, and permalinks from the
+    catalogue. The path `/mcp` is not an address and is allowed."""
+    address = re.compile(r"emendrix\.eu|https?://")
+    found = [
+        (path, text)
+        for path, source in modules()
+        for text in literals(source)
+        if address.search(text)
+    ]
+    assert found == []
+
+
+def test_the_address_scan_sees_a_url() -> None:
+    assert list(literals('x = f"http://{host}/mcp"')) == ["http://", "/mcp"]
 
 
 def test_nothing_writes_a_file() -> None:

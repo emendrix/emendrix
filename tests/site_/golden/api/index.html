@@ -64,6 +64,20 @@
 <p>The newest change to <code>AR 1</code> of <code>32017R0745</code>:</p>
 <div class="scroll"><pre>curl -fsSL https://example.invalid/site/api/v1/eu/32017R0745/index.json \
   | jq &#x27;.provisions[&quot;AR 1&quot;][0]&#x27;</pre></div>
+<h2 id="mcp">The MCP server</h2>
+<p>The same record, for a model: a read-only MCP server at <code>/mcp</code>, answering streamable HTTP with one JSON response per request, with no session, no key and no account. Its seven tools are <code>list_acts</code>, <code>find_provisions</code>, <code>changes_since</code>, <code>provision_history</code>, <code>get_change</code>, <code>get_event</code> and <code>list_disputed</code>, and its four resources <code>emendrix://acts</code>, <code>emendrix://acts/{act}</code>, <code>emendrix://changes/{act}/{version}/{location}</code> and <code>emendrix://methodology</code>. Every result carries the disclaimer and the file each fact was read from, with that file&#x27;s <code>sha256</code>.</p>
+<p>It decides nothing: it does not read or interpret law, cannot search law text and cannot resolve a free reference such as <code>Art. 50(2)</code>. Name an act by its key and a provision by its canonical location, as <code>list_acts</code> and <code>find_provisions</code> give them.</p>
+<p>A client that takes a URL needs only <code>https://example.invalid/site/mcp</code>. In Claude Code:</p>
+<div class="scroll"><pre>claude mcp add --transport http emendrix https://example.invalid/site/mcp</pre></div>
+<p>In a client configured by a JSON file:</p>
+<div class="scroll"><pre>{
+  &quot;mcpServers&quot;: {
+    &quot;emendrix&quot;: {
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;url&quot;: &quot;https://example.invalid/site/mcp&quot;
+    }
+  }
+}</pre></div>
 <section id="watch-in-ci">
 <h2>Watch a provision from CI</h2>
 <p>A GitHub Actions workflow that opens an issue when a provision you pin has a newer change. It is an example to adapt rather than a maintained action: set <code>PIN</code> to the act and the canonical location, and <code>SEEN</code> to the version you have already reviewed. It needs no secret beyond the job&#x27;s own token and dedupes by issue title. It uses <code>jq</code> and <code>gh</code>, which GitHub-hosted runners have preinstalled.</p>
