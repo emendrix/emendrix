@@ -12,7 +12,7 @@
 # hold what, what breaks when the notification endpoint moves, and how to re-run a missed window.
 #
 #   docker compose build
-#   docker compose up -d web                  # serve whatever is in the site volume
+#   docker compose up -d web                  # serve the site volume, and the record at /api/v1/
 #   docker compose run --rm poller            # one poll → diff → explain → gate → commit
 #   docker compose run --rm page              # regenerate the static site
 #
@@ -40,6 +40,17 @@ services:
       # config's job. Editing it means recreating this container, since nginx reads its
       # configuration at startup.
       - ./absolute-redirect.conf:/etc/nginx/conf.d/absolute-redirect.conf:ro
+      # The server block is owned here rather than left to the image, because it is where the
+      # recorded half of the API is routed: `/api/v1/` answers the root index, the act indexes
+      # and the payloads straight from the changelogs volume below, so nothing is copied into
+      # the site and nothing is rewritten on an hourly build. The file is the image's own with
+      # two locations added and says so in its header. When the digest above moves, read the new
+      # image's `default.conf` and carry those changes onto it, because this mount hides whatever
+      # the new image changed in its own copy.
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Read-only, because a web server has no business writing the record it serves, and the
+      # poller is the one writer of that repository.
+      - changelogs:/srv/changelogs:ro
     read_only: true
     tmpfs:
       - /var/cache/nginx

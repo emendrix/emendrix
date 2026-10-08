@@ -81,6 +81,10 @@ def render_feeds_page(site: SiteInputs) -> Html:
     lines = [
         *page_masthead("prose", "About this site", "Feeds", _PATH),
         Html(f'<p class="lede">{escape(_LEDE)}</p>'),
+        Html(
+            f"<p>The same record as JSON, for a program rather than a feed reader: "
+            f'<a href="{up(_DEPTH)}api/">the JSON API</a>.</p>'
+        ),
     ]
     if site.site_url:
         lines.extend(_feed_list(site))

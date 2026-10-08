@@ -1,0 +1,423 @@
+{
+  "$defs": {
+    "EntryCounts": {
+      "description": "The counts a reader is shown first, at the unit of change.\n\n`substantive`, `date_only` and `textless` split the touched units three ways, and every\ntouched unit falls in exactly one of them: a unit whose every change is `DEFERRED` moved a\ndate and nothing else, a unit whose every change carries no text on either side was named\nby a signal that carries none, and what is left is a unit whose text moved. The split is\nthe one the Markdown header prints and the site's count line repeats, and it is computed,\nnever asserted.\n\nThe identity `touched == substantive + date_only + textless` holds of counts this module\nderives and is asserted over them. It is deliberately not a validator: a document published\nunder schema `1.0` reads back with `textless` at 0 and the wider `substantive` of its own\nrun, which satisfies the identity while answering the older question.",
+      "properties": {
+        "date_only": {
+          "default": 0,
+          "description": "Units whose every change is DEFERRED.",
+          "minimum": 0,
+          "title": "Date Only",
+          "type": "integer"
+        },
+        "disputed": {
+          "default": 0,
+          "description": "Changes the signals disagree about.",
+          "minimum": 0,
+          "title": "Disputed",
+          "type": "integer"
+        },
+        "quoted": {
+          "default": 0,
+          "description": "Sentences the citation gate wrote as verbatim quotations.",
+          "minimum": 0,
+          "title": "Quoted",
+          "type": "integer"
+        },
+        "substantive": {
+          "default": 0,
+          "description": "Touched units that are neither date-only nor textless.",
+          "minimum": 0,
+          "title": "Substantive",
+          "type": "integer"
+        },
+        "textless": {
+          "default": 0,
+          "description": "Units whose every change carries no text on either side.",
+          "minimum": 0,
+          "title": "Textless",
+          "type": "integer"
+        },
+        "touched": {
+          "default": 0,
+          "description": "Top-level units this event touched.",
+          "minimum": 0,
+          "title": "Touched",
+          "type": "integer"
+        },
+        "unexplained": {
+          "default": 0,
+          "description": "Changes that ship with no prose at all, and say why.",
+          "minimum": 0,
+          "title": "Unexplained",
+          "type": "integer"
+        }
+      },
+      "title": "EntryCounts",
+      "type": "object"
+    },
+    "EventRow": {
+      "description": "One committed payload: one amendment event of one act.",
+      "properties": {
+        "counts": {
+          "$ref": "#/$defs/EntryCounts",
+          "description": "The payload's own counts, as stored."
+        },
+        "detected_on": {
+          "description": "The date the run observed the event.",
+          "format": "date",
+          "title": "Detected On",
+          "type": "string"
+        },
+        "diff_only": {
+          "description": "Whether the payload was written with no model stage.",
+          "title": "Diff Only",
+          "type": "boolean"
+        },
+        "evidence": {
+          "description": "Whether the payload carries any evidence digest.",
+          "title": "Evidence",
+          "type": "boolean"
+        },
+        "from_version": {
+          "description": "The version the event was computed from.",
+          "title": "From Version",
+          "type": "string"
+        },
+        "in_force": {
+          "description": "The in-force dates the changes report.",
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "In Force",
+          "type": "array"
+        },
+        "instruction_only_units": {
+          "description": "Canonical units only the instruction parse names, as the payload's corroboration report stores them; empty when it has none.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Instruction Only Units",
+          "type": "array"
+        },
+        "metadata_only_units": {
+          "description": "Canonical units only the corpus metadata names, as the payload's corroboration report stores them; empty when it has none.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Metadata Only Units",
+          "type": "array"
+        },
+        "path": {
+          "description": "The payload's path relative to the repository root.",
+          "title": "Path",
+          "type": "string"
+        },
+        "repairs": {
+          "description": "Repairs the payload records, in order.",
+          "items": {
+            "$ref": "#/$defs/RepairRow"
+          },
+          "title": "Repairs",
+          "type": "array"
+        },
+        "schema_version": {
+          "description": "The payload's own schema version.",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "Hex sha256 of the payload's committed bytes.",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "to_version": {
+          "description": "The version the event produced; its identity.",
+          "title": "To Version",
+          "type": "string"
+        },
+        "updated_on": {
+          "description": "The latest of `detected_on` and every repair's date.",
+          "format": "date",
+          "title": "Updated On",
+          "type": "string"
+        }
+      },
+      "required": [
+        "to_version",
+        "from_version",
+        "detected_on",
+        "in_force",
+        "updated_on",
+        "schema_version",
+        "path",
+        "sha256",
+        "diff_only",
+        "counts",
+        "repairs",
+        "evidence",
+        "metadata_only_units",
+        "instruction_only_units"
+      ],
+      "title": "EventRow",
+      "type": "object"
+    },
+    "ProvisionRow": {
+      "description": "One change to one provision in one event, without its text.",
+      "properties": {
+        "amending_acts": {
+          "description": "Keys of the acts a signal names as amending this provision.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Amending Acts",
+          "type": "array"
+        },
+        "applies_from": {
+          "description": "An ISO date when the payload holds one, else `unknown` or `unchanged`.",
+          "title": "Applies From",
+          "type": "string"
+        },
+        "change_type": {
+          "description": "The change's type as the structural diff named it.",
+          "title": "Change Type",
+          "type": "string"
+        },
+        "changed_within": {
+          "description": "Canonical sub-provision coordinates whose text differs.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Within",
+          "type": "array"
+        },
+        "dates_added": {
+          "description": "Dates the provision carries after only.",
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "Dates Added",
+          "type": "array"
+        },
+        "dates_removed": {
+          "description": "Dates the provision carried before only.",
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "Dates Removed",
+          "type": "array"
+        },
+        "dispute_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which signal disagreed and how, read through the payload model; null exactly when the change is not disputed.",
+          "title": "Dispute Reason"
+        },
+        "disputed": {
+          "description": "Whether the three signals disagree about this change.",
+          "title": "Disputed",
+          "type": "boolean"
+        },
+        "in_force": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The change's in-force date, null when none.",
+          "title": "In Force"
+        },
+        "occurrence": {
+          "description": "Which repeat of this location within its event, from 1, counted as the site counts it for the change's anchor.",
+          "minimum": 1,
+          "title": "Occurrence",
+          "type": "integer"
+        },
+        "outcome": {
+          "description": "How the change left the citation gate.",
+          "title": "Outcome",
+          "type": "string"
+        },
+        "previous_location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Canonical location a renumbered provision had before; null otherwise.",
+          "title": "Previous Location"
+        },
+        "signals": {
+          "$ref": "#/$defs/SignalRow",
+          "description": "Each signal's status on this change."
+        },
+        "text": {
+          "description": "Which verbatim sides the payload carries: both, only one, or none.",
+          "enum": [
+            "both",
+            "before",
+            "after",
+            "none"
+          ],
+          "title": "Text",
+          "type": "string"
+        },
+        "unexplained_kind": {
+          "description": "The counted kind of a missing explanation, or ''.",
+          "title": "Unexplained Kind",
+          "type": "string"
+        },
+        "version": {
+          "description": "The `to_version` of the event this change belongs to.",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "change_type",
+        "previous_location",
+        "disputed",
+        "dispute_reason",
+        "signals",
+        "text",
+        "in_force",
+        "applies_from",
+        "dates_added",
+        "dates_removed",
+        "outcome",
+        "unexplained_kind",
+        "amending_acts",
+        "changed_within",
+        "occurrence"
+      ],
+      "title": "ProvisionRow",
+      "type": "object"
+    },
+    "RepairRow": {
+      "description": "One repair a payload records, reduced to what it was and when.",
+      "properties": {
+        "kind": {
+          "description": "The repair's own free-text kind, as the payload stores it.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "repaired_on": {
+          "description": "The date the payload records for the repair.",
+          "format": "date",
+          "title": "Repaired On",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "repaired_on"
+      ],
+      "title": "RepairRow",
+      "type": "object"
+    },
+    "SignalRow": {
+      "description": "The three signals' statuses on one change, each the stored status string.",
+      "properties": {
+        "corpus_metadata": {
+          "description": "`observed`, `absent` or `unavailable`.",
+          "title": "Corpus Metadata",
+          "type": "string"
+        },
+        "instruction_parse": {
+          "description": "`observed`, `absent` or `unavailable`.",
+          "title": "Instruction Parse",
+          "type": "string"
+        },
+        "structural_diff": {
+          "description": "`observed`, `absent` or `unavailable`.",
+          "title": "Structural Diff",
+          "type": "string"
+        }
+      },
+      "required": [
+        "structural_diff",
+        "corpus_metadata",
+        "instruction_parse"
+      ],
+      "title": "SignalRow",
+      "type": "object"
+    }
+  },
+  "$id": "act-index.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Every event of one act, newest first, and every touched provision's rows.",
+  "properties": {
+    "corpus": {
+      "description": "The act's corpus namespace.",
+      "title": "Corpus",
+      "type": "string"
+    },
+    "disclaimer": {
+      "default": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+      "description": "Not legal advice.",
+      "title": "Disclaimer",
+      "type": "string"
+    },
+    "events": {
+      "description": "One row per payload, newest first.",
+      "items": {
+        "$ref": "#/$defs/EventRow"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "index_schema": {
+      "default": "1.0",
+      "description": "The index format's version.",
+      "title": "Index Schema",
+      "type": "string"
+    },
+    "key": {
+      "description": "The act's key within its corpus.",
+      "title": "Key",
+      "type": "string"
+    },
+    "provisions": {
+      "additionalProperties": {
+        "items": {
+          "$ref": "#/$defs/ProvisionRow"
+        },
+        "type": "array"
+      },
+      "description": "Rows per canonical top-level location, keys sorted, rows newest first then by occurrence.",
+      "title": "Provisions",
+      "type": "object"
+    },
+    "title": {
+      "description": "The newest event's title for the act.",
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "corpus",
+    "key",
+    "title",
+    "events",
+    "provisions"
+  ],
+  "title": "act-index",
+  "type": "object"
+}

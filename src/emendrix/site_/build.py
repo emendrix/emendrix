@@ -26,6 +26,9 @@ about/index.html                who runs the site, and what it does on the reade
 feeds/index.html                what feeds exist
 feeds/all.xml                   every event, newest first
 feeds/<slug>.xml                one feed per act, quiet acts included
+api/index.html                  the JSON API: its layout, its fields, and an example for CI
+api/v1/catalogue.json           every watched act's names and the addresses of its pages
+api/v1/schema/<name>.schema.json  the JSON Schema of each document the API serves
 ```
 
 The stylesheet, the script and the icon live at the site root because `chrome.page` links them
@@ -67,6 +70,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from emendrix.site_.amending import resolve
+from emendrix.site_.api_files import api_files
 from emendrix.site_.assets import font_files, icon_svg, og_png, search_js
 from emendrix.site_.comparisons import NO_COMPARISONS, Comparisons
 from emendrix.site_.discovery import (
@@ -87,6 +91,7 @@ from emendrix.site_.pages.act import render_act
 from emendrix.site_.pages.acts_index import render_acts_index
 from emendrix.site_.pages.amendment import render_amendment_page
 from emendrix.site_.pages.amendments_index import render_amendments_index
+from emendrix.site_.pages.api_page import render_api_page
 from emendrix.site_.pages.dates import render_dates
 from emendrix.site_.pages.event import render_event_page
 from emendrix.site_.pages.feeds_page import render_feeds_page
@@ -167,7 +172,9 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
         "methodology/index.html": render_methodology(site),
         "about/index.html": render_about(site),
         "feeds/index.html": render_feeds_page(site),
+        "api/index.html": render_api_page(site),
     }
+    files.update(api_files(site))
     for name, content in font_files():
         files[FONTS[name]] = content
     for act in site.acts:

@@ -172,6 +172,27 @@ names. It is not a search service, a notification service or a
 source of law: the authoritative text is the one EUR-Lex publishes, and every citation in a
 payload links there. It decides nothing about whether a change applies to you.
 
+## Serving it yourself
+
+The reference deployment in [`../deploy/`](../deploy/) serves the API from two places and copies
+neither. `emendrix site build` writes `/api/`, `catalogue.json` and the schemas into the site tree.
+The root index, the act indexes and the payloads are served by nginx straight from the changelogs
+volume, mounted read-only into the web container, through one `location` in
+[`../deploy/default.conf`](../deploy/default.conf) whose pattern admits those three kinds of file
+and nothing else in the repository: no `.git`, no `CHANGELOG.md`, no directory listing. The hourly
+site build therefore rewrites nothing of the record, and a payload is served as soon as the poller
+has committed it. A site served without that location still has its catalogue and schemas and
+answers the record's paths with a 404, never with a stale copy, because the build writes none of
+the record into the site.
+
+Both API locations set `Access-Control-Allow-Origin: *` and `X-Content-Type-Options: nosniff`.
+An `add_header` in an nginx `location` replaces every header inherited from the `server` and
+`http` blocks rather than adding to them, so a deployment that sets security or caching headers at
+those levels must repeat them inside both locations, or the API answers without them. A plain
+`GET` is a CORS simple request, so there is no preflight to handle. The file is the pinned image's
+own `default.conf` with those locations added; when the image digest moves, read the new image's
+file and carry the additions onto it.
+
 ## Examples
 
 `curl` and `jq` are all three need.

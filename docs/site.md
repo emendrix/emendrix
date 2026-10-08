@@ -29,6 +29,9 @@ methodology/          the metrics table with its caveats, the loop, the glossary
 feeds/                what the feeds are and where they are, by sector
 feeds/all.xml         every amendment event, as Atom
 feeds/<celex>.xml     one act's events, for a reader who watches only that act
+api/                  the JSON API: its layout, its fields, and an example that watches one provision from CI
+api/v1/catalogue.json every watched act's names, and the address of each of its pages and its feed
+api/v1/schema/        the JSON Schema of each document the API serves, one file each
 robots.txt            what crawlers may read, and where the sitemap index is
 sitemap.xml           every page, with the date its content last moved
 sitemap_index.xml     the one address a search engine is given, naming the sitemap
@@ -463,7 +466,7 @@ and the page's own heading. Home keeps its hero, which is its identity, and has 
 | `provision` | `acts/<celex>/<prov>/` | `Provision history · {act}`, the act linked | `Annex II · {its title}`, the title only where one says more than the coordinate (see the provision's title above) |
 | `amending` | `amendments/<celex>/` | `Amending act` | the amending act's short name |
 | `index` | `acts/`, `amendments/` | `Index` | `All watched acts`, `Amending acts` |
-| `prose` | `dates/`, `methodology/`, `about/`, `feeds/`, `404.html` | what the page is about | its own heading |
+| `prose` | `dates/`, `methodology/`, `about/`, `feeds/`, `api/`, `404.html` | what the page is about | its own heading |
 
 The first four kinds are the objects a reader moves between, and each gets a band tinted in its
 own colour with a shape before the caption; the rosters and the pages about the site share a
@@ -631,6 +634,38 @@ pages, and its characters stay the law's.
 own, so no budget much under that growth could hold them all, and a title dropped to fit one is a
 provision a reader cannot find by the name they know it by. Fifty kilobytes is still fetched once,
 on the first keystroke, and never on a page that is not searched.
+
+## `/api/`: the record as files a program can fetch
+
+The site writes the derived half of the JSON API and none of the record. `api/` is a page that
+says, for a reader of the site, what [`./api.md`](./api.md) says for a programmer: where each file
+lives, the three dates, what `disputed`, the signal statuses and the seven reasons mean, the two
+lists of units no change carries, how a correction shows and how to poll. Its `curl` examples name
+the first act and provision the build holds a change to, so a command copied off the page answers
+on the deployment it came from, and it closes with an example GitHub Actions workflow at
+`#watch-in-ci`, the same bytes as the one in `api.md` with the site's own address in it, which a
+test holds. Every address on it is absolute under `--site-url`; without one the page says the
+API's addresses are not known for the build, as `/feeds/` does, links only the files the build
+writes beside it and shows its examples against the hosted instance, marked as examples. The
+licence is named only when `--changelogs-url` says where the record is published, because the
+repository there is what states it.
+
+`api/v1/catalogue.json` is what the record cannot know: every watched act, quiet ones included,
+sorted by corpus and key, with the watchlist's label, long name, aliases and sector, the act's
+page and feed, its EUR-Lex link, one provision page per location a committed change names and one
+event page per committed entry. Every address is minted by the function the builder writes that
+page under: absolute with `--site-url`, and root-relative without one, when the feed is null
+because no feed is written. It carries the disclaimer and says it is derived and not part of the
+record. `api/v1/schema/` holds the JSON Schema of the index, the act index, the entry, the change
+and the catalogue, the same bytes as [`./schema/`](./schema/), since each carries a relative
+`$id`.
+
+The site never writes `api/v1/index.json` or anything under `api/v1/<corpus>/`. Those are the
+changelogs repository's own files, which the reference deployment serves from its volume as
+committed; a copy in the site would be rewritten every build and, on a host without that route,
+would answer with whatever the last build saw. How the route is set up is in
+[`./api.md`](./api.md) §"Serving it yourself". `api/` carries no `<lastmod>` in the sitemap,
+because its content moves with the build rather than with the corpus.
 
 ## No backend, and that is the more interesting decision
 

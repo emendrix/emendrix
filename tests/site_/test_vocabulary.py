@@ -12,6 +12,11 @@ harness publishes, which is shared with the README's own table and generated out
 It is found here by its label's exact text and taken out whole, label and meaning, exactly
 once, so a second occurrence anywhere fails.
 
+**A second stated exception.** The API page documents the JSON, whose field names and values
+are that vocabulary (`disputed`, `events`). Its `<code>` and `<pre>` elements, which hold only
+those names and the commands that read them, are taken out of that page before either check;
+its own sentences say "version" and "the sources differ" like every other page.
+
 **"Event" is the pipeline's word too**, for one recorded transition between two consolidated
 versions, and it stays in the Python names, the JSON and the feeds' own summaries. On a page
 that transition is a version, decided on 2026-09-18, so no page's visible text or `<title>`
@@ -70,11 +75,19 @@ _TITLE: Final = re.compile(r"<title>(.*?)</title>", re.DOTALL)
 _CLASS: Final = re.compile(r'class="([^"]*)"')
 
 
+_API_PAGE: Final = "api/index.html"
+_JSON_NAMES: Final = re.compile(r"<code>.*?</code>|<pre>.*?</pre>", re.DOTALL)
+"""The API page's identifiers and commands, which name the JSON's fields as the JSON does."""
+
+
 def _golden() -> dict[str, str]:
-    return {
+    pages = {
         path.relative_to(GOLDEN).as_posix(): path.read_text(encoding="utf-8")
         for path in sorted(GOLDEN.rglob("*.html"))
     }
+    assert _API_PAGE in pages
+    pages[_API_PAGE] = _JSON_NAMES.sub("", pages[_API_PAGE])
+    return pages
 
 
 def _said(path: str, page: str) -> list[str]:

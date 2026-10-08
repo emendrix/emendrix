@@ -1,0 +1,77 @@
+{
+  "acts": [
+    {
+      "aliases": [],
+      "corpus": "eu",
+      "domain": "Chemicals",
+      "eurlex_url": "",
+      "events": {},
+      "feed": "https://example.invalid/site/feeds/32006R1907.xml",
+      "key": "32006R1907",
+      "label": "REACH",
+      "long_name": "Registration, Evaluation, Authorisation and Restriction of Chemicals",
+      "provisions": {},
+      "url": "https://example.invalid/site/acts/32006R1907/"
+    },
+    {
+      "aliases": [
+        "MDR"
+      ],
+      "corpus": "eu",
+      "domain": "Health",
+      "eurlex_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02017R0745-20200424",
+      "events": {
+        "02017R0745-20200424": "https://example.invalid/site/acts/32017R0745/02017R0745-20200424/"
+      },
+      "feed": "https://example.invalid/site/feeds/32017R0745.xml",
+      "key": "32017R0745",
+      "label": "Medical Devices Regulation",
+      "long_name": "",
+      "provisions": {
+        "AN IX": "https://example.invalid/site/acts/32017R0745/an-ix/",
+        "AR 1": "https://example.invalid/site/acts/32017R0745/ar-1/",
+        "AR 113": "https://example.invalid/site/acts/32017R0745/ar-113/",
+        "AR 120": "https://example.invalid/site/acts/32017R0745/ar-120/",
+        "AR 122": "https://example.invalid/site/acts/32017R0745/ar-122/",
+        "AR 123": "https://example.invalid/site/acts/32017R0745/ar-123/",
+        "AR 17": "https://example.invalid/site/acts/32017R0745/ar-17/",
+        "AR 34": "https://example.invalid/site/acts/32017R0745/ar-34/",
+        "AR 59": "https://example.invalid/site/acts/32017R0745/ar-59/"
+      },
+      "url": "https://example.invalid/site/acts/32017R0745/"
+    },
+    {
+      "aliases": [
+        "DSA"
+      ],
+      "corpus": "eu",
+      "domain": "Digital",
+      "eurlex_url": "",
+      "events": {},
+      "feed": "https://example.invalid/site/feeds/32022R2065.xml",
+      "key": "32022R2065",
+      "label": "Digital Services Act",
+      "long_name": "",
+      "provisions": {},
+      "url": "https://example.invalid/site/acts/32022R2065/"
+    },
+    {
+      "aliases": [
+        "Artificial Intelligence Act"
+      ],
+      "corpus": "eu",
+      "domain": "Digital",
+      "eurlex_url": "",
+      "events": {},
+      "feed": "https://example.invalid/site/feeds/32024R1689.xml",
+      "key": "32024R1689",
+      "label": "AI Act",
+      "long_name": "Artificial Intelligence Act",
+      "provisions": {},
+      "url": "https://example.invalid/site/acts/32024R1689/"
+    }
+  ],
+  "catalogue_schema": "1.0",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "provenance": "Derived by the site build from the watchlist and the committed changelogs; not part of the record."
+}

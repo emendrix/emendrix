@@ -95,6 +95,8 @@ def test_the_command_writes_every_surface(tmp_path: Path, changelog_repo: Path) 
         "about/index.html",
         "feeds/index.html",
         "feeds/all.xml",
+        "api/index.html",
+        "api/v1/catalogue.json",
     ):
         assert expected in tree, expected
     assert any(name.startswith("acts/") and name.endswith("/index.html") for name in tree)

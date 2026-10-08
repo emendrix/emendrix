@@ -945,4 +945,16 @@ disputed change, so no act or event page moved. **No `id=` moved or went.** Both
 `search-index.json`, the sitemaps, `robots.txt`, the script, the stylesheet, the fonts,
 `icon.svg` and `og.png` are byte-identical, every `<title>` and description is unchanged, and
 `_LARGEST_PAGE` does not move.
+
+Read again on 2026-10-08, later that day, when the site began writing the half of the JSON API
+that is not the record. Seven files are new: `api/index.html`, the page about the API, which
+closes with the example CI workflow at `#watch-in-ci` pointed at the golden's own site URL;
+`api/v1/catalogue.json`, the four watched acts sorted by key, three of them quiet, with the MDR's
+nine provision pages and its one event page; and the five schemas under `api/v1/schema/`, the
+bytes of `docs/schema/`. Two files moved: `sitemap.xml` gained one `<url>` for `api/`, with no
+`<lastmod>` because the page moves with the build, and the feeds page gained one 108-byte line
+after its lede linking `api/`. Nothing of the record is written under `api/v1/`. **No `id=` moved
+or went.** Both feeds, `search-index.json`, `sitemap_index.xml`, `robots.txt`, the script, the
+stylesheet, the fonts, `icon.svg`, `og.png` and every other page are byte-identical, every
+`<title>` and description is unchanged, and `_LARGEST_PAGE` does not move.
 """

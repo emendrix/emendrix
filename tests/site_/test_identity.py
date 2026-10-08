@@ -34,6 +34,7 @@ _KINDS = {
     "methodology/index.html": "prose",
     "about/index.html": "prose",
     "feeds/index.html": "prose",
+    "api/index.html": "prose",
     "404.html": "prose",
 }
 """One page of every type the golden tree holds, and the masthead kind it must open with."""

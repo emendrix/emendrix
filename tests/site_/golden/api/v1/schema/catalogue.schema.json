@@ -1,0 +1,131 @@
+{
+  "$defs": {
+    "CatalogueAct": {
+      "description": "One watched act: the watchlist's names for it, and where this site shows it.",
+      "properties": {
+        "aliases": {
+          "description": "Other names the watchlist gives the act.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "corpus": {
+          "description": "The act's corpus namespace.",
+          "title": "Corpus",
+          "type": "string"
+        },
+        "domain": {
+          "description": "The watchlist's sector for the act, or ''.",
+          "title": "Domain",
+          "type": "string"
+        },
+        "eurlex_url": {
+          "description": "The act on EUR-Lex, or ''.",
+          "title": "Eurlex Url",
+          "type": "string"
+        },
+        "events": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Entry key to its event page, for every committed entry.",
+          "title": "Events",
+          "type": "object"
+        },
+        "feed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The act's Atom feed, by the same rule; null when the build wrote no feeds.",
+          "title": "Feed"
+        },
+        "key": {
+          "description": "The act's key within its corpus.",
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "description": "The watchlist's short label.",
+          "title": "Label",
+          "type": "string"
+        },
+        "long_name": {
+          "description": "The watchlist's long form, or ''.",
+          "title": "Long Name",
+          "type": "string"
+        },
+        "provisions": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Canonical top-level location to its provision page, for every location a committed change names.",
+          "title": "Provisions",
+          "type": "object"
+        },
+        "url": {
+          "description": "The act's page: absolute with a site URL, else root-relative.",
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corpus",
+        "key",
+        "label",
+        "long_name",
+        "aliases",
+        "domain",
+        "url",
+        "feed",
+        "eurlex_url",
+        "provisions",
+        "events"
+      ],
+      "title": "CatalogueAct",
+      "type": "object"
+    }
+  },
+  "$id": "catalogue.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Every watched act, quiet ones included, sorted by corpus and key.",
+  "properties": {
+    "acts": {
+      "description": "One row per watched act.",
+      "items": {
+        "$ref": "#/$defs/CatalogueAct"
+      },
+      "title": "Acts",
+      "type": "array"
+    },
+    "catalogue_schema": {
+      "default": "1.0",
+      "description": "The catalogue format's version.",
+      "title": "Catalogue Schema",
+      "type": "string"
+    },
+    "disclaimer": {
+      "default": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+      "description": "Not legal advice.",
+      "title": "Disclaimer",
+      "type": "string"
+    },
+    "provenance": {
+      "default": "Derived by the site build from the watchlist and the committed changelogs; not part of the record.",
+      "description": "Where this file comes from.",
+      "title": "Provenance",
+      "type": "string"
+    }
+  },
+  "required": [
+    "acts"
+  ],
+  "title": "catalogue",
+  "type": "object"
+}

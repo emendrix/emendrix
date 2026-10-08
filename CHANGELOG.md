@@ -943,3 +943,19 @@ Named rather than discovered later; the eval report's disagreement list is the l
   protocol and the versioning rule are in `docs/output-format.md` §"The index". **No published
   figure moved**: the index is read off committed payloads, and the eval layer, the payloads and
   the changelogs are byte-identical to before.
+
+- **The site serves the JSON API's own half and a page about it, since 2026-10-08.** Every build
+  now writes `/api/`, a page that says where each file of the API lives, what its dates, signals
+  and dispute reasons mean, how a correction shows and how to poll, with two `curl` examples
+  against the site's own address and an example GitHub Actions workflow at `#watch-in-ci` that
+  opens an issue when a pinned provision changes; the same workflow is in `docs/api.md`, and a test
+  holds the two to the same bytes. Beside it the build writes `api/v1/catalogue.json`, every
+  watched act with its watchlist labels and the address of each of its pages and its feed, and
+  `api/v1/schema/`, the five JSON Schemas, byte-identical to `docs/schema/`. The record itself is
+  not copied into the site: the reference deployment's web container now mounts the changelogs
+  volume read-only and serves the root index, the act indexes and the payloads under `/api/v1/`
+  as committed, through a `deploy/default.conf` that is the pinned image's own with two locations
+  added, allow-listed so that nothing else in the repository is reachable, and with CORS. The
+  feeds page links `/api/` and the sitemap lists it. **No published figure moved**: the eval
+  layer, the payloads and the changelogs are byte-identical to before, and only the new files, the
+  sitemap and the feeds page moved in the site golden.

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The JSON API — emendrix</title>
+<meta name="description" content="The record emendrix publishes, as JSON files a program can fetch, and an example that watches one provision from CI.">
+<link rel="canonical" href="https://example.invalid/site/api/">
+<link rel="alternate" type="application/atom+xml" title="emendrix — all watched acts" href="../feeds/all.xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="emendrix">
+<meta property="og:title" content="The JSON API — emendrix">
+<meta property="og:description" content="The record emendrix publishes, as JSON files a program can fetch, and an example that watches one provision from CI.">
+<meta property="og:url" content="https://example.invalid/site/api/">
+<meta property="og:image" content="https://example.invalid/site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="emendrix: provision-level changelogs for EU legislation">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.9e4c1091.css">
+<script defer src="../search.d80bbdfb.js"></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a><header class="bar"><a class="wordmark" href="../">emendrix</a><nav aria-label="Site"><a href="../acts/">All acts</a> <a href="../amendments/">Amending acts</a> <a href="../dates/">Dates ahead</a> <a href="../methodology/">Methodology</a> <a href="../about/">About</a> <a href="../feeds/">Feeds</a></nav><div id="search" data-root="../"></div></header>
+<main id="content">
+<header class="masthead masthead--prose">
+<nav class="trail" aria-label="Breadcrumb"><ol><li><a href="../">emendrix</a></li><li aria-current="page">The JSON API</li></ol></nav>
+<p class="caption">About this site</p>
+<h1>The JSON API</h1>
+</header>
+<p class="lede">The record this site renders, as files a program can fetch. There is no query endpoint, no account and no key: every answer is a file, and the record&#x27;s files are the committed bytes of the changelogs repository, at the same relative paths as in a clone of it.</p>
+<h2 id="layout">Layout</h2>
+<div class="scroll"><table role="table">
+<thead role="rowgroup"><tr role="row"><th role="columnheader">Path</th><th role="columnheader">What it is</th><th role="columnheader">From</th></tr></thead><tbody role="rowgroup">
+<tr role="row"><td role="cell"><code><a href="https://example.invalid/site/api/">/api/</a></code></td><td role="cell" data-label="What it is">this page, with the CI example at its end</td><td role="cell" data-label="From">the site build</td></tr>
+<tr role="row"><td role="cell"><code><a href="https://example.invalid/site/api/v1/index.json">/api/v1/index.json</a></code></td><td role="cell" data-label="What it is">the root index: one row per act</td><td role="cell" data-label="From">the record, served as committed</td></tr>
+<tr role="row"><td role="cell"><code>/api/v1/&lt;act_dir&gt;/index.json</code></td><td role="cell" data-label="What it is">one act&#x27;s versions, and every change per provision</td><td role="cell" data-label="From">the record</td></tr>
+<tr role="row"><td role="cell"><code>/api/v1/&lt;act_dir&gt;/changes/&lt;version&gt;.json</code></td><td role="cell" data-label="What it is">one version&#x27;s payload, with the texts</td><td role="cell" data-label="From">the record</td></tr>
+<tr role="row"><td role="cell"><code><a href="https://example.invalid/site/api/v1/catalogue.json">/api/v1/catalogue.json</a></code></td><td role="cell" data-label="What it is">labels, aliases, sectors, page and feed addresses</td><td role="cell" data-label="From">the site build</td></tr>
+<tr role="row"><td role="cell"><code>/api/v1/schema/&lt;name&gt;.schema.json</code></td><td role="cell" data-label="What it is">the JSON Schema of each document</td><td role="cell" data-label="From">the site build</td></tr>
+</tbody></table></div>
+<p><code>&lt;act_dir&gt;</code> is the act's corpus and key, and <code>&lt;version&gt;</code> the version it is the payload of. Every path an index names is relative to <code>/api/v1/</code>. The schemas: <a href="https://example.invalid/site/api/v1/schema/act-index.schema.json"><code>act-index</code></a>, <a href="https://example.invalid/site/api/v1/schema/change.schema.json"><code>change</code></a>, <a href="https://example.invalid/site/api/v1/schema/entry.schema.json"><code>entry</code></a>, <a href="https://example.invalid/site/api/v1/schema/index.schema.json"><code>index</code></a>, <a href="https://example.invalid/site/api/v1/schema/catalogue.schema.json"><code>catalogue</code></a>. Each carries its own file name as a relative <code>$id</code>.</p>
+<h2 id="dates">The three dates</h2>
+<ul><li><code>detected_on</code> is the date the watcher saw the consolidated version: when this record learnt of the change, not when the law moved. A repair never changes it.</li><li><code>in_force</code> is the start of validity the publisher states for the consolidated version: on a version&#x27;s row the dates its changes report, on a change one date or null.</li><li><code>applies_from</code> is a date only when one is deterministically readable from a date change in the act&#x27;s own application provision; otherwise <code>unknown</code>, the common and honest answer, or <code>unchanged</code>. It is never a deadline and never says whether a provision applies to you.</li></ul>
+<p><code>updated_on</code> on a version&#x27;s row is the latest of <code>detected_on</code> and every repair&#x27;s date, the field to sort by to see what moved since you last looked.</p>
+<h2 id="disputed">Where the sources differ: signals and reasons</h2>
+<p>Three signals look at every transition: <code>structural_diff</code>, <code>corpus_metadata</code> and <code>instruction_parse</code>. Each reports one status per change:</p>
+<ul><li><code>observed</code>: the signal names this unit.</li><li><code>absent</code>: the signal could speak about this window and does not name this unit.</li><li><code>unavailable</code>: the signal could not speak about this window at all. It is not dissent and never makes a dispute.</li></ul>
+<p>A change is <code>disputed</code> when one signal observed it and another is absent, or when the signals that observed it name kinds of change that share nothing. Each such change carries a <code>dispute_reason</code>, every other change carries null, and every row of an act index carries the field whether or not an older payload stored it. Filter on the reason or on the signal triple, never on <code>disputed</code> alone. The seven reasons, in the order they are tried:</p>
+<ul><li><code>kind_mismatch</code>: No one kind of change is named by every source that found it.</li><li><code>textless_both_others</code>: Two sources name it, and neither carries any text.</li><li><code>textless_metadata_only</code>: Only the EU&#x27;s own amendment metadata names it, and it carries no text.</li><li><code>textless_instruction_only</code>: Only the amending act&#x27;s instructions name it, and they carry no text.</li><li><code>both_others_silent</code>: Only the text comparison found it.</li><li><code>metadata_silent</code>: The source that does not name it is the EU&#x27;s own amendment metadata.</li><li><code>instruction_silent</code>: The source that does not name it is the amending act&#x27;s instructions.</li></ul>
+<p>A reason is a reading of stored verdicts and says nothing about the law. The <a href="../methodology/">methodology page</a> explains each signal and how often the sources differ.</p>
+<h2 id="units">Units no change carries</h2>
+<ul><li><code>metadata_only_units</code>, on each row of <code>events</code>: units the corpus metadata names that no change of that version carries.</li><li><code>instruction_only_units</code>, on each row of <code>events</code>: units only the instruction parse names.</li></ul>
+<h2 id="corrections">Corrections</h2>
+<p>The record is corrected forward and its history is never rewritten. A repaired version gets a new <code>sha256</code>, a later <code>updated_on</code> and one more <code>repairs</code> row; a change a repair withdraws disappears from <code>provisions</code>. Key cached rows on <code>(act, version, location, occurrence)</code> and re-read a version whenever its <code>sha256</code> moves.</p>
+<h2 id="polling">Polling, CORS and keys</h2>
+<p>Poll the root index, never the whole tree. An act&#x27;s <code>index_sha256</code> moves exactly when its act index&#x27;s bytes move, and a version&#x27;s <code>sha256</code> exactly when its payload&#x27;s do, so a consumer holding a file whose hash still matches has nothing to fetch.</p>
+<p>Any origin may <code>GET</code> any file. There are no credentials, no keys and no cookies, and no rate promise: a client that polls more often than the record is written gets the same bytes and gains nothing.</p>
+<h2 id="examples">Examples</h2>
+<p>Every act, with its newest version, its counts and its title:</p>
+<div class="scroll"><pre>curl -fsSL https://example.invalid/site/api/v1/index.json \
+  | jq -r &#x27;.acts[] | [.key, .newest_version, .changes, .disputed, .title] | @tsv&#x27;</pre></div>
+<p>The newest change to <code>AR 1</code> of <code>32017R0745</code>:</p>
+<div class="scroll"><pre>curl -fsSL https://example.invalid/site/api/v1/eu/32017R0745/index.json \
+  | jq &#x27;.provisions[&quot;AR 1&quot;][0]&#x27;</pre></div>
+<section id="watch-in-ci">
+<h2>Watch a provision from CI</h2>
+<p>A GitHub Actions workflow that opens an issue when a provision you pin has a newer change. It is an example to adapt rather than a maintained action: set <code>PIN</code> to the act and the canonical location, and <code>SEEN</code> to the version you have already reviewed. It needs no secret beyond the job&#x27;s own token and dedupes by issue title. It uses <code>jq</code> and <code>gh</code>, which GitHub-hosted runners have preinstalled.</p>
+<div class="scroll"><pre># .github/workflows/regulations.yml: opens an issue when a provision you pin changes.
+on:
+  schedule: [{ cron: &quot;17 6 * * 1&quot; }]
+  workflow_dispatch: {}
+permissions: { issues: write }
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      PIN: &quot;32017R0745 AN I&quot;
+      SEEN: &quot;02017R0745-20260101&quot;
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - run: |
+          act=${PIN%% *}; loc=${PIN#* }
+          slug=$(printf &#x27;%s&#x27; &quot;$loc&quot; | tr &#x27;A-Z &#x27; &#x27;a-z-&#x27; | tr -d &#x27;()&#x27;)
+          curl -fsSL -A &quot;emendrix-snippet/1&quot; &quot;https://example.invalid/site/api/v1/eu/$act/index.json&quot; -o idx.json
+          new=$(jq -r --arg l &quot;$loc&quot; &#x27;.provisions[$l][0].version // empty&#x27; idx.json)
+          if [ -z &quot;$new&quot; ] || [ &quot;$new&quot; = &quot;$SEEN&quot; ]; then exit 0; fi
+          title=&quot;$act $loc changed: $new&quot;
+          gh issue list --state all --search &quot;\&quot;$title\&quot; in:title&quot; --json title -q &#x27;.[].title&#x27; \
+            | grep -qxF &quot;$title&quot; &amp;&amp; exit 0
+          row=$(jq -c --arg l &quot;$loc&quot; &#x27;.provisions[$l][0]&#x27; idx.json)
+          gh issue create --title &quot;$title&quot; --body &quot;$(printf &#x27;%s\n\n%s\n\n%s&#x27; \
+            &quot;Newest index row: $row&quot; \
+            &quot;History, verbatim text and citations: https://example.invalid/site/acts/$act/$slug/&quot; \
+            &quot;Not legal advice: computed by emendrix from published texts, with no lawyer&#x27;s review.&quot;)&quot;
+</pre></div>
+<p>The <code>emendrix-snippet/1</code> user agent lets the example&#x27;s use be counted from the server&#x27;s own request lines, with no cookies and no tracking; change it if you would rather not be counted.</p>
+</section>
+</main>
+<footer>
+<p class="disclaimer"><strong>Not legal advice:</strong> this output is machine-computed from published texts, carries no lawyer&#x27;s review, and is engineering assistance only. Read the official consolidated text <a class="ext" href="https://eur-lex.europa.eu/">on EUR-Lex<span class="visually-hidden"> (external, EUR-Lex)</span></a>.</p>
+<p>Generated on 2026-08-06 from artifacts committed in the emendrix repository; the changelog data it renders is public in the changelog repository. One small script for search; no cookies, no analytics, no third-party requests. <a href="../about/">About this site</a>.</p>
+</footer>
+</body>
+</html>

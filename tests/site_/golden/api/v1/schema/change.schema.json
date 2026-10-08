@@ -1,0 +1,493 @@
+{
+  "$defs": {
+    "ActId": {
+      "description": "An act, scoped to the corpus that knows how to fetch it.\n\nIdentity is `(corpus, key)` only. `display_name` is a label that rides along for output, so\nthe same act named by two callers, one of which knows its title and one of which does not,\nis the same act in equality, in hashing and in every set and dict key downstream.",
+      "properties": {
+        "corpus": {
+          "description": "Adapter namespace, e.g. 'eu' or 'toy'.",
+          "minLength": 1,
+          "title": "Corpus",
+          "type": "string"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Human title, for output only; never parsed, never identity.",
+          "title": "Display Name"
+        },
+        "key": {
+          "description": "Opaque identifier within that corpus.",
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corpus",
+        "key"
+      ],
+      "title": "ActId",
+      "type": "object"
+    },
+    "ApplicabilityUnchanged": {
+      "description": "The change does not move the date this provision applies from.",
+      "properties": {
+        "kind": {
+          "const": "unchanged",
+          "default": "unchanged",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "ApplicabilityUnchanged",
+      "type": "object"
+    },
+    "ApplicabilityUnknown": {
+      "description": "The applicability date could not be read deterministically, which is the honest answer.\n\nAttaching a date to a provision set is prose, with exceptions and conditions. Many\nunknowns is the correct outcome; the model never fills one in.",
+      "properties": {
+        "kind": {
+          "const": "unknown",
+          "default": "unknown",
+          "title": "Kind",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "title": "ApplicabilityUnknown",
+      "type": "object"
+    },
+    "Change": {
+      "description": "One provision that changed between two versions of one act.\n\nThe unit is the top-level provision; `changed_within` carries the finer coordinates\nthe diff could localise, and `dates_removed`/`dates_added` the machine-readable dates that\nmoved. Both are detail attached to the unit, never a second unit of their own.\n\n`amending_acts` is attribution, not classification: it says which acts a signal names as\namending this unit. The structural diff carries no such fact, so the field is filled by\ncorroboration and is empty when no signal names one.",
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim; None if deleted.",
+          "title": "After"
+        },
+        "amending_acts": {
+          "default": [],
+          "description": "Acts a signal names as amending this unit; empty when none names one.",
+          "items": {
+            "$ref": "#/$defs/ActId"
+          },
+          "title": "Amending Acts",
+          "type": "array"
+        },
+        "applies_from": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/ApplicabilityUnknown"
+            },
+            {
+              "$ref": "#/$defs/ApplicabilityUnchanged"
+            }
+          ],
+          "default": {
+            "kind": "unknown",
+            "reason": null
+          },
+          "title": "Applies From"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim; None if inserted.",
+          "title": "Before"
+        },
+        "change_type": {
+          "$ref": "#/$defs/ChangeType"
+        },
+        "changed_within": {
+          "default": [],
+          "description": "Sub-provision coordinates whose own text differs: detail, not the unit.",
+          "items": {
+            "$ref": "#/$defs/ProvisionLocation"
+          },
+          "title": "Changed Within",
+          "type": "array"
+        },
+        "dates_added": {
+          "default": [],
+          "description": "Machine-readable dates the provision carries after and not before.",
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "Dates Added",
+          "type": "array"
+        },
+        "dates_removed": {
+          "default": [],
+          "description": "Machine-readable dates the provision carried before and not after.",
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "Dates Removed",
+          "type": "array"
+        },
+        "dispute_reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DisputeReason"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which signal disagreed and how; None exactly when not disputed. Derived from `signals`, never stored apart from them.",
+          "readOnly": true
+        },
+        "disputed": {
+          "default": false,
+          "description": "Signals disagree. Derived from `signals`, not free.",
+          "title": "Disputed",
+          "type": "boolean"
+        },
+        "heading": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heading"
+        },
+        "in_force": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "In Force"
+        },
+        "previous_location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProvisionLocation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The location a renumbered provision had before."
+        },
+        "provision": {
+          "$ref": "#/$defs/ProvisionRef"
+        },
+        "signals": {
+          "$ref": "#/$defs/SignalSet",
+          "default": {
+            "corpus_metadata": {
+              "change_types": [],
+              "detail": null,
+              "status": "unavailable"
+            },
+            "instruction_parse": {
+              "change_types": [],
+              "detail": null,
+              "status": "unavailable"
+            },
+            "structural_diff": {
+              "change_types": [],
+              "detail": null,
+              "status": "unavailable"
+            }
+          }
+        }
+      },
+      "required": [
+        "change_type",
+        "provision",
+        "dispute_reason"
+      ],
+      "title": "Change",
+      "type": "object"
+    },
+    "ChangeType": {
+      "description": "How a provision changed. Assigned by the diff and its classification, never by a model.\n\n`RENUMBERED` and `DEFERRED` are carried from the first commit so the schema never\nmigrates, even though no trace has yet produced a renumbering: none occurred in the seven\nend-to-end traces under `scripts/validation/results/`, and no role code plausibly meaning\n\"renumbered\" appears in the 540 annotations they inventory.",
+      "enum": [
+        "INSERTED",
+        "MODIFIED",
+        "DELETED",
+        "RENUMBERED",
+        "DEFERRED"
+      ],
+      "title": "ChangeType",
+      "type": "string"
+    },
+    "Citation": {
+      "description": "A resolvable reference to one provision of one version of one act.",
+      "properties": {
+        "label": {
+          "description": "Display form, e.g. 'Art. 5(1)(bb), v2'.",
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "ref": {
+          "$ref": "#/$defs/ProvisionRef"
+        },
+        "url": {
+          "description": "Where a reader sees the provision.",
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "url",
+        "label"
+      ],
+      "title": "Citation",
+      "type": "object"
+    },
+    "DisputeReason": {
+      "description": "Which signal disagreed and how, read off one disputed change's `SignalSet` alone.\n\nA reading of stored verdicts, never a judgement about the law. `SignalSet.reason` assigns\nexactly one to every disputed set and none to any other, evaluated in the order declared.",
+      "enum": [
+        "kind_mismatch",
+        "textless_both_others",
+        "textless_metadata_only",
+        "textless_instruction_only",
+        "both_others_silent",
+        "metadata_silent",
+        "instruction_silent"
+      ],
+      "title": "DisputeReason",
+      "type": "string"
+    },
+    "EmittedSentence": {
+      "description": "One sentence that shipped, with its citations resolved to clickable references.",
+      "properties": {
+        "citations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "title": "Citations",
+          "type": "array"
+        },
+        "fallback": {
+          "default": false,
+          "description": "Written by the gate as a verbatim quotation, not by the model.",
+          "title": "Fallback",
+          "type": "boolean"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "EmittedSentence",
+      "type": "object"
+    },
+    "GateOutcome": {
+      "description": "How one change left the gate. Every change leaves it — that is the point.\n\n`RETRY_REQUESTED` is transient: it exists only between the two halves of the one retry\ncycle, and no run may finish holding one.",
+      "enum": [
+        "passed",
+        "passed_on_retry",
+        "fallback",
+        "retry_requested",
+        "unexplained"
+      ],
+      "title": "GateOutcome",
+      "type": "string"
+    },
+    "ProvisionLocation": {
+      "type": "string"
+    },
+    "ProvisionRef": {
+      "description": "A provision in a specific version of a specific act.",
+      "properties": {
+        "act": {
+          "$ref": "#/$defs/ActId"
+        },
+        "location": {
+          "$ref": "#/$defs/ProvisionLocation"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "act",
+        "version",
+        "location"
+      ],
+      "title": "ProvisionRef",
+      "type": "object"
+    },
+    "SignalObservation": {
+      "description": "One signal's verdict on one change, with whatever detail that signal carries.\n\n`change_types` is what this signal said the change *was*, at the top-level unit\ngranularity: a set, because one signal can name a unit more than once and in more than one\nway (the AI Act's Article 5 carries both inserted points and replaced ones). Two signals\ndisagree on kind when their sets do not intersect; a signal that names no kind never disagrees.",
+      "properties": {
+        "change_types": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ChangeType"
+          },
+          "title": "Change Types",
+          "type": "array"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "status": {
+          "$ref": "#/$defs/SignalStatus",
+          "default": "unavailable"
+        }
+      },
+      "title": "SignalObservation",
+      "type": "object"
+    },
+    "SignalSet": {
+      "description": "The three verdicts on one change.\n\nThe structural diff is the primary shipped signal, and the only one carrying actual text.\nCorpus metadata is the evaluation reference set, and it is *not* an oracle: a blanket\namendment is annotated once and its 30 landing sites are not enumerated (measured\n2026-08-05).",
+      "properties": {
+        "corpus_metadata": {
+          "$ref": "#/$defs/SignalObservation",
+          "default": {
+            "change_types": [],
+            "detail": null,
+            "status": "unavailable"
+          }
+        },
+        "instruction_parse": {
+          "$ref": "#/$defs/SignalObservation",
+          "default": {
+            "change_types": [],
+            "detail": null,
+            "status": "unavailable"
+          }
+        },
+        "structural_diff": {
+          "$ref": "#/$defs/SignalObservation",
+          "default": {
+            "change_types": [],
+            "detail": null,
+            "status": "unavailable"
+          }
+        }
+      },
+      "title": "SignalSet",
+      "type": "object"
+    },
+    "SignalStatus": {
+      "description": "Whether a signal saw this change, did not see it, or could not have.\n\n`UNAVAILABLE` is not a disagreement: a corpus that publishes no modification metadata\ncannot dissent. Only `OBSERVED` against `ABSENT` is a dispute.",
+      "enum": [
+        "observed",
+        "absent",
+        "unavailable"
+      ],
+      "title": "SignalStatus",
+      "type": "string"
+    }
+  },
+  "$id": "change.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "One change as a reader receives it: the facts, then whatever prose survived the gate.",
+  "properties": {
+    "applicability_note": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EmittedSentence"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "change": {
+      "$ref": "#/$defs/Change"
+    },
+    "outcome": {
+      "$ref": "#/$defs/GateOutcome"
+    },
+    "sentences": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EmittedSentence"
+      },
+      "title": "Sentences",
+      "type": "array"
+    },
+    "unexplained": {
+      "default": "",
+      "description": "Why there are no sentences, when there are none.",
+      "title": "Unexplained",
+      "type": "string"
+    },
+    "unexplained_kind": {
+      "default": "",
+      "description": "Which counted kind that reason was, empty when there are sentences.",
+      "title": "Unexplained Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "change",
+    "outcome"
+  ],
+  "title": "change",
+  "type": "object"
+}

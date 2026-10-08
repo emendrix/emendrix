@@ -18,7 +18,7 @@ only its `Sitemap:` line, because a crawl policy is about paths. Every `<loc>` i
 `head.canonical_url`, the same function that writes the page's canonical, so a sitemap entry and
 a canonical cannot name two addresses for one page.
 
-Pages only: the seven fixed ones, one per act, one per amendment event, one per provision any
+Pages only: the eight fixed ones, one per act, one per amendment event, one per provision any
 event touched and one per amending instrument a committed event names. An event page's
 `<lastmod>` is that event's own `event_dated`, the same clock its feed entry's `<updated>`
 reads, so the two records of one fact cannot disagree. Feeds are advertised by `rel="alternate"` in
@@ -127,12 +127,12 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     that stops matching a file, and a page that gains no entry, both fail there rather than
     reaching a crawler.
 
-    The about page carries no date at all: its content moves with the build rather than with
-    the corpus, and `generated_on` is exactly the value this module refuses to stamp a URL
-    with. That is the same rule an act nothing has happened to yet is under, and the same
-    answer the dates page gets: it splits its list at the build date, so its content moves
-    with the build too, and dating it by the newest event would say it last changed when the
-    corpus did, which is false.
+    The about page and the API page carry no date at all: their content moves with the build
+    rather than with the corpus, and `generated_on` is exactly the value this module refuses to
+    stamp a URL with. That is the same rule an act nothing has happened to yet is under, and
+    the same answer the dates page gets: it splits its list at the build date, so its content
+    moves with the build too, and dating it by the newest event would say it last changed when
+    the corpus did, which is false.
 
     Every date goes through `_moved`, which is where the rule that a page cannot have moved
     after the build that wrote it lives, and which supplies the `None` a page with no date it
@@ -152,6 +152,7 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         ("methodology/", _moved((site.run.run_date,), built)),
         ("about/", None),
         ("feeds/", newest),
+        ("api/", None),
         (amendments_href(), newest),
         (dates_href(), None),
     ]

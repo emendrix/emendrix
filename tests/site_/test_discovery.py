@@ -354,9 +354,9 @@ def test_the_crawl_policy_carries_no_comment_of_its_own(site: Path) -> None:
 def test_a_site_with_no_events_at_all_still_has_a_sitemap() -> None:
     """A checkout with a watchlist and an empty changelog repository is a real state.
 
-    The seven fixed pages are still published, so they are still listed, and the only date
-    anything has is the report's: the about page's content moves with the build rather than
-    with the corpus, so it carries no `<lastmod>` on any site, and the list of dates ahead
+    The eight fixed pages are still published, so they are still listed, and the only date
+    anything has is the report's: the about and API pages' content moves with the build rather
+    than with the corpus, so neither carries a `<lastmod>` on any site, and the list of dates ahead
     carries none for the same reason, its own split being made against the build date.
     `/amendments/` is dated by the newest event on the site like the home page, the roster and
     the feeds page, because it lists every instrument a committed event names and so moves
@@ -376,6 +376,7 @@ def test_a_site_with_no_events_at_all_still_has_a_sitemap() -> None:
         f"{SITE_URL}/methodology/",
         f"{SITE_URL}/about/",
         f"{SITE_URL}/feeds/",
+        f"{SITE_URL}/api/",
         f"{SITE_URL}/amendments/",
         f"{SITE_URL}/dates/",
     ]
