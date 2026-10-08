@@ -1,7 +1,7 @@
 # The output format
 
-What a run writes: the layout of the output git repository, the shape of the Markdown, the
-versioned JSON beside it, and every cap that can truncate a quote. Start at
+What a run writes: the layout of the output git repository, the shape of the Markdown, the versioned
+JSON beside it, the index over that JSON, and every cap that can truncate a quote. Start at
 [`../README.md`](../README.md) for how to run it, and [`./pipeline.md`](./pipeline.md) for what
 produces these events.
 
@@ -19,8 +19,10 @@ uv run emendrix diff 32017R0745 02017R0745-20170505 02017R0745-20200424 \
 ```
 
 ```
+~/regulatory-changelog/index.json
 ~/regulatory-changelog/eu/32017R0745/CHANGELOG.md
 ~/regulatory-changelog/eu/32017R0745/changes/02017R0745-20200424.json
+~/regulatory-changelog/eu/32017R0745/index.json
 ```
 
 The format is chosen for what it *forces*: every sentence carries a citation that links to a
@@ -193,5 +195,115 @@ three versions. One read under the newest schema reports `textless` as 0, the wi
 its own run computed and no evidence at all, which is the older question answered under the older
 name; the counts are corrected when something rewrites the entry, by the same rule the rest of
 this page states and never in bulk, and the missing provenance is never corrected at all.
+
+## The index
+
+Every commit the writer makes also carries a current index, two files that let a program see what
+a changelogs repository holds without downloading every payload:
+
+```
+<repo>/index.json                    one row per act holding at least one entry
+<repo>/eu/32017R0745/index.json      every event of that act, and every row of every provision
+```
+
+Both are rebuilt in the same commit as the entry they describe, so any commit of the repository is
+self-consistent: the index it holds is the one its payloads produce. Only the act being written is
+rebuilt from its payloads; every other act's index is read as it stands, and is built from its
+payloads only when it has none, so the first write into a repository that predates the index
+indexes every act in it. Both files are indented JSON ending in a newline, every list
+in an explicit order, and two builds over one tree are byte-identical.
+
+**The index carries no provision text, no timestamp and no licence.** The text is what the payload
+is for; a generation timestamp would make two builds of one record differ, and a file cannot hold
+the hash of the commit that contains it, so freshness is `updated_on`, a date the payloads already
+hold. Both files carry `index_schema` and the not-legal-advice `disclaimer`. Every value is read
+off a payload validated through the same model the writer uses, never off its raw keys, so a field
+the model computes is filled for every row whether or not the file stores it.
+
+The root, `index.json`:
+
+| Field | Meaning |
+|---|---|
+| `index_schema` | the index format's version, `1.0` |
+| `disclaimer` | not legal advice |
+| `acts[]` | one row per act, sorted by `(corpus, key)` |
+| `acts[].corpus`, `acts[].key` | the act's identity |
+| `acts[].title` | the newest entry's title for the act |
+| `acts[].index` | the act index's path relative to the repository root |
+| `acts[].index_sha256` | hex sha256 of that file's bytes, so a consumer can tell it moved without fetching it |
+| `acts[].events` | how many entries the act index lists |
+| `acts[].changes` | how many provision rows it lists |
+| `acts[].provisions` | how many distinct top-level provisions those rows name |
+| `acts[].disputed` | how many of those rows are `disputed` |
+| `acts[].newest_version` | the newest entry's `to_version` |
+| `acts[].newest_in_force` | the latest in-force date the newest entry reports, or `null` |
+| `acts[].first_detected_on` | the earliest `detected_on` over the act's entries |
+| `acts[].updated_on` | the latest `updated_on` over them |
+
+An act index, `<corpus>/<act>/index.json`, has `index_schema`, `disclaimer`, `corpus`, `key` and
+`title` as above, `events[]`, one row per payload with the newest first, and `provisions`, keyed by
+the canonical top-level location (`AR 5`, `AN III`) with the keys sorted. "Newest" is the entry
+key, the slug of `to_version`, compared descending, the order `CHANGELOG.md` is kept in.
+
+| Event field | Meaning |
+|---|---|
+| `to_version`, `from_version` | the transition; `to_version` is the event's identity |
+| `detected_on` | the date the run observed the event |
+| `in_force` | the in-force dates its changes report, sorted |
+| `updated_on` | the latest of `detected_on` and every repair's `repaired_on` |
+| `schema_version` | the payload's own schema version, which is independent of the index's |
+| `path` | the payload's path relative to the repository root |
+| `sha256` | hex sha256 of the payload's committed bytes |
+| `diff_only` | whether the payload was written with no model stage |
+| `counts` | the payload's own `counts`, as stored |
+| `repairs[]` | each repair the payload records, as `kind` and `repaired_on`, in its order |
+| `evidence` | whether the payload carries any evidence digest |
+| `metadata_only_units` | units only the corpus metadata names, copied from the payload's `corroboration`; empty when it has none |
+| `instruction_only_units` | units only the instruction parse names, copied the same way; these are published by name and are not changes |
+
+Each provision maps to its rows, newest event first, then by `occurrence`:
+
+| Row field | Meaning |
+|---|---|
+| `version` | the `to_version` of the event the change belongs to |
+| `change_type` | the change's type as the structural diff named it |
+| `previous_location` | the location a renumbered provision had before, else `null` |
+| `disputed` | whether the three signals disagree about the change |
+| `dispute_reason` | the code from the table above, filled for every disputed row whether or not the payload stores the key, `null` exactly when `disputed` is false |
+| `signals` | `structural_diff`, `corpus_metadata`, `instruction_parse`: each `observed`, `absent` or `unavailable` |
+| `text` | which verbatim sides the payload carries: `both`, `before`, `after` or `none` |
+| `in_force` | the change's in-force date, or `null` |
+| `applies_from` | an ISO date when the payload holds one, else `unknown` or `unchanged` |
+| `dates_added`, `dates_removed` | dates the provision carries after only, and before only |
+| `outcome` | how the change left the citation gate |
+| `unexplained_kind` | the counted kind of a missing explanation, or `""` |
+| `amending_acts` | keys of the acts a signal names as amending the provision |
+| `changed_within` | canonical sub-provision coordinates whose text differs |
+| `occurrence` | which repeat of this location within its event, counted from 1 as the site counts it for the change's anchor |
+
+**Corrections.** A repair goes through the same writer, so the index moves in the repair's own
+commit. A repaired event gets a new `sha256`, a later `updated_on` and one more `repairs` row, and
+its act's root row moves with it. A change a repair withdraws disappears from `provisions`, and its
+event's `sha256` and `updated_on` move: the index is a function of the tree as it stands, so it
+cannot say "withdrawn", and the git history of the repository is the record of what was there. A
+consumer that caches rows keys them on `(act, version, location, occurrence)` and re-reads an event
+whenever its `sha256` moves. That is the whole correction protocol.
+
+**Versioning.** `index_schema` follows the payload rule: a field added with a default is a minor
+bump and stays at `index.json`; a field removed, renamed or re-meant is a breaking change, and one
+writes `index.v2.json` beside the old file for an announced period, because a consumer pins a path
+and cannot be told to move.
+
+**`emendrix index rebuild [--output-repo PATH] [--dry-run]`** rebuilds every index file from the
+committed payloads and commits the ones whose bytes moved, in one commit with the subject `index the
+repository`. It indexes a repository written before the index existed without waiting for its next
+entry, and it is how an act index that was edited by hand or left stale is put right: the writer
+reads other acts' indexes as they stand and would carry a wrong one into the root, and it never
+re-verifies them, since that would rebuild the whole repository on every write. The repository is
+`--output-repo`, else `EMENDRIX_OUTPUT_REPO`, opened with the same two refusals as the writer. It
+reads no network and no clock and needs no date; a second run commits nothing, and `--dry-run`
+prints which files would change and their sizes and writes nothing. History-level work on a
+changelogs repository, such as a re-root or a fast-forward, must run `emendrix index rebuild` inside
+the same window in which the poller is suspended.
 
 A rendering of these artifacts as a browsable site is in [`./site.md`](./site.md).

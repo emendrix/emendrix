@@ -1,5 +1,5 @@
 """`emendrix` on the command line: `diff`, `watch`, `explain`, `run`, `backfill`, `repair`,
-`eval`, `site`.
+`index`, `eval`, `site`.
 
 This module is the composition root for `diff`, the one place allowed to know that the EU
 adapter, the disk cache and the diff engine exist at the same time. It reads the observation
@@ -47,6 +47,7 @@ from emendrix.eval_.cli import app as eval_app
 from emendrix.graph.cli import explain as explain_command
 from emendrix.graph.cli import run as run_command
 from emendrix.output import diff_only_entry, render_standalone
+from emendrix.output.index_cli import app as index_app
 from emendrix.repair.cli import app as repair_app
 from emendrix.site_.cli import app as site_app
 from emendrix.watch.cli import watch
@@ -61,6 +62,7 @@ app = typer.Typer(
 )
 
 app.add_typer(eval_app, name="eval")
+app.add_typer(index_app, name="index")
 app.add_typer(repair_app, name="repair")
 app.add_typer(site_app, name="site")
 app.command("watch")(watch)

@@ -1,4 +1,4 @@
-"""The output git repository: open-or-init, write two files, commit, never push.
+"""The output git repository: open-or-init, write an entry and the index, commit, never push.
 
 The product claim of this project is that *your regulatory dependencies get the same review
 workflow as your code dependencies*. That claim is cashed here and nowhere else: a run of the
@@ -7,8 +7,10 @@ loop ends as a commit in a repository somebody can diff, review in a pull reques
 ```
 <repo>/.emendrix-output                              this repository is one emendrix created
 <repo>/README.md
+<repo>/index.json                                     one row per act
 <repo>/eu/32017R0745/CHANGELOG.md                     newest entry first, rewritten in place
 <repo>/eu/32017R0745/changes/02017R0745-20200424.json  the same event, structured
+<repo>/eu/32017R0745/index.json                       every event and changed provision, no text
 ```
 
 Three policies, each of which is a decision rather than an implementation detail:
@@ -28,6 +30,10 @@ of its own.
 **Re-emitting an event is a no-op.** The rendered bytes are compared with what is already on
 disk before anything is written, and nothing is committed when nothing was staged. A cron
 entry that runs this hourly produces one commit per amendment, not one per hour.
+
+The index rides the entry's commit, so every commit is self-consistent. Only the written act's
+index is rebuilt from its payloads and every other act's is read as it stands, since rebuilding
+them all per write would make a backfill quadratic; `emendrix index rebuild` repairs a stale one.
 """
 
 from __future__ import annotations
@@ -41,9 +47,13 @@ from pydantic import BaseModel, ConfigDict
 from emendrix.core import ActId, VersionId
 from emendrix.output.changelog import MARKER, changelog_text, repo_readme
 from emendrix.output.git import GitError, commit, git, init_repo, staged
+from emendrix.output.index import act_index, root_index
+from emendrix.output.index import render as render_index
+from emendrix.output.index_model import INDEX_FILE, ActIndex
 from emendrix.output.json_out import ChangelogEntry, payload_for
 
 __all__ = [
+    "INDEX_SUBJECT",
     "MARKER_FILE",
     "ForeignRepository",
     "NestedRepository",
@@ -58,6 +68,9 @@ It is what distinguishes "the repository emendrix made for this" from "a reposit
 without that distinction the guard below would be half a guard: refusing a path *inside*
 somebody's working tree while accepting the working tree itself.
 """
+
+INDEX_SUBJECT: Final = "index the repository"
+"""The subject of a commit that moved the index and no entry."""
 
 
 class NestedRepository(GitError):
@@ -127,28 +140,19 @@ class OutputRepo:
     def holds(self, act: ActId, version: VersionId) -> bool:
         """Whether the entry a transition into `version` would write is already here.
 
-        This is the whole resume mechanism a batch job needs, and it needs no state of its own:
-        the path is a pure function of the act and the version it produced, so a run that lost
-        its ledger, or never had one because the container is new, still declines to pay a
-        second time for work that is on disk. It answers about the *version*, not the pair, and
-        that is deliberate: two different starting versions produce one file, and re-running the
-        other pair would overwrite a committed entry with a differently-based one rather than
-        add anything.
+        The whole resume mechanism a batch job needs: the path is a pure function of the act and
+        the version, so a run that lost its ledger still declines to pay twice. It answers about
+        the *version*, not the pair, because two starting versions produce one file.
         """
         return (self.path / payload_for(act, version)).is_file()
 
     def holds_finished(self, act: ActId, version: VersionId) -> bool:
         """Whether the entry here is one a re-run would have nothing to add to.
 
-        `holds` asks whether the file exists, which is the right question for everything except
-        one case: an entry written while the provider was refusing calls carries changes nobody
-        ever asked the model about. The file's existence is the whole resume record, so without
-        this an installation that ran out of credit mid-backfill would publish the gap once and
-        then skip past it for ever.
-
-        Unreadable or unexpected JSON answers `True`, the same as a plain `holds`. A file this
-        cannot parse is a reason to leave an entry alone and look at it, never a reason to spend
-        on rewriting it on every run.
+        An entry written while the provider was refusing calls carries changes nobody asked the
+        model about, and without this a backfill that ran out of credit would skip past the gap
+        for ever. Unreadable or unexpected JSON answers `True`, the same as a plain `holds`: a
+        file this cannot parse is a reason to look at it, never to spend on it every run.
         """
         path = self.path / payload_for(act, version)
         if not path.is_file():
@@ -166,9 +170,7 @@ class OutputRepo:
     def entry_for(self, act: ActId, version: VersionId | str) -> ChangelogEntry | None:
         """The committed entry for one transition, validated, or None when there is none.
 
-        `holds` answers whether a file is here and `holds_finished` reads one field out of it by
-        hand. A caller that means to rebuild an entry needs the document itself, and needs a
-        document that does not validate to be loud rather than skipped.
+        A document that does not validate is loud rather than skipped.
         """
         path = self.path / payload_for(act, version)
         if not path.is_file():
@@ -193,14 +195,45 @@ class OutputRepo:
         previous = _read(changelog)
         rendered = changelog_text(previous, entry)
         document = entry.to_json()
-        if not initialised and previous == rendered and _read(payload) == document:
+        current = not initialised and previous == rendered and _read(payload) == document
+        if not current:
+            payload.parent.mkdir(parents=True, exist_ok=True)
+            changelog.write_text(rendered, encoding="utf-8")
+            payload.write_text(document, encoding="utf-8")
+        indexed = self._index(entry.act_dir)
+        if current and not indexed:
             return WriteResult(
                 act=str(entry.act), changelog=changelog, payload=payload, unchanged=True
             )
-        payload.parent.mkdir(parents=True, exist_ok=True)
-        changelog.write_text(rendered, encoding="utf-8")
-        payload.write_text(document, encoding="utf-8")
-        return self._commit(entry, changelog, payload, initialised=initialised, message=message)
+        if current and message is None:
+            message = INDEX_SUBJECT
+        return self._commit(
+            entry, changelog, payload, indexed, initialised=initialised, message=message
+        )
+
+    def _index(self, act_dir: str) -> tuple[str, ...]:
+        """Rebuild `act_dir`'s index and the root's; return the paths whose bytes moved.
+
+        Another act's is built from its payloads only when it has none: a repository that
+        predates the index.
+        """
+        files: dict[str, str] = {}
+        acts: list[ActIndex] = []
+        for changes in sorted(self.path.glob("*/*/changes")):
+            if not changes.is_dir() or not any(changes.glob("*.json")):
+                continue
+            name = changes.parent.relative_to(self.path).as_posix()
+            stored = changes.parent / INDEX_FILE
+            if name == act_dir or not stored.is_file():
+                acts.append(act_index(self.path, name))
+                files[f"{name}/{INDEX_FILE}"] = render_index(acts[-1])
+            else:
+                acts.append(ActIndex.model_validate_json(stored.read_bytes()))
+        files[INDEX_FILE] = render_index(root_index(acts))
+        moved = tuple(path for path, text in files.items() if _read(self.path / path) != text)
+        for path in moved:
+            (self.path / path).write_text(files[path], encoding="utf-8")
+        return moved
 
     # ------------------------------------------------------------------ the git half
 
@@ -216,16 +249,17 @@ class OutputRepo:
         entry: ChangelogEntry,
         changelog: Path,
         payload: Path,
+        indexed: tuple[str, ...],
         *,
         initialised: bool,
         message: str | None = None,
     ) -> WriteResult:
-        """Stage exactly this act's directory (plus, on a fresh repo, its two root files).
+        """Stage this act's directory, the index files that moved, and on a fresh repo the root.
 
         Paths are given relative to the repository root and after `--`, so nothing outside it
         can be staged even if a path ever arrived containing something surprising.
         """
-        targets = [str(self.act_dir(entry).relative_to(self.path))]
+        targets = [str(self.act_dir(entry).relative_to(self.path)), *indexed]
         if initialised:
             targets.extend(("README.md", MARKER_FILE))
         git("add", "--", *targets, cwd=self.path)
@@ -249,8 +283,7 @@ class OutputRepo:
 
         The subject names the transition rather than the amending act, because no stage of the
         loop resolves an amending act's identifier: an event names the consolidation that
-        appeared, not what caused it. The transition is also what the entry is about and what a
-        reader would search for.
+        appeared, not what caused it.
         """
         return (
             f"{entry.act.key}: {entry.from_version} -> {entry.to_version} "

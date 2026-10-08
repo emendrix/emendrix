@@ -923,3 +923,23 @@ Named rather than discovered later; the eval report's disagreement list is the l
   rewritten. Those are figures about that copy, not about what is served, and the hosted record
   has to be measured again before it is repaired; a page served today may still show a dispute
   these rules no longer raise.
+
+- **A changelogs repository carries an index of every change it holds, since 2026-10-08.** Every
+  commit the writer makes now also holds `index.json` at the root, one row per act, and
+  `<corpus>/<act>/index.json`, one row per entry and one per change to each provision, staged in
+  the same commit as the entry, so any commit of the repository is self-consistent and a mirror
+  of it carries the index with no extra job. Neither file carries provision text or a timestamp;
+  each event row names the payload's path and the sha256 of its committed bytes, and each change
+  row carries its signals, its `dispute_reason` (filled whether or not the payload stores the key)
+  and which verbatim sides the payload holds. Polls, backfills and repairs all write through the
+  same writer, so each moves the index in its own commit, and re-emitting an event into a
+  repository whose index is current still commits nothing. Only the written act is rebuilt from
+  its payloads; every other act's index is read as it stands, or built once when it has none. A
+  repository written before this date, the hosted one included, carries no index until its next
+  write, or until `emendrix index rebuild` is run over it, which reads only the repository's own
+  files and writes one commit, `index the repository`; the same command repairs an act index
+  edited by hand or left stale, and history-level work on the repository must run it in the
+  window the poller is suspended in. The fields, the correction
+  protocol and the versioning rule are in `docs/output-format.md` §"The index". **No published
+  figure moved**: the index is read off committed payloads, and the eval layer, the payloads and
+  the changelogs are byte-identical to before.

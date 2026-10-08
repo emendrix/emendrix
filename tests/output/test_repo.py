@@ -1,7 +1,7 @@
 """The output git repository, against real `git` in a temp directory, never this repo.
 
 Every test here runs `git` for real, because the thing worth testing is the interaction with
-it: that a repository is created when it is absent, that a commit contains exactly the two
+it: that a repository is created when it is absent, that a commit contains exactly the
 files it should, that a second run of one event produces no second commit, and that a second
 *event* prepends without disturbing the first.
 
@@ -64,7 +64,7 @@ def test_a_missing_repository_is_created_rather_than_demanded(repo: OutputRepo) 
     assert (repo.path / MARKER_FILE).is_file(), "and this says emendrix may write in it"
 
 
-def test_the_commit_holds_the_two_files_of_one_act_and_says_what_it_is(
+def test_the_commit_holds_the_files_of_one_act_and_the_index_and_says_what_it_is(
     repo: OutputRepo,
 ) -> None:
     written = repo.write(toy_entry())
@@ -74,8 +74,10 @@ def test_the_commit_holds_the_two_files_of_one_act_and_says_what_it_is(
     assert files == [
         MARKER_FILE,
         "README.md",
+        "index.json",
         "toy/house-rules/CHANGELOG.md",
         "toy/house-rules/changes/v2.json",
+        "toy/house-rules/index.json",
     ]
 
 
