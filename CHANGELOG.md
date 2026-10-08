@@ -971,3 +971,23 @@ Named rather than discovered later; the eval report's disagreement list is the l
   and **no act-feed or global-feed id or byte moved**. The build's summary line counts the
   provision feeds apart from the others. **No published figure moved**: the eval layer, the
   payloads and the changelogs are byte-identical to before.
+
+- **The change record is served to model clients as an MCP endpoint, since 2026-10-08**, at
+  `emendrix.eu/mcp`, the day it first answered from the edge, and the hosted changelogs carry
+  their index from the same day. `packages/emendrix-mcp` is a server beside the pipeline that
+  answers MCP's streamable HTTP with one JSON response per request and no session: seven
+  read-only tools (`list_acts`, `find_provisions`, `changes_since`, `provision_history`,
+  `get_change`, `get_event`, `list_disputed`) and four resources, over the published indexes,
+  payloads and the site's catalogue, read from disk. Every result carries the disclaimer, the
+  path and sha256 of what it read and the stored index row with all three signals; verbatim text
+  is returned as stored, paged behind a visible marker. It decides nothing: no model, no diff, no
+  classifier, no outbound connection and no clock, and it imports nothing of the pipeline, which
+  its own architecture test checks. It is keyless, refuses a Host it was not configured for and a
+  `null` or `http://` Origin, and answers only POST. It ships as its own image,
+  `ghcr.io/emendrix/emendrix-mcp`, and the reference deployment runs it as a read-only `mcp`
+  service behind the web container's `/mcp`. **Self-hosters: `deploy/compose.yaml` now requires
+  `EMENDRIX_PUBLIC_HOST` in `deploy/.env`** (template `deploy/.env.example`), which sets both the
+  site's address and the hosts the server answers, so the two cannot disagree; a compose setup
+  that relied on the address written into the file must create that file before its next `up`.
+  **No published figure moved**: the eval layer, the payloads and the changelogs are
+  byte-identical to before.
