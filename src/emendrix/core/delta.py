@@ -20,6 +20,7 @@ from emendrix.core.changes import (
     Applicability,
     ApplicabilityUnknown,
     ChangeType,
+    DisputeReason,
     SignalSet,
     SignalStatus,
 )
@@ -81,7 +82,12 @@ class Change(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def _derive_disputed(cls, data: Any) -> Any:
-        """Fill `disputed` from the signals, and reject a value that contradicts them."""
+        """Fill `disputed` from the signals; reject it or a `dispute_reason` if either contradicts.
+
+        A stored `dispute_reason` is checked and dropped: the field is computed, so a payload
+        written before it existed reads back with it, and one written after cannot carry a
+        reason its own signals do not give.
+        """
         if not isinstance(data, dict):
             return data
         raw_signals = data.get("signals")
@@ -93,6 +99,12 @@ class Change(BaseModel):
             signals = SignalSet.model_validate(raw_signals)
         else:
             return data
+        if "dispute_reason" in data and data["dispute_reason"] != signals.reason:
+            raise ValueError(
+                f"dispute_reason={data['dispute_reason']!r} contradicts the signals "
+                f"(reason={signals.reason!r}); it is derived, not asserted"
+            )
+        data = {key: value for key, value in data.items() if key != "dispute_reason"}
         expected = signals.disagreement
         if data.get("disputed") is None:
             return {**data, "disputed": expected}
@@ -102,6 +114,14 @@ class Change(BaseModel):
                 f"(disagreement={expected!r}); it is derived, not asserted"
             )
         return data
+
+    @computed_field(  # type: ignore[prop-decorator]
+        description="Which signal disagreed and how; None exactly when not disputed. Derived "
+        "from `signals`, never stored apart from them."
+    )
+    @property
+    def dispute_reason(self) -> DisputeReason | None:
+        return self.signals.reason
 
     @model_validator(mode="after")
     def _texts_match_change_type(self) -> Self:

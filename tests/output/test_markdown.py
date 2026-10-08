@@ -42,9 +42,13 @@ from emendrix.core import (
     SignalStatus,
     VersionId,
 )
+from emendrix.core.changes import DisputeReason
+from emendrix.gate import GateOutcome
+from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry, render_entry, render_standalone
 from emendrix.output.markdown import (
     QUOTE_CHAR_CAP,
+    REASON_PHRASES,
     TITLE_CAP,
     _detail,
     dispute_text,
@@ -223,8 +227,38 @@ def test_a_disputed_change_is_rendered_and_says_what_disagreed() -> None:
     """Never silently dropped, never merged away, and the marker names the disagreement."""
     rendered = render_entry(disputed_entry())
     assert "**MODIFIED · Art. 9**" in rendered
-    assert "**DISPUTED** — seen by corpus metadata, not by the structural diff" in rendered
+    assert (
+        "**DISPUTED** — no text, named by corpus metadata alone: "
+        "seen by corpus metadata, not by the structural diff"
+    ) in rendered
     assert "No text on either side" in rendered
+
+
+def test_every_dispute_reason_has_one_phrase_and_no_two_share_one() -> None:
+    """A code added to `core` must be given words here, not left to raise at render time."""
+    assert set(REASON_PHRASES) == set(DisputeReason)
+    assert len(set(REASON_PHRASES.values())) == len(DisputeReason)
+
+
+def test_the_marker_leads_with_the_reason_the_change_carries() -> None:
+    """The phrase is looked up from `Change.dispute_reason`, never worded again here."""
+    observed = SignalObservation(status=SignalStatus.OBSERVED)
+    change = _signalled(
+        SignalSet(
+            structural_diff=observed,
+            instruction_parse=SignalObservation(status=SignalStatus.ABSENT),
+        )
+    )
+    assert change.dispute_reason is DisputeReason.INSTRUCTION_SILENT
+    rendered = render_entry(
+        toy_entry().model_copy(
+            update={"changes": (EmittedChange(change=change, outcome=GateOutcome.UNEXPLAINED),)}
+        )
+    )
+    assert (
+        "**DISPUTED** — the instruction parse is silent: "
+        "seen by the structural diff, not by the instruction parse"
+    ) in rendered
 
 
 def _signalled(signals: SignalSet) -> Change:

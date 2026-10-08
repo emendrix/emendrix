@@ -20,6 +20,7 @@ __all__ = [
     "ApplicabilityUnchanged",
     "ApplicabilityUnknown",
     "ChangeType",
+    "DisputeReason",
     "Signal",
     "SignalObservation",
     "SignalSet",
@@ -61,6 +62,29 @@ class SignalStatus(StrEnum):
     OBSERVED = "observed"
     ABSENT = "absent"
     UNAVAILABLE = "unavailable"
+
+
+class DisputeReason(StrEnum):
+    """Which signal disagreed and how, read off one disputed change's `SignalSet` alone.
+
+    A reading of stored verdicts, never a judgement about the law. `SignalSet.reason` assigns
+    exactly one to every disputed set and none to any other, evaluated in the order declared.
+    """
+
+    KIND_MISMATCH = "kind_mismatch"
+    """No applicable signal is absent, and the kinds the observing signals name share nothing."""
+    TEXTLESS_BOTH_OTHERS = "textless_both_others"
+    """The diff is absent; the metadata and the instruction parse both observed the unit."""
+    TEXTLESS_METADATA_ONLY = "textless_metadata_only"
+    """The diff is absent; the metadata observed it; the instruction parse did not."""
+    TEXTLESS_INSTRUCTION_ONLY = "textless_instruction_only"
+    """The diff is absent; only the instruction parse observed it."""
+    BOTH_OTHERS_SILENT = "both_others_silent"
+    """The diff observed it; the metadata and the instruction parse are both absent."""
+    METADATA_SILENT = "metadata_silent"
+    """The metadata is absent and the instruction parse is not; another signal observed it."""
+    INSTRUCTION_SILENT = "instruction_silent"
+    """The instruction parse is absent and the metadata is not; another signal observed it."""
 
 
 class SignalObservation(BaseModel):
@@ -127,6 +151,32 @@ class SignalSet(BaseModel):
             if seen.observed and seen.change_types
         ]
         return bool(claimed) and not frozenset.intersection(*claimed)
+
+    @property
+    def reason(self) -> DisputeReason | None:
+        """Which signal disagreed, `None` exactly when the signals agree.
+
+        Presence outranks kind: a set with an absent signal is read by which one is absent.
+        A diff that is unavailable rather than absent is read like an observing one, because
+        the textless codes promise a change no text was found for, and such a change has text.
+        """
+        if not self.disagreement:
+            return None
+        diff, meta, prose = (seen.status for _, seen in self.observations)
+        absent = SignalStatus.ABSENT
+        if absent not in (diff, meta, prose):
+            return DisputeReason.KIND_MISMATCH
+        if diff is absent:
+            if self.corpus_metadata.observed and self.instruction_parse.observed:
+                return DisputeReason.TEXTLESS_BOTH_OTHERS
+            if self.corpus_metadata.observed:
+                return DisputeReason.TEXTLESS_METADATA_ONLY
+            return DisputeReason.TEXTLESS_INSTRUCTION_ONLY
+        if meta is absent and prose is absent:
+            return DisputeReason.BOTH_OTHERS_SILENT
+        if meta is absent:
+            return DisputeReason.METADATA_SILENT
+        return DisputeReason.INSTRUCTION_SILENT
 
 
 class ApplicabilityUnknown(BaseModel):

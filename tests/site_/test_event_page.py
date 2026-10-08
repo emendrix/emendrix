@@ -238,7 +238,8 @@ def test_a_disputed_change_says_what_disagreed_without_saying_disputed() -> None
     assert "<strong>Found in the text, but not every source lists it</strong>" in rendered
     assert (
         "the text comparison found this change; the EU&#x27;s own amendment metadata does not "
-        "list it. Both are shown; neither is overruled." in rendered
+        "list it. The source that does not name it is the EU&#x27;s own amendment metadata. "
+        "Both are shown; neither is overruled." in rendered
     )
     assert "<strong>Disputed</strong>" not in rendered
     assert rendered.count('<div class="chg differ-text"') == 4

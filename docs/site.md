@@ -321,6 +321,15 @@ both through `pages/prose.py`) is read in this order:
   shape, and an alarm on each of them made the whole site read as unreliable. The block carries
   the shape as a class, `differ-text`, `differ-none` or `differ-kind`, on the version page and on
   a provision step alike, so one change is graded one way wherever it is shown.
+
+  The detail names the sources that found the change and the ones that did not, then says the
+  change's `dispute_reason` in one plain sentence, then closes on the promise that every reading
+  is shown and none is overruled. The sentence comes from one table in `site_/dispute.py`, one
+  per code, in the same reader-facing source names: `Only the text comparison found it.`, `The
+  source that does not name it is the EU's own amendment metadata.`, `Two sources name it, and
+  neither carries any text.`, `No one kind of change is named by every source that found it.`
+  and three more. It is read off the same verdicts as the stored code, so the page and an API row
+  cannot name different reasons, and like the lead it describes the sources and never the law.
 - **Two registers.** The model's sentences sit under a label, `Explanation, written by a model
   and checked against the cited text`, in the sans at the largest size on the block, behind a
   rule. The citations follow once, and where a label in them names `v1` or `v2` the line under

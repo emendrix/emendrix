@@ -8,7 +8,7 @@ making a claim about the law when it is making a claim about itself. So the site
 claim out and the stored vocabulary does not move: no page says the stored word, and the
 umbrella a reader meets is "sources differ".
 
-Four rules hold this module together:
+Five rules hold this module together:
 
 - **The sentence is read off the signals the change carries**, exactly as the changelog's
   marker is (`output/markdown.py::dispute_text`). Neither restates the other's prose; both
@@ -32,6 +32,9 @@ Four rules hold this module together:
   away**: all three still ship, still carry `disputed` in the JSON and still count in the rate.
   No lead uses the words `disputed`, `contested` or `conflict`, each of which reads as a claim
   about the law.
+- **The detail says the change's `dispute_reason`** before its closing promise, one sentence
+  per code read off the same verdicts by `SignalSet.reason`, so the code an API row carries and
+  the words a page prints are one answer.
 
 The reader-facing names are the only place the three signals are translated for a page. They
 describe what each source *is* rather than what the code calls it: a comparison of the two
@@ -45,12 +48,14 @@ from typing import Final
 from pydantic import BaseModel, ConfigDict
 
 from emendrix.core import Signal, SignalObservation, SignalSet, SignalStatus
+from emendrix.core.changes import DisputeReason
 from emendrix.site_.entries import _shape
 from emendrix.site_.markup import count
 from emendrix.site_.untouched import TEXTLESS_TAIL
 
 __all__ = [
     "QUIET_NOTE",
+    "REASON_SENTENCES",
     "SHAPE_CLASS",
     "DisputeNote",
     "dispute_note",
@@ -73,6 +78,26 @@ _UNSEEN: Final[dict[Signal, str]] = {
 }
 """How each signal says it did not see the change. One clause per source, because the natural
 negative differs: metadata lists, instructions mention, and a comparison finds a difference."""
+
+REASON_SENTENCES: Final[dict[DisputeReason, str]] = {
+    DisputeReason.KIND_MISMATCH: "No one kind of change is named by every source that found it.",
+    DisputeReason.TEXTLESS_BOTH_OTHERS: "Two sources name it, and neither carries any text.",
+    DisputeReason.TEXTLESS_METADATA_ONLY: "Only the EU's own amendment metadata names it, and "
+    "it carries no text.",
+    DisputeReason.TEXTLESS_INSTRUCTION_ONLY: "Only the amending act's instructions name it, and "
+    "they carry no text.",
+    DisputeReason.BOTH_OTHERS_SILENT: "Only the text comparison found it.",
+    DisputeReason.METADATA_SILENT: "The source that does not name it is the EU's own amendment "
+    "metadata.",
+    DisputeReason.INSTRUCTION_SILENT: "The source that does not name it is the amending act's "
+    "instructions.",
+}
+"""The change's `dispute_reason`, one plain sentence per code, said before the closing promise.
+
+It says which source saw what, in the same reader-facing names as the sentence before it, and
+never why the legislator did anything. The changelog prints the same code in its own words
+(`output/markdown.py::REASON_PHRASES`).
+"""
 
 _EVIDENCED_LEAD: Final = "Found in the text, but not every source lists it"
 """The change the comparison read and quoted, which another source did not enumerate.
@@ -212,18 +237,25 @@ def dispute_note(signals: SignalSet) -> DisputeNote:
     observed = tuple(signal for signal, seen in observations if seen.observed)
     unseen = tuple(signal for signal, seen in observations if seen.status is SignalStatus.ABSENT)
     shape = dispute_shape(signals)
-    detail = _kind(observations) if shape == "kind" else _presence(observed, unseen)
-    return DisputeNote(lead=_LEADS[shape], detail=detail)
+    if shape == "kind":
+        body, named = _kind(observations)
+    else:
+        body, named = _presence(observed, unseen), len(observed) + len(unseen)
+    reason = signals.reason
+    parts = [body, *([] if reason is None else [REASON_SENTENCES[reason]])]
+    if named:
+        parts.append(_closing(named))
+    return DisputeNote(lead=_LEADS[shape], detail=" ".join(parts))
 
 
 def _presence(observed: tuple[Signal, ...], unseen: tuple[Signal, ...]) -> str:
     """One source or two found the change; the rest looked and did not."""
     found = f"{_names(observed)} found this change" if observed else "no source found this change"
     missed = " and ".join(_UNSEEN[signal] for signal in unseen)
-    return f"{found}; {missed}. {_closing(len(observed) + len(unseen))}"
+    return f"{found}; {missed}."
 
 
-def _kind(observations: tuple[tuple[Signal, SignalObservation], ...]) -> str:
+def _kind(observations: tuple[tuple[Signal, SignalObservation], ...]) -> tuple[str, int]:
     """Every source that looked found the provision, and they named different kinds.
 
     Every observing source gets a clause, including one that saw the change and named no kind
@@ -239,11 +271,8 @@ def _kind(observations: tuple[tuple[Signal, SignalObservation], ...]) -> str:
         if seen.observed
     ]
     if not claims:
-        return "the sources that saw this provision do not agree on what kind of change it is."
-    return (
-        "they agree this provision changed and disagree about how: "
-        f"{_and(claims)}. {_closing(len(claims))}"
-    )
+        return "the sources that saw this provision do not agree on what kind of change it is.", 0
+    return f"they agree this provision changed and disagree about how: {_and(claims)}.", len(claims)
 
 
 def _names(signals: tuple[Signal, ...]) -> str:

@@ -1,5 +1,8 @@
 """Change, SignalSet and Delta: what the models refuse to represent."""
 
+import itertools
+from collections import Counter
+from collections.abc import Callable
 from datetime import date
 from typing import Any
 
@@ -17,6 +20,7 @@ from emendrix.core import (
     SignalStatus,
     sort_changes,
 )
+from emendrix.core.changes import DisputeReason
 from emendrix.core.identifiers import ActId, ProvisionRef, VersionId
 from emendrix.core.location import ProvisionLocation
 from emendrix.core.provisions import ProvisionText
@@ -183,6 +187,166 @@ def test_a_change_the_diff_did_not_see_may_carry_no_text() -> None:
     # Everywhere else the requirement stands, including when no signal has spoken yet.
     with pytest.raises(ValueError, match="MODIFIED"):
         Change(change_type=ChangeType.MODIFIED, provision=ref("AR 12"))
+
+
+# ------------------------------------------------------------------ dispute_reason
+
+_KINDS: tuple[tuple[ChangeType, ...], ...] = (
+    (),
+    (ChangeType.MODIFIED,),
+    (ChangeType.INSERTED,),
+    (ChangeType.MODIFIED, ChangeType.INSERTED),
+)
+
+
+def _every_signal_set() -> list[SignalSet]:
+    """Every combination of three statuses, and of named kinds for each observing signal."""
+    sets = []
+    for statuses in itertools.product(SignalStatus, repeat=3):
+        options = [_KINDS if status is SignalStatus.OBSERVED else ((),) for status in statuses]
+        for kinds in itertools.product(*options):
+            diff, meta, prose = (
+                SignalObservation(status=status, change_types=named)
+                for status, named in zip(statuses, kinds, strict=True)
+            )
+            sets.append(
+                SignalSet(structural_diff=diff, corpus_metadata=meta, instruction_parse=prose)
+            )
+    return sets
+
+
+def _status(seen: SignalObservation, *wanted: SignalStatus) -> bool:
+    return seen.status in wanted
+
+
+_O, _A, _U = SignalStatus.OBSERVED, SignalStatus.ABSENT, SignalStatus.UNAVAILABLE
+
+_TABLE: tuple[tuple[DisputeReason, Callable[[SignalSet], bool]], ...] = (
+    (
+        DisputeReason.KIND_MISMATCH,
+        lambda s: not any(_status(seen, _A) for _, seen in s.observations),
+    ),
+    (
+        DisputeReason.TEXTLESS_BOTH_OTHERS,
+        lambda s: (
+            _status(s.structural_diff, _A)
+            and _status(s.corpus_metadata, _O)
+            and _status(s.instruction_parse, _O)
+        ),
+    ),
+    (
+        DisputeReason.TEXTLESS_METADATA_ONLY,
+        lambda s: (
+            _status(s.structural_diff, _A)
+            and _status(s.corpus_metadata, _O)
+            and _status(s.instruction_parse, _A, _U)
+        ),
+    ),
+    (
+        DisputeReason.TEXTLESS_INSTRUCTION_ONLY,
+        lambda s: (
+            _status(s.structural_diff, _A)
+            and _status(s.corpus_metadata, _A, _U)
+            and _status(s.instruction_parse, _O)
+        ),
+    ),
+    (
+        DisputeReason.BOTH_OTHERS_SILENT,
+        lambda s: (
+            _status(s.structural_diff, _O)
+            and _status(s.corpus_metadata, _A)
+            and _status(s.instruction_parse, _A)
+        ),
+    ),
+    (
+        DisputeReason.METADATA_SILENT,
+        lambda s: (
+            _status(s.structural_diff, _O)
+            and _status(s.corpus_metadata, _A)
+            and _status(s.instruction_parse, _O, _U)
+        ),
+    ),
+    (
+        DisputeReason.INSTRUCTION_SILENT,
+        lambda s: (
+            _status(s.structural_diff, _O)
+            and _status(s.instruction_parse, _A)
+            and _status(s.corpus_metadata, _O, _U)
+        ),
+    ),
+)
+"""The reason table, spelled out as written: first match wins, the diff observed or absent."""
+
+
+def test_every_disputed_signal_set_gets_exactly_the_code_the_table_gives() -> None:
+    """Exhaustive over statuses and kinds; an undisputed set gets no code at all.
+
+    The table is written for the two states the diff takes inside the loop, observed or absent,
+    and over those it is matched exactly. A diff that is unavailable (only a hand-built set has
+    one) is read as observing: the textless codes would promise a change no text was found
+    for, and such a change carries text, so the silent signal is named instead.
+    """
+    sets = _every_signal_set()
+    reached: Counter[DisputeReason] = Counter()
+    for signals in sets:
+        reason = signals.reason
+        if not signals.disagreement:
+            assert reason is None, signals
+            continue
+        assert reason is not None, signals
+        reached[reason] += 1
+        if signals.structural_diff.status is _U:
+            silent = [signal for signal, seen in signals.observations if seen.status is _A]
+            expected = {
+                (Signal.CORPUS_METADATA,): DisputeReason.METADATA_SILENT,
+                (Signal.INSTRUCTION_PARSE,): DisputeReason.INSTRUCTION_SILENT,
+                (): DisputeReason.KIND_MISMATCH,
+            }[tuple(silent)]
+            assert reason is expected, signals
+            continue
+        matched = [code for code, applies in _TABLE if applies(signals)]
+        assert matched, signals
+        assert reason is matched[0], signals
+    assert set(reached) == set(DisputeReason)
+
+
+def test_a_change_carries_its_reason_and_serialises_it() -> None:
+    silent = SignalSet(structural_diff=SEEN, corpus_metadata=NOT_SEEN, instruction_parse=SEEN)
+    disputed = change(ChangeType.MODIFIED, signals=silent)
+    assert disputed.dispute_reason is DisputeReason.METADATA_SILENT
+    assert disputed.model_dump(mode="json")["dispute_reason"] == "metadata_silent"
+    assert change(ChangeType.MODIFIED).dispute_reason is None
+    assert change(ChangeType.MODIFIED).model_dump()["dispute_reason"] is None
+
+
+def test_a_missing_reason_is_filled_and_a_matching_one_is_accepted() -> None:
+    silent = SignalSet(structural_diff=SEEN, corpus_metadata=NOT_SEEN, instruction_parse=SEEN)
+    stored = change(ChangeType.MODIFIED, signals=silent).model_dump(mode="json")
+    assert Change.model_validate(stored).dispute_reason is DisputeReason.METADATA_SILENT
+    del stored["dispute_reason"]
+    assert Change.model_validate(stored).dispute_reason is DisputeReason.METADATA_SILENT
+
+
+@pytest.mark.parametrize("stored", ["instruction_silent", "kind_mismatch", None])
+def test_a_reason_cannot_contradict_the_signals(stored: str | None) -> None:
+    silent = SignalSet(structural_diff=SEEN, corpus_metadata=NOT_SEEN, instruction_parse=SEEN)
+    with pytest.raises(ValueError, match=r"dispute_reason=.*contradicts the signals"):
+        change(ChangeType.MODIFIED, signals=silent, dispute_reason=stored)
+
+
+def test_a_reason_cannot_be_asserted_without_signals_to_back_it() -> None:
+    with pytest.raises(ValueError, match=r"dispute_reason=.*contradicts the signals"):
+        change(ChangeType.MODIFIED, dispute_reason="metadata_silent")
+
+
+def test_a_copy_with_new_signals_reads_its_reason_off_them() -> None:
+    """Corroboration stamps signals with `model_copy`, which skips validation; the reason must
+    follow the signals anyway, which is why it is computed rather than stored."""
+    plain = change(ChangeType.MODIFIED)
+    stamped = plain.model_copy(
+        update={"signals": SignalSet(structural_diff=SEEN, instruction_parse=NOT_SEEN)}
+    )
+    assert stamped.dispute_reason is DisputeReason.INSTRUCTION_SILENT
 
 
 def test_unit_is_the_top_level_provision() -> None:

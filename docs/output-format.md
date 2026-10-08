@@ -28,8 +28,9 @@ provision in a version; `before`/`after` are verbatim quotes rather than paraphr
 cannot be wrong about them; applicability is on its own line, separate from the text change,
 because "in force" and "applies to you" are different questions; and the change type comes from
 the structural diff, never from the model's opinion. A `disputed` change is rendered and marked
-with *what* disagreed, "seen by corpus metadata, not by the structural diff", because a
-disagreement hidden is a disagreement lied about. A sentence the citation gate wrote in place of
+with *what* disagreed, its reason in words and then the verdicts, "no text, named by corpus
+metadata alone: seen by corpus metadata, not by the structural diff", because a disagreement
+hidden is a disagreement lied about. A sentence the citation gate wrote in place of
 ungrounded prose says so in the text. Both quote caps are printed with the number of characters
 they dropped: a silently truncated "verbatim" quote is worse than a long one. The committed golden
 file [`../tests/output/golden/mdr-changelog.md`](../tests/output/golden/mdr-changelog.md) is a real
@@ -118,6 +119,32 @@ behind its verdict (`corroboration.signals[].claims`), at the depth the corpus m
 annotation on `AR 5 PA 1 ALN 1 PTA (bb)` survives into the artifact instead of being flattened to
 `AR 5`. The structural diff publishes none: it produces the changes themselves, so a copy there
 would be a second delta. Neither field is a schema bump: both have defaults.
+
+**Every disputed change says which signal disagreed and how**, in `dispute_reason`, a code read
+off the change's own `signals` and `null` exactly when `disputed` is false. It is computed, never
+stored apart from the signals: a document whose `dispute_reason` contradicts its own signals is
+refused on read, as one whose `disputed` does is, and a document written before the field existed
+reads back with it filled. The codes are evaluated in this order and the first that applies wins:
+
+| Code | When |
+|---|---|
+| `kind_mismatch` | no applicable signal is absent, and the kinds the observing signals name share nothing |
+| `textless_both_others` | the structural diff is absent; the metadata and the instruction parse both observed the unit |
+| `textless_metadata_only` | the structural diff is absent; the metadata observed it; the instruction parse is absent or unavailable |
+| `textless_instruction_only` | the structural diff is absent; only the instruction parse observed it |
+| `both_others_silent` | the structural diff observed it; the metadata and the instruction parse are both absent |
+| `metadata_silent` | the metadata is absent; the instruction parse observed it or is unavailable |
+| `instruction_silent` | the instruction parse is absent; the metadata observed it or is unavailable |
+
+An `unavailable` signal never makes a reason, as it never makes a dispute. The three `textless_`
+codes are the changes with no text on either side, since the structural diff is the only signal
+that carries any. `textless_instruction_only` is not produced by a current run, which publishes a
+unit only the instruction parse names in `corroboration.instruction_only_units` rather than as a
+change, and it is kept so that an older document read again still gets a code. A reason is a
+reading of stored verdicts and says nothing about the law. **Adding it is not a schema bump**:
+the field has a default reading, derived from data every document already carries, and its
+absence from an older document means nothing a consumer has to interpret, so `schema_version`
+stays `1.2`.
 
 `schema_version` is `1.2`. It moved there on 2026-09-05, when a document gained `evidence`: one
 record per change saying what its explanation was written about, as

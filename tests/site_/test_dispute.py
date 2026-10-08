@@ -20,7 +20,9 @@ from __future__ import annotations
 import pytest
 
 from emendrix.core import ChangeType, Signal, SignalObservation, SignalSet, SignalStatus
+from emendrix.core.changes import DisputeReason
 from emendrix.site_.dispute import (
+    REASON_SENTENCES,
     SHAPE_CLASS,
     dispute_note,
     dispute_shape,
@@ -37,6 +39,7 @@ UNAVAILABLE = SignalObservation(status=SignalStatus.UNAVAILABLE)
 EVIDENCED = "Found in the text, but not every source lists it"
 TEXTLESS = "A source lists it, but there is no text to show"
 KIND = "The sources name different kinds of change"
+KIND_REASON = "No one kind of change is named by every source that found it."
 
 DIFF = "the text comparison"
 META = "the EU's own amendment metadata"
@@ -60,42 +63,45 @@ PRESENCE = [
         _set(OBSERVED, ABSENT, OBSERVED),
         EVIDENCED,
         f"{DIFF} and {PROSE} found this change; {META} does not list it. "
-        "All are shown; none is overruled.",
+        f"The source that does not name it is {META}. All are shown; none is overruled.",
         id="diff-and-prose-not-metadata",
     ),
     pytest.param(
         _set(ABSENT, ABSENT, OBSERVED),
         TEXTLESS,
         f"{PROSE} found this change; {DIFF} finds no difference in the provision's text and "
-        f"{META} does not list it. All are shown; none is overruled.",
+        f"{META} does not list it. Only {PROSE} name it, and they carry no text. "
+        "All are shown; none is overruled.",
         id="prose-only",
     ),
     pytest.param(
         _set(OBSERVED, OBSERVED, ABSENT),
         EVIDENCED,
         f"{DIFF} and {META} found this change; {PROSE} do not mention it. "
-        "All are shown; none is overruled.",
+        f"The source that does not name it is {PROSE}. All are shown; none is overruled.",
         id="diff-and-metadata-not-prose",
     ),
     pytest.param(
         _set(ABSENT, OBSERVED, ABSENT),
         TEXTLESS,
         f"{META} found this change; {DIFF} finds no difference in the provision's text and "
-        f"{PROSE} do not mention it. All are shown; none is overruled.",
+        f"{PROSE} do not mention it. Only {META} names it, and it carries no text. "
+        "All are shown; none is overruled.",
         id="metadata-only",
     ),
     pytest.param(
         _set(OBSERVED, ABSENT, ABSENT),
         EVIDENCED,
         f"{DIFF} found this change; {META} does not list it and {PROSE} do not mention it. "
-        "All are shown; none is overruled.",
+        f"Only {DIFF} found it. All are shown; none is overruled.",
         id="diff-only",
     ),
     pytest.param(
         _set(ABSENT, OBSERVED, OBSERVED),
         TEXTLESS,
         f"{META} and {PROSE} found this change; {DIFF} finds no difference in the provision's "
-        "text. All are shown; none is overruled.",
+        "text. Two sources name it, and neither carries any text. "
+        "All are shown; none is overruled.",
         id="metadata-and-prose-not-diff",
     ),
 ]
@@ -123,7 +129,7 @@ def test_a_kind_mismatch_reads_as_a_disagreement_about_kind_not_about_occurrence
     assert note.lead == KIND
     assert note.detail == (
         f"they agree this provision changed and disagree about how: {DIFF} called it MODIFIED "
-        f"and {META} called it INSERTED. Both are shown; neither is overruled."
+        f"and {META} called it INSERTED. {KIND_REASON} Both are shown; neither is overruled."
     )
     for phrase in ("does not list it", "do not mention it", "finds no difference"):
         assert phrase not in note.text
@@ -145,7 +151,7 @@ def test_a_source_that_saw_the_change_and_named_no_kind_is_still_named() -> None
     assert note.detail == (
         f"they agree this provision changed and disagree about how: {DIFF} called it MODIFIED, "
         f"{META} found it without naming a kind and {PROSE} called it INSERTED. "
-        "All are shown; none is overruled."
+        f"{KIND_REASON} All are shown; none is overruled."
     )
 
 
@@ -177,8 +183,8 @@ def test_the_two_source_case_reads_as_the_wording_the_site_ships() -> None:
     """The worked example, in full: one source found it, one did not, one could not look."""
     assert dispute_note(_set(OBSERVED, ABSENT, UNAVAILABLE)).text == (
         "Found in the text, but not every source lists it — the text comparison found "
-        "this change; the EU's own amendment metadata does not list it. Both are shown; "
-        "neither is overruled."
+        "this change; the EU's own amendment metadata does not list it. The source that does "
+        "not name it is the EU's own amendment metadata. Both are shown; neither is overruled."
     )
 
 
@@ -269,3 +275,52 @@ def test_the_heading_over_the_gathered_rows_counts_them_and_says_what_they_are()
     """
     assert quiet_heading(1) == "1 provision named with no text to show"
     assert quiet_heading(36) == "36 provisions named with no text to show"
+
+
+# ------------------------------------------------------------------ the reason
+
+
+def _kinded(kind: ChangeType) -> SignalObservation:
+    return SignalObservation(status=SignalStatus.OBSERVED, change_types=(kind,))
+
+
+REASONS = [
+    (_set(_kinded(ChangeType.MODIFIED), _kinded(ChangeType.INSERTED), UNAVAILABLE), KIND_REASON),
+    (_set(ABSENT, OBSERVED, OBSERVED), "Two sources name it, and neither carries any text."),
+    (_set(ABSENT, OBSERVED, UNAVAILABLE), f"Only {META} names it, and it carries no text."),
+    (_set(ABSENT, UNAVAILABLE, OBSERVED), f"Only {PROSE} name it, and they carry no text."),
+    (_set(OBSERVED, ABSENT, ABSENT), f"Only {DIFF} found it."),
+    (_set(OBSERVED, ABSENT, UNAVAILABLE), f"The source that does not name it is {META}."),
+    (_set(OBSERVED, UNAVAILABLE, ABSENT), f"The source that does not name it is {PROSE}."),
+]
+
+
+@pytest.mark.parametrize(("signals", "sentence"), REASONS)
+def test_each_reason_code_renders_its_one_sentence_before_the_closing_promise(
+    signals: SignalSet, sentence: str
+) -> None:
+    """One plain sentence per code, from the table, in the reader-facing source names."""
+    assert signals.reason is not None
+    assert REASON_SENTENCES[signals.reason] == sentence
+    detail = dispute_note(signals).detail
+    assert detail.count(sentence) == 1
+    assert detail.endswith(f"{sentence} Both are shown; neither is overruled.") or (
+        detail.endswith(f"{sentence} All are shown; none is overruled.")
+    )
+
+
+def test_every_code_has_a_sentence_and_none_says_anything_about_the_law() -> None:
+    """A code added to `core` must be given words here, and none may read as a legal claim."""
+    assert {signals.reason for signals, _ in REASONS} == set(DisputeReason)
+    assert set(REASON_SENTENCES) == set(DisputeReason)
+    for sentence in REASON_SENTENCES.values():
+        for word in ("disput", "contest", "conflict"):
+            assert word not in sentence.lower(), sentence
+
+
+def test_a_set_the_sources_agree_about_gets_no_reason_sentence() -> None:
+    agreeing = _set(OBSERVED, OBSERVED, UNAVAILABLE)
+    assert agreeing.reason is None
+    detail = dispute_note(agreeing).detail
+    for sentence in REASON_SENTENCES.values():
+        assert sentence not in detail

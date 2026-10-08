@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 
+import pytest
 from toy_entries import (
     OBSERVED_ON,
     disputed_delta,
@@ -21,6 +22,7 @@ from toy_entries import (
 
 from emendrix import DISCLAIMER
 from emendrix.core import ChangeType
+from emendrix.core.changes import DisputeReason
 from emendrix.gate import GateOutcome
 from emendrix.output import SCHEMA_VERSION, ChangelogEntry, diff_only_entry
 from emendrix.output.json_out import DIFF_ONLY_NOTE, slug
@@ -130,6 +132,48 @@ def test_a_document_written_under_the_earlier_schema_still_reads() -> None:
     assert entry.counts.textless == 0
     assert entry.counts.substantive == entry.counts.touched
     assert entry.evidence == ()
+
+
+def test_a_disputed_change_carries_its_reason_and_round_trips_with_it() -> None:
+    """The reason is in the payload beside `disputed`, and reads back as the same code."""
+    entry = disputed_entry()
+    payload = json.loads(entry.to_json())
+    reasons = {
+        item["change"]["provision"]["location"]: item["change"]["dispute_reason"]
+        for item in payload["changes"]
+    }
+    assert reasons["AR 9"] == "textless_metadata_only"
+    assert [value for key, value in reasons.items() if key != "AR 9"] == [None] * (len(reasons) - 1)
+    restored = ChangelogEntry.model_validate_json(entry.to_json())
+    assert restored == entry
+    assert restored.to_json() == entry.to_json()
+
+
+@pytest.mark.parametrize("version", ["1.0", "1.2"])
+def test_a_document_written_before_the_reason_existed_reads_back_with_it(version: str) -> None:
+    """Every published payload predates the field. Reading one fills it from the signals the
+    change already carries, and never fails, or the site build over the published repository
+    would."""
+    payload = json.loads(disputed_entry().to_json())
+    payload["schema_version"] = version
+    for item in payload["changes"]:
+        del item["change"]["dispute_reason"]
+    entry = ChangelogEntry.model_validate(payload)
+    assert [item.change.dispute_reason for item in entry.changes if item.change.disputed] == [
+        DisputeReason.TEXTLESS_METADATA_ONLY
+    ]
+    assert entry.to_json() == disputed_entry().to_json().replace(
+        '"schema_version": "1.2"', f'"schema_version": "{version}"'
+    )
+
+
+def test_a_payload_whose_reason_contradicts_its_signals_is_refused() -> None:
+    payload = json.loads(disputed_entry().to_json())
+    for item in payload["changes"]:
+        if item["change"]["disputed"]:
+            item["change"]["dispute_reason"] = "kind_mismatch"
+    with pytest.raises(ValueError, match="contradicts the signals"):
+        ChangelogEntry.model_validate(payload)
 
 
 def test_a_deferred_unit_counts_as_date_only() -> None:

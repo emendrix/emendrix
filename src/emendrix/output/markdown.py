@@ -15,8 +15,9 @@ What the format *forces* is the reason for every decision below:
   force" and "applies to you" are different questions and `unknown` is an answer.
 - **The change type comes from the diff**, never from a model, so it is printed as fact.
 - **A disputed change is rendered and marked, never dropped**, and the marker says *what*
-  disagreed ("seen by the structural diff, not by corpus metadata"), because that transparency
-  is the product's honesty made visible.
+  disagreed, its `dispute_reason` in words and then the verdicts ("seen by the structural
+  diff, not by corpus metadata"), because that transparency is the product's honesty made
+  visible.
 - **A sentence the gate wrote is visually distinct from one the model wrote.** The gate's
   verbatim fallback is correct by construction and the model's prose is not; a reader who
   cannot tell them apart has lost the more useful half of that distinction.
@@ -31,6 +32,7 @@ from datetime import date
 from typing import Final
 
 from emendrix.core import Applicability, Change, Citation, Signal, SignalStatus
+from emendrix.core.changes import DisputeReason
 from emendrix.graph.report import EmittedChange, EmittedSentence
 from emendrix.output.disclaimer import MARKDOWN_DISCLAIMER
 from emendrix.output.json_out import ChangelogEntry
@@ -38,6 +40,7 @@ from emendrix.output.json_out import ChangelogEntry
 __all__ = [
     "FALLBACK_PREFIX",
     "QUOTE_CHAR_CAP",
+    "REASON_PHRASES",
     "TITLE_CAP",
     "TRUNCATION_MARKER",
     "applies_text",
@@ -72,6 +75,17 @@ _SIGNAL_NAMES: Final[dict[Signal, str]] = {
     Signal.CORPUS_METADATA: "corpus metadata",
     Signal.INSTRUCTION_PARSE: "the instruction parse",
 }
+
+REASON_PHRASES: Final[dict[DisputeReason, str]] = {
+    DisputeReason.KIND_MISMATCH: "the kinds named share nothing",
+    DisputeReason.TEXTLESS_BOTH_OTHERS: "no text, named by both signals that carry none",
+    DisputeReason.TEXTLESS_METADATA_ONLY: "no text, named by corpus metadata alone",
+    DisputeReason.TEXTLESS_INSTRUCTION_ONLY: "no text, named by the instruction parse alone",
+    DisputeReason.BOTH_OTHERS_SILENT: "found by the structural diff alone",
+    DisputeReason.METADATA_SILENT: "corpus metadata is silent",
+    DisputeReason.INSTRUCTION_SILENT: "the instruction parse is silent",
+}
+"""`Change.dispute_reason` in words, printed after the marker. Says which signal saw what."""
 
 FALLBACK_PREFIX: Final = (
     "Quoted verbatim by the citation gate — the model's own sentence did not resolve:"
@@ -145,12 +159,9 @@ def _quote(text: str) -> list[str]:
 def dispute_text(change: Change) -> str:
     """What disagreed, in words. Read off the signals the change actually carries.
 
-    A source that saw the change and named no kind is still a source that looked, so it gets a
-    clause of its own. That state is real and counted: a role code the annotations use and this
-    project has no label for leaves a signal observing with nothing to say about the kind.
-    Dropping it would print two sources on a change three looked at, and would put this marker
-    out of step with the page's (`site_/dispute.py`), which names it. The two renderers read
-    the same verdicts and may differ only in how plainly they say them.
+    A source that saw the change and named no kind (an unlabelled role code, counted) still
+    looked, so it gets a clause of its own, as it does on the page (`site_/dispute.py`). The
+    two renderers read the same verdicts and may differ only in how plainly they say them.
     """
     observed = [
         _SIGNAL_NAMES[signal] for signal, seen in change.signals.observations if seen.observed
@@ -188,10 +199,8 @@ def _headline(change: Change) -> str:
 def _detail(change: Change) -> list[str]:
     """The one-line detail under a headline: finer coordinates, dates that moved, the amender.
 
-    The amending act is printed as the bare identifier its corpus published, in the order
-    corroboration claimed it. This package renders whatever corpus the loop ran on and holds
-    no corpus knowledge, so turning `32020R0561` into an official title is not its job:
-    that needs the adapter, which `output/` deliberately does not import.
+    The amending act is the bare identifier its corpus published, in the order corroboration
+    claimed it: an official title needs the adapter, which `output/` does not import.
     """
     parts: list[str] = []
     if change.changed_within:
@@ -244,8 +253,9 @@ def _texts(change: Change, entry: ChangelogEntry) -> list[str]:
 def _change_block(emitted: EmittedChange, entry: ChangelogEntry) -> list[str]:
     change = emitted.change
     lines = ["", _headline(change), *_detail(change)]
-    if change.disputed:
-        lines.extend(("", f"**DISPUTED** — {dispute_text(change)}"))
+    if change.dispute_reason is not None:
+        reason = REASON_PHRASES[change.dispute_reason]
+        lines.extend(("", f"**DISPUTED** — {reason}: {dispute_text(change)}"))
     lines.extend(_prose(emitted, entry))
     lines.extend(_texts(change, entry))
     return lines
@@ -296,10 +306,8 @@ def render_entry(entry: ChangelogEntry) -> str:
 
 
 def render_standalone(entry: ChangelogEntry) -> str:
-    """The same entry printed on its own — `emendrix diff --markdown` — carrying the disclaimer.
+    """The same entry printed on its own, for `emendrix diff --markdown`, with the disclaimer.
 
-    Inside a `CHANGELOG.md` the disclaimer sits once at the top of the file (`changelog.py`);
-    printed on its own an entry has no file around it, and no user-facing output of this
-    project ships without the disclaimer.
+    Inside a `CHANGELOG.md` the disclaimer sits once at the top of the file (`changelog.py`).
     """
     return f"{render_entry(entry)}\n{MARKDOWN_DISCLAIMER}\n"
