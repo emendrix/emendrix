@@ -29,6 +29,8 @@ methodology/          the metrics table with its caveats, the loop, the glossary
 feeds/                what the feeds are and where they are, by sector
 feeds/all.xml         every amendment event, as Atom
 feeds/<celex>.xml     one act's events, for a reader who watches only that act
+feeds/acts/<celex>/<prov>.xml       one touched provision's changes, newest first, as Atom
+feeds/acts/<celex>/provisions.opml  every provision feed of one act, for a feed reader's import
 api/                  the JSON API: its layout, its fields, and an example that watches one provision from CI
 api/v1/catalogue.json every watched act's names, and the address of each of its pages and its feed
 api/v1/schema/        the JSON Schema of each document the API serves, one file each
@@ -604,6 +606,36 @@ because `display: block` drops a table's semantics in WebKit.
 **The feeds page** lists the global feed, then one feed per act under the same sector headings,
 with one clause saying what Atom is. The note about the one reissue of 2026-09-05 follows the
 list. No feed file and no entry id moved.
+
+**One provision can be followed on its own** (`site_/provision_feeds.py`), since 2026-10-08.
+Every provision with at least one committed change has an Atom feed at
+`feeds/acts/<celex>/<prov>.xml`, where `<prov>` is the slug its page lives under, rendered from
+the same provision history the page renders: one entry per change, newest first, titled with the
+coordinate, the kind and the version's clock and date, summarised as the kind, the in-force and
+applies-from dates, the dates added and removed, where the sources differ the one-line reason the
+change's `dispute_reason` names, the amending acts' numbers and the disclaimer. **No entry carries
+verbatim text or a cited sentence**; the version page holds both, and the entry links it. An
+entry's id is the change's own block on its version page, `<site>/acts/<celex>/<key>/#<anchor>`,
+with the anchor the version page and the provision page already share. The act feed's id is
+`<site>/acts/<celex>/#<key>`, an address on the act page with no version directory in it, so
+the two can never be equal: a reader subscribed to both is told once about the version and once
+about each change it made. Like the act feed's, the id moves only when `--site-url` does. A
+provision with no change has no feed.
+
+Each act with a change also has `feeds/acts/<celex>/provisions.opml`, an OPML 2.0 file listing
+its provision feeds in the order the act page indexes them, so a feed reader can import a whole act
+at article level. It carries the disclaimer as an XML comment and as its first outline, and no
+`dateCreated`, which would be a clock read. Stock nginx has no `.opml` entry in its `mime.types`
+and serves it as `application/octet-stream`, so a browser downloads it, which is what a reader
+importing it wants; no server configuration is added for it. The feeds page lists each act's
+file with the number of provision feeds in it.
+
+**Each provision page leads its head with its own feed**, then the act's and the global one, and
+carries one line under its header: `Follow this provision (Atom)`, and `Watch it from CI`, which
+links `api/#watch-in-ci`, the example workflow that watches one provision from a repository.
+Without `--site-url` no provision feed and no OPML file is written and the page carries neither
+link. The build's summary line counts the provision feeds apart from the act and global feeds,
+`N feeds, M provision feeds`, so the first number still means what it did.
 
 **Search says `No results` on screen** as a row in the panel that is not an option, as well as
 in the live region, so a sighted reader is not left looking at an empty box and the combobox

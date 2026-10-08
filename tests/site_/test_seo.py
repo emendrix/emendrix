@@ -247,11 +247,16 @@ def test_an_event_page_carries_its_four_rung_breadcrumb_and_the_page_itself(site
 
 
 def test_an_event_page_offers_its_own_acts_feed_before_the_global_one(site: Path) -> None:
-    """The act page's rule, held one level down: a reader here is asking about this act."""
+    """The act page's rule, held one level down: a reader here is asking about this act. A
+    provision page offers its own feed first, since that is the narrower thing it is about."""
     for page in _event_pages(site):
         found = ALTERNATE.findall(page.read_text(encoding="utf-8"))
+        act = page.parent.parent.name
+        if not page.parent.name[0].isdigit():
+            assert found[0][1].endswith(f"feeds/acts/{act}/{page.parent.name}.xml"), page
+            found = found[1:]
         assert len(found) == 2, page
-        assert found[0][1].endswith(f"feeds/{page.parent.parent.name}.xml"), page
+        assert found[0][1].endswith(f"feeds/{act}.xml"), page
         assert found[1][1].endswith("feeds/all.xml"), page
 
 

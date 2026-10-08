@@ -957,4 +957,20 @@ after its lede linking `api/`. Nothing of the record is written under `api/v1/`.
 or went.** Both feeds, `search-index.json`, `sitemap_index.xml`, `robots.txt`, the script, the
 stylesheet, the fonts, `icon.svg`, `og.png` and every other page are byte-identical, every
 `<title>` and description is unchanged, and `_LARGEST_PAGE` does not move.
+
+Read again on 2026-10-08, later again, when a reader could follow one provision. Ten files are
+new: one Atom feed per touched provision under `feeds/acts/32017R0745/`, nine in all, 1196 to
+1315 bytes each and 11 126 together, each entry's `<id>` the change's own block on the version
+page, `acts/32017R0745/02017R0745-20200424/#<anchor>`, which no act-feed id can equal; and
+`feeds/acts/32017R0745/provisions.opml`, 2867 bytes, listing the nine in the order the act page
+indexes them, the disclaimer as its comment and its first outline. The three quiet acts get
+neither. Ten files moved: each of the nine provision pages gained its own feed as the first
+`rel="alternate"` in the head and one line under the header linking that feed and
+`api/#watch-in-ci`, 317 to 321 bytes a page; the feeds page gained one sentence in its lede and
+one line under the MDR linking its OPML file with `9 provision feeds`, 356 bytes. **No `id=`
+moved or went.** All five existing feeds, `search-index.json`, the sitemaps, `robots.txt`, the
+script, the stylesheet, the fonts, `icon.svg`, `og.png`, everything under `api/` and every other
+page are byte-identical, every `<title>` and description is unchanged, and `_LARGEST_PAGE` does
+not move. `_TOTAL_BYTES` in `test_act_page_at_scale.py` does not move either: that tree is built
+without a site URL, so its provision pages carry neither the feed nor the line.
 """

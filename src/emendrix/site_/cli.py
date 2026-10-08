@@ -252,11 +252,14 @@ def build(
         comparisons, reuse = _comparisons(comparison_cache, site)
     written = write_site(out, site, home_limit=home_limit, comparisons=comparisons)
     pages = sum(1 for path in written if path.suffix == ".html")
-    # The sitemap is an `.xml` file at the site root and is not a feed, so the feeds are counted
-    # by where they live rather than by their extension.
-    feeds = sum(1 for path in written if path.suffix == ".xml" and path.parts[0] == "feeds")
+    # Counted by where they live: the sitemap is an `.xml` at the root and not a feed, and the
+    # provision feeds under `feeds/acts/` would bury the act feeds' number in theirs.
+    xml = [path.parts for path in written if path.suffix == ".xml"]
+    feeds = sum(1 for parts in xml if len(parts) == 2 and parts[0] == "feeds")
+    provision_feeds = sum(1 for parts in xml if parts[:2] == ("feeds", "acts"))
     typer.echo(
         f"{out}: {count(pages, 'page')}, {count(feeds, 'feed')}, "
+        f"{count(provision_feeds, 'provision feed')}, "
         f"{count(len(site.acts), 'act')}, "
         f"numbers from {chosen} ({run.run_date.isoformat()}, {run.revision})"
     )

@@ -26,6 +26,8 @@ about/index.html                who runs the site, and what it does on the reade
 feeds/index.html                what feeds exist
 feeds/all.xml                   every event, newest first
 feeds/<slug>.xml                one feed per act, quiet acts included
+feeds/acts/<slug>/<prov>.xml    one feed per touched provision: its changes, newest first
+feeds/acts/<slug>/provisions.opml  every provision feed of one act, for a feed reader's import
 api/index.html                  the JSON API: its layout, its fields, and an example for CI
 api/v1/catalogue.json           every watched act's names and the addresses of its pages
 api/v1/schema/<name>.schema.json  the JSON Schema of each document the API serves
@@ -44,11 +46,12 @@ of them.
 
 The feeds and the sitemap are the one conditional, and it is one rule rather than two: a feed's
 links and a sitemap's locations are both absolute, so without a site URL `render_feed` and
-`sitemap_xml` refuse and no `.xml` is written at all. The feeds page then says so in words rather
-than listing files that are not there, and `robots.txt` loses only its `Sitemap:` line, because a
-crawl policy is about paths and needs no base to state one. The icon and the card are written
-unconditionally: what needs a base address is the reference to an asset, never the asset, and an
-unreferenced image costs a few kilobytes where a conditional costs a rule a reader has to hold.
+`sitemap_xml` refuse and no `.xml` or `.opml` is written. The feeds page then says so in words
+rather than listing files that are not there, and `robots.txt` loses only its `Sitemap:` line,
+because a crawl policy is about paths and needs no base to state one. The icon and the card are
+written unconditionally: what needs a base address is the reference to an asset, never the asset,
+and an unreferenced image costs a few kilobytes where a conditional costs a rule a reader has to
+hold.
 
 Determinism is the property this module exists to keep. The table is written in sorted path
 order, every string arrives already newline-terminated from the renderer that made it, and
@@ -100,6 +103,7 @@ from emendrix.site_.pages.methodology import render_methodology
 from emendrix.site_.pages.not_found import render_not_found
 from emendrix.site_.pages.provision import render_provision_page
 from emendrix.site_.pages.texts import text_blocks
+from emendrix.site_.provision_feeds import provision_feed_files
 from emendrix.site_.search_index import search_index_json
 from emendrix.site_.style import STYLE
 from emendrix.site_.urls import (
@@ -191,6 +195,7 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
         files[feed_path(None)] = render_feed(site, None)
         for act in site.acts:
             files[feed_path(act)] = render_feed(site, act)
+        files.update(provision_feed_files(site))
     return files
 
 

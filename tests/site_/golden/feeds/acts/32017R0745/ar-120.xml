@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+<title>emendrix — Medical Devices Regulation Art. 120</title>
+<id>https://example.invalid/site/feeds/acts/32017R0745/ar-120.xml</id>
+<link rel="self" href="https://example.invalid/site/feeds/acts/32017R0745/ar-120.xml"/>
+<link rel="alternate" href="https://example.invalid/site/acts/32017R0745/ar-120/"/>
+<updated>2020-04-24T00:00:00Z</updated>
+<author><name>emendrix</name></author>
+<entry>
+<title>Medical Devices Regulation Art. 120: Deferred, version in force 24 April 2020</title>
+<id>https://example.invalid/site/acts/32017R0745/02017R0745-20200424/#02017R0745-20200424-ar-120</id>
+<link rel="alternate" href="https://example.invalid/site/acts/32017R0745/02017R0745-20200424/#02017R0745-20200424-ar-120"/>
+<updated>2020-04-24T00:00:00Z</updated>
+<summary>Deferred. In force 2020-04-24. Applies from: 2021-05-26. Dates added to the text: 2021-05-26. Dates removed: 2020-05-26. Amended by Regulation (EU) 2020/561. The text is on the version&#x27;s page. Not legal advice: this output is machine-computed from published texts, carries no lawyer&#x27;s review, and is engineering assistance only.</summary>
+</entry>
+</feed>

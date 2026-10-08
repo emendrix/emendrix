@@ -3,7 +3,8 @@
 Split from `feeds.py` on 2026-09-18, when the list grew sector headings. The seam is between
 the Atom documents, which that module writes and whose ids are a public promise, and this HTML
 page, which only says where they are. Nothing here mints an address: every link is
-`feeds.feed_path`, the same function the builder writes the files under.
+`feeds.feed_path` or `provision_feeds.opml_path`, the functions the builder writes the files
+under.
 
 The acts are grouped by `sectors.groups`, the grouping the acts roster uses, so an act sits
 under the same sector heading on both pages. The note about the one time every entry was
@@ -17,9 +18,11 @@ from typing import Final
 
 from emendrix.site_.chrome import page
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.history import histories
 from emendrix.site_.identity import page_masthead
-from emendrix.site_.inputs import SiteInputs
-from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.inputs import ActSite, SiteInputs
+from emendrix.site_.markup import Html, count, escape, join
+from emendrix.site_.provision_feeds import opml_path
 from emendrix.site_.sectors import groups
 from emendrix.site_.urls import depth_of, up
 
@@ -37,7 +40,9 @@ _UNCONFIGURED: Final = (
 _LEDE: Final = (
     "One Atom feed per watched act, plus one carrying every act. Atom is a format feed readers "
     "subscribe to. An entry appears when a version is recorded and is identified by the "
-    "permanent link to that version."
+    "permanent link to that version. Each provision with a recorded change also has a feed of its "
+    "own, linked from that provision's page, and each act's provision feeds are listed below in "
+    "one OPML file a feed reader can import."
 )
 
 _REISSUE: Final = (
@@ -46,6 +51,18 @@ _REISSUE: Final = (
     "second time. Nothing else reissues an entry."
 )
 """Published copy about the durability of the ids: the day they moved and what it cost."""
+
+
+def _opml_line(act: ActSite, root: str) -> Html:
+    """The act's OPML file and how many provision feeds it lists; empty for a quiet act, which
+    has no provision to follow and so no file."""
+    found = len(histories(act))
+    if not found:
+        return Html("")
+    return Html(
+        f'<ul><li><a href="{escape(root + opml_path(act))}">every provision of this act, as '
+        f'OPML</a> <span class="muted">{escape(count(found, "provision feed"))}</span></li></ul>'
+    )
 
 
 def _feed_list(site: SiteInputs) -> list[Html]:
@@ -68,7 +85,7 @@ def _feed_list(site: SiteInputs) -> list[Html]:
         lines.extend(
             Html(
                 f'<li><a href="{escape(root + feed_path(act))}">{escape(act.label)}</a> '
-                f'<span class="muted">{escape(act.act.key)}</span></li>'
+                f'<span class="muted">{escape(act.act.key)}</span>{_opml_line(act, root)}</li>'
             )
             for act in acts
         )

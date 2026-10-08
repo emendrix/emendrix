@@ -45,6 +45,7 @@ from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.outbound import external
 from emendrix.site_.pages.prose import applies_line, dates_line, differ_note, permalink, prose
 from emendrix.site_.pages.texts import RenderedText
+from emendrix.site_.provision_feeds import provision_feed_path, provision_feed_title
 from emendrix.site_.seo import provision_json_ld
 from emendrix.site_.subject import is_capitals, provision_title
 from emendrix.site_.tags import SPOKEN_COMMA, kind_tag
@@ -104,6 +105,21 @@ def _header(act: ActSite, history: ProvisionHistory) -> list[Html]:
             f'<p class="facts">{escape(count(len(history.steps), "change"))} recorded across '
             f"{escape(count(events, 'version'))}, newest first.</p>"
         ),
+    ]
+
+
+def _follow(site: SiteInputs, act: ActSite, history: ProvisionHistory) -> list[Html]:
+    """The provision's feed and the CI example that watches it, or nothing without a site URL,
+    since no feed is written then and the example has no address to fetch."""
+    if not site.site_url:
+        return []
+    root = up(_DEPTH)
+    feed = escape(root + provision_feed_path(act, history.location.canonical))
+    return [
+        Html(
+            f'<p class="facts"><a href="{feed}">Follow this provision (Atom)</a> · '
+            f'<a href="{escape(root)}api/#watch-in-ci">Watch it from CI</a></p>'
+        )
     ]
 
 
@@ -189,7 +205,7 @@ def render_provision_page(
     steps: list[Html] = []
     for position, step in enumerate(history.steps):
         steps.extend(_step(site, step, texts[newest.index] if position == 0 else None))
-    body = join((*_header(act, history), *steps), "\n")
+    body = join((*_header(act, history), *_follow(site, act, history), *steps), "\n")
     named = history.location.human
     events = len({step.entry.key for step in history.steps})
     title = f"{act.label} {named}: every consolidated version and what changed{SUFFIX}"
@@ -205,10 +221,16 @@ def render_provision_page(
         path=provision_href(act.slug, history.location.canonical),
         chrome=site.chrome,
         section="acts/",
-        # The act's own feed leads, for the reason the act page gives: a reader subscribing
-        # from one of its provisions is asking for this act. There is no feed of one
-        # provision, and nothing here pretends there is.
-        feeds=((feed_path(act), feed_title(act)), (feed_path(None), feed_title(None))),
+        # The provision's own feed leads: it is what a reader on this page subscribes to, and a
+        # feed reader offered several takes the first. The act's and the global feed follow.
+        feeds=(
+            (
+                provision_feed_path(act, history.location.canonical),
+                provision_feed_title(act, history),
+            ),
+            (feed_path(act), feed_title(act)),
+            (feed_path(None), feed_title(None)),
+        ),
         structured=(
             provision_json_ld(site, act, history.location, title=title, description=description)
             if site.site_url

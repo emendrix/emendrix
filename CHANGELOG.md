@@ -959,3 +959,15 @@ Named rather than discovered later; the eval report's disagreement list is the l
   feeds page links `/api/` and the sitemap lists it. **No published figure moved**: the eval
   layer, the payloads and the changelogs are byte-identical to before, and only the new files, the
   sitemap and the feeds page moved in the site golden.
+
+- **A reader can follow one provision, since 2026-10-08.** Every provision with a committed
+  change now has its own Atom feed at `feeds/acts/<celex>/<provision>.xml`, one entry per change,
+  newest first, carrying the kind, the in-force and applies-from dates, the dates moved, the
+  reason where the sources differ, the amending acts and the disclaimer, and no verbatim text;
+  each act with a change has `feeds/acts/<celex>/provisions.opml` listing them for a feed
+  reader's import, and the feeds page lists those files. Each provision page offers its own feed
+  first in its head and links it, with `Watch it from CI`, to the example workflow on `/api/`. An
+  entry's id is the change's own block on its version page, which cannot equal an act-feed id,
+  and **no act-feed or global-feed id or byte moved**. The build's summary line counts the
+  provision feeds apart from the others. **No published figure moved**: the eval layer, the
+  payloads and the changelogs are byte-identical to before.

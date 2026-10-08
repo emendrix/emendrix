@@ -327,6 +327,11 @@ their `aria-label` does; 9 on each of the 398 `Previous version` pager links and
 the 398 `Next version` ones; 7 on each of the 399 older-step links on provision pages and the
 201 links to what the tags mean; and the index's 2 from its description. No anchor or id moved
 and no measured figure moved with it.
+
+Unmoved on 2026-10-08, when every provision page gained its own feed in the head and a line
+linking that feed and the CI example: this tree is built with no site URL, so no feed exists for
+either to name and the page renders neither. It is a size pin over the act's pages, not a
+published figure, and a build with a base pays about 320 bytes a provision page for the two.
 """
 
 _IDS: Final = re.compile(r'\sid="([^"]*)"')

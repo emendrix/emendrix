@@ -304,6 +304,31 @@ def test_two_renderings_of_one_history_are_byte_identical() -> None:
     assert _render(site, act, history) == _render(site, act, history)
 
 
+def test_the_head_offers_the_provisions_own_feed_before_the_acts_and_the_global_one() -> None:
+    """A reader on this page is following this provision; the act and the site come after."""
+    rendered, act, history = _page(_entry(2), _entry(1))
+    found = re.findall(
+        r'<link rel="alternate" type="application/atom\+xml" [^>]*href="([^"]+)"', rendered
+    )
+    slug = history.location.canonical.lower().replace(" ", "-")
+    assert found == [
+        f"../../../feeds/acts/{act.slug}/{slug}.xml",
+        f"../../../feeds/{act.slug}.xml",
+        "../../../feeds/all.xml",
+    ]
+
+
+def test_the_body_links_the_feed_and_the_ci_example_once_each_under_the_header() -> None:
+    rendered, act, history = _page(_entry(2), _entry(1))
+    slug = history.location.canonical.lower().replace(" ", "-")
+    line = (
+        f'<p class="facts"><a href="../../../feeds/acts/{act.slug}/{slug}.xml">Follow this '
+        'provision (Atom)</a> · <a href="../../../api/#watch-in-ci">Watch it from CI</a></p>'
+    )
+    assert rendered.count(line) == 1
+    assert rendered.index("recorded across") < rendered.index(line) < rendered.index("<article")
+
+
 def test_every_step_heading_ends_with_a_permalink_to_that_step() -> None:
     """A history of many steps is a page where a reader wants to hand somebody one of them.
 
