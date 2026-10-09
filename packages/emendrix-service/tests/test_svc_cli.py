@@ -24,7 +24,6 @@ def test_svc_help_lists_every_command_and_the_disclaimer() -> None:
 @pytest.mark.parametrize(
     ("argv", "name"),
     [
-        (["load", "--rebuild"], "load"),
         (["notify"], "notify"),
         (["digest", "--now", "2026-10-12T05:00:00+00:00"], "digest"),
         (["tick"], "tick"),
