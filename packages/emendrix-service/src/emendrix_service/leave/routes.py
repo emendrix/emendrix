@@ -26,11 +26,12 @@ from emendrix_service.db import Db
 from emendrix_service.db.accounts import audit
 from emendrix_service.db.enums import AuditAction
 from emendrix_service.db.leave import delete_user, export_rows, unsubscribe, unsubscribe_target
+from emendrix_service.leave.routes_settings import settings
 from emendrix_service.signing import verify
 from emendrix_service.watch.pages import Holder, account_holder
 from emendrix_service.web.csrf import csrf_protect
 from emendrix_service.web.errors import render_error
-from emendrix_service.web.session import REFRESH, clear_session_cookie
+from emendrix_service.web.session import REFRESH, clear_session_cookie, remember_reader
 from emendrix_service.web.templating import render_page
 
 __all__ = ["export_bytes", "router"]
@@ -126,6 +127,8 @@ async def delete_account(request: Request, user: Owner) -> Response:
     # A slide decided earlier in this request would set the cookie again after the clearing.
     if hasattr(request.state, REFRESH):
         delattr(request.state, REFRESH)
+    # The header named the reader when the session was read; the account it names is gone.
+    remember_reader(request, "")
     response = render_page(request, "leave/deleted.html", title="Account deleted")
     clear_session_cookie(response)
     return response
@@ -154,3 +157,4 @@ async def privacy(request: Request) -> Response:
 router = APIRouter()
 router.include_router(links)
 router.include_router(account)
+router.include_router(settings)

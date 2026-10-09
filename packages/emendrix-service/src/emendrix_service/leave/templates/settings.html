@@ -1,0 +1,74 @@
+{% include "web/_account_head.html" %}
+<section class="settings" aria-labelledby="signed-in-as">
+<div class="settings-intro">
+<h2 id="signed-in-as">Signed in as</h2>
+<p>There is no password. Each sign-in is a link sent to this address.</p>
+</div>
+<div class="panel rows">
+<div class="row-line">
+{# The break after the at sign keeps a long address inside the panel on a phone. #}
+{% set local, at, domain = email.rpartition("@") %}
+<h3>{{ local }}{{ at }}<wbr>{{ domain }}</h3>
+</div>
+</div>
+</section>
+<section class="settings" aria-labelledby="signing-out">
+<div class="settings-intro">
+<h2 id="signing-out">Signing out</h2>
+<p>Use “everywhere” on a shared or lost device.</p>
+</div>
+<div class="panel rows">
+<div class="row-line">
+<div>
+<strong>This browser</strong>
+<p>Ends the session on this device only.</p>
+</div>
+<form method="post" action="/account/signout">
+{{ csrf_field(request) }}
+<button type="submit" class="secondary">Sign out</button>
+</form>
+</div>
+<div class="row-line">
+<div>
+<strong>Every browser</strong>
+<p>Ends every session, on every device, at once.</p>
+</div>
+<form method="post" action="/account/signout-everywhere">
+{{ csrf_field(request) }}
+<button type="submit" class="secondary">Sign out everywhere</button>
+</form>
+</div>
+</div>
+</section>
+<section class="settings" aria-labelledby="your-data">
+<div class="settings-intro">
+<h2 id="your-data">Your data</h2>
+<p>One cookie keeps you signed in. Nothing else is tracked.</p>
+</div>
+<div class="panel rows">
+<div class="row-line">
+<div>
+<strong>Export my data</strong>
+<p>One JSON file of everything the service holds about you.</p>
+</div>
+<a class="button secondary" href="/account/export">Download JSON</a>
+</div>
+<div class="row-line">
+<div>
+<strong>Privacy notice</strong>
+<p>Who holds what, for how long, and why.</p>
+</div>
+<a href="/account/privacy">Read the notice</a>
+</div>
+</div>
+</section>
+<section class="settings" aria-labelledby="delete-account">
+<div class="settings-intro">
+<h2 id="delete-account">Delete account</h2>
+</div>
+<div class="panel danger-zone">
+<h3>Delete my account</h3>
+<p>Removes your account, everything you watch and your feed address. This cannot be undone.</p>
+<a class="button danger" href="/account/delete">Delete account</a>
+</div>
+</section>

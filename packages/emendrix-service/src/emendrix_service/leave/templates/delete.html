@@ -1,4 +1,6 @@
+<a class="back" href="/account/settings">Back to your account</a>
 <h1>Delete your account?</h1>
+<div class="panel danger-zone">
 <p>Your account, all of its watchlists and their items, and the record of what was sent to you
 are deleted at once. No more email is sent. This cannot be undone.</p>
 <p>If you may want your data, <a href="/account/export">export it</a> first.</p>
@@ -6,5 +8,6 @@ are deleted at once. No more email is sent. This cannot be undone.</p>
 <form class="stack" method="post" action="/account/delete">
 {{ csrf_field(request) }}
 <p><button type="submit" class="danger">Delete my account</button></p>
+<p><a class="button secondary" href="/account/settings">Keep it</a></p>
 </form>
-<p><a href="/account/">Keep it</a></p>
+</div>

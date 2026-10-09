@@ -225,6 +225,7 @@ async def test_svc_leave_deleting_forgets_the_reader_but_a_complaint(
         assert all((await owned_rows(tx, user_id, OWNER)).values())
     page = await client.get("/account/delete")
     assert page.status_code == 200 and "Delete my account" in page.text
+    assert '<a class="button secondary" href="/account/settings">Keep it</a>' in page.text
     response = await client.post("/account/delete", data={"csrf": TOKEN.findall(page.text)[0]})
     assert response.status_code == 200
     assert "Your account is deleted" in response.text and "35 days" in response.text
