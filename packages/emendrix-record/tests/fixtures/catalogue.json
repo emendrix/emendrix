@@ -21,7 +21,14 @@
         "AR 4": "https://example.org/acts/garden-rules/ar-4/",
         "AR 9": "https://example.org/acts/garden-rules/ar-9/"
       },
-      "url": "https://example.org/acts/garden-rules/"
+      "url": "https://example.org/acts/garden-rules/",
+      "waiting": [
+        {
+          "first_seen": "2026-08-10",
+          "state": "english_unavailable",
+          "version": null
+        }
+      ]
     },
     {
       "aliases": [
@@ -45,10 +52,18 @@
         "AR 4": "https://example.org/acts/house-rules/ar-4/",
         "AR 9": "https://example.org/acts/house-rules/ar-9/"
       },
-      "url": "https://example.org/acts/house-rules/"
+      "url": "https://example.org/acts/house-rules/",
+      "waiting": [
+        {
+          "first_seen": "2026-08-11",
+          "state": "consolidation_pending",
+          "version": "v4"
+        }
+      ]
     }
   ],
-  "catalogue_schema": "1.0",
+  "catalogue_schema": "1.1",
+  "checked_through": "2026-08-12",
   "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
   "provenance": "Derived by the site build from the watchlist and the committed changelogs; not part of the record."
 }

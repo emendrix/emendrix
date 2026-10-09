@@ -816,7 +816,40 @@ says. A missing, unreadable or foreign-schema file is not an error: the build sa
 polling and writes the page it writes without the flag, because a site that goes down over a
 courtesy is worse than a page with one fewer sentence. Nothing is imported from the poller to read
 it, the site being a rendering of documents somebody else wrote; the file's shape is pinned by a
-test that builds a real state file and reads it back.
+test that builds a real state file and reads it back. The same record reaches
+`api/v1/catalogue.json` per act, as `checked_through` and each act's `waiting` list (see
+[`api.md`](./api.md) §"The catalogue"), so a program can tell a quiet act from a waiting one too.
+
+## `--accounts`: linking an account service
+
+An account service, if a deployment runs one, answers under `/account/` on the same host as the
+site. The static site cannot know that, so a build says it with `--accounts`, which is off by
+default and refused without `--site-url`. Without it nothing on the site links to `/account/` and
+no file below is written. With it the build adds:
+
+- **"Watch this provision"** on every provision page, after the feed and the CI example, linking
+  `account/watch?act=<key>&loc=<canonical location>`, and **"Watch this act"** on every act page,
+  after its Atom feed, linking `account/watch?act=<key>`. The act is named by its key, never by
+  the page's slug, and both values are percent-encoded.
+- **"Sign in"** as the last link of the header bar on every page, to `account/`. The word is
+  fixed because a static page cannot know whether its reader is signed in.
+- One sentence on `/about/`, after "Nothing about a reader is stored anywhere.", naming the
+  account service, the address and watchlists it holds, its one cookie and its privacy notice
+  at `/account/privacy`. The static pages themselves still set no cookie and store nothing.
+- **`account-shell.html`** at the site root. It is not a page for readers and nothing links to
+  it. It is the site's own chrome, the header, the stylesheet, the search script and the footer
+  with the disclaimer, with three markers an account service splits it on and fills:
+  `<!--emendrix:title-->` as the whole text of `<title>`, `<!--emendrix:content-->` as the whole
+  of `<main id="content">`, and `<!--emendrix:footer-note-->` in the footer where every other page
+  says it sets no cookies, since a page that keeps a reader signed in does. The description is
+  left empty. Every reference in it starts from the site URL's path, as on the not-found page,
+  because the service serves these bytes under its own addresses. It is marked `noindex`,
+  declares no canonical address and no link preview, and is left out of the sitemap.
+
+The stylesheet carries the rules those pages need whether or not the flag is set: `form.stack`,
+labels, text and email fields and `select`, `button` and `.button` with the `.secondary` and
+`.danger` variants, `.check` rows, `.notice` and `.notice.alert`, and `table.list`, all drawn
+from the site's tokens and so right in both colour schemes.
 
 ## `--comparison-cache`: the one flag that changes speed and not output
 

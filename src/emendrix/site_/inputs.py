@@ -51,17 +51,16 @@ from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from emendrix.core import ActId
 from emendrix.eval_.report import DEFAULT_REPORT_DIR
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry
-from emendrix.output.json_out import slug
+from emendrix.site_.act_site import ActSite
 from emendrix.site_.amending import AmendingAct, collect_amending
-from emendrix.site_.attribution import unattributed
 from emendrix.site_.chrome import PageChrome
-from emendrix.site_.clocks import EventDate, VersionDates, event_date, sort_date
+from emendrix.site_.clocks import VersionDates, sort_date
 from emendrix.site_.entries import CorpusCounts, corpus_counts, sorted_entries
 from emendrix.site_.polled import PolledState
 from emendrix.site_.urls import shared_path
@@ -72,55 +71,6 @@ __all__ = [
     "SiteInputs",
     "collect_site",
 ]
-
-
-class ActSite(BaseModel):
-    """One act as the site shows it: its label, its grouping, and every committed event."""
-
-    model_config = ConfigDict(frozen=True)
-
-    act: ActId
-    label: str = Field(min_length=1)
-    long_name: str = Field(default="", description="The watchlist's long form, or ''.")
-    domain: str = Field(default="", description="Index grouping; empty lands under 'Other'.")
-    aliases: tuple[str, ...] = ()
-    eurlex_url: str = Field(default="", description="Resolved at the CLI boundary; '' = none.")
-    published_url: str = Field(default="", description="The act as published; '' = none.")
-    entries: tuple[ChangelogEntry, ...] = Field(
-        default=(), description="Newest first by `sort_date`."
-    )
-
-    @property
-    def slug(self) -> str:
-        """The act's path segment: its own key, made filesystem-safe."""
-        return slug(self.act.key)
-
-    @property
-    def headline(self) -> str:
-        """What the page's H1 says: the long form when the watchlist gives one, else the label."""
-        return self.long_name or self.label
-
-    @property
-    def newest_amendment(self) -> ChangelogEntry | None:
-        """The newest event an amending act is named for; None when there is no such event.
-
-        Newest by `sort_date`, the order `entries` arrives in. An event no amending act is
-        named for is never the answer: this backs every "newest amendment" line the site
-        prints, and one of those answered by such an event would dress it as an amendment. So
-        `None` has two readings, told apart by `entries`, and each caller says which in words:
-        nothing was ever seen, or everything seen names no amending act.
-        """
-        for entry in self.entries:
-            if not unattributed(entry):
-                return entry
-        return None
-
-    @property
-    def dated(self) -> EventDate | None:
-        """That event's date with its clock, or None. The clock is that entry's own, a true
-        statement about it even when another entry carries a later detection date."""
-        entry = self.newest_amendment
-        return None if entry is None else event_date(entry)
 
 
 class SiteInputs(BaseModel):
@@ -165,6 +115,17 @@ class SiteInputs(BaseModel):
         description="What the poller last did, when a deployment handed the build its state "
         "file. None where it handed it none, and the pages that would speak for it stay quiet.",
     )
+    accounts: bool = Field(
+        default=False,
+        description="Whether an account service answers under `/account/` on this host. Only "
+        "set together with a site URL; without it nothing on the site links there.",
+    )
+
+    @model_validator(mode="after")
+    def _accounts_need_a_site_url(self) -> SiteInputs:
+        if self.accounts and not self.site_url:
+            raise ValueError("accounts needs a site URL: the service's pages are served from it")
+        return self
 
     @property
     def chrome(self) -> PageChrome:
@@ -177,6 +138,7 @@ class SiteInputs(BaseModel):
             operator=self.operator,
             operator_url=self.operator_url,
             contact=self.contact,
+            accounts=self.accounts,
         )
 
     @property
@@ -210,6 +172,7 @@ def collect_site(
     operator_url: str = "",
     contact: str = "",
     polled: PolledState | None = None,
+    accounts: bool = False,
     eurlex_urls: dict[str, str] | None = None,
     published_urls: Mapping[str, str] | None = None,
     kinds: tuple[tuple[str, int], ...] = (),
@@ -317,5 +280,6 @@ def collect_site(
         operator_url=operator_url,
         contact=contact,
         polled=polled,
+        accounts=accounts,
         version_dates=dates,
     )

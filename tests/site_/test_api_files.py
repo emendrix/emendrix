@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import tomllib
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,7 @@ from emendrix.cli import app
 from emendrix.output import ChangelogEntry
 from emendrix.output.schemas import SUFFIX, schema_document, schema_documents
 from emendrix.site_.api_files import CATALOGUE, PROVENANCE, Catalogue
+from emendrix.watch.state import PendingConsolidation, WatchState
 from eu_pins import OBSERVED_ON
 
 SCHEMA_DIR = REPO / "docs" / "schema"
@@ -55,7 +57,9 @@ def _page(site: Path, url: str) -> Path:
 
 def test_the_catalogue_lists_every_watched_act_sorted_quiet_ones_included(site: Path) -> None:
     catalogue = _catalogue(site)
-    assert catalogue["catalogue_schema"] == "1.0"
+    assert catalogue["catalogue_schema"] == "1.1"
+    assert catalogue["checked_through"] is None, "this build was handed no poller record"
+    assert all(act["waiting"] == [] for act in catalogue["acts"])
     assert catalogue["disclaimer"] == DISCLAIMER
     assert catalogue["provenance"] == PROVENANCE
     acts = catalogue["acts"]
@@ -150,3 +154,55 @@ def test_without_a_site_url_addresses_are_relative_and_no_feed_is_named(
         for url in (act["url"], *act["provisions"].values(), *act["events"].values()):
             assert not url.startswith("https://"), url
             assert (out / url / "index.html").is_file(), url
+
+
+def _pending(
+    act_key: str, version: str | None, state: str, first_seen: date
+) -> PendingConsolidation:
+    return PendingConsolidation(
+        act_key=act_key,
+        celex=act_key.split(":")[1],
+        version=version,
+        state=state,
+        first_seen=first_seen,
+        last_checked=date(2026, 9, 11),
+    )
+
+
+def test_the_poller_record_reaches_the_catalogue_per_act_oldest_first(
+    tmp_path: Path, changelog_repo: Path
+) -> None:
+    """`checked_through` at the root, and each watched act's waiting rows on its own row.
+
+    The state file is written by the poller's own model. One row names an act the watchlist
+    does not hold, and it reaches no row: there is no act in the catalogue to hang it on.
+    """
+    state = WatchState(
+        last_window_end=datetime(2026, 9, 11),
+        pending=(
+            _pending(
+                "eu:32017R0745", "02017R0745-20260801", "consolidation_pending", date(2026, 9, 9)
+            ),
+            _pending("eu:32017R0745", None, "english_unavailable", date(2026, 9, 2)),
+            _pending(
+                "eu:31999R9999", "01999R9999-20260801", "consolidation_pending", date(2026, 9, 1)
+            ),
+        ),
+    )
+    path = tmp_path / "watch-state.json"
+    path.write_text(state.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    out = build(tmp_path / "site", changelog_repo, "--watch-state", str(path))
+    catalogue = _catalogue(out)
+    assert catalogue["checked_through"] == "2026-09-11"
+    rows = {act["key"]: act["waiting"] for act in catalogue["acts"]}
+    assert rows["32017R0745"] == [
+        {"version": None, "state": "english_unavailable", "first_seen": "2026-09-02"},
+        {
+            "version": "02017R0745-20260801",
+            "state": "consolidation_pending",
+            "first_seen": "2026-09-09",
+        },
+    ]
+    assert "31999R9999" not in rows
+    assert all(waiting == [] for key, waiting in rows.items() if key != "32017R0745")
+    Catalogue.model_validate(catalogue)

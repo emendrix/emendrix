@@ -47,6 +47,7 @@ from emendrix.site_.seo import act_json_ld
 from emendrix.site_.tags import LIST_HELP_WORDS, tags_help
 from emendrix.site_.trail import act_trail
 from emendrix.site_.urls import act_href, domain_anchor, up
+from emendrix.site_.watch_links import watch_href
 
 __all__ = ["render_act"]
 
@@ -182,6 +183,9 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     if site.site_url:
         href = escape(up(_DEPTH) + feed_path(act))
         links.append(Html(f'<a href="{href}">Atom feed</a>'))
+    if site.accounts:
+        watch = escape(watch_href(up(_DEPTH), act, None))
+        links.append(Html(f'<a href="{watch}">Watch this act</a>'))
     if act.eurlex_url:
         links.append(external(act.eurlex_url, "on EUR-Lex"))
     elif act.published_url:

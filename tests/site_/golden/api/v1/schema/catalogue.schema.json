@@ -73,6 +73,14 @@
           "description": "The act's page: absolute with a site URL, else root-relative.",
           "title": "Url",
           "type": "string"
+        },
+        "waiting": {
+          "description": "Consolidations announced for the act and still waiting for a text, as the poller's own record held them at build time, oldest first; empty when nothing waits or the build was handed no record.",
+          "items": {
+            "$ref": "#/$defs/CatalogueWaiting"
+          },
+          "title": "Waiting",
+          "type": "array"
         }
       },
       "required": [
@@ -86,9 +94,52 @@
         "feed",
         "eurlex_url",
         "provisions",
-        "events"
+        "events",
+        "waiting"
       ],
       "title": "CatalogueAct",
+      "type": "object"
+    },
+    "CatalogueWaiting": {
+      "description": "One consolidation the poller was told about and could not read yet, at build time.",
+      "properties": {
+        "first_seen": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The day the poller first saw it; null when its record holds no date.",
+          "title": "First Seen"
+        },
+        "state": {
+          "description": "`consolidation_pending` while the text is not published yet, or `english_unavailable` when no English text is offered.",
+          "title": "State",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The consolidated version announced; null when it is not yet known.",
+          "title": "Version"
+        }
+      },
+      "required": [
+        "version",
+        "state",
+        "first_seen"
+      ],
+      "title": "CatalogueWaiting",
       "type": "object"
     }
   },
@@ -105,10 +156,23 @@
       "type": "array"
     },
     "catalogue_schema": {
-      "default": "1.0",
+      "default": "1.1",
       "description": "The catalogue format's version.",
       "title": "Catalogue Schema",
       "type": "string"
+    },
+    "checked_through": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The end of the last window the poller read, from its own record at build time: changes published up to this day were looked for. Null when the build was handed no record or the poller has never closed a window.",
+      "title": "Checked Through"
     },
     "disclaimer": {
       "default": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
@@ -124,7 +188,8 @@
     }
   },
   "required": [
-    "acts"
+    "acts",
+    "checked_through"
   ],
   "title": "catalogue",
   "type": "object"

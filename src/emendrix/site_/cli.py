@@ -164,6 +164,13 @@ def build(
         str,
         typer.Option("--contact", help="Address readers may write to, for the about page."),
     ] = "",
+    accounts: Annotated[
+        bool,
+        typer.Option(
+            "--accounts/--no-accounts",
+            help="Link to an account service on this host at /account/; needs --site-url.",
+        ),
+    ] = False,
     watch_state: Annotated[Path | None, _WATCH_STATE] = None,
     comparison_cache: Annotated[Path | None, _COMPARISON_CACHE] = None,
     generated_on: Annotated[
@@ -190,6 +197,11 @@ def build(
     file it was handed as a courtesy would take the whole site down for a fact it can live
     without.
 
+    `--accounts` says an account service answers under `/account/` on the same host: pages
+    gain links to it and the build writes the shell that service renders its pages into. It is
+    refused without `--site-url`, because the shell is served under addresses it was not
+    written at and its links must start from the site's own root, which only that URL names.
+
     `--comparison-cache` is the one flag that changes how long a build takes and not what it
     writes. Every comparison is looked up there by a hash of the algorithm and both texts, an
     entry is used only once it is shown to fit the texts it claims to describe, and whatever is
@@ -205,6 +217,10 @@ def build(
         if value and not value.startswith("https://"):
             typer.echo(f"{name} must be an https:// URL; got {value!r}", err=True)
             raise typer.Exit(code=2)
+    if accounts and not site_url:
+        # The service's pages are addressed from the site's own root, which only a site URL names.
+        typer.echo("--accounts needs --site-url", err=True)
+        raise typer.Exit(code=2)
     if contact and (contact.count("@") != 1 or any(c.isspace() for c in contact)):
         typer.echo(
             f"--contact must be an address with one @ and no spaces; got {contact!r}", err=True
@@ -246,6 +262,7 @@ def build(
         amending_urls=amending_urls,
         version_dates=version_dates,
         polled=read_polled(watch_state),
+        accounts=accounts,
     )
     comparisons, reuse = NO_COMPARISONS, ""
     if comparison_cache is not None:

@@ -31,7 +31,7 @@ in the event's payload, which the act index names by `path`.
 | `/api/v1/index.json` | the root index: one row per act | the record, served as committed |
 | `/api/v1/<act_dir>/index.json` | one act's index: its events, and every change per provision | the record, served as committed |
 | `/api/v1/<act_dir>/changes/<version>.json` | one event's payload, with the verbatim texts and the explanations | the record, served as committed |
-| `/api/v1/catalogue.json` | what the record cannot know: watchlist labels, aliases, sectors, page and feed addresses | the site build |
+| `/api/v1/catalogue.json` | what the record cannot know: watchlist labels, aliases, sectors, page and feed addresses, and what the poller is waiting for | the site build |
 | `/api/v1/schema/<name>.schema.json` | the JSON Schema of each document: `index`, `act-index`, `entry`, `change`, `catalogue` | the site build |
 
 `<act_dir>` is the act's corpus and key, `eu/32017R0745` for the Medical Devices Regulation, and
@@ -120,6 +120,27 @@ They are published by name so that no signal's claim is silently dropped, and th
 appended as changes: a unit with no text and one signal behind it is a claim to look at, not a
 change to act on. Both are copied from the payload's `corroboration` report, never recomputed.
 
+## The catalogue
+
+`catalogue.json` is written by the site build, not by the record, and says what the record
+cannot know: each watched act's labels, aliases and sector, and the address of every page and
+feed the build wrote for it. Watched acts nothing has happened to are listed too, with no events
+and no provisions. Since `catalogue_schema` `1.1` it also carries the poller's own record as it
+stood when the site was built, when the deployment handed the build that record:
+
+- `checked_through`, at the root: the end of the last window the poller read, as a date. Changes
+  published up to that day were looked for. It is a cursor, not the moment the poller ran, and
+  it is `null` when the build was handed no record or the poller has never closed a window.
+- `waiting`, on each act: the consolidations announced for that act whose text cannot be read
+  yet, oldest first. Each has a `version` (`null` when the announcement named none yet), a
+  `state` (`consolidation_pending` while the text is not published, `english_unavailable` when
+  no English text is offered) and a `first_seen` date. It is empty when nothing waits.
+
+Together they tell a quiet act from one that is waiting: an act with no new event and an empty
+`waiting` was read through `checked_through` and nothing was announced for it. `1.1` is additive:
+a reader of `1.0` that ignores unknown keys reads it unchanged, and a `1.0` file has neither
+field.
+
 ## Corrections
 
 The record is corrected forward and its history is never rewritten. What a consumer sees, and the
@@ -138,7 +159,8 @@ is. A breaking change ships beside `v1`, not over it, and `v1` keeps being writt
 announced period stated here with its end date.
 
 Every file carries its own version, so a reader can refuse what it does not know. Both index
-levels carry `index_schema`, `1.0` today. Each payload carries `schema_version`, and each event
+levels carry `index_schema`, `1.0` today, and the catalogue carries `catalogue_schema`, `1.1`
+since 2026-10-09, when the two poller fields above were added beside every `1.0` field. Each payload carries `schema_version`, and each event
 row repeats it: the hosted record holds payloads at `1.0` and at `1.2`, and a reader meets both.
 What each version means is in [`./output-format.md`](./output-format.md) §"The JSON".
 

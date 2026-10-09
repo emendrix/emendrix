@@ -25,6 +25,7 @@ __all__ = [
     "ActRow",
     "Catalogue",
     "CatalogueAct",
+    "CatalogueWaiting",
     "EntryCounts",
     "EventRow",
     "ProvisionRow",
@@ -174,6 +175,19 @@ class RootIndex(BaseModel):
 # --- the catalogue --------------------------------------------------------------------------
 
 
+class CatalogueWaiting(BaseModel):
+    """One consolidation the poller was told about and could not read yet, at build time."""
+
+    model_config = _FROZEN
+
+    version: str | None = Field(description="The version announced; null when not yet known.")
+    state: str = Field(
+        description="`consolidation_pending`, or `english_unavailable` when no English text is "
+        "offered."
+    )
+    first_seen: date | None = Field(description="When the poller first saw it, or null.")
+
+
 class CatalogueAct(BaseModel):
     """One watched act: the watchlist's names for it, and where the site shows it."""
 
@@ -192,6 +206,11 @@ class CatalogueAct(BaseModel):
         description="Canonical top-level location to its provision page."
     )
     events: dict[str, str] = Field(description="Entry key to its event page.")
+    waiting: tuple[CatalogueWaiting, ...] = Field(
+        default=(),
+        description="Consolidations announced and still waiting for a text, oldest first; "
+        "empty in a catalogue of schema 1.0, which does not carry them.",
+    )
 
 
 class Catalogue(BaseModel):
@@ -203,3 +222,8 @@ class Catalogue(BaseModel):
     disclaimer: str = Field(description="Not legal advice.")
     provenance: str = Field(description="Where the file comes from.")
     acts: tuple[CatalogueAct, ...] = Field(description="One row per watched act.")
+    checked_through: date | None = Field(
+        default=None,
+        description="The end of the last window the poller read, at build time; null when "
+        "the build had no record of it, and in a catalogue of schema 1.0.",
+    )

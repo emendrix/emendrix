@@ -14,7 +14,7 @@ import json
 from datetime import date, datetime
 from pathlib import Path
 
-from emendrix.site_.polled import PolledState, read_polled
+from emendrix.site_.polled import PolledState, Waiting, read_polled
 from emendrix.watch.state import PendingConsolidation, WatchState
 
 WINDOW_END = datetime(2026, 9, 11, 0, 0, 0)
@@ -46,9 +46,13 @@ def test_the_reader_answers_over_a_state_file_the_poller_itself_wrote(tmp_path: 
         ),
     )
     polled = read_polled(_write(tmp_path / "watch-state.json", state))
-    assert polled == PolledState(
-        checked_through=date(2026, 9, 11), waiting=2, waiting_since=date(2026, 9, 3)
+    assert polled is not None
+    assert (polled.checked_through, polled.waiting, polled.waiting_since) == (
+        date(2026, 9, 11),
+        2,
+        date(2026, 9, 3),
     )
+    assert set(polled.by_act) == {"eu:32017R0745", "eu:32006R1907"}
 
 
 def test_an_empty_pending_list_reads_zero_and_no_date(tmp_path: Path) -> None:
@@ -102,4 +106,60 @@ def test_a_row_with_an_unreadable_first_seen_is_counted_and_not_dated(tmp_path: 
         )
     )
     polled = read_polled(path)
-    assert polled == PolledState(checked_through=date(2026, 9, 11), waiting=1, waiting_since=None)
+    assert polled == PolledState(
+        checked_through=date(2026, 9, 11),
+        waiting=1,
+        waiting_since=None,
+        by_act={"eu:32017R0745": (Waiting(state="consolidation_pending"),)},
+    )
+
+
+def test_the_waiting_rows_are_grouped_per_act_and_sorted_by_first_sighting(tmp_path: Path) -> None:
+    """Two acts, an English-unavailable row and one whose version the feed never named.
+
+    Written by the poller's own model, so the stored `act_key`, `version: null` and `state`
+    are the shapes the file really holds. Each act's rows come oldest first whatever order
+    the file lists them in, and the act keys are the stored `corpus:key` strings.
+    """
+    state = WatchState(
+        last_window_end=WINDOW_END,
+        pending=(
+            _pending("32017R0745", date(2026, 9, 9)),
+            PendingConsolidation(
+                act_key="eu:32006R1907",
+                celex="32006R1907",
+                version=None,
+                first_seen=date(2026, 9, 8),
+                last_checked=WINDOW_END.date(),
+            ),
+            PendingConsolidation(
+                act_key="eu:32017R0745",
+                celex="32017R0745",
+                version="02017R0745-20260601",
+                state="english_unavailable",
+                first_seen=date(2026, 9, 2),
+                last_checked=WINDOW_END.date(),
+            ),
+        ),
+    )
+    polled = read_polled(_write(tmp_path / "s.json", state))
+    assert polled is not None
+    assert polled.waiting == 3
+    assert polled.by_act == {
+        "eu:32006R1907": (
+            Waiting(version=None, state="consolidation_pending", first_seen=date(2026, 9, 8)),
+        ),
+        "eu:32017R0745": (
+            Waiting(
+                version="02017R0745-20260601",
+                state="english_unavailable",
+                first_seen=date(2026, 9, 2),
+            ),
+            Waiting(
+                version="032017R0745-20260719",
+                state="consolidation_pending",
+                first_seen=date(2026, 9, 9),
+            ),
+        ),
+    }
+    assert list(polled.by_act) == sorted(polled.by_act)

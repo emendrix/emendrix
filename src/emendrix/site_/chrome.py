@@ -61,6 +61,9 @@ class PageChrome(BaseModel):
     operator: str = Field(default="", description="Who runs this instance, or '' for nobody named.")
     operator_url: str = Field(default="", description="Public page of the operator, or ''.")
     contact: str = Field(default="", description="Address readers may write to, or ''.")
+    accounts: bool = Field(
+        default=False, description="Whether an account service answers under `/account/`."
+    )
 
 
 _EURLEX: Final = "https://eur-lex.europa.eu/"
@@ -78,7 +81,9 @@ _SECTIONS: Final[tuple[tuple[str, str], ...]] = (
 """The header bar's destinations as `(path, name)`, in the order the bar prints them."""
 
 
-def nav_links(depth: int, section: str = "", root: str | None = None) -> Html:
+def nav_links(
+    depth: int, section: str = "", root: str | None = None, *, accounts: bool = False
+) -> Html:
     """The header bar: a skip link, the wordmark, the seven destinations and the search mount.
 
     The order is the decision. The first two are the site's two rosters, of acts and of the
@@ -99,7 +104,11 @@ def nav_links(depth: int, section: str = "", root: str | None = None) -> Html:
     is named, because a page whose provision index is also a `<nav>` would otherwise announce
     two landmarks of the same name and leave a screen reader to guess which is which.
 
-    `root` overrides the climb `depth` implies, for the one page `page` documents.
+    `root` overrides the climb `depth` implies, for the pages `page` documents.
+
+    With `accounts`, `Sign in` closes the bar, linking the account service's own root. The word
+    is fixed because a static page cannot know whether its reader is signed in, and that
+    address shows a signed-in reader their account anyway.
     """
     root = up(depth) if root is None else root
     current = ' aria-current="page"'
@@ -107,6 +116,9 @@ def nav_links(depth: int, section: str = "", root: str | None = None) -> Html:
         f'<a href="{root}{path}"{current if path == section else ""}>{name}</a>'
         for path, name in _SECTIONS
     )
+    if accounts:
+        links += f' <a href="{root}account/">Sign in</a>'
+
     return Html(
         f'<a class="skip" href="#content">Skip to content</a>'
         f'<header class="bar"><a class="wordmark" href="{root or "./"}">emendrix</a>'
@@ -151,24 +163,32 @@ def disclaimer_html() -> Html:
     )
 
 
-def _footer(chrome: PageChrome, root: str) -> Html:
+_ON_YOUR_MACHINE: Final = (
+    "One small script for search; no cookies, no analytics, no third-party requests."
+)
+"""What a static page does on the reader's machine. True of every page this site writes, and of
+nothing a service renders into the account shell, which is why `page` can replace it."""
+
+
+def _footer(chrome: PageChrome, root: str, note: Html | None = None) -> Html:
     """The disclaimer, the build date, what the site does on the reader's machine, and the API.
 
     `root` is the page's own climb back to the site root, passed in rather than read off the
     chrome model: which directory a page sits in is a fact about the page, and the footer's
-    internal links have to resolve from wherever the file was written.
+    internal links have to resolve from wherever the file was written. `note` replaces the
+    sentence about the reader's machine and nothing else.
     """
     source, changelogs = repository_links(chrome)
+    machine = escape(_ON_YOUR_MACHINE) if note is None else note
     return join(
         (
             Html("<footer>"),
             disclaimer_html(),
             Html(
                 f"<p>Generated on {chrome.generated_on.isoformat()} from artifacts committed in "
-                f"{source}; the changelog data it renders is public in {changelogs}. One small "
-                f"script for search; no cookies, no analytics, no third-party requests. The "
-                f'record is also served as <a href="{root}api/">JSON and to model clients over '
-                f'MCP</a>. <a href="{root}about/">About this site</a>.</p>'
+                f"{source}; the changelog data it renders is public in {changelogs}. {machine} "
+                f'The record is also served as <a href="{root}api/">JSON and to model clients '
+                f'over MCP</a>. <a href="{root}about/">About this site</a>.</p>'
             ),
             Html("</footer>"),
         ),
@@ -188,6 +208,7 @@ def page(
     structured: Html | None = None,
     section: str = "",
     root: str | None = None,
+    footer_note: Html | None = None,
 ) -> Html:
     """One complete document: head, header bar, the caller's body, footer. Newline-terminated.
 
@@ -215,7 +236,12 @@ def page(
     Only the not-found page passes it, and only when the build has a site URL, because a host
     serves that one file under whatever address a reader mistyped, where a relative reference
     resolves against the wrong directory. Every other page leaves it unset and stays relative,
-    which is what keeps the tree working from `file://` and from a subpath.
+    which is what keeps the tree working from `file://` and from a subpath. The account shell
+    passes it for the same reason: it is served under the service's addresses, never its own.
+
+    `footer_note` replaces the footer's sentence about what the page does on the reader's
+    machine. Only the account shell passes one, a marker the service fills with its own true
+    sentence, since a page that keeps a reader signed in sets a cookie.
     """
     depth = depth_of(path)
     root = up(depth) if root is None else root
@@ -244,11 +270,11 @@ def page(
             Html(f'<script defer src="{root}{SCRIPT}"></script>'),
             Html("</head>"),
             Html("<body>"),
-            nav_links(depth, section, root),
+            nav_links(depth, section, root, accounts=chrome.accounts),
             Html('<main id="content">'),
             body,
             Html("</main>"),
-            _footer(chrome, root),
+            _footer(chrome, root, footer_note),
             Html("</body>"),
             Html("</html>"),
             Html(""),

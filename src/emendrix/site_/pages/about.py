@@ -84,6 +84,14 @@ _PRIVACY = (
     "runs in the browser and reaches nobody. Nothing about a reader is stored anywhere."
 )
 
+_ACCOUNTS_PRIVACY = (
+    "The optional account service on this host, under /account/, holds the address and the "
+    "watchlists of a reader who signs up, and sets one cookie to keep them signed in; its "
+    'privacy notice is at <a href="{root}account/privacy">/account/privacy</a>.'
+)
+"""Said only by a build that links an account service: the static pages above stay as
+`_PRIVACY` describes them, and the one place that stores something about a reader is named."""
+
 _TOOLS = "Every change this site shows is also published for a program to read."
 
 _MAILBOX = (
@@ -172,6 +180,11 @@ def _who_runs_it(chrome: PageChrome, polled: PolledState | None) -> list[Html]:
     return lines + checked
 
 
+def _accounts_privacy(site: SiteInputs, root: str) -> Html:
+    """The account service's sentence, after a space, or nothing for a build that links none."""
+    return Html(f" {_ACCOUNTS_PRIVACY.format(root=root)}") if site.accounts else Html("")
+
+
 def render_about(site: SiteInputs) -> Html:
     """The about page. Deterministic: same inputs, same bytes, no clock, no network."""
     chrome = site.chrome
@@ -202,7 +215,7 @@ def render_about(site: SiteInputs) -> Html:
             ),
             take_away(root, heading="Use the record in your own tools", note=_TOOLS),
             Html("<h2>On your machine</h2>"),
-            Html(f"<p>{escape(_PRIVACY)}</p>"),
+            Html(f"<p>{escape(_PRIVACY)}{_accounts_privacy(site, root)}</p>"),
         ),
         "\n",
     )

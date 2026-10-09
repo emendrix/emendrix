@@ -7,9 +7,11 @@ writer every hosted payload went through, and builds the catalogue with `api_fil
 function the site build writes it with, then asserts the committed copy is byte for byte the
 result.
 
-`api_files` is handed a `SiteInputs` made with `model_construct`, holding only the acts and the
-site URL. A validated one needs an evaluation run, and the catalogue reads neither that nor
-anything else on the model, so the bytes are the ones a full build would write for these acts.
+`api_files` is handed a `SiteInputs` made with `model_construct`, holding only the acts, the
+site URL and a poller record. A validated one needs an evaluation run, and the catalogue reads
+neither that nor anything else on the model, so the bytes are the ones a full build would write
+for these acts. The poller record gives each act one waiting consolidation, one of them with no
+version known and no English text offered, so a reader meets both shapes the catalogue carries.
 
 One payload is rewritten afterwards with `json`, its changes' `dispute_reason` keys removed,
 and the index rebuilt over it the way `emendrix index rebuild` rebuilds it. That is the shape
@@ -44,6 +46,7 @@ from emendrix.output import INDEX_FILE, ChangelogEntry, OutputRepo, index_files
 from emendrix.output.json_out import payload_for
 from emendrix.site_.api_files import CATALOGUE, api_files
 from emendrix.site_.inputs import ActSite, SiteInputs
+from emendrix.site_.polled import PolledState, Waiting
 
 FIXTURES = (
     Path(__file__).resolve().parents[2] / "packages" / "emendrix-record" / "tests" / "fixtures"
@@ -71,12 +74,37 @@ def garden_entry() -> ChangelogEntry:
     return disputed_entry().model_copy(update={"act": GARDEN})
 
 
+POLLED = PolledState(
+    checked_through=SECOND_EVENT_ON + timedelta(days=3),
+    waiting=2,
+    waiting_since=SECOND_EVENT_ON + timedelta(days=1),
+    by_act={
+        str(GARDEN): (
+            Waiting(
+                version=None,
+                state="english_unavailable",
+                first_seen=SECOND_EVENT_ON + timedelta(days=1),
+            ),
+        ),
+        "toy:house-rules": (
+            Waiting(
+                version="v4",
+                state="consolidation_pending",
+                first_seen=SECOND_EVENT_ON + timedelta(days=2),
+            ),
+        ),
+    },
+)
+"""What the poller is taken to have recorded when the fixture's catalogue was built."""
+
+
 def _site(entries: tuple[ChangelogEntry, ...]) -> SiteInputs:
     acts: dict[str, list[ChangelogEntry]] = {}
     for entry in entries:
         acts.setdefault(entry.act.key, []).append(entry)
     return SiteInputs.model_construct(
         site_url=SITE_URL,
+        polled=POLLED,
         acts=tuple(
             ActSite(
                 act=group[0].act,

@@ -42,6 +42,7 @@ from helpers import REPO, _tree, build, text_of
 
 from emendrix import DISCLAIMER
 from emendrix.site_.markup import escape
+from emendrix.site_.pages.account_shell import FOOTER_NOTE_MARKER, SHELL
 
 GOLDEN = Path(__file__).resolve().parent / "golden"
 
@@ -62,8 +63,12 @@ def site(tmp_path_factory: pytest.TempPathFactory, changelog_repo: Path) -> Path
     Built once because the properties are all properties of one tree and rebuilding it per
     assertion would buy nothing: byte-identity across builds is asserted next to the builder
     itself, over two directories built in the same test.
+
+    Built with `--accounts`, so the review of the golden covers everything that flag adds: the
+    watch links, the header bar's `Sign in`, the sentence on About and the account shell. A
+    build without it differs only by those, which `test_accounts.py` holds.
     """
-    return build(tmp_path_factory.mktemp("golden") / "site", changelog_repo)
+    return build(tmp_path_factory.mktemp("golden") / "site", changelog_repo, "--accounts")
 
 
 def _pages(site: Path) -> list[Path]:
@@ -214,11 +219,17 @@ def test_no_page_reaches_a_third_party_or_counts_its_readers(site: Path) -> None
 
     The footer promises no analytics; a second occurrence of the word on a page would mean
     something on it had grown a tracker, which is why the count is pinned rather than banned.
+    The account shell carries a marker where that sentence stands, because the pages an
+    account service renders into it set a cookie, and the service writes its own sentence.
     """
     for page in _pages(site):
         text = page.read_text(encoding="utf-8")
         for banned in ("http://", "@import", "<iframe", "googleapis", "google-analytics"):
             assert banned not in text, f"{page}: {banned}"
+        if page.name == SHELL:
+            assert text.count(FOOTER_NOTE_MARKER) == 1
+            assert "analytics" not in text
+            continue
         assert text.count("analytics") == 1, page
         assert "no cookies, no analytics, no third-party requests" in text, page
 
@@ -245,7 +256,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49581)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49621)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -423,7 +434,13 @@ read it from the text. Neither number is a measurement of anything.
 seventh link, `API`, costs 32 bytes at this depth with the space before it, and the footer's
 sentence naming `JSON and to model clients over MCP` 93. Every page on the site gained the same
 two edits at its own depth, and the stylesheet's fingerprinted name kept its length. Nothing in
-the page's own body moved, no anchor did and no id went."""
+the page's own body moved, no anchor did and no id went.
+
+40 bytes heavier on 2026-10-09, when the golden began to be built with `--accounts` and the
+header bar gained its last link, `Sign in`, to the account service's root: ` <a
+href="../../../account/">Sign in</a>` at this depth. The stylesheet gained the form rules and
+its fingerprinted name moved at the same length. This page links no provision of its own, so no
+watch link reached it; nothing in its body moved, no anchor did and no id went."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

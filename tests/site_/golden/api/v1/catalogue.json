@@ -11,7 +11,8 @@
       "label": "REACH",
       "long_name": "Registration, Evaluation, Authorisation and Restriction of Chemicals",
       "provisions": {},
-      "url": "https://example.invalid/site/acts/32006R1907/"
+      "url": "https://example.invalid/site/acts/32006R1907/",
+      "waiting": []
     },
     {
       "aliases": [
@@ -38,7 +39,8 @@
         "AR 34": "https://example.invalid/site/acts/32017R0745/ar-34/",
         "AR 59": "https://example.invalid/site/acts/32017R0745/ar-59/"
       },
-      "url": "https://example.invalid/site/acts/32017R0745/"
+      "url": "https://example.invalid/site/acts/32017R0745/",
+      "waiting": []
     },
     {
       "aliases": [
@@ -53,7 +55,8 @@
       "label": "Digital Services Act",
       "long_name": "",
       "provisions": {},
-      "url": "https://example.invalid/site/acts/32022R2065/"
+      "url": "https://example.invalid/site/acts/32022R2065/",
+      "waiting": []
     },
     {
       "aliases": [
@@ -68,10 +71,12 @@
       "label": "AI Act",
       "long_name": "Artificial Intelligence Act",
       "provisions": {},
-      "url": "https://example.invalid/site/acts/32024R1689/"
+      "url": "https://example.invalid/site/acts/32024R1689/",
+      "waiting": []
     }
   ],
-  "catalogue_schema": "1.0",
+  "catalogue_schema": "1.1",
+  "checked_through": null,
   "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
   "provenance": "Derived by the site build from the watchlist and the committed changelogs; not part of the record."
 }

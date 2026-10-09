@@ -1013,4 +1013,29 @@ line at `https://example.invalid/site/mcp`, the line `api/index.html` prints. No
 every page, every feed, `search-index.json`, the sitemaps, `robots.txt`, the script, the
 stylesheet, the fonts, `icon.svg`, `og.png`, the catalogue and the schemas under `api/v1/` are
 byte-identical, **no `id=` moved or went**, and `_LARGEST_PAGE` does not move.
+
+Read again on 2026-10-09, when the golden began to be built with `--accounts`, the flag that
+says an account service answers under `/account/` on the same host. All 24 pages moved, the
+stylesheet with them, and one file is new. Every page gained `Sign in` as the header bar's last
+link, to `account/` under its own climb, 31 to 40 bytes by depth, and on `404.html` rooted at
+`/site/` like the rest of that page. The four act pages gained `Watch this act` between the Atom
+feed and EUR-Lex, linking `account/watch?act=<key>`, 104 bytes with the header; the nine
+provision pages gained `Watch this provision` at the end of the line that follows the provision,
+linking `account/watch?act=32017R0745&loc=<canonical, percent-encoded>`, 131 to 133 bytes with
+the header; About gained one sentence after `Nothing about a reader is stored anywhere.` naming
+the account service, its one cookie and `/account/privacy`, 277 bytes with the header. The
+stylesheet gained the form rules, 2526 bytes, and its fingerprinted name moved from
+`style.c8f27896.css` to `style.6e57efe3.css` in every page's head, at the same length. The new
+file is `account-shell.html` at the root, 1670 bytes: the shell with every reference rooted at
+`/site/`, `noindex`, no canonical and no preview, `<!--emendrix:title-->` as its title, an empty
+description, `<!--emendrix:content-->` as the whole of `main` and `<!--emendrix:footer-note-->`
+in the footer where every page says it sets no cookies. The catalogue is `1.1`: a root
+`checked_through` of `null` and an empty `waiting` on each of the four acts, because the golden
+build is handed no poller record, and `api/v1/schema/catalogue.schema.json` follows. A build
+without the flag differs from this tree by exactly the links, the sentence and the shell, which
+`test_accounts.py` holds. No CHANGELOG bullet was written with it, since no deployment sets the
+flag yet. **No `id=` moved or went**, every `<title>` and description is unchanged, and
+`_LARGEST_PAGE` moved by the 40 bytes of `Sign in` its docstring states. Every feed,
+`search-index.json`, the sitemaps, `robots.txt`, `llms.txt`, the script, the fonts, `icon.svg`,
+`og.png` and every other schema are byte-identical.
 """

@@ -93,6 +93,7 @@ from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.llms import LLMS, llms_txt
 from emendrix.site_.pages.about import render_about
+from emendrix.site_.pages.account_shell import SHELL, render_account_shell
 from emendrix.site_.pages.act import render_act
 from emendrix.site_.pages.acts_index import render_acts_index
 from emendrix.site_.pages.amendment import render_amendment_page
@@ -200,6 +201,8 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
         for act in site.acts:
             files[feed_path(act)] = render_feed(site, act)
         files.update(provision_feed_files(site))
+        if (shell := render_account_shell(site)) is not None:
+            files[SHELL] = shell
     return files
 
 

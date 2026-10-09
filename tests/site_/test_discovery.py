@@ -51,8 +51,12 @@ each assertion below would hold over an empty field rather than over the dates i
 
 @pytest.fixture(scope="module")
 def site(tmp_path_factory: pytest.TempPathFactory, changelog_repo: Path) -> Path:
-    """One build with a site URL, shared by every test that needs a sitemap to exist."""
-    return build(tmp_path_factory.mktemp("discovery") / "site", changelog_repo)
+    """One build with a site URL, shared by every test that needs a sitemap to exist.
+
+    Built with `--accounts`, so the account shell is in the tree and the checks below see the
+    one other page the sitemap leaves out on purpose.
+    """
+    return build(tmp_path_factory.mktemp("discovery") / "site", changelog_repo, "--accounts")
 
 
 def _urls(site: Path) -> list[tuple[str, str | None]]:
@@ -108,12 +112,18 @@ def _dated(entries: tuple[ChangelogEntry, ...], built: date) -> SiteInputs:
     )
 
 
+UNLISTED = frozenset({"404.html", "account-shell.html"})
+"""Written and never listed. The not-found page asks not to be indexed; the account shell is
+not a page for readers but the frame an account service renders into, and declares no
+canonical, since the only address it could name is never the address of a page built on it."""
+
+
 def _canonicals(site: Path) -> dict[str, str]:
-    """Each built page's declared canonical, keyed by its address. The 404 page is left out."""
+    """Each built page's declared canonical, keyed by its address. `UNLISTED` is left out."""
     found: dict[str, str] = {}
     for page in sorted(site.rglob("*.html")):
         address = page.relative_to(site).as_posix().removesuffix("index.html")
-        if address == "404.html":
+        if address in UNLISTED:
             continue
         text = page.read_text(encoding="utf-8")
         marker = '<link rel="canonical" href="'
@@ -135,7 +145,8 @@ def test_every_page_but_the_not_found_one_is_listed_and_every_location_is_a_page
     the sitemap rot in the other.
     """
     listed = {loc.removeprefix(f"{SITE_URL}/") for loc, _ in _urls(site)}
-    written = _addresses(site) - {"404.html"}
+    written = _addresses(site) - UNLISTED
+    assert _addresses(site) >= UNLISTED, "both unlisted pages are in the tree this checks"
     assert not written - listed, "pages the build wrote that the sitemap does not list"
     assert not listed - written, "locations the sitemap lists that the build did not write"
 
@@ -148,6 +159,14 @@ def test_the_not_found_page_is_written_and_deliberately_absent_from_the_sitemap(
         encoding="utf-8"
     )
     assert all("404" not in loc for loc, _ in _urls(site))
+
+
+def test_the_account_shell_is_written_unindexed_and_absent_from_the_sitemap(site: Path) -> None:
+    """The frame an account service fills: noindex for the reason the not-found page is."""
+    shell = (site / "account-shell.html").read_text(encoding="utf-8")
+    assert '<meta name="robots" content="noindex">' in shell
+    assert '<link rel="canonical"' not in shell
+    assert all("account" not in loc for loc, _ in _urls(site))
 
 
 def test_a_location_is_the_same_string_as_the_canonical_on_the_page_it_names(site: Path) -> None:

@@ -103,6 +103,8 @@ _PAIRS: tuple[tuple[str, str], ...] = (
     ("type-version", "bg"),
     ("type-provision", "bg"),
     ("type-amending", "bg"),
+    ("bg", "link"),
+    ("bg", "alert"),
 )
 """Every foreground the sheet sets as text against every surface it sets it on.
 
@@ -115,6 +117,9 @@ checked against every place the palette is meant to be used. `--rule` is absent 
 hairline that separates things a reader can already see apart, so nothing depends on finding
 its edge; `--edge`, which draws boundaries that are themselves the information, is checked
 below at its own threshold.
+
+The page ground on the link colour and on the alert colour joined on 2026-10-09 with the form
+rules: a primary button is written in `--bg` on `--link`, and a destructive one on `--alert`.
 """
 
 _MINIMUM = 4.5

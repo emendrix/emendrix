@@ -23,8 +23,9 @@ event touched and one per amending instrument a committed event names. An event 
 `<lastmod>` is that event's own `event_dated`, the same clock its feed entry's `<updated>`
 reads, so the two records of one fact cannot disagree. Feeds are advertised by `rel="alternate"` in
 every head and a sitemap indexes pages rather than subscriptions; the stylesheet, the script,
-the search index, the icon and the card are assets. `404.html` is absent by construction,
-because a sitemap entry for a page marked `noindex` is a contradiction handed to a crawler.
+the search index, the icon and the card are assets. `404.html` and `account-shell.html` are
+absent by construction, because a sitemap entry for a page marked `noindex` is a contradiction
+handed to a crawler, and the shell is not a page at all but the frame an account service fills.
 
 `<lastmod>` comes from the corpus, never from `generated_on`: an act page is dated by that act's
 newest event, the home page, the roster and the feeds page by the newest event on the site, and

@@ -52,6 +52,7 @@ from emendrix.site_.tags import SPOKEN_COMMA, kind_tag
 from emendrix.site_.titles import SUFFIX
 from emendrix.site_.trail import provision_trail
 from emendrix.site_.urls import provision_href, up
+from emendrix.site_.watch_links import watch_href
 
 __all__ = ["render_provision_page"]
 
@@ -110,15 +111,22 @@ def _header(act: ActSite, history: ProvisionHistory) -> list[Html]:
 
 def _follow(site: SiteInputs, act: ActSite, history: ProvisionHistory) -> list[Html]:
     """The provision's feed and the CI example that watches it, or nothing without a site URL,
-    since no feed is written then and the example has no address to fetch."""
+    since no feed is written then and the example has no address to fetch. A build that links
+    an account service adds the way to watch it by email."""
     if not site.site_url:
         return []
     root = up(_DEPTH)
-    feed = escape(root + provision_feed_path(act, history.location.canonical))
+    canonical = history.location.canonical
+    feed = escape(root + provision_feed_path(act, canonical))
+    watch = (
+        f' · <a href="{escape(watch_href(root, act, canonical))}">Watch this provision</a>'
+        if site.accounts
+        else ""
+    )
     return [
         Html(
             f'<p class="facts"><a href="{feed}">Follow this provision (Atom)</a> · '
-            f'<a href="{escape(root)}api/#watch-in-ci">Watch it from CI</a></p>'
+            f'<a href="{escape(root)}api/#watch-in-ci">Watch it from CI</a>{watch}</p>'
         )
     ]
 
