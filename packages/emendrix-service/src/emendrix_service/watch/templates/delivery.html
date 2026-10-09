@@ -1,0 +1,91 @@
+{% include "web/_account_head.html" %}
+{% include "watch/_lists.html" %}
+{% if named %}
+<h2>{{ watchlist.name }}</h2>
+{% endif %}
+{% include "web/_form_errors.html" %}
+{% if suspended %}
+<section class="settings" aria-labelledby="delivery-set">
+<div class="settings-intro">
+<h2 id="delivery-set">What is set</h2>
+<p>Nothing can be changed while email is not reaching {{ email }}.</p>
+</div>
+<div class="panel rows">
+<div class="row-line"><strong>Email</strong>{% for card in cards if card.cadence == watchlist.cadence %}<span>{{ card.title }}</span>{% endfor %}</div>
+<div class="row-line"><strong>Email paused</strong>{% if watchlist.paused %}<span class="state-on">On</span>{% else %}<span class="state-off">Off</span>{% endif %}</div>
+{% for extra in extras %}
+<div class="row-line"><strong>{{ extra.title }}</strong>{% if watchlist[extra.field] %}<span class="state-on">On</span>{% else %}<span class="state-off">Off</span>{% endif %}</div>
+{% endfor %}
+<div class="row-line"><strong>Personal feed</strong>{% if watchlist.has_feed %}<span class="state-on">On</span>{% else %}<span class="state-off">Off</span>{% endif %}</div>
+</div>
+</section>
+{% else %}
+<form method="post" action="/account/watchlists/{{ watchlist.id }}/delivery">
+{{ csrf_field(request) }}
+<section class="settings" aria-labelledby="delivery-email">
+<div class="settings-intro">
+<h2 id="delivery-email">Email</h2>
+<p>Every email goes to {{ email }} and ends with a one-click unsubscribe link.</p>
+</div>
+<fieldset class="choice-cards">
+<legend class="visually-hidden">How often to email you</legend>
+{% for card in cards %}
+<label class="choice"><input type="radio" name="cadence" value="{{ card.cadence.value }}"{% if card.cadence == watchlist.cadence %} checked{% endif %}><strong>{{ card.title }}{% if card.badge %} <span class="tag">{{ card.badge }}</span>{% endif %}</strong><span class="hint">{{ card.subline }}</span></label>
+{% endfor %}
+</fieldset>
+<div class="settings-intro">
+<p>Going away?</p>
+</div>
+<div class="panel option-rows">
+<label class="option"><input type="checkbox" name="{{ pause.field }}" value="yes"{% if watchlist.paused %} checked{% endif %}><span><strong>{{ pause.title }}</strong><span class="hint">{{ pause.subline }}</span></span></label>
+</div>
+</section>
+<section class="settings" aria-labelledby="delivery-extras">
+<div class="settings-intro">
+<h2 id="delivery-extras">Also tell me</h2>
+<p>Two extras, both on unless you turn them off.</p>
+</div>
+<div class="panel option-rows">
+{% for extra in extras %}
+<label class="option"><input type="checkbox" name="{{ extra.field }}" value="yes"{% if watchlist[extra.field] %} checked{% endif %}><span><strong>{{ extra.title }}</strong><span class="hint">{{ extra.subline }}</span></span></label>
+{% endfor %}
+</div>
+</section>
+<div class="settings">
+<div class="settings-intro">
+<p>Changes apply from the next email.</p>
+</div>
+<p><button type="submit">Save delivery settings</button></p>
+</div>
+{# The rotate button posts the form after this one, so the feed sits in the same run of sections. #}
+<section class="settings" aria-labelledby="delivery-feed">
+<div class="settings-intro">
+<h2 id="delivery-feed">Personal feed</h2>
+<p>For a feed reader, Slack or Teams. It lists the same changes, whatever your email choice.</p>
+</div>
+<div class="panel rows">
+{% if watchlist.has_feed %}
+<div class="row-line">
+<h3><span class="state-on">On</span> Your feed is set up</h3>
+</div>
+<div class="row-line">
+<p>Its address was shown once, when you made it. Treat it like a password: anyone who has it can read the changes you watch. Lost the address, or shared it by mistake? Replace it, and the old address stops working at once.</p>
+<button type="submit" class="secondary" form="feed-rotate">Replace the feed address</button>
+</div>
+{% else %}
+<div class="row-line">
+<h3><span class="state-off">Off</span> No feed yet</h3>
+</div>
+<div class="row-line">
+<p>Its address is shown once, when you make it. Treat it like a password: anyone who has it can read the changes you watch.</p>
+<button type="submit" class="secondary" form="feed-rotate">Create a personal feed</button>
+</div>
+{% endif %}
+</div>
+</section>
+</form>
+<form id="feed-rotate" method="post" action="/account/feed/rotate">
+{{ csrf_field(request) }}
+<input type="hidden" name="watchlist_id" value="{{ watchlist.id }}">
+</form>
+{% endif %}

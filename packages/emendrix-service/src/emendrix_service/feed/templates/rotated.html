@@ -1,7 +1,9 @@
 <h1>Your personal feed</h1>
 <p>Add this address to your feed reader. It lists the recent changes this watchlist watches,
 whatever its email setting.</p>
-<p><code>{{ feed_url }}</code></p>
+<p class="panel row-line"><code>{{ feed_url }}</code></p>
+<div class="banner banner--info" role="note">
 <p><strong>Copy it now; it is not shown again. Rotating it again turns this address off.</strong>
 Anyone holding the address can read the feed, so treat it like a password.</p>
-<p><a href="/account/#wl-{{ watchlist_id }}">Back to your account</a></p>
+</div>
+<p><a class="button secondary" href="/account/delivery?list={{ watchlist_id }}">Back to delivery</a></p>

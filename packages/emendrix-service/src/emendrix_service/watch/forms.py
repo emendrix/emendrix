@@ -6,7 +6,7 @@ is on when it posts `yes` and off when it is absent, which is how a browser send
 
 from __future__ import annotations
 
-from typing import Annotated, Final
+from typing import Annotated, Final, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError
@@ -19,10 +19,14 @@ from emendrix_service.watch.logic import read_location
 __all__ = [
     "LOCATION_FORMS",
     "NAME_LIMIT",
+    "Back",
     "Errors",
     "SignUp",
+    "WatchlistDelivery",
     "WatchlistName",
     "WatchlistSettings",
+    "parse_back",
+    "parse_delivery",
     "parse_id",
     "parse_location_field",
     "parse_name",
@@ -38,6 +42,8 @@ LOCATION_FORMS: Final = (
 )
 
 Errors = tuple[str, ...]
+Back = Literal["watching", "delivery", "account"]
+"""The account tab a form was posted from, so its redirect can return there."""
 
 _NAME_ERROR: Final = f"A watchlist's name is 1 to {NAME_LIMIT} characters."
 _CADENCE_ERROR: Final = "Choose one of the four email choices."
@@ -58,13 +64,19 @@ class WatchlistName(BaseModel):
     name: Name = Field(description="The watchlist's name, trimmed.")
 
 
-class WatchlistSettings(WatchlistName):
-    """Everything the settings form of one watchlist sets."""
+class WatchlistDelivery(BaseModel):
+    """How one watchlist reaches its reader: everything but its name."""
+
+    model_config = ConfigDict(frozen=True)
 
     cadence: Cadence = Field(description="How often matches are mailed.")
     date_alerts: bool = Field(description="Flag changes that add or remove a date.")
     heartbeat: bool = Field(description="Send a monthly note when nothing changed.")
     paused: bool = Field(description="Hold every email.")
+
+
+class WatchlistSettings(WatchlistName, WatchlistDelivery):
+    """Everything the settings form of one watchlist sets."""
 
 
 class SignUp(BaseModel):
@@ -116,6 +128,31 @@ def parse_settings(form: FormData) -> WatchlistSettings | Errors:
         )
     except ValidationError as error:
         return _errors(error)
+
+
+def parse_delivery(form: FormData) -> WatchlistDelivery | Errors:
+    """One watchlist's delivery: its email choice, its two extras and its pause."""
+    try:
+        return WatchlistDelivery.model_validate(
+            {
+                "cadence": _text(form, "cadence"),
+                "date_alerts": _checked(form, "date_alerts"),
+                "heartbeat": _checked(form, "heartbeat"),
+                "paused": _checked(form, "paused"),
+            }
+        )
+    except ValidationError as error:
+        return _errors(error)
+
+
+def parse_back(form: FormData) -> Back:
+    """The tab a form came from; Delivery when the field is absent or unknown."""
+    back = _text(form, "back")
+    if back == "watching":
+        return "watching"
+    if back == "account":
+        return "account"
+    return "delivery"
 
 
 def parse_signup(form: FormData) -> SignUp | Errors:

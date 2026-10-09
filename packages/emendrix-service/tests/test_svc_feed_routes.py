@@ -54,6 +54,7 @@ async def rotate(client: AsyncClient, watchlist: UUID) -> str:
     assert "Copy it now; it is not shown again. Rotating it again turns this address off." in (
         page.text
     )
+    assert f'href="/account/delivery?list={watchlist}"' in page.text
     found = FEED.search(page.text)
     assert found is not None
     return found.group(1)
@@ -63,9 +64,9 @@ async def test_svc_feed_is_served_by_token_with_the_public_entry_ids(
     client: AsyncClient, reader: AsyncClient, loaded: Db, caplog: pytest.LogCaptureFixture
 ) -> None:
     watchlist = await a_watchlist(loaded, client)
-    assert "Create a personal feed" in (await client.get("/account/")).text
+    assert "Create a personal feed" in (await client.get("/account/delivery")).text
     path = await rotate(client, watchlist)
-    assert "Replace the feed address" in (await client.get("/account/")).text
+    assert "Replace the feed address" in (await client.get("/account/delivery")).text
     with caplog.at_level(logging.INFO):
         response = await reader.get(path)
     assert response.status_code == 200
