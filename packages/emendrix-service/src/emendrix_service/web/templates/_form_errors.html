@@ -1,0 +1,10 @@
+{% if errors %}
+<div class="notice alert" role="alert">
+<p><strong>Not sent:</strong></p>
+<ul>
+{% for error in errors %}
+<li>{{ error }}</li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}

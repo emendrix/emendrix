@@ -1,0 +1,8 @@
+--
+{{ disclaimer_text }}
+
+Why you got this: {{ reason }}
+Your account: {{ site_url }}/account/
+{% if unsubscribe %}
+Stop these emails: {{ unsubscribe }}
+{% endif %}

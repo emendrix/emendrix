@@ -1,0 +1,12 @@
+You, or someone, asked to start watching {{ label or "changes on Emendrix" }} with this address.
+
+Open this link to confirm the address. It works once, for {{ minutes }} minutes:
+
+{{ link }}
+
+No account exists until the link is opened. If you did not ask, ignore this email and nothing
+is kept but a record that a link was sent.
+
+{% with reason = "someone asked to start an Emendrix watchlist for this address." %}
+{% include "web/mail_footer.txt" %}
+{% endwith %}

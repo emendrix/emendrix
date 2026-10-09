@@ -1,0 +1,9 @@
+<h1>Confirm and sign in</h1>
+<p>Press the button to sign in on this browser. The link in your email works once.</p>
+<form class="stack" method="post">
+{{ csrf_field(request) }}
+{% if next_path %}
+<input type="hidden" name="next" value="{{ next_path }}">
+{% endif %}
+<p><button type="submit">Confirm and sign in</button></p>
+</form>

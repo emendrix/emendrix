@@ -1,0 +1,14 @@
+<h1>Sign in</h1>
+<p>Type the address your account uses. We will email you a link that signs you in; it works once,
+for 30 minutes. There is no password.</p>
+{% include "web/_form_errors.html" %}
+<form class="stack" method="post" action="/account/signin">
+{{ csrf_field(request) }}
+{% if next_path %}
+<input type="hidden" name="next" value="{{ next_path }}">
+{% endif %}
+<label for="email">Email address
+<input type="email" id="email" name="email" value="{{ email }}" autocomplete="email" required></label>
+<p><button type="submit">Email me a sign-in link</button></p>
+</form>
+<p>No account yet? Use a <strong>Watch this</strong> link on any act or provision page to start one.</p>

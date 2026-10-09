@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Confirm your address</title></head>
+<body style="font-family:sans-serif;line-height:1.5">
+<p>You, or someone, asked to start watching {{ label or "changes on Emendrix" }} with this address.</p>
+<p>Open this link to confirm the address. It works once, for {{ minutes }} minutes:</p>
+<p><a href="{{ link }}">Confirm my address</a></p>
+<p style="font-size:13px">{{ link }}</p>
+<p>No account exists until the link is opened. If you did not ask, ignore this email and nothing
+is kept but a record that a link was sent.</p>
+{% with reason = "someone asked to start an Emendrix watchlist for this address." %}
+{% include "web/mail_footer.html" %}
+{% endwith %}
+</body>
+</html>

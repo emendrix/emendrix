@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sign in to Emendrix</title></head>
+<body style="font-family:sans-serif;line-height:1.5">
+<p>You, or someone, asked to sign in to Emendrix with this address.</p>
+<p>Open this link to sign in. It works once, for {{ minutes }} minutes:</p>
+<p><a href="{{ link }}">Sign in to Emendrix</a></p>
+<p style="font-size:13px">{{ link }}</p>
+<p>If you did not ask, ignore this email; nothing happens without the link.</p>
+{% with reason = "someone asked for a sign-in link for this address." %}
+{% include "web/mail_footer.html" %}
+{% endwith %}
+</body>
+</html>

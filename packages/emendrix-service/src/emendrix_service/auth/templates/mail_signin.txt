@@ -1,0 +1,11 @@
+You, or someone, asked to sign in to Emendrix with this address.
+
+Open this link to sign in. It works once, for {{ minutes }} minutes:
+
+{{ link }}
+
+If you did not ask, ignore this email; nothing happens without the link.
+
+{% with reason = "someone asked for a sign-in link for this address." %}
+{% include "web/mail_footer.txt" %}
+{% endwith %}
