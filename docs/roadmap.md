@@ -9,8 +9,9 @@ what the current release does and does not do.
 2. **A second corpus adapter**, the proof that the core is generic. The seam is exercised today by
    a deliberately alien `ToyCorpusAdapter` that is not law at all, which keeps the protocol honest
    but proves nothing about a second real corpus.
-3. **Notification integrations**: webhook, email, a bot. Cheap, and it is what makes the tool
-   something people run rather than something people read about.
+3. **Notification integrations.** Email ships: the optional account service
+   ([`./accounts.md`](./accounts.md)) sends instant, daily or weekly alerts for watched acts and
+   provisions. Webhooks, a bot, presets of provisions and watching an amending act remain.
 4. **An MCP server** ships with the reference deployment, at `/mcp` beside the site (see
    [`./api.md`](./api.md) §"MCP server"): read-only, keyless, handing a model the stored record
    with the file each fact came from. A survey of EU-law MCP servers on 2026-10-08 found one paid

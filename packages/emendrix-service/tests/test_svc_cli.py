@@ -1,4 +1,4 @@
-"""Every command exists; one not built in this version says so and exits 2."""
+"""Every command exists, and one missing its settings refuses to start with exit 2."""
 
 from __future__ import annotations
 
@@ -19,19 +19,6 @@ def test_svc_help_lists_every_command_and_the_disclaimer() -> None:
     for command in (*COMMANDS, "mail", "backup"):
         assert command in result.output
     assert " ".join(DISCLAIMER.split()) in " ".join(result.output.split())
-
-
-@pytest.mark.parametrize(
-    ("argv", "name"),
-    [
-        (["status", "--email"], "status"),
-        (["backup", "ship", "dump.pgc"], "backup ship"),
-    ],
-)
-def test_svc_a_stub_says_it_is_not_built(argv: list[str], name: str) -> None:
-    result = runner.invoke(app, argv)
-    assert result.exit_code == 2
-    assert result.stderr == f"emendrix-service: {name} is not built in this version\n"
 
 
 @pytest.mark.usefixtures("no_service_environment")

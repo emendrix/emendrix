@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 from typing import Final, NoReturn
 
-__all__ = ["PROGRAM", "REFUSED", "not_built", "stop"]
+__all__ = ["PROGRAM", "REFUSED", "stop"]
 
 PROGRAM: Final = "emendrix-service"
 
@@ -22,8 +22,3 @@ def stop(message: str) -> NoReturn:
     """Print `emendrix-service: <message>` on stderr and exit with code 2."""
     print(f"{PROGRAM}: {message}", file=sys.stderr)
     raise SystemExit(REFUSED)
-
-
-def not_built(command: str) -> NoReturn:
-    """The answer of a command this version declares but does not implement."""
-    stop(f"{command} is not built in this version")

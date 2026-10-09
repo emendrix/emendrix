@@ -2,7 +2,7 @@
 
 **Every read and write of a watchlist is scoped by the account that asks.** A watchlist or item
 id belonging to another account reads as absent (`None`, `False`), never as forbidden, so a
-page cannot be used to learn that an id exists. The `content` reads return what the loader
+page cannot reveal that an id exists. The `content` reads return what the loader
 stored, unchanged: an act's waiting rows are read back with the catalogue's own model.
 """
 

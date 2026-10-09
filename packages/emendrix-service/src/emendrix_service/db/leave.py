@@ -11,7 +11,7 @@ the account but are not exported.
 a foreign key to the account. The rows that name the address instead (login links, sign-up mail
 sent before the account existed, provider events and suppressions) are removed by address or
 its digest, except a suppression for a complaint, which is kept as a digest so that a deleted
-account cannot be used to mail someone who said the mail was unwanted. A hard bounce is about
+account cannot become a way to mail someone who said the mail was unwanted. A hard bounce is about
 the address and not the person, so deleting the account forgets it.
 """
 

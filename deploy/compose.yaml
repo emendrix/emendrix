@@ -18,6 +18,29 @@
 #   docker compose run --rm poller            # one poll → diff → explain → gate → commit
 #   docker compose run --rm page              # regenerate the static site
 #
+# The optional account service (email alerts for watched provisions, `docs/accounts.md`) runs
+# under the compose profile `accounts`: a Postgres, the web process behind `/account/` and `/u/`,
+# and a one-shot job container for its commands. Without the profile none of it starts, and the
+# deployment behaves exactly as it does without the service. With it:
+#
+#   docker compose --profile accounts up -d db account
+#   docker compose --profile accounts run --rm account-job migrate
+#   docker compose --profile accounts run --rm account-job load
+#
+# and, with `EMENDRIX_ACCOUNTS_FLAG=--accounts` in `.env`, the next `page` run adds the "Watch
+# this" links and the account shell. The service's jobs are more host cron lines:
+#
+#   */5 * * * * cd /srv/emendrix && docker compose --profile accounts run --rm account-job tick
+#   40 3 * * *  cd /srv/emendrix && docker compose --profile accounts run --rm account-job retention
+#   0 7 * * *   cd /srv/emendrix && docker compose --profile accounts run --rm account-job status --email
+#   20 3 * * *  cd /srv/emendrix && docker compose --profile accounts exec -T db sh -c 'pg_dump -U emendrix -d emendrix -Fc -n app -n notify -f /backups/app.dump && pg_restore --list /backups/app.dump >/dev/null' && docker compose --profile accounts run --rm account-job backup ship /backups/app.dump
+#
+# The dump is made by the database's own image, because a `pg_dump` of another major version
+# than the server's refuses to run, and `pg_restore --list` reads it whole before anything is
+# encrypted or shipped. `content` is left out of it: it is rebuilt from the changelogs by `load`.
+# `app` holds every account and watchlist and is **not** rebuildable, so a deployment that runs
+# the profile without the backup line loses its readers' watchlists with its disk.
+#
 # Configuration: `deploy/.env`, which is gitignored and never baked into an image, and which
 # `deploy/.env.example` documents. `EMENDRIX_PUBLIC_HOST` is required: it is the one place the
 # deployment's host is named, so the site's links, its feeds' ids, the catalogue the MCP server
@@ -160,9 +183,110 @@ services:
       - "/home/emendrix/.local/share/emendrix/watch-state.json"
       - "--comparison-cache"
       - "/home/emendrix/.cache/comparisons"
+      # `--accounts` adds the "Watch this" links and writes `account-shell.html`, which the
+      # account service fills; set `EMENDRIX_ACCOUNTS_FLAG=--accounts` only where it runs.
+      - "${EMENDRIX_ACCOUNTS_FLAG:---no-accounts}"
+
+  # The account service's database: `app` (accounts and watchlists, backed up), `notify` (which
+  # events were announced, backed up) and `content` (the record, reloaded at will). No port is
+  # published; only the compose network reaches it. Pinned by digest, resolved 2026-10-09 with
+  # `docker buildx imagetools inspect postgres:17-alpine`, the same image the service's tests run
+  # against. The image refuses to initialise without `POSTGRES_PASSWORD`.
+  db:
+    profiles: ["accounts"]
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: emendrix
+      POSTGRES_DB: emendrix
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - backups:/backups
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "emendrix", "-d", "emendrix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # The account service's web process, reached only through `web` at `/account/` and `/u/`.
+  # It reads the record and the site build read-only, fills the account shell the `page` run
+  # writes, and takes the client address from the header `web` sets (`X-Emendrix-Client-IP`).
+  # Every variable is named below rather than read from `.env` whole, so the model keys the
+  # poller needs never reach it.
+  account:
+    profiles: ["accounts"]
+    build:
+      context: ..
+      dockerfile: packages/emendrix-service/Dockerfile
+    image: ghcr.io/emendrix/emendrix-service:0.1.0
+    restart: unless-stopped
+    command: ["serve"]
+    environment: &account-environment
+      EMENDRIX_SERVICE_DATABASE_URL: "postgresql+psycopg://emendrix:${POSTGRES_PASSWORD:-}@db:5432/emendrix"
+      EMENDRIX_SERVICE_SITE_URL: "https://${EMENDRIX_PUBLIC_HOST:?set EMENDRIX_PUBLIC_HOST in deploy/.env (see .env.example)}"
+      EMENDRIX_SERVICE_ALLOWED_HOSTS: "${EMENDRIX_SERVICE_ALLOWED_HOSTS:-${EMENDRIX_PUBLIC_HOST},localhost:8080}"
+      EMENDRIX_SERVICE_SECRET_KEY: "${EMENDRIX_SERVICE_SECRET_KEY:-}"
+      EMENDRIX_SERVICE_CHANGELOGS: /srv/changelogs
+      EMENDRIX_SERVICE_CATALOGUE: /srv/site/api/v1/catalogue.json
+      EMENDRIX_SERVICE_SHELL: /srv/site/account-shell.html
+      EMENDRIX_SERVICE_PRIVACY_NOTICE: /srv/account/privacy-notice.html
+      EMENDRIX_SERVICE_SIGNUP_OPEN: "${EMENDRIX_SERVICE_SIGNUP_OPEN:-}"
+      EMENDRIX_SERVICE_SIGNUP_ALLOWLIST: "${EMENDRIX_SERVICE_SIGNUP_ALLOWLIST:-}"
+      EMENDRIX_SERVICE_LIVE_SINCE: "${EMENDRIX_SERVICE_LIVE_SINCE:-}"
+      EMENDRIX_SERVICE_SMTP_HOST: "${EMENDRIX_SERVICE_SMTP_HOST:-}"
+      EMENDRIX_SERVICE_SMTP_PORT: "${EMENDRIX_SERVICE_SMTP_PORT:-}"
+      EMENDRIX_SERVICE_SMTP_USERNAME: "${EMENDRIX_SERVICE_SMTP_USERNAME:-}"
+      EMENDRIX_SERVICE_SMTP_PASSWORD: "${EMENDRIX_SERVICE_SMTP_PASSWORD:-}"
+      EMENDRIX_SERVICE_SMTP_STARTTLS: "${EMENDRIX_SERVICE_SMTP_STARTTLS:-}"
+      EMENDRIX_SERVICE_MAIL_FROM: "${EMENDRIX_SERVICE_MAIL_FROM:-}"
+      EMENDRIX_SERVICE_OPERATOR_EMAIL: "${EMENDRIX_SERVICE_OPERATOR_EMAIL:-}"
+      EMENDRIX_SERVICE_WEBHOOK_SECRET: "${EMENDRIX_SERVICE_WEBHOOK_SECRET:-}"
+      EMENDRIX_SERVICE_CLIENT_IP_HEADER: X-Emendrix-Client-IP
+      EMENDRIX_SERVICE_TIMEZONE: "${EMENDRIX_SERVICE_TIMEZONE:-}"
+      EMENDRIX_SERVICE_DIGEST_HOUR: "${EMENDRIX_SERVICE_DIGEST_HOUR:-}"
+      EMENDRIX_SERVICE_BACKUP_TARGET: "${EMENDRIX_SERVICE_BACKUP_TARGET:-}"
+      EMENDRIX_SERVICE_BACKUP_SSH_KEY: /srv/account/backup_ed25519
+      EMENDRIX_SERVICE_BACKUP_KNOWN_HOSTS: /srv/account/known_hosts
+      EMENDRIX_SERVICE_BACKUP_AGE_RECIPIENT: "${EMENDRIX_SERVICE_BACKUP_AGE_RECIPIENT:-}"
+    # `deploy/account/` holds the operator's own files: the filled privacy notice, and the
+    # backup job's SSH key and known-hosts file. Its own `.gitignore` keeps every file in it out
+    # of git, and each must be readable by the image's user (uid 10001).
+    volumes:
+      - changelogs:/srv/changelogs:ro
+      - site:/srv/site:ro
+      - ./account:/srv/account:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # The service's commands, one run at a time: `tick`, `retention`, `status --email`,
+  # `backup ship`, `migrate`, `load`. The default command prints the list rather than starting a
+  # second web process. The dump the backup line writes is read from `backups`.
+  account-job:
+    profiles: ["accounts"]
+    image: ghcr.io/emendrix/emendrix-service:0.1.0
+    command: ["--help"]
+    environment: *account-environment
+    volumes:
+      - changelogs:/srv/changelogs:ro
+      - site:/srv/site:ro
+      - ./account:/srv/account:ro
+      - backups:/backups:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   changelogs:  # the output git repository: yours, never pushed by emendrix
   site:        # the generated site: pages, feeds, the search index and its script
   cache:       # the HTTP response cache and the site's comparisons; disposable, rebuilt on demand
   state:       # the watcher's seen-state cursor; NOT disposable
+  pgdata:      # the account service's database; NOT disposable, and backed up only by the dump
+  backups:     # the newest dump, before it is encrypted and shipped; overwritten each night

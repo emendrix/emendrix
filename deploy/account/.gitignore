@@ -1,0 +1,5 @@
+# The operator's own files for the account service: the filled privacy notice, and the backup
+# job's SSH key and known-hosts file. None of them is ever committed; this file keeps the
+# directory, which `compose.yaml` mounts, present in a clone.
+*
+!.gitignore

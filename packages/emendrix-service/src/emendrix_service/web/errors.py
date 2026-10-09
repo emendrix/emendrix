@@ -33,7 +33,7 @@ MESSAGES: Final[dict[int, tuple[str, str]]] = {
     ),
     404: ("Page not found", "There is no account page at this address."),
     405: ("Not allowed", "This address does not answer that kind of request."),
-    410: ("Gone", "This address has been replaced and no longer answers."),
+    410: ("Gone", "This address has been replaced and does not answer."),
     429: ("Too many requests", "Too many requests came from your address. Wait a while."),
     500: ("Something went wrong", "The page could not be made. Try again in a moment."),
     503: ("Unavailable", "The account service is not available at the moment."),

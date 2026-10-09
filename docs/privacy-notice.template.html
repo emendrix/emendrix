@@ -1,0 +1,96 @@
+<!--
+  A template for the privacy notice of a deployment of the account service, as the HTML fragment
+  EMENDRIX_SERVICE_PRIVACY_NOTICE names. The service places it inside its own page at
+  /account/privacy, under the site's header and above the footer with the disclaimer, so it is a
+  fragment: no <html>, <head> or <body>, and no script or style of its own.
+
+  Replace every {{PLACEHOLDER}} with the deployment's own facts, read every sentence against the
+  deployment as it runs, and change what does not hold. The operator who publishes the notice is
+  the controller, and the notice is theirs: a deployment's filled notice is never committed to
+  this repository. Every reader records which version (a digest of the file's bytes) they
+  accepted, so editing the file is a new version.
+
+  Placeholders: {{CONTROLLER_NAME}}, {{CONTACT}}, {{SUPERVISORY_AUTHORITY}}, {{MAIL_PROVIDER}},
+  {{HOSTING_PROVIDER}}, {{CDN_PROVIDER}}, {{BACKUP_LOCATION}}, {{EFFECTIVE_DATE}}. This comment
+  may be removed from the filled file.
+-->
+<h1>Privacy notice for email alerts</h1>
+
+<p>This notice covers the optional account service of this site: the email alerts for watched
+acts and provisions, and the personal feed. The rest of the site sets no cookie and stores
+nothing about its readers.</p>
+
+<h2>Who is responsible</h2>
+<p>The controller of the personal data described here is {{CONTROLLER_NAME}}, reachable at
+{{CONTACT}}. Write there for anything this notice covers.</p>
+
+<h2>What is held</h2>
+<ul>
+  <li>Your email address, and when you signed up, last signed in and last used the service.</li>
+  <li>Your watchlists: their names, the acts and provisions they watch, and how often you want
+    email. What you watch can reveal what you or your organisation works on.</li>
+  <li>The record that you confirmed your address, and which version of this notice you
+    accepted.</li>
+  <li>Your signed-in sessions, kept only as a one-way digest of the cookie, and sign-in links,
+    kept only as a one-way digest of the link.</li>
+  <li>The emails sent to you, which changes they carried, and what the mail provider reported
+    about their delivery (delivered, bounced, or marked as unwanted).</li>
+  <li>A log of account actions (an export, a deletion, a feed address replaced, signing out
+    everywhere, an unsubscribe), with when they happened.</li>
+</ul>
+<p>Nothing else: no name, no payment details, no tracking, and no analytics.</p>
+
+<h2>Why, and on what basis</h2>
+<ul>
+  <li>To send the alerts you configured, sign you in and show you your watchlists: this is the
+    service you asked for (Article 6(1)(b) GDPR). Confirming your address by email proves it is
+    yours; it is not a request for consent to marketing, and no marketing email is ever sent.</li>
+  <li>To keep the service secure and its email deliverable, including stopping mail to an address
+    that bounced or reported it as unwanted: the controller's legitimate interest in a secure,
+    working service (Article 6(1)(f) GDPR).</li>
+</ul>
+
+<h2>Who processes it</h2>
+<ul>
+  <li>{{MAIL_PROVIDER}} sends the emails and reports on their delivery.</li>
+  <li>{{HOSTING_PROVIDER}} runs the server and the database.</li>
+  <li>{{CDN_PROVIDER}} sits in front of the site and passes your requests to it.</li>
+  <li>Encrypted backups are stored at {{BACKUP_LOCATION}}. They are encrypted before they leave
+    the server, with a key the server does not hold.</li>
+</ul>
+<p>Each acts on the controller's instructions under a data processing agreement.</p>
+
+<h2>Transfers outside the EU</h2>
+<p>State here, for each processor above, whether data leaves the European Economic Area, and the
+safeguard that covers it (an adequacy decision, the EU-US Data Privacy Framework, or standard
+contractual clauses). If none does, say that the data stays in the EEA.</p>
+
+<h2>How long it is kept</h2>
+<table>
+  <thead><tr><th>Data</th><th>Kept</th></tr></thead>
+  <tbody>
+    <tr><td>Sign-in links</td><td>deleted 24 hours after they expire (they work for 30 minutes)</td></tr>
+    <tr><td>Sessions</td><td>deleted once expired, 30 days after last use</td></tr>
+    <tr><td>The text of emails sent to you</td><td>erased 30 days after sending</td></tr>
+    <tr><td>The record of emails and what they carried</td><td>deleted after 180 days</td></tr>
+    <tr><td>Delivery reports from the mail provider</td><td>deleted after 30 days</td></tr>
+    <tr><td>The log of account actions</td><td>deleted after 12 months</td></tr>
+    <tr><td>An account not used for 24 months</td><td>you are emailed a warning, and the account is deleted 30 days later unless you sign in</td></tr>
+    <tr><td>Backups</td><td>each copy is deleted within 35 days</td></tr>
+  </tbody>
+</table>
+<p>Deleting your account removes everything above at once, except in the backups, where it ages
+out within 35 days. If mail to your address was ever reported as unwanted, a one-way digest of
+the address is kept so that it is never mailed again; the address itself is not kept.</p>
+
+<h2>Your rights</h2>
+<p>From your account page you can download the data held about your account as a file, change
+or delete your watchlists, stop the email with one click, and delete your account. You also have
+the right to access, rectify and erase your data, to restrict or object to its processing, and to
+data portability; write to {{CONTACT}} for anything the account page does not do.</p>
+
+<h2>Complaints</h2>
+<p>You may complain to a supervisory authority, in particular in the EU member state where you
+live or work. The authority for the controller is {{SUPERVISORY_AUTHORITY}}.</p>
+
+<p>This notice is effective from {{EFFECTIVE_DATE}}.</p>

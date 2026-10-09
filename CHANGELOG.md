@@ -1026,3 +1026,22 @@ Named rather than discovered later; the eval report's disagreement list is the l
   answers byte-identically, its tool tests passing with no expectation edited, and its image
   carries the member. **No published figure moved**: the eval layer, the payloads, the feeds and
   every page are byte-identical to before.
+
+- **Watched provisions arrive by email, since 2026-10-09.** An optional account service,
+  `packages/emendrix-service`, stands beside the static site under `/account/` and `/u/`. A
+  reader follows "Watch this" on an act or provision page of a site built with `--accounts`,
+  signs in with an emailed link that only a button press on its page consumes, so a corporate
+  mail scanner cannot spend it, and chooses instant, daily or weekly email listing exactly the
+  watched provisions the record says changed, each line a stored fact with its link, why it
+  matched and its dispute reason, with a monthly note when nothing did. The same changes are in a
+  personal Atom feed behind a secret address. Every email stops with one click (RFC 8058), and the
+  account page exports the reader's data as a file and deletes it. The service
+  reads only the published record and the catalogue, makes no model call, and the pipeline does
+  not know it exists. `emendrix-service status` prints aggregate counts and mails them to the
+  operator, and `backup ship` encrypts a nightly dump with `age` and uploads it over SFTP to a
+  host whose key is pinned. `deploy/compose.yaml` runs it all under the compose profile
+  `accounts`, and without the profile the deployment runs as before. `docs/accounts.md` states
+  the data held, its retention, the operator's duties as controller, the security checklist with
+  the test behind each item, and the gaps the service ships with; a privacy-notice template is
+  beside it. **No published figure moved**: the payloads, the index, the feeds and the eval layer
+  are byte-identical to before.

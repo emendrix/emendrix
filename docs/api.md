@@ -192,9 +192,11 @@ sets its own licence.
 ## What it is not
 
 It is not legal advice and not a legal database: the record covers only the acts its watchlist
-names. It is not a search service, a notification service or a
-source of law: the authoritative text is the one EUR-Lex publishes, and every citation in a
-payload links there. It decides nothing about whether a change applies to you.
+names. It is not a search service or a source of law: the authoritative text is the one EUR-Lex
+publishes, and every citation in a payload links there. It decides nothing about whether a change
+applies to you. It sends nothing either: the optional email service built on this API, which
+alerts a reader when a watched provision changes, is described in [`accounts.md`](./accounts.md)
+and reads the same files any consumer reads.
 
 ## Serving it yourself
 

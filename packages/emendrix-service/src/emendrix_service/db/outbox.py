@@ -142,12 +142,12 @@ async def _mark(tx: Tx, outbox_id: UUID, **values: object) -> bool:
 
 
 async def extend_lease(tx: Tx, outbox_id: UUID, until: datetime) -> bool:
-    """Keep a claimed row from other drains until `until`; `False` when it is no longer queued."""
+    """Keep a claimed row from other drains until `until`; `False` when it has left the queue."""
     return await _mark(tx, outbox_id, next_attempt_at=until)
 
 
 async def mark_sent(tx: Tx, outbox_id: UUID, provider_id: str | None, now: datetime) -> bool:
-    """Record that the relay accepted the row; `False` when it was no longer queued."""
+    """Record that the relay accepted the row; `False` when it had already left the queue."""
     return await _mark(
         tx,
         outbox_id,

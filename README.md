@@ -122,13 +122,32 @@ for an unmatched address gives the reader the search box and a way back, but not
 `deploy/` names it as nginx's error page. That is server configuration rather than a generator
 change, and the file is already there.
 
+### The optional account service
+
+[`packages/emendrix-service`](./packages/emendrix-service/) sends email alerts for watched acts
+and provisions: a reader follows "Watch this" on the site, confirms an address, and gets an
+instant, daily or weekly email listing exactly the watched provisions the record says changed,
+or follows them in a personal feed, with one-click unsubscribe, export and delete. It reads only
+the published record and the catalogue, and the pipeline does not know it exists. It is optional:
+`deploy/compose.yaml` runs it, with its own Postgres, only under the compose profile `accounts`,
+and a site built without `--accounts` links nothing to it.
+
+Running it makes the operator the controller of the addresses it holds, with a privacy notice to
+publish (a template is in [`docs/privacy-notice.template.html`](./docs/privacy-notice.template.html)),
+processor agreements to sign, and a database to back up, because its accounts and watchlists
+cannot be rebuilt from anything else. [`docs/accounts.md`](./docs/accounts.md) is the whole of it:
+the matching rules, the data held and for how long, the security checklist, the backups and the
+compose recipe; [the service's README](./packages/emendrix-service/README.md) lists every setting
+and command.
+
 ## What it does not do
 
 It is **not legal advice**; not a compliance assessment tool, since it never asks about your
 business; **not a consolidation engine**, since it does not *apply* amendments to produce
 authoritative text of its own, it detects, localises and explains them; not a search engine over
-law, which adjacent tools do well; and not a SaaS product, because accounts or billing would leave
-its mandate. Inside that mandate the release still has holes, documented rather than hidden.
+law, which adjacent tools do well; and not a paid service: the optional account service sends
+email alerts for watched provisions and holds nothing but an address and a watchlist. Inside that
+mandate the release still has holes, documented rather than hidden.
 [`CHANGELOG.md`](./CHANGELOG.md) §"Known limitations" is the authority on what `0.1.0` cannot do,
 with the measurement behind each entry; [`docs/limitations.md`](./docs/limitations.md) explains the
 mechanisms. Neither is restated here, because a limitation summarised is a limitation softened.
@@ -189,6 +208,9 @@ uv run pytest -m live                # network tests: opt-in, excluded by defaul
 uv run pytest -m record              # rewrites the committed cassettes; opt-in for the same reason
 ```
 
+The account service's tests start one `postgres:17-alpine` container through Docker, or use the
+server `EMENDRIX_SERVICE_TEST_DATABASE_URL` names, and fail rather than skip without either.
+
 `pytest` runs on all cores (`-n auto --dist loadscope`). Measured 2026-08-12 on a ten-core machine
 over the 1173 tests then committed, the same count passing every way: 205s serially, 81s on eight
 workers, 17s on all cores with `tests/eval` left out, where nearly two thirds of the serial time
@@ -202,8 +224,9 @@ a finding about shared state.
 the pipeline stage by stage, the evaluation, the output format (repository layout, Markdown shape,
 versioned JSON schema, every cap that can truncate a quote), the site, the JSON API the site serves
 the record through (with an example workflow that watches one provision from CI) and the MCP server
-that hands the same record to a model, the limitations, the roadmap, and HTML walkthroughs of the
-shipped code. The empirical grounding is seven end-to-end traces against live Publications Office
+that hands the same record to a model, the optional account service that emails watched provisions
+([`docs/accounts.md`](./docs/accounts.md)), the limitations, the roadmap, and HTML walkthroughs of
+the shipped code. The empirical grounding is seven end-to-end traces against live Publications Office
 endpoints, across three acts spanning 2006 to 2026, and any data-source claim made anywhere else in
 this repository is subordinate to what those traces measured. They were produced by [`scripts/validation/`](./scripts/validation/), kept only so the
 published numbers are reproducible artifacts, with the reports committed beside it; it is the only

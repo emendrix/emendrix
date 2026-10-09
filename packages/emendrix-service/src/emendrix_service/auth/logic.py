@@ -152,8 +152,8 @@ def decide_link(
 ) -> TokenPurpose | Silent:
     """What a link request for one address sends: a link for a purpose, or nothing and why.
 
-    A known address always gets a sign-in link, whatever was asked, so a sign-up form cannot be
-    used to learn that an address has an account. An unknown address asking to sign in gets
+    A known address always gets a sign-in link, whatever was asked, so a sign-up form cannot
+    reveal that an address has an account. An unknown address asking to sign in gets
     nothing, on the same page.
     """
     if known:

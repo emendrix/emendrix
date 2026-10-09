@@ -46,7 +46,7 @@ class LoadCounts(BaseModel):
     status: Literal["complete", "failed"] = Field(description="Whether the load committed.")
     reason: str | None = Field(default=None, description="Why a failed load wrote nothing.")
     upserted: int = Field(default=0, ge=0, description="Events written or rewritten.")
-    removed: int = Field(default=0, ge=0, description="Events the record no longer lists.")
+    removed: int = Field(default=0, ge=0, description="Events the record has stopped listing.")
     skipped: int = Field(default=0, ge=0, description="Events whose payload was mid-write.")
     unsettled: int = Field(
         default=0,

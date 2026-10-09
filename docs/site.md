@@ -1,7 +1,9 @@
 # The site: a static reference tool, no backend, one script
 
 What `emendrix site build` writes, what it deliberately does not write, and which flags decide
-whether the absolute-address layer exists at all. Start at [`../README.md`](../README.md) for how
+whether the absolute-address layer exists at all. The static site has no backend; an optional
+account service can stand beside it on the same host, and `--accounts` is the one flag that links
+to it ([`./accounts.md`](./accounts.md)). Start at [`../README.md`](../README.md) for how
 to run it; the artifacts it renders are described in [`./output-format.md`](./output-format.md).
 
 ```bash
@@ -737,11 +739,13 @@ name it.
 
 ## No backend, and that is the more interesting decision
 
-A minimal backend is the obvious alternative, and this project has **none**. Static generation wins
-on longevity (files have no dependencies to expire after six untouched months), on security
-surface (no server, no store, no cookies, no analytics and no third-party request), and on ops
-cost (a volume and a web server that serves files). The one
-concession is search: `search-index.json` is built at build time and read by a hand-written,
+A minimal backend is the obvious alternative, and the static site has **none**. An optional
+account service can stand beside it, linked only when the site is built with `--accounts` (below)
+and described in [`./accounts.md`](./accounts.md); it is a separate process, and the static pages
+set no cookie and store nothing either way. Static generation wins on longevity (files have no
+dependencies to expire after six untouched months), on security surface (no server, no store, no
+cookies, no analytics and no third-party request), and on ops cost (a volume and a web server that
+serves files). The one concession is search: `search-index.json` is built at build time and read by a hand-written,
 dependency-free script that renders the search box itself, so a reader without JavaScript meets
 no dead control and still has `acts/` and the feeds. An architecture test holds the generator to
 loading that one committed file and writing no markup of its own. The box is a combobox owning a
