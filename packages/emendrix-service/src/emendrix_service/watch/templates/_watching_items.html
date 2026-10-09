@@ -1,7 +1,7 @@
 <div class="section-head">
 <div>
 <h2>{{ item_count }} item{{ "" if item_count == 1 else "s" }} across {{ act_count }} act{{ "" if act_count == 1 else "s" }}</h2>
-<p class="muted">A whole act, or a single article or annex.{% if not suspended %} Remove anything you no longer need.{% endif %}</p>
+<p class="muted">A whole act, or a single article or annex.{% if not suspended %} Remove anything you do not need.{% endif %}</p>
 </div>
 {% if not suspended %}
 <a class="button" href="/account/watchlists/{{ watchlist.id }}/add"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg> Watch an act or provision</a>
