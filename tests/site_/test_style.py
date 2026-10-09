@@ -30,6 +30,8 @@ import pytest
 
 from emendrix.site_.fingerprint import FONTS
 from emendrix.site_.style import STYLE
+from emendrix.site_.style.account import ACCOUNT
+from emendrix.site_.style.account_pages import ACCOUNT_PAGES
 from emendrix.site_.style.base import BASE
 from emendrix.site_.style.pages import PAGES
 
@@ -105,6 +107,8 @@ _PAIRS: tuple[tuple[str, str], ...] = (
     ("type-amending", "bg"),
     ("bg", "link"),
     ("bg", "alert"),
+    ("muted", "alert-tint"),
+    ("link", "kind-inserted-tint"),
 )
 """Every foreground the sheet sets as text against every surface it sets it on.
 
@@ -120,6 +124,10 @@ below at its own threshold.
 
 The page ground on the link colour and on the alert colour joined on 2026-10-09 with the form
 rules: a primary button is written in `--bg` on `--link`, and a destructive one on `--alert`.
+
+The muted grey on the alert tint and the link on the success tint joined the same day with the
+account pages: a description sits under the heading of the danger zone, and a link or a bordered
+button may sit in a success banner.
 """
 
 _MINIMUM = 4.5
@@ -165,6 +173,14 @@ _BOUNDARY_PAIRS: tuple[tuple[str, str], ...] = (
     ("fg", "notice"),
     ("type-act", "panel"),
     ("type-version", "bg"),
+    ("link", "mark"),
+    ("alert", "alert-tint"),
+    ("kind-inserted", "kind-inserted-tint"),
+    ("kind-inserted", "notice"),
+    ("kind-deferred", "notice"),
+    ("edge", "alert-tint"),
+    ("fg", "panel"),
+    ("fg", "bg"),
 )
 """Every surface the sheet draws a component boundary on, with the colour it draws it in.
 
@@ -173,6 +189,12 @@ information: a reader who cannot find the edge of a tag cannot tell where one la
 the next begins. The change kinds, the alert and the page types draw their own borders, rules
 and rail nodes, so each is checked on the surfaces it sits on, including the busy `--mark` a
 targeted block or a hovered row turns into.
+
+The account pages joined on 2026-10-09: the chosen card's ring in the link colour on `--mark`,
+the danger zone's and the alert banner's border on the alert tint, the success banner's and the
+`On` word's border on the success tint, the coverage dot on an act group's `--notice` head, a
+bordered button inside the danger zone, and the current list's ring and the current tab's
+underline in the text colour.
 """
 
 _SEPARATION_MINIMUM = 1.5
@@ -320,7 +342,10 @@ def test_the_modules_are_concatenated_in_cascade_order() -> None:
     assert STYLE.index("--bg:") < STYLE.index("header.bar")
     assert STYLE.index("header.bar") < STYLE.index(".masthead {")
     assert STYLE.index(".masthead {") < STYLE.index(".cardrow")
-    assert STYLE.index(".cardrow") < STYLE.index(".timeline")
+    assert STYLE.index(".cardrow") < STYLE.index("form.stack")
+    assert STYLE.index("form.stack") < STYLE.index("header.bar .account {")
+    assert STYLE.index("header.bar .account {") < STYLE.index(".act-group {")
+    assert STYLE.index(".act-group {") < STYLE.index(".timeline")
     assert STYLE.index(".timeline") < STYLE.index(".chg {")
     assert STYLE.index(".chg {") < STYLE.index("@media print")
     assert STYLE.index("@media print") < STYLE.index(_FORCED)
@@ -588,3 +613,120 @@ def test_the_doors_stack_on_a_phone_and_never_scroll_sideways() -> None:
     320px and three side by side on a wide screen, with no media query of its own."""
     grid = PAGES.split(".doors ul {")[1].split("}")[0]
     assert "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))" in grid
+
+
+# ------------------------------------------------------------------ the account pages
+
+
+_ACCOUNT_CLASSES: tuple[str, ...] = (
+    "header.bar .account",
+    ".account--in",
+    ".account-initial",
+    ".account-email",
+    ".account-head",
+    ".account-eyebrow",
+    ".account-lede",
+    ".tabs",
+    ".tabs a",
+    '.tabs a[aria-current="page"]',
+    ".tabs .count",
+    ".panel",
+    ".strip",
+    ".strip-item",
+    ".strip-icon",
+    ".strip-label",
+    ".strip-value",
+    ".strip-more",
+    ".lists",
+    ".lists a",
+    '.lists a[aria-current="true"]',
+    ".lists .new",
+    ".act-group",
+    ".act-group-head",
+    ".act-name",
+    ".act-coverage",
+    ".act-coverage--waiting",
+    ".act-coverage-note",
+    ".item",
+    ".item-what",
+    ".item-latest",
+    ".item-remove",
+    ".section-head",
+    ".settings",
+    ".settings-intro",
+    ".choice-cards",
+    ".choice",
+    ".option-rows",
+    ".option",
+    ".rows",
+    ".row-line",
+    ".danger-zone",
+    ".banner",
+    ".banner--alert",
+    ".banner--info",
+    ".banner--ok",
+    ".steps",
+    ".step",
+    ".step-number",
+    ".aside",
+    ".state-on",
+    ".state-off",
+    "textarea",
+    ".back",
+    ".button.small",
+    ".button.quiet",
+)
+"""The classes an account service's templates are written against, by the names they use."""
+
+_SELECTOR = re.compile(r"(?:^|[{};])\s*([^{};@]+?)\s*\{", re.MULTILINE)
+
+
+def test_every_class_the_account_pages_use_is_a_selector_in_the_sheet() -> None:
+    """A rename here breaks the service's pages silently, so it fails here first."""
+    selectors = " , ".join(" ".join(found.split()) for found in _SELECTOR.findall(STYLE))
+    for name in _ACCOUNT_CLASSES:
+        assert re.search(rf"{re.escape(name)}(?![\w-])", selectors), name
+
+
+def test_a_phone_clips_the_account_address_and_never_hides_it() -> None:
+    """The address stays in the accessibility tree; only the initial is drawn on a phone.
+
+    The rules are `ACCOUNT`'s own, so the shell's phone block keeps no `display: none` either.
+    """
+    phone = ACCOUNT.split("@media (max-width: 40rem) {")[1]
+    email = phone.split(".account-email {")[1].split("}")[0]
+    assert "clip-path: inset(50%);" in email
+    assert "position: absolute;" in email
+    assert "display: none" not in phone
+    assert (
+        "#search, header.bar:has(> .account--in) #search { order: 1; flex-basis: 100%; }" in phone
+    )
+
+
+def test_a_phone_keeps_the_account_link_on_the_navigation_row() -> None:
+    """Search drops to its own row by order, so the account link never waits on its width."""
+    phone = ACCOUNT.split("@media (max-width: 40rem) {")[1]
+    assert "header.bar .account { flex: none;" in phone
+
+
+def test_forced_colours_keep_every_account_state() -> None:
+    """A chosen card, the current list and tab, and the coverage dot survive a system palette."""
+    _, _, forced = STYLE.partition(_FORCED)
+    assert '.tabs a[aria-current="page"] { border-bottom-color: CanvasText; }' in forced
+    assert ".choice:has(input:checked)" in forced
+    assert '.lists a[aria-current="true"]' in forced
+    assert ".act-coverage::before { border: 1px solid CanvasText; }" in forced
+
+
+def test_the_account_classes_keep_off_the_names_the_site_pages_already_use() -> None:
+    """The account link's boundary is `--edge`; `.quiet` and `.step` are only ever compound."""
+    link = ACCOUNT.split("header.bar .account {")[1].split("}")[0]
+    assert "var(--edge)" in link and "var(--rule)" not in link
+    rules = re.sub(r"/\*.*?\*/", "", ACCOUNT, flags=re.DOTALL)
+    for line in rules.splitlines():
+        for selector in re.findall(r"(?:^|,)\s*([^,{]*\.quiet\b)", line):
+            assert ".button.quiet" in selector or "button.quiet" in selector, line
+    # `.chg.step` names a change on an amending act's page, so a first step is reached only
+    # inside `.steps`.
+    assert ".steps > .step {" in ACCOUNT_PAGES
+    assert not re.search(r"\.step(?![\w-])", ACCOUNT_PAGES.replace(".steps > .step", ""))

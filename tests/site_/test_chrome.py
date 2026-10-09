@@ -7,7 +7,7 @@ from datetime import date
 from helpers import text_of
 
 from emendrix import DISCLAIMER
-from emendrix.site_.chrome import PageChrome, nav_links, page
+from emendrix.site_.chrome import PageChrome, account_link, nav_links, page
 from emendrix.site_.fingerprint import SCRIPT, STYLESHEET
 from emendrix.site_.markup import Html, escape
 
@@ -61,6 +61,19 @@ def test_the_header_carries_the_seven_destinations_in_one_order() -> None:
         '<a href="feeds/">Feeds</a> '
         '<a href="api/">API</a></nav>' in nav_links(0)
     )
+
+
+def test_the_account_link_closes_the_header_after_search_and_leaves_the_nav_alone() -> None:
+    """The service fills the slot after the search mount, so the navigation is the same bytes."""
+    linked, plain = nav_links(0, accounts=True), nav_links(0)
+    assert linked.endswith(f'<div id="search" data-root=""></div>{account_link("")}</header>')
+    assert account_link("") == '<a class="account" href="account/">Account</a>'
+
+    def nav(header: str) -> str:
+        return header.split('<nav aria-label="Site">', 1)[1].split("</nav>", 1)[0]
+
+    assert nav(linked) == nav(plain)
+    assert "account/" not in plain
 
 
 def test_the_api_link_marks_itself_on_the_api_page_and_nowhere_else() -> None:

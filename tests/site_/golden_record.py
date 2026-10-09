@@ -1038,4 +1038,22 @@ flag yet. **No `id=` moved or went**, every `<title>` and description is unchang
 `_LARGEST_PAGE` moved by the 40 bytes of `Sign in` its docstring states. Every feed,
 `search-index.json`, the sitemaps, `robots.txt`, `llms.txt`, the script, the fonts, `icon.svg`,
 `og.png` and every other schema are byte-identical.
+
+Read again on 2026-10-09, later the same day, when the header's account link took a slot of its
+own. All 24 pages moved, the stylesheet with them, and the account shell. On every page the link
+left the end of the `<nav>` for the end of the header bar, after `<div id="search">`, and reads
+`Account` with `class="account"`, so every page is 15 bytes heavier, the 55 bytes of the new link
+at the deepest pages against the 40 of the old one with the space before it, and the same 15 at
+every other depth and on `404.html`, where it is rooted at `/site/`. `account-shell.html` holds
+`<!--emendrix:account-->` in that slot instead of any link and is 14 bytes lighter, 1656 bytes;
+its four markers are, in file order, the title, the account, the content and the footer note. The
+stylesheet gained the account pages' rules, the header link and its signed-in form, tabs, panels,
+banners, the list switcher, settings sections, choice cards, option and row lines, the danger
+zone, the first steps and the state words, with their forced-colour and print lines: it grew from
+59 095 to 72 574 bytes, and its fingerprinted name moved from `style.6e57efe3.css` to
+`style.5cc19b83.css` in every page's head, at the same length. **No `id=` moved or went**, since
+the link carries none, every `<title>` and description is unchanged, and `_LARGEST_PAGE` moved by
+the 15 bytes its docstring states. Every feed, `search-index.json`, the sitemaps, `robots.txt`,
+`llms.txt`, the script, the fonts, `icon.svg`, `og.png`, the catalogue and the schemas under
+`api/` are byte-identical.
 """

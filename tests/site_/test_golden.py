@@ -65,7 +65,7 @@ def site(tmp_path_factory: pytest.TempPathFactory, changelog_repo: Path) -> Path
     itself, over two directories built in the same test.
 
     Built with `--accounts`, so the review of the golden covers everything that flag adds: the
-    watch links, the header bar's `Sign in`, the sentence on About and the account shell. A
+    watch links, the header's `Account` link, the sentence on About and the account shell. A
     build without it differs only by those, which `test_accounts.py` holds.
     """
     return build(tmp_path_factory.mktemp("golden") / "site", changelog_repo, "--accounts")
@@ -256,7 +256,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49621)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49636)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -440,7 +440,14 @@ the page's own body moved, no anchor did and no id went.
 header bar gained its last link, `Sign in`, to the account service's root: ` <a
 href="../../../account/">Sign in</a>` at this depth. The stylesheet gained the form rules and
 its fingerprinted name moved at the same length. This page links no provision of its own, so no
-watch link reached it; nothing in its body moved, no anchor did and no id went."""
+watch link reached it; nothing in its body moved, no anchor did and no id went.
+
+15 bytes heavier on 2026-10-09, later the same day, when the header's account link moved out of
+the navigation to sit after the search mount, as `Account` with `class="account"`: `<a
+class="account" href="../../../account/">Account</a>` at this depth, 55 bytes, where the link
+inside the navigation and the space before it were 40. Every page on the site paid the same 15.
+The stylesheet gained the account pages' rules and its fingerprinted name moved at the same
+length. Nothing in the page's own body moved, no anchor did and no id went."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

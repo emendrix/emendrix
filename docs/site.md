@@ -835,16 +835,20 @@ no file below is written. With it the build adds:
   `account/watch?act=<key>&loc=<canonical location>`, and **"Watch this act"** on every act page,
   after its Atom feed, linking `account/watch?act=<key>`. The act is named by its key, never by
   the page's slug, and both values are percent-encoded.
-- **"Sign in"** as the last link of the header bar on every page, to `account/`. The word is
-  fixed because a static page cannot know whether its reader is signed in.
+- **"Account"** at the end of the header bar on every page, after the search box and outside the
+  site's navigation, linking `account/` with `class="account"`. The word is true whether the
+  reader is signed in or not, and the address shows a signed-out reader the sign-in page. It sits
+  in a slot of its own so an account service can put the reader's identity there without
+  touching the navigation.
 - One sentence on `/about/`, after "Nothing about a reader is stored anywhere.", naming the
   account service, the address and watchlists it holds, its one cookie and its privacy notice
   at `/account/privacy`. The static pages themselves still set no cookie and store nothing.
 - **`account-shell.html`** at the site root. It is not a page for readers and nothing links to
   it. It is the site's own chrome, the header, the stylesheet, the search script and the footer
-  with the disclaimer, with three markers an account service splits it on and fills:
-  `<!--emendrix:title-->` as the whole text of `<title>`, `<!--emendrix:content-->` as the whole
-  of `<main id="content">`, and `<!--emendrix:footer-note-->` in the footer where every other page
+  with the disclaimer, with four markers an account service splits it on and fills, in this file
+  order: `<!--emendrix:title-->` as the whole text of `<title>`, `<!--emendrix:account-->` where
+  every static page has the `Account` link, which the service fills with the reader's identity
+  or leaves empty, `<!--emendrix:content-->` as the whole of `<main id="content">`, and `<!--emendrix:footer-note-->` in the footer where every other page
   says it sets no cookies, since a page that keeps a reader signed in does. The description is
   left empty. Every reference in it starts from the site URL's path, as on the not-found page,
   because the service serves these bytes under its own addresses. It is marked `noindex`,
@@ -853,7 +857,12 @@ no file below is written. With it the build adds:
 The stylesheet carries the rules those pages need whether or not the flag is set: `form.stack`,
 labels, text and email fields and `select`, `button` and `.button` with the `.secondary` and
 `.danger` variants, `.check` rows, `.notice` and `.notice.alert`, and `table.list`, all drawn
-from the site's tokens and so right in both colour schemes.
+from the site's tokens and so right in both colour schemes. It also carries the account pages'
+own families: the header link and its signed-in form with an initial and the address (clipped,
+never hidden, on a phone), the page head and tabs, panels and banners, the list switcher, the
+watched acts and their item rows, settings sections with choice cards and option rows, row
+lines, the danger zone, the first-visit steps, the `On` and `Off` words, a `textarea`, a `.back`
+link and the `.button.small` and `.button.quiet` variants.
 
 ## `--comparison-cache`: the one flag that changes speed and not output
 

@@ -22,6 +22,7 @@ from helpers import REPORTS, SITE_URL, WATCHLIST, build, runner
 from emendrix.cli import app
 from emendrix.site_.api_files import CATALOGUE
 from emendrix.site_.pages.account_shell import (
+    ACCOUNT_MARKER,
     CONTENT_MARKER,
     FOOTER_NOTE_MARKER,
     SHELL,
@@ -93,11 +94,23 @@ def test_every_act_page_links_its_own_act_once_quiet_ones_included(linked: Path)
         assert _watch_links(_page(linked, act["url"]), "Watch this act") == [{"act": [act["key"]]}]
 
 
-def test_every_page_ends_its_header_bar_with_sign_in(linked: Path) -> None:
+def test_every_page_ends_its_header_bar_with_the_account_link(linked: Path) -> None:
+    """After the search mount and outside the navigation, so a service can fill that one slot.
+
+    The shell is the one page holding the account marker there instead, checked below.
+    """
     for page in _pages(linked):
+        if page.name == SHELL:
+            continue
         text = page.read_text(encoding="utf-8")
         nav = text.split('<nav aria-label="Site">', 1)[1].split("</nav>", 1)[0]
-        assert re.search(r'<a href="[^"]*account/">Sign in</a>$', nav), page
+        assert "account/" not in nav, page
+        header = text.split('<header class="bar">', 1)[1].split("</header>", 1)[0] + "</header>"
+        assert re.search(
+            r'<div id="search" data-root="[^"]*"></div>'
+            r'<a class="account" href="[^"]*account/">Account</a></header>$',
+            header,
+        ), page
 
 
 def test_about_names_the_service_and_its_privacy_notice(linked: Path, plain: Path) -> None:
@@ -113,8 +126,13 @@ def test_about_names_the_service_and_its_privacy_notice(linked: Path, plain: Pat
 
 def test_the_shell_carries_each_marker_once_and_nothing_of_its_own(linked: Path) -> None:
     shell = (linked / SHELL).read_text(encoding="utf-8")
-    for marker in (TITLE_MARKER, CONTENT_MARKER, FOOTER_NOTE_MARKER):
+    markers = (TITLE_MARKER, ACCOUNT_MARKER, CONTENT_MARKER, FOOTER_NOTE_MARKER)
+    for marker in markers:
         assert shell.count(marker) == 1, marker
+    places = [shell.index(marker) for marker in markers]
+    assert places == sorted(places), "title, account, content, footer-note, in file order"
+    assert f'<div id="search" data-root="{ROOT}"></div>{ACCOUNT_MARKER}</header>' in shell
+    assert 'class="account"' not in shell
     assert f"<title>{TITLE_MARKER}</title>" in shell
     assert '<meta name="description" content="">' in shell
     assert f'<main id="content">\n{CONTENT_MARKER}\n</main>' in shell
@@ -133,7 +151,7 @@ def test_every_reference_in_the_shell_starts_from_the_site_root(linked: Path) ->
     for reference in references:
         assert reference.startswith((ROOT, "https://", "#")), reference
     assert f'<link rel="stylesheet" href="{ROOT}style.' in shell
-    assert f'<a href="{ROOT}account/">Sign in</a>' in shell
+    assert ACCOUNT_MARKER in shell
 
 
 def test_the_shell_is_byte_identical_across_two_builds(

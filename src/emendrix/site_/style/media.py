@@ -33,7 +33,7 @@ __all__ = ["MEDIA"]
 
 MEDIA: Final = """\
 @media print {
-  #search, header.bar nav, .skip { display: none; }
+  #search, header.bar nav, header.bar .account, .skip, .tabs { display: none; }
   body { background: white; color: black; }
   main, header.bar, footer { max-width: none; padding-left: 0; padding-right: 0; }
   /* A scroll box cannot be scrolled on paper, so both indexes print whole. */
@@ -92,5 +92,14 @@ MEDIA: Final = """\
      drawn as the ground and only the current one stays underlined. */
   header.bar nav a { border-bottom-color: Canvas; }
   header.bar nav a[aria-current="page"] { border-bottom-color: CanvasText; }
+  /* The account pages' states, each kept as a line: the current tab its underline, the
+     current list and the chosen card a doubled border, the coverage dot a ring. */
+  .tabs a { border-bottom-color: Canvas; }
+  .tabs a[aria-current="page"] { border-bottom-color: CanvasText; }
+  .lists a[aria-current="true"], .choice:has(input:checked)
+    { border: 2px solid CanvasText; box-shadow: none; }
+  .act-coverage::before { border: 1px solid CanvasText; }
+  header.bar .account, .panel, .banner, .choice, .danger-zone, .state-on, .state-off, textarea
+    { border-color: CanvasText; }
 }
 """

@@ -36,7 +36,14 @@ from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.outbound import external
 from emendrix.site_.urls import depth_of, up
 
-__all__ = ["PageChrome", "disclaimer_html", "nav_links", "page", "repository_links"]
+__all__ = [
+    "PageChrome",
+    "account_link",
+    "disclaimer_html",
+    "nav_links",
+    "page",
+    "repository_links",
+]
 
 
 class PageChrome(BaseModel):
@@ -106,9 +113,11 @@ def nav_links(
 
     `root` overrides the climb `depth` implies, for the pages `page` documents.
 
-    With `accounts`, `Sign in` closes the bar, linking the account service's own root. The word
-    is fixed because a static page cannot know whether its reader is signed in, and that
-    address shows a signed-in reader their account anyway.
+    With `accounts`, `account_link` closes the bar, after the search mount and outside `<nav>`.
+    The word is `Account` because it is true whether the reader is signed in or not, and the
+    address shows a signed-out reader the sign-in page. It sits after search, in a slot of its
+    own, so an account service can put the reader's identity there without touching the site's
+    navigation.
     """
     root = up(depth) if root is None else root
     current = ' aria-current="page"'
@@ -116,15 +125,22 @@ def nav_links(
         f'<a href="{root}{path}"{current if path == section else ""}>{name}</a>'
         for path, name in _SECTIONS
     )
-    if accounts:
-        links += f' <a href="{root}account/">Sign in</a>'
-
+    account = account_link(root) if accounts else ""
     return Html(
         f'<a class="skip" href="#content">Skip to content</a>'
         f'<header class="bar"><a class="wordmark" href="{root or "./"}">emendrix</a>'
         f'<nav aria-label="Site">{links}</nav>'
-        f'<div id="search" data-root="{root}"></div></header>'
+        f'<div id="search" data-root="{root}"></div>{account}</header>'
     )
+
+
+def account_link(root: str) -> str:
+    """The header's link to the account service's root, under the page's own climb `root`.
+
+    One string for the static pages and for the account shell, which swaps exactly this for its
+    marker, so the two cannot drift apart and the swap cannot miss.
+    """
+    return f'<a class="account" href="{root}account/">Account</a>'
 
 
 def repository_links(chrome: PageChrome) -> tuple[Html, Html]:
