@@ -8,10 +8,17 @@ holds no page of its own.
 There is no API documentation route: the service serves pages and token-addressed endpoints,
 and a schema of them is not something a reader of the record can use. `GET /healthz` says the
 process answers; `GET /readyz` says it can serve. Neither is proxied to the public.
+
+Readiness is a list of checks on `app.state.ready_checks`, each answering `None` or a reason;
+`/readyz` answers `503` with the first reason. The database's checks join the list when the
+lifespan opens the database and leave it when the lifespan closes, and the web layer adds its own
+through `web.install`.
 """
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Final
 
 import uvicorn
@@ -21,6 +28,8 @@ from fastapi.responses import PlainTextResponse
 from emendrix_service import __version__, web
 from emendrix_service.auth import routes as auth_routes
 from emendrix_service.clock import Clock, SystemClock
+from emendrix_service.db import Db
+from emendrix_service.db.ready import ReadyCheck, ready_checks
 from emendrix_service.feed import routes as feed_routes
 from emendrix_service.leave import routes as leave_routes
 from emendrix_service.mail import hooks as mail_hooks
@@ -35,9 +44,32 @@ HEALTH_PATH: Final = "/healthz"
 READY_PATH: Final = "/readyz"
 
 
-def create_app(settings: ServiceSettings, *, clock: Clock, mailer: Mailer) -> FastAPI:
-    """The ASGI app for one deployment, reading the time from `clock`, sending through `mailer`."""
+def create_app(
+    settings: ServiceSettings, *, clock: Clock, mailer: Mailer, db: Db | None = None
+) -> FastAPI:
+    """The ASGI app for one deployment, reading the time from `clock`, sending through `mailer`.
+
+    Without `db`, the lifespan opens a pool over the configured database and closes it on
+    shutdown; a `db` given here belongs to the caller, which closes it.
+    """
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        database = db if db is not None else Db.connect(settings)
+        app.state.db = database
+        checks = ready_checks(database)
+        app.state.ready_checks[:0] = checks
+        try:
+            yield
+        finally:
+            for check in checks:
+                app.state.ready_checks.remove(check)
+            app.state.db = db
+            if db is None:
+                await database.dispose()
+
     app = FastAPI(
+        lifespan=lifespan,
         title="emendrix-service",
         version=__version__,
         docs_url=None,
@@ -47,14 +79,21 @@ def create_app(settings: ServiceSettings, *, clock: Clock, mailer: Mailer) -> Fa
     app.state.settings = settings
     app.state.clock = clock
     app.state.mailer = mailer
+    app.state.db = db
+    app.state.ready_checks = list[ReadyCheck]()
 
     @app.api_route(HEALTH_PATH, methods=["GET", "HEAD"], response_class=PlainTextResponse)
     async def healthz() -> str:
         return "ok"
 
     @app.api_route(READY_PATH, methods=["GET", "HEAD"], response_class=PlainTextResponse)
-    async def readyz() -> str:
-        return "ok"
+    async def readyz() -> PlainTextResponse:
+        checks: list[ReadyCheck] = app.state.ready_checks
+        for check in tuple(checks):
+            reason = await check()
+            if reason is not None:
+                return PlainTextResponse(reason, status_code=503)
+        return PlainTextResponse("ok")
 
     web.install(app)
     for router in (

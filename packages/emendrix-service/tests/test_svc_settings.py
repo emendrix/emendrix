@@ -31,7 +31,7 @@ def test_svc_the_defaults_are_the_documented_ones(settings: ServiceSettings) -> 
     assert (settings.timezone, settings.digest_hour) == ("Europe/Brussels", 7)
     assert settings.signup_open is True
     assert settings.signup_allowlist == ()
-    assert settings.shell is None
+    assert build().shell is None
     assert settings.zone().key == "Europe/Brussels"
 
 
