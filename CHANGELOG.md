@@ -1069,3 +1069,15 @@ Named rather than discovered later; the eval report's disagreement list is the l
   reader on the account pages and says `Account` on every other page. The pages run no script
   and no inline style and follow the site's light and dark schemes. **No published figure
   moved**: the payloads, the index, the feeds and the eval layer are byte-identical to before.
+
+- **The hosted instance serves the redesigned account pages, since 2026-10-09.** Images
+  `emendrix@sha256:fc93e7af` and `emendrix-service@sha256:cc4ecca7`, built from `02dfac6`. Every
+  static page ends its header with `Account` after the search box, `/account/` is Watching, and
+  `/account/delivery` and `/account/settings` answer, each sending a reader who is not signed in
+  to sign-in. Verified from the edge the same day: the header and the new stylesheet on the home,
+  acts and about pages, the sign-in page's one content-security policy with `style-src 'self'` and
+  its `private, no-store`, and the home page in a browser in the light scheme at desktop width and
+  the dark scheme at phone width. The signed-in pages were not checked from the edge: the three
+  tabs, saving a delivery choice, pausing and resuming, a second list and the account pages in
+  either scheme rest on the service's tests alone. **No published figure moved**: the payloads,
+  the index, the feeds and the eval layer are byte-identical to before.
