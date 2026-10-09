@@ -1,0 +1,8 @@
+{% if choices|length > 1 %}
+<ul class="lists" aria-label="Your lists">
+{% for choice in choices %}
+<li><a href="{{ base }}?list={{ choice.id }}"{% if choice.current %} aria-current="true"{% endif %}>{{ choice.name }} <span class="count">{{ choice.item_count }}</span><span class="visually-hidden"> items</span></a></li>
+{% endfor %}
+<li><a class="new" href="/account/?new=1#new-list"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>New list</a></li>
+</ul>
+{% endif %}

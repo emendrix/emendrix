@@ -60,8 +60,10 @@ serve: /account/ (session cookie), /u/ (token addresses) ◄── nginx ◄─�
 - **The web process** (`serve`) answers `/account/` (pages that use the session cookie) and `/u/`
   (token-addressed endpoints that never read it: one-click unsubscribe, the personal feed, the
   mail provider's event hook). Its pages are the site's own chrome: a site built with
-  `--accounts` writes `account-shell.html`, and the service fills its title, content and footer
-  note ([`site.md`](./site.md) §"`--accounts`"). No JavaScript; every action is a plain form.
+  `--accounts` writes `account-shell.html`, and the service fills its title, the account slot at
+  the end of the header (the reader's address when signed in, `Account` otherwise), the content
+  and the footer note ([`site.md`](./site.md) §"`--accounts`"); a shell without the slot, from a
+  site build that predates it, still serves with its own header link. No JavaScript; every action is a plain form.
 - **The boundary is checked, not promised.** The service never imports the pipeline; it reads
   the record through `emendrix-record`, the same reader the MCP server uses. The clock is read in
   one module, the environment in one, SQL only under `db/`, outbound connections only in the SMTP

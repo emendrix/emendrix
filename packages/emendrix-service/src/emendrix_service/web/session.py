@@ -3,6 +3,11 @@
 A session lives 30 days from its last use. Sliding the expiry is a write, so it happens at most
 once an hour per session, and the browser's cookie is renewed in the same response by
 `CookieWriter`. An expired session or a suspended account reads as signed out.
+
+The header names the reader only on a page whose route resolved who reads it: `current_user`
+notes an active one with `remember_reader`, and a route that admits a suspended account can
+note it the same way. Every other page (sign-in, privacy, an error) shows the signed-out link,
+which is intended: such a page is the same whoever asks for it.
 """
 
 from __future__ import annotations
@@ -28,6 +33,8 @@ __all__ = [
     "SignedIn",
     "clear_session_cookie",
     "current_user",
+    "reader_email",
+    "remember_reader",
     "require_user",
     "set_session_cookie",
 ]
@@ -38,6 +45,8 @@ REFRESH: Final = "emendrix_session_refresh"
 """The request-state key holding a session token whose cookie is to be sent again."""
 
 _CHECKED: Final = "emendrix_signed_in"
+
+_READER: Final = "emendrix_reader_email"
 
 
 class SignedIn(BaseModel):
@@ -86,7 +95,20 @@ async def current_user(request: Request) -> SignedIn | None:
         return found
     signed_in = await _load(request)
     setattr(request.state, _CHECKED, signed_in)
+    if signed_in is not None:
+        remember_reader(request, signed_in.email)
     return signed_in
+
+
+def remember_reader(request: Request, email: str) -> None:
+    """Note who this request's page is for, so the header can name them."""
+    setattr(request.state, _READER, email)
+
+
+def reader_email(request: Request) -> str | None:
+    """The address `remember_reader` noted for this request, if any."""
+    email: str | None = getattr(request.state, _READER, None)
+    return email
 
 
 async def _load(request: Request) -> SignedIn | None:

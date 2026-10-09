@@ -30,11 +30,23 @@ from markupsafe import Markup
 
 from emendrix_service import DISCLAIMER
 from emendrix_service.web.csrf import csrf_field
+from emendrix_service.web.identity import account_slot
+from emendrix_service.web.session import reader_email
 from emendrix_service.web.shell import Shell, ShellSource
 
-__all__ = ["FEATURES", "UNAVAILABLE", "environment", "render_mail", "render_page"]
+__all__ = [
+    "ACCOUNT_CURRENT",
+    "FEATURES",
+    "UNAVAILABLE",
+    "environment",
+    "render_mail",
+    "render_page",
+]
 
 FEATURES: Final = ("web", "auth", "watch", "notify", "leave", "feed")
+
+ACCOUNT_CURRENT: Final = "account_current"
+"""The `render_page` keyword that marks the header's account link as the current page."""
 
 UNAVAILABLE: Final = f"The account pages are not available at the moment.\n\n{DISCLAIMER}\n"
 """What a page answers, as plain text with a 503, while no shell has ever been read."""
@@ -71,7 +83,14 @@ def render_page(
     status: int = 200,
     **context: object,
 ) -> Response:
-    """`template` rendered into the account shell, as the page's response."""
+    """`template` rendered into the account shell, as the page's response.
+
+    The header names the reader `remember_reader` noted for this request. `account_current=True`
+    marks that link as the current page, for the Account tab; it is taken out of `context`
+    rather than declared, because callers spread `dict[str, object]` wording into `context` and
+    a declared `bool` would not accept it.
+    """
+    account_current = context.pop(ACCOUNT_CURRENT, False) is True
     source: ShellSource | None = request.app.state.shell
     shell = source.get() if source is not None else None
     if not isinstance(shell, Shell):
@@ -81,7 +100,8 @@ def render_page(
         .get_template(template)
         .render(request=request, site_url=request.app.state.settings.site_url, **context)
     )
-    page = shell.render(title=title, content=Markup(body))
+    account = account_slot(reader_email(request), current=account_current)
+    page = shell.render(title=title, content=Markup(body), account=account)
     return HTMLResponse(page, status_code=status)
 
 

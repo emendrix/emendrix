@@ -79,13 +79,16 @@ SHELL_HTML = f"""<!doctype html>
 <script defer src="/search.test.js"></script>
 </head>
 <body>
+<header class="bar"><a class="wordmark" href="/">emendrix</a><nav aria-label="Site"></nav>
+<div id="search" data-root="/"></div><!--emendrix:account--></header>
 <main id="content"><!--emendrix:content--></main>
 <footer><p>{html.escape(DISCLAIMER)}</p><!--emendrix:footer-note--></footer>
 </body>
 </html>
 """
-"""A reduced account shell: the three markers a built site's shell carries, one stylesheet and
-one script, so every app a test builds can render a page without a site build."""
+"""A reduced account shell: the four markers a built site's shell carries, one of them optional
+(the account slot, at the end of the header), one stylesheet and one script, so every app a
+test builds can render a page without a site build."""
 
 POSTGRES_IMAGE = (
     "postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24"

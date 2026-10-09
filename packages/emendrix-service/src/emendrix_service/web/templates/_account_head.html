@@ -1,0 +1,31 @@
+<div class="account-head">
+<p class="account-eyebrow">{{ frame_eyebrow }}</p>
+<h1>{{ frame.heading }}</h1>
+<p class="account-lede">{{ frame.lede }}</p>
+</div>
+{% if frame.suspended %}
+<div class="banner banner--alert" role="alert">
+<p><strong>{{ frame.suspended_lead }}</strong> {{ frame.suspended_rest }}</p>
+</div>
+{% else %}
+{% for note in frame.paused %}
+<div class="banner banner--info" role="status">
+<p><strong>{{ note.lead }}</strong> {{ note.rest }}</p>
+<form method="post" action="{{ note.resume_action }}">
+{{ csrf_field(request) }}
+<input type="hidden" name="back" value="{{ frame.tab }}">
+<button type="submit" class="secondary">Resume email</button>
+</form>
+</div>
+{% endfor %}
+{% endif %}
+{% if frame.notice %}
+<div class="banner banner--ok" role="status">
+<p>{{ frame.notice }}</p>
+</div>
+{% endif %}
+<nav class="tabs" aria-label="Account">
+{% for tab in tabs %}
+<a href="{{ tab.href }}"{% if tab.current %} aria-current="page"{% endif %}>{{ tab.label }}{% if tab.count is not none %} <span class="count">{{ tab.count }}</span><span class="visually-hidden"> items</span>{% endif %}</a>
+{% endfor %}
+</nav>

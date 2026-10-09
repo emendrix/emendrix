@@ -1,6 +1,7 @@
-"""The web layer around every page: headers, hosts, CSRF, client address, errors, readiness.
+"""The web layer around every page: headers, hosts, CSRF, client address, errors, readiness,
+and the header's account slot.
 
-None of these needs the database: a visitor with no session cookie is never looked up.
+Only the signed-in slot needs the database: a visitor with no session cookie is never looked up.
 """
 
 from __future__ import annotations
@@ -11,7 +12,7 @@ from collections.abc import AsyncIterator, Iterator, Sequence
 from pathlib import Path
 
 import pytest
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.dependencies.models import Dependant
 from fastapi.routing import APIRoute
 from httpx import ASGITransport, AsyncClient, Headers
@@ -20,17 +21,31 @@ from starlette.routing import BaseRoute
 from emendrix_service import DISCLAIMER
 from emendrix_service.app import create_app
 from emendrix_service.clock import FixedClock
+from emendrix_service.db import Db
 from emendrix_service.mail.port import RecordingMailer
 from emendrix_service.settings import ServiceSettings
 from emendrix_service.web.client import client_ip
 from emendrix_service.web.csrf import PRE_COOKIE, csrf_protect
 from emendrix_service.web.security import CONTENT_SECURITY_POLICY, loggable_path
+from emendrix_service.web.session import remember_reader
 from emendrix_service.web.shell import CONTENT_MARKER
+from emendrix_service.web.templating import render_page
 from tests.conftest import SHELL_HTML, SITE_URL, settings_values
+from tests.test_svc_watch_fixtures import loaded as loaded
+from tests.test_svc_watch_fixtures import sign_in
 
 pytestmark = pytest.mark.anyio
 
 TOKEN = re.compile(r'name="csrf" value="([^"]+)"')
+
+SLOT = re.compile(r'<div id="search" data-root="/"></div>(.*?)</header>', re.DOTALL)
+
+
+def header_slot(page: str) -> str:
+    """What the service wrote into the shell's account slot."""
+    found = SLOT.search(page)
+    assert found is not None, page
+    return found.group(1)
 
 
 @pytest.fixture
@@ -215,3 +230,41 @@ def test_svc_web_token_paths_are_not_logged() -> None:
     assert loggable_path("/u/unsubscribe/abc") == "/u/unsubscribe/-"
     assert loggable_path("/u/feed/abc.xml") == "/u/feed/-"
     assert loggable_path("/account/signin") == "/account/signin"
+
+
+async def test_svc_web_a_signed_out_page_shows_the_account_link(http: AsyncClient) -> None:
+    page = (await http.get("/account/signin")).text
+    assert header_slot(page) == '<a class="account" href="/account/">Account</a>'
+
+
+async def test_svc_web_a_signed_in_page_names_the_reader(client: AsyncClient, loaded: Db) -> None:
+    await sign_in(loaded, client, "owner@example.org")
+    response = await client.get("/account/")
+    assert response.status_code == 200
+    slot = header_slot(response.text)
+    assert 'class="account account--in"' in slot
+    assert '<span class="account-initial" aria-hidden="true">O</span>' in slot
+    assert '<span class="account-email">owner@example.org</span>' in slot
+    assert 'aria-current="page"' not in slot
+    assert "<script" not in slot
+
+
+async def test_svc_web_render_page_marks_the_account_tab_current(app: FastAPI) -> None:
+    async def tab(request: Request) -> Response:
+        remember_reader(request, "owner@example.org")
+        return render_page(
+            request,
+            "web/error.html",
+            title="t",
+            heading="h",
+            message="m",
+            error_id=None,
+            account_current=True,
+        )
+
+    app.add_api_route("/account/tab", tab)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url=SITE_URL) as http:
+        page = (await http.get("/account/tab")).text
+    slot = header_slot(page)
+    assert 'class="account account--in"' in slot and 'aria-current="page"' in slot
+    assert "account_current" not in page
