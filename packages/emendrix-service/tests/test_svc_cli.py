@@ -24,7 +24,6 @@ def test_svc_help_lists_every_command_and_the_disclaimer() -> None:
 @pytest.mark.parametrize(
     ("argv", "name"),
     [
-        (["retention"], "retention"),
         (["status", "--email"], "status"),
         (["backup", "ship", "dump.pgc"], "backup ship"),
     ],

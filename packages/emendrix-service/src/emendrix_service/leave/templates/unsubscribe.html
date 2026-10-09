@@ -1,0 +1,11 @@
+<h1>Stop the email for “{{ target.name }}”</h1>
+{% if target.cadence.value == "none" %}
+<p>This watchlist already sends no email. Its personal feed, if it has one, keeps working.</p>
+{% else %}
+<p>Press the button to stop all email for this watchlist. Its watch items and its personal feed
+are kept, and you can turn email back on from your account page.</p>
+<form class="stack" method="post">
+<p><button type="submit">Stop the email</button></p>
+</form>
+{% endif %}
+<p><a href="/account/">Your account</a></p>

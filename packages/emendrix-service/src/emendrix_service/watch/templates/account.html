@@ -19,7 +19,8 @@ changed while the account is suspended.</p>
 <section id="wl-{{ wl.id }}">
 <h2>{{ wl.name }}</h2>
 <ul>
-<li>Email: {% for value, text in cadences if value == wl.cadence.value %}{{ text }}{% endfor %}</li>
+<li>Email: {% for value, text in cadences if value == wl.cadence.value %}{{ text }}{% endfor %}.
+The unsubscribe link in each email switches this to “No email (feed only)”.</li>
 <li>{{ date_alerts_label }}: {{ "on" if wl.date_alerts else "off" }}</li>
 <li>{{ heartbeat_label }}: {{ "on" if wl.heartbeat else "off" }}</li>
 {% if wl.paused %}
@@ -69,7 +70,7 @@ changed while the account is suspended.</p>
 <span>Pause: send no email for this watchlist</span></label>
 <p><button type="submit">Save settings</button></p>
 </form>
-{% block watchlist_footer scoped %}{% endblock %}
+{% block watchlist_footer scoped %}{% include "watch/_feed.html" %}{% endblock %}
 <p><a href="/account/watchlists/{{ wl.id }}/delete">Delete this watchlist</a></p>
 {% endif %}
 </section>
@@ -113,4 +114,13 @@ monthly note when nothing changed. Each can be changed once it exists.</p>
 <p><button type="submit" class="secondary">Sign out everywhere</button></p>
 </form>
 </section>
-{% block account_footer %}{% endblock %}
+{% block account_footer %}
+<section id="your-data">
+<h2>Your data</h2>
+<ul>
+<li><a href="/account/export">Export my data</a> (one JSON file of everything the service holds about you)</li>
+<li><a href="/account/delete">Delete my account</a></li>
+<li><a href="/account/privacy">Privacy notice</a></li>
+</ul>
+</section>
+{% endblock %}

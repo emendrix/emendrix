@@ -1,0 +1,10 @@
+Your Emendrix account has not been used for two years.
+
+Unless you sign in, it will be deleted on or after {{ delete_on }}, with its watchlists. Nothing
+else is needed to keep it: signing in once is enough.
+
+Sign in: {{ signin }}
+
+If you do not want the account any more, do nothing; it will be deleted then.
+
+{% include "web/mail_footer.txt" %}
