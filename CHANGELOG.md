@@ -1046,15 +1046,15 @@ Named rather than discovered later; the eval report's disagreement list is the l
   beside it. **No published figure moved**: the payloads, the index, the feeds and the eval layer
   are byte-identical to before.
 
-- **The hosted instance runs the account service, with sign-up by invitation, since 2026-10-09.**
-  The hosted site carries "Watch this" links on act and provision pages, and the account
-  pages render inside the site's own look under one content-security policy of the service's.
-  Sign-up is closed: only invited addresses receive a link, and any other address sees the same
-  page and gets no email. Every event already in the record when the service started was recorded
-  as history on its first run, so none is ever announced by email. Mail is sent from
-  `alerts@emendrix.eu` with SPF, DKIM and DMARC passing. Verified from the edge the same day:
-  sign-up from an act page, the refusal of an address not invited, the operator's status email,
-  the personal feed and its replacement, export, and one-click unsubscribe, which a plain visit to
-  the link does not trigger and which repeats harmlessly. The hosted database is not yet backed
-  up off the host. **No published figure moved**: the payloads, the index, the feeds and the eval
-  layer are byte-identical to before.
+- **The hosted instance runs the account service, open to sign-up, since 2026-10-09.** The hosted
+  site carries "Watch this" links on act and provision pages, and the account pages render inside
+  the site's own look under one content-security policy of the service's. Any address may sign up.
+  For its first hours it admitted only the operator, and an address not admitted saw the same page
+  and got no email, so the page never says who has an account. Every event already in the record
+  when the service started was recorded as history on its first run, so none is ever announced by
+  email. Mail is sent from `alerts@emendrix.eu` with SPF, DKIM and DMARC passing. Verified from the
+  edge the same day: sign-up from an act page, the refusal of an address not admitted, the
+  operator's status email, the personal feed and its replacement, export, and one-click unsubscribe,
+  which a plain visit to the link does not trigger and which repeats harmlessly. The hosted database
+  is not yet backed up off the host. **No published figure moved**: the payloads, the index, the
+  feeds and the eval layer are byte-identical to before.
