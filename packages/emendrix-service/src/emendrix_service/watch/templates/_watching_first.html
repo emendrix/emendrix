@@ -1,0 +1,40 @@
+<ol class="steps">
+<li class="panel step">
+<span class="step-number" aria-hidden="true">1</span>
+<h3>Pick what to watch</h3>
+<p>A whole act, or a single article or annex. Start below, or use <strong>Watch this</strong> on any act or provision page.</p>
+</li>
+<li class="panel step">
+<span class="step-number" aria-hidden="true">2</span>
+<h3>Choose how to hear</h3>
+<p>A weekly digest to start with. Switch to every change, daily, or a feed under Delivery.</p>
+</li>
+<li class="panel step">
+<span class="step-number" aria-hidden="true">3</span>
+<h3>Read what changed</h3>
+<p>Each change links to its page in the record, with the old and new text compared.</p>
+</li>
+</ol>
+<div class="section-head">
+<div>
+<h2>Start with an act</h2>
+<p class="muted">Watch it whole, or open it and pick the provisions you care about.</p>
+</div>
+<a class="button secondary" href="/acts/">Browse all acts</a>
+</div>
+{% if roster %}
+<div class="panel rows">
+{% for act in roster %}
+<div class="row-line">
+<div>
+<a href="{{ act.url }}"><strong>{{ act.label }}</strong></a>
+{% if act.long_name and act.long_name != act.label %}<p>{{ act.long_name }}</p>{% endif %}
+</div>
+{% if not suspended %}<a class="button small" href="/account/watch?act={{ act.act_key | urlencode }}" aria-label="Watch {{ act.label }}">Watch</a>{% endif %}
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p>The record has not been loaded into the account service yet, so there is nothing to watch.
+Try again later.</p>
+{% endif %}

@@ -19,6 +19,9 @@ from tests.test_svc_watch_fixtures import loaded as loaded
 
 pytestmark = pytest.mark.anyio
 
+SETTINGS = "/account/settings"
+"""A tab with a form whatever the reader watches, so its token can be read on a first visit."""
+
 
 async def state(db: Db) -> list[tuple[object, ...]]:
     """Every watchlist and item, as plain values, to compare before and after."""
@@ -43,10 +46,11 @@ async def item_locations(db: Db, watchlist: UUID) -> list[tuple[str, str | None]
 
 
 async def make_list(http: AsyncClient, db: Db, user: UUID, name: str) -> UUID:
-    made = await http.post("/account/watchlists", data={"csrf": await csrf(http), "name": name})
+    token = await csrf(http, SETTINGS)
+    made = await http.post("/account/watchlists", data={"csrf": token, "name": name})
     assert made.status_code == 303
     newest = (await watchlist_ids(db, user))[-1]
-    assert made.headers["location"] == f"/account/?notice=created#wl-{newest}"
+    assert made.headers["location"] == f"/account/?list={newest}&notice=created"
     return newest
 
 
@@ -58,35 +62,39 @@ async def other(service_app: FastAPI) -> AsyncIterator[AsyncClient]:
         yield http
 
 
-async def test_svc_watch_editor_create_change_and_delete(client: AsyncClient, loaded: Db) -> None:
+async def test_svc_watch_editor_create_rename_and_delete(client: AsyncClient, loaded: Db) -> None:
     user = await sign_in(loaded, client, "owner@example.org")
     wl = await make_list(client, loaded, user, "  Devices  ")
-    token = await csrf(client)
-    settings = {"csrf": token, "name": "Notified bodies", "cadence": "daily", "paused": "yes"}
-    saved = await client.post(f"/account/watchlists/{wl}", data=settings)
-    assert saved.headers["location"] == f"/account/?notice=saved#wl-{wl}"
+    token = await csrf(client, SETTINGS)
+    async with loaded.transaction() as tx:
+        row = await tx.get_one(Watchlist, wl)
+        row.cadence, row.paused = Cadence.DAILY, True
+    renamed = await client.post(
+        f"/account/watchlists/{wl}/name", data={"csrf": token, "name": "Notified bodies"}
+    )
+    assert renamed.headers["location"] == f"/account/?list={wl}&notice=renamed"
     async with loaded.transaction() as tx:
         row = await tx.get_one(Watchlist, wl)
         assert (row.name, row.cadence, row.date_alerts, row.heartbeat, row.paused) == (
             "Notified bodies",
             Cadence.DAILY,
-            False,
-            False,
+            True,
+            True,
             True,
         )
-    page = await client.get(saved.headers["location"])
-    assert "Settings saved." in page.text
-    assert "no email is sent for this watchlist" in page.text
-    for bad in ({**settings, "cadence": "hourly"}, {**settings, "name": " "}):
-        refused = await client.post(f"/account/watchlists/{wl}", data=bad)
-        assert refused.status_code == 400
+    page = await client.get(renamed.headers["location"])
+    assert "List renamed." in page.text
+    refused = await client.post(f"/account/watchlists/{wl}/name", data={"csrf": token, "name": " "})
+    assert refused.status_code == 400 and "1 to 80 characters" in refused.text
     long = await client.post("/account/watchlists", data={"csrf": token, "name": "x" * 81})
     assert "1 to 80 characters" in long.text and long.status_code == 400
     confirm = await client.get(f"/account/watchlists/{wl}/delete")
     assert confirm.status_code == 200 and "Notified bodies" in confirm.text
+    assert f'href="/account/?list={wl}"' in confirm.text
     gone = await client.post(f"/account/watchlists/{wl}/delete", data={"csrf": token})
     assert gone.headers["location"] == "/account/?notice=deleted"
     assert await watchlist_ids(loaded, user) == []
+    assert "List deleted." in (await client.get(gone.headers["location"])).text
 
 
 async def test_svc_watch_editor_adds_and_removes_items(client: AsyncClient, loaded: Db) -> None:
@@ -94,12 +102,15 @@ async def test_svc_watch_editor_adds_and_removes_items(client: AsyncClient, load
     wl = await make_list(client, loaded, user, "Rules")
     picker = await client.get(f"/account/watchlists/{wl}/add?act={HOUSE}")
     assert picker.status_code == 200
+    assert "<h1>Add to your list</h1>" in picker.text
+    assert f'<a class="back" href="/account/?list={wl}">' in picker.text
     assert "Article 2: Bins (2 changes recorded)" in picker.text
     assert picker.text.index("Article 9") < picker.text.index("Annex I")
-    token = await csrf(client)
+    token = await csrf(client, SETTINGS)
     items = f"/account/watchlists/{wl}/items"
     pick = {"csrf": token, "act": HOUSE, "mode": "pick", "whole": "yes", "location": "AR 3"}
-    assert (await client.post(items, data=pick)).headers["location"].endswith(f"added#wl-{wl}")
+    added = await client.post(items, data=pick)
+    assert added.headers["location"] == f"/account/?list={wl}&notice=added"
     typed = {"csrf": token, "act": GARDEN, "mode": "text", "location": "Article 9a"}
     assert (await client.post(items, data=typed)).status_code == 303
     unread = await client.post(items, data={**typed, "location": "the bins"})
@@ -120,11 +131,11 @@ async def test_svc_watch_editor_adds_and_removes_items(client: AsyncClient, load
         (HOUSE, None),
     ]
     account = await client.get("/account/")
-    assert account.text.count("no change recorded yet") == 2, "AR 9a and AN II"
+    assert account.text.count("No change recorded yet") == 2, "AR 9a and AN II"
     async with loaded.transaction() as tx:
         first = await tx.scalar(select(WatchItem.id).where(WatchItem.location.is_(None)))
     removed = await client.post(f"{items}/{first}/delete", data={"csrf": token})
-    assert removed.headers["location"] == f"/account/?notice=removed#wl-{wl}"
+    assert removed.headers["location"] == f"/account/?list={wl}&notice=removed"
     assert (HOUSE, None) not in await item_locations(loaded, wl)
 
 
@@ -133,7 +144,7 @@ async def test_svc_watch_editor_every_change_needs_the_form_token(
 ) -> None:
     user = await sign_in(loaded, client, "owner@example.org")
     wl = await make_list(client, loaded, user, "Rules")
-    token = await csrf(client)
+    token = await csrf(client, SETTINGS)
     await client.post(
         f"/account/watchlists/{wl}/items",
         data={"csrf": token, "act": HOUSE, "mode": "text", "location": "AR 2"},
@@ -144,7 +155,7 @@ async def test_svc_watch_editor_every_change_needs_the_form_token(
     before = await state(loaded)
     posts = {
         "/account/watchlists": {"name": "Another"},
-        f"/account/watchlists/{wl}": {"name": "Renamed", "cadence": "none"},
+        f"/account/watchlists/{wl}/name": {"name": "Renamed"},
         f"/account/watchlists/{wl}/items": {"act": HOUSE, "mode": "text", "location": "AR 3"},
         f"/account/watchlists/{wl}/items/{item_id}/delete": {},
         f"/account/watchlists/{wl}/delete": {},
@@ -157,12 +168,22 @@ async def test_svc_watch_editor_every_change_needs_the_form_token(
     assert await state(loaded) == before
 
 
+async def test_svc_watch_editor_a_second_list_names_both(client: AsyncClient, loaded: Db) -> None:
+    user = await sign_in(loaded, client, "owner@example.org")
+    first = await make_list(client, loaded, user, "Devices")
+    second = await make_list(client, loaded, user, "Chemicals")
+    picker = await client.get(f"/account/watchlists/{second}/add")
+    assert "<h1>Add to Chemicals</h1>" in picker.text
+    page = (await client.get(f"/account/?list={first}")).text
+    assert "<h2>Devices</h2>" in page and "Chemicals" in page
+
+
 async def test_svc_watch_editor_one_account_cannot_touch_another(
     client: AsyncClient, other: AsyncClient, loaded: Db
 ) -> None:
     owner = await sign_in(loaded, client, "owner@example.org")
     wl = await make_list(client, loaded, owner, "Private list")
-    token = await csrf(client)
+    token = await csrf(client, SETTINGS)
     await client.post(
         f"/account/watchlists/{wl}/items",
         data={"csrf": token, "act": HOUSE, "mode": "text", "location": "AR 2"},
@@ -172,12 +193,13 @@ async def test_svc_watch_editor_one_account_cannot_touch_another(
     intruder = await sign_in(loaded, other, "intruder@example.org")
     own = await make_list(other, loaded, intruder, "Mine")
     before = await state(loaded)
-    theirs = await csrf(other)
+    theirs = await csrf(other, SETTINGS)
     assert "Private list" not in (await other.get("/account/")).text
     for path in (f"/account/watchlists/{wl}/add?act={HOUSE}", f"/account/watchlists/{wl}/delete"):
         assert (await other.get(path)).status_code == 404, path
     posts = [
-        (f"/account/watchlists/{wl}", {"name": "Mine now", "cadence": "instant"}),
+        (f"/account/watchlists/{wl}/name", {"name": "Mine now"}),
+        ("/account/watchlists/not-a-uuid/name", {"name": "Mine now"}),
         (f"/account/watchlists/{wl}/items", {"act": HOUSE, "mode": "text", "location": "AR 3"}),
         (f"/account/watchlists/{wl}/items", {"act": HOUSE, "mode": "text", "location": "x"}),
         (f"/account/watchlists/{wl}/items/{item_id}/delete", {}),
@@ -198,7 +220,7 @@ async def test_svc_watch_editor_refuses_oversized_and_control_input(
 ) -> None:
     user = await sign_in(loaded, client, "owner@example.org")
     wl = await make_list(client, loaded, user, "Rules")
-    token = await csrf(client)
+    token = await csrf(client, SETTINGS)
     items = f"/account/watchlists/{wl}/items"
     for location in ("AR " + "1" * 5000, "AR 1\x00"):
         typed = {"csrf": token, "act": HOUSE, "mode": "text", "location": location}

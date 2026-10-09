@@ -1,8 +1,9 @@
+<a class="back" href="/account/">Back to your account</a>
 <h1>Watch {{ label }}</h1>
 {% include "watch/_what.html" %}
 {% if holding %}
-<div class="notice" role="status">
-<p>Already watched in: {{ holding | join(", ") }}.</p>
+<div class="banner banner--info" role="status">
+<p>{% if watchlists | length > 1 %}Already watched in: {{ holding | join(", ") }}.{% else %}You already watch this.{% endif %}</p>
 </div>
 {% endif %}
 {% include "web/_form_errors.html" %}
@@ -14,18 +15,17 @@
 {% endif %}
 {% if not watchlists %}
 <input type="hidden" name="watchlist" value="{{ new }}">
-<p><button type="submit">Add to a new watchlist</button></p>
+<p><button type="submit">Start watching</button></p>
 {% elif watchlists | length == 1 %}
 <input type="hidden" name="watchlist" value="{{ watchlists[0].id }}">
-<p><button type="submit">Add to {{ watchlists[0].name }}</button></p>
+<p><button type="submit">Add to your list</button></p>
 {% else %}
-<label for="watchlist">Watchlist
+<label for="watchlist">List
 <select id="watchlist" name="watchlist">
 {% for wl in watchlists %}
 <option value="{{ wl.id }}">{{ wl.name }}</option>
 {% endfor %}
 </select></label>
-<p><button type="submit">Add to the chosen watchlist</button></p>
+<p><button type="submit">Add to the chosen list</button></p>
 {% endif %}
 </form>
-<p><a href="/account/">Your account</a></p>

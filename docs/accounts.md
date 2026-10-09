@@ -30,6 +30,38 @@ It is not a monitoring product with opinions about your obligations, not a paid 
 a second source of the record: what an email says is what the site and the JSON API
 ([`api.md`](./api.md)) say about the same change, and the site is the authority it links to.
 
+## The account pages
+
+A signed-in reader's account is three tabs, each one job:
+
+| Tab | Route | What it holds |
+|---|---|---|
+| Watching | `/account/` | what is watched, grouped by act: each act's coverage, and each item with its newest change in the record |
+| Delivery | `/account/delivery` | the email choice, the two extras (date flags, the monthly note), pausing, and the personal feed |
+| Account | `/account/settings` | the address signed in, signing out here or everywhere, the export, and deleting the account |
+
+- **A list appears only when there are two.** Every account holds its items in watchlists, but a
+  reader with one never sees the word, a list's name, a rename box or a switcher: that list is
+  their account. Creating a second list from the Watching tab brings in the switcher, each list's
+  name, and renaming and deleting a list. Watching and Delivery then show one list at a time,
+  chosen by `?list=<id>`; an id that is not the reader's own falls back to their oldest list.
+- **The first visit** (no list, or one list that watches nothing) shows three steps and every act
+  the catalogue lists, in the catalogue's order, each with a button to the watch landing.
+- **An item's newest change** is the newest stored change the item would be emailed about, by the
+  rules of [Matching](#matching), ordered by the change's in-force date or else the day its event
+  was detected. It links the change on its event page; an item with none reads "No change recorded
+  yet". All of it comes from one read of the watched acts' changes per page.
+- **The header names the reader.** On the account pages the shell's account slot holds the
+  reader's address and initial; every page the site writes says `Account` there instead, because a
+  cached page cannot know who reads it.
+- **Every post returns to its tab** with a notice code, never a value the reader typed:
+  `/account/?list=<id>&notice=added`.
+- **No script and no inline style.** The pages are links, forms and `<details>`, styled only by the
+  site's stylesheet in both its colour schemes, which the content-security policy
+  (`style-src 'self'`) enforces.
+- **A suspended account** (mail to it refused or reported) still reaches all three tabs, read-only
+  but for signing out, the export and deleting the account.
+
 ## Architecture
 
 ```
@@ -120,7 +152,8 @@ the event's digest, `content` follows it, and the announcement stands.
   send one digest per day or ISO week, at `EMENDRIX_SERVICE_DIGEST_HOUR` (7 by default) in
   `EMENDRIX_SERVICE_TIMEZONE` (`Europe/Brussels` by default), the weekly one on Monday. A run that
   missed the hour sends the period's one email later the same day or week. `none` sends nothing
-  and keeps the matches for the feed. A watchlist can also be paused. New watchlists are weekly.
+  and keeps the matches for the feed. A watchlist can also be paused, on the Delivery tab. New
+  watchlists are weekly.
 - **The monthly note.** On the first Monday of a month, a watchlist that was owed nothing in the
   month before gets one "still watching" email listing what it watches, so silence is never
   mistaken for a broken service. It is on by default and can be turned off per watchlist.

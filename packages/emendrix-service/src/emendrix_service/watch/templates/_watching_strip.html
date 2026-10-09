@@ -1,0 +1,15 @@
+<section class="panel strip" aria-label="How you hear about changes">
+<div class="strip-item">
+<span class="strip-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+<div><span class="strip-label">Email</span><span class="strip-value">{{ strip.email }}</span></div>
+</div>
+<div class="strip-item">
+<span class="strip-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg></span>
+<div><span class="strip-label">Personal feed</span><span class="strip-value">{{ strip.feed }}</span></div>
+</div>
+<div class="strip-item">
+<span class="strip-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+<div><span class="strip-label">Date changes</span><span class="strip-value">{{ strip.dates }}</span></div>
+</div>
+<a class="strip-more" href="/account/delivery{{ frame.list_query }}">{{ "Change delivery for this list" if mode == "several" else "Change delivery" }}</a>
+</section>

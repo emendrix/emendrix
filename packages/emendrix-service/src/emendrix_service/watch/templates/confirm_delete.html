@@ -1,8 +1,10 @@
+<a class="back" href="/account/?list={{ watchlist.id }}">Back to your account</a>
 <h1>Delete “{{ watchlist.name }}”?</h1>
-<p>The watchlist and its {{ watchlist.items | length }} item{{ "" if watchlist.items | length == 1 else "s" }}
-are removed, and no more email is sent for it. This cannot be undone.</p>
-<form class="stack" method="post" action="/account/watchlists/{{ watchlist.id }}/delete">
+<div class="danger-zone">
+<p>The list and its {{ watchlist.items | length }} item{{ "" if watchlist.items | length == 1 else "s" }}
+are removed, and no more email is sent for it. Its personal feed stops working. This cannot be undone.</p>
+<form method="post" action="/account/watchlists/{{ watchlist.id }}/delete">
 {{ csrf_field(request) }}
-<p><button type="submit" class="danger">Delete the watchlist</button></p>
+<p><button type="submit" class="danger">Delete the list</button> <a class="button secondary" href="/account/?list={{ watchlist.id }}">Keep it</a></p>
 </form>
-<p><a href="/account/#wl-{{ watchlist.id }}">Keep it</a></p>
+</div>

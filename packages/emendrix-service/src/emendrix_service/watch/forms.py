@@ -24,14 +24,12 @@ __all__ = [
     "SignUp",
     "WatchlistDelivery",
     "WatchlistName",
-    "WatchlistSettings",
     "parse_back",
     "parse_delivery",
     "parse_id",
     "parse_location_field",
     "parse_name",
     "parse_pick",
-    "parse_settings",
     "parse_signup",
 ]
 
@@ -45,7 +43,7 @@ Errors = tuple[str, ...]
 Back = Literal["watching", "delivery", "account"]
 """The account tab a form was posted from, so its redirect can return there."""
 
-_NAME_ERROR: Final = f"A watchlist's name is 1 to {NAME_LIMIT} characters."
+_NAME_ERROR: Final = f"A list's name is 1 to {NAME_LIMIT} characters."
 _CADENCE_ERROR: Final = "Choose one of the four email choices."
 
 Name = Annotated[
@@ -57,7 +55,7 @@ Name = Annotated[
 
 
 class WatchlistName(BaseModel):
-    """A name for a new watchlist."""
+    """A name for a watchlist, new or renamed."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -73,10 +71,6 @@ class WatchlistDelivery(BaseModel):
     date_alerts: bool = Field(description="Flag changes that add or remove a date.")
     heartbeat: bool = Field(description="Send a monthly note when nothing changed.")
     paused: bool = Field(description="Hold every email.")
-
-
-class WatchlistSettings(WatchlistName, WatchlistDelivery):
-    """Everything the settings form of one watchlist sets."""
 
 
 class SignUp(BaseModel):
@@ -107,25 +101,9 @@ def _errors(error: ValidationError) -> Errors:
 
 
 def parse_name(form: FormData) -> WatchlistName | Errors:
-    """The new watchlist's name."""
+    """A watchlist's name, for a new list or a rename."""
     try:
         return WatchlistName(name=_text(form, "name"))
-    except ValidationError as error:
-        return _errors(error)
-
-
-def parse_settings(form: FormData) -> WatchlistSettings | Errors:
-    """One watchlist's settings."""
-    try:
-        return WatchlistSettings.model_validate(
-            {
-                "name": _text(form, "name"),
-                "cadence": _text(form, "cadence"),
-                "date_alerts": _checked(form, "date_alerts"),
-                "heartbeat": _checked(form, "heartbeat"),
-                "paused": _checked(form, "paused"),
-            }
-        )
     except ValidationError as error:
         return _errors(error)
 

@@ -4,7 +4,9 @@ The account service beside emendrix: email alerts for watched acts and provision
 published change record. A reader follows a "Watch this" link on the site, confirms an address,
 and receives an email listing exactly the watched provisions the record says changed, instant,
 daily or weekly, or follows them in a personal Atom feed. One click stops the email; one button
-exports the reader's data and one deletes it.
+exports the reader's data and one deletes it. The account is three tabs: Watching (`/account/`,
+what is watched and its newest change), Delivery (`/account/delivery`, how the reader hears) and
+Account (`/account/settings`, the sign-in, the data and deleting it).
 
 It filters what the record already states and never re-derives it. It reads the record only
 through `emendrix-record`, makes no model call, and the pipeline imports nothing of it and does

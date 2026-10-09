@@ -1,8 +1,9 @@
-"""The account page and the watchlist editor: create, change, delete, and add or remove items.
+"""The Watching tab and the list editor: create, rename, delete, and add or remove items.
 
 Every write names the signed-in account, and an id that is not one of its own answers 404, the
-same as an id that does not exist. Every successful post ends in a 303 back to the page it
-changed, carrying a notice code (`?notice=`) rather than any value the reader typed.
+same as an id that does not exist. Every successful post ends in a 303 back to the Watching tab
+showing the list it changed, carrying a notice code (`?notice=`) rather than any value the
+reader typed.
 """
 
 from __future__ import annotations
@@ -10,7 +11,7 @@ from __future__ import annotations
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import RedirectResponse, Response
 
 from emendrix_record.locations import human
@@ -29,6 +30,7 @@ from emendrix_service.db.watchlists import (
     remove_item,
     update_watchlist,
     watchlist_of,
+    watchlists_for,
 )
 from emendrix_service.watch.forms import (
     Errors,
@@ -36,18 +38,17 @@ from emendrix_service.watch.forms import (
     parse_location_field,
     parse_name,
     parse_pick,
-    parse_settings,
 )
 from emendrix_service.watch.logic import readable, resolve_paste, roster_label, sort_provisions
 from emendrix_service.watch.pages import (
     Holder,
     account_holder,
-    account_page,
     copy,
     not_found,
     not_loaded,
     unknown_act,
 )
+from emendrix_service.watch.watching import watching_page
 from emendrix_service.web.csrf import csrf_protect
 from emendrix_service.web.session import SignedIn, require_user
 from emendrix_service.web.templating import render_page
@@ -63,23 +64,27 @@ PASTE_EMPTY = f"Paste 1 to {PASTE_LIMIT} locations, one to a line."
 
 
 def _back(watchlist_id: UUID | None, notice: str) -> Response:
-    anchor = f"#wl-{watchlist_id}" if watchlist_id is not None else ""
-    return RedirectResponse(f"/account/?notice={notice}{anchor}", status_code=303)
+    chosen = f"list={watchlist_id}&" if watchlist_id is not None else ""
+    return RedirectResponse(f"/account/?{chosen}notice={notice}", status_code=303)
 
 
 @router.get("/")
-async def account(
-    request: Request, holder: Annotated[Holder, Depends(account_holder)], notice: str = ""
+async def watching(
+    request: Request,
+    holder: Annotated[Holder, Depends(account_holder)],
+    chosen: Annotated[str, Query(alias="list")] = "",
+    notice: str = "",
+    new: str = "",
 ) -> Response:
-    return await account_page(request, holder, notice=notice)
+    return await watching_page(request, holder, raw_list=chosen, notice=notice, new=new == "1")
 
 
 @router.post("/watchlists", dependencies=EDIT)
 async def create(request: Request, user: User) -> Response:
     parsed = parse_name(await request.form())
-    holder = Holder(user_id=user.user_id, email=user.email)
     if isinstance(parsed, tuple):
-        return await account_page(request, holder, errors=parsed)
+        holder = Holder(user_id=user.user_id, email=user.email)
+        return await watching_page(request, holder, new=True, errors=parsed)
     db: Db = request.app.state.db
     async with db.transaction() as tx:
         created = await create_watchlist(
@@ -88,32 +93,32 @@ async def create(request: Request, user: User) -> Response:
     return _back(created, "created")
 
 
-@router.post("/watchlists/{watchlist_id}", dependencies=EDIT)
-async def change(request: Request, user: User, watchlist_id: str) -> Response:
+@router.post("/watchlists/{watchlist_id}/name", dependencies=EDIT)
+async def rename(request: Request, user: User, watchlist_id: str) -> Response:
     wanted = parse_id(watchlist_id)
-    parsed = parse_settings(await request.form())
-    db: Db = request.app.state.db
     if wanted is None:
         return not_found(request)
-    if isinstance(parsed, tuple):
-        async with db.transaction() as tx:
-            mine = await watchlist_of(tx, user.user_id, wanted)
-        if mine is None:
-            return not_found(request)
-        holder = Holder(user_id=user.user_id, email=user.email)
-        return await account_page(request, holder, errors=parsed)
+    parsed = parse_name(await request.form())
+    db: Db = request.app.state.db
     async with db.transaction() as tx:
-        changed = await update_watchlist(
-            tx,
-            user.user_id,
-            wanted,
-            name=parsed.name,
-            cadence=parsed.cadence,
-            date_alerts=parsed.date_alerts,
-            heartbeat=parsed.heartbeat,
-            paused=parsed.paused,
-        )
-    return not_found(request) if changed is None else _back(changed, "saved")
+        mine = await watchlist_of(tx, user.user_id, wanted)
+        if mine is not None and not isinstance(parsed, tuple):
+            await update_watchlist(
+                tx,
+                user.user_id,
+                wanted,
+                name=parsed.name,
+                cadence=mine.cadence,
+                date_alerts=mine.date_alerts,
+                heartbeat=mine.heartbeat,
+                paused=mine.paused,
+            )
+    if mine is None:
+        return not_found(request)
+    if isinstance(parsed, tuple):
+        holder = Holder(user_id=user.user_id, email=user.email)
+        return await watching_page(request, holder, raw_list=str(wanted), errors=parsed)
+    return _back(wanted, "renamed")
 
 
 @router.get("/watchlists/{watchlist_id}/delete")
@@ -124,9 +129,7 @@ async def confirm_delete(request: Request, user: User, watchlist_id: str) -> Res
         mine = await watchlist_of(tx, user.user_id, wanted) if wanted is not None else None
     if mine is None:
         return not_found(request)
-    return render_page(
-        request, "watch/confirm_delete.html", title="Delete a watchlist", watchlist=mine
-    )
+    return render_page(request, "watch/confirm_delete.html", title="Delete a list", watchlist=mine)
 
 
 @router.post("/watchlists/{watchlist_id}/delete", dependencies=EDIT)
@@ -152,7 +155,8 @@ async def _picker(
     wanted = parse_id(watchlist_id)
     db: Db = request.app.state.db
     async with db.transaction() as tx:
-        mine = await watchlist_of(tx, user.user_id, wanted) if wanted is not None else None
+        lists = await watchlists_for(tx, user.user_id)
+        mine = next((wl for wl in lists if wl.id == wanted), None)
         loaded = await content_loaded(tx)
         act = await act_by_key(tx, act_key) if act_key and readable(act_key) else None
         roster = await acts_roster(tx)
@@ -164,10 +168,13 @@ async def _picker(
     if act_key and act is None:
         return unknown_act(request, act_key)
     held = {item.location for item in mine.items if act and item.act_key == act.act_key}
+    heading = f"Add to {mine.name}" if len(lists) > 1 else "Add to your list"
     return render_page(
         request,
         "watch/picker.html",
-        title=f"Add to {mine.name}",
+        title=heading,
+        heading=heading,
+        back=f"/account/?list={mine.id}",
         status=400 if errors and not added else 200,
         watchlist=mine,
         act=act,

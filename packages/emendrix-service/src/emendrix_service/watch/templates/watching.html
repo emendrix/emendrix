@@ -1,0 +1,32 @@
+{% include "web/_account_head.html" %}
+{% include "web/_form_errors.html" %}
+{% if mode == "first_visit" %}
+{% include "watch/_watching_first.html" %}
+{% else %}
+{% if mode == "several" %}
+{% include "watch/_lists.html" %}
+{% if new and not suspended %}
+{% include "watch/_watching_new.html" %}
+{% endif %}
+<div class="section-head">
+<h2>{{ watchlist.name }}</h2>
+{% if not suspended %}
+<details>
+<summary>Rename or delete this list</summary>
+<form class="stack" method="post" action="/account/watchlists/{{ watchlist.id }}/name">
+{{ csrf_field(request) }}
+<label for="list-name">List name
+<input type="text" id="list-name" name="name" value="{{ watchlist.name }}" maxlength="{{ name_limit }}" required></label>
+<p><button type="submit" class="secondary">Rename</button></p>
+</form>
+<p><a href="/account/watchlists/{{ watchlist.id }}/delete">Delete this list</a></p>
+</details>
+{% endif %}
+</div>
+{% endif %}
+{% include "watch/_watching_strip.html" %}
+{% include "watch/_watching_items.html" %}
+{% if mode == "single" and not suspended %}
+{% include "watch/_watching_aside.html" %}
+{% endif %}
+{% endif %}

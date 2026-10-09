@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import AsyncIterator
+from datetime import timedelta
 
 import pytest
 from httpx import ASGITransport, AsyncClient, Response
@@ -14,9 +16,10 @@ from emendrix_service.clock import FixedClock
 from emendrix_service.db import Db
 from emendrix_service.db.enums import ItemKind
 from emendrix_service.db.tables import WatchItem
+from emendrix_service.db.watchlists import add_item, create_watchlist
 from emendrix_service.mail.port import RecordingMailer
 from emendrix_service.settings import ServiceSettings
-from tests.conftest import SITE_URL
+from tests.conftest import NOW, SITE_URL
 from tests.test_svc_auth_flow import count, link_of, press
 from tests.test_svc_auth_flow import settings as settings
 from tests.test_svc_watch_fixtures import HOUSE, csrf, sign_in, watchlist_ids
@@ -25,6 +28,11 @@ from tests.test_svc_watch_fixtures import loaded as loaded
 pytestmark = pytest.mark.anyio
 
 ANNEX = f"/account/watch?act={HOUSE}&loc=AN%20I"
+
+
+def words(text: str) -> str:
+    """What a reader sees between the header and the footer, tags left out."""
+    return re.sub(r"<[^>]+>", " ", text.split("</header>", 1)[1].split("<footer", 1)[0])
 
 
 async def items(db: Db) -> list[tuple[ItemKind, str, str, str | None]]:
@@ -89,24 +97,40 @@ async def test_svc_watch_landing_wants_the_consent_and_an_address(
 async def test_svc_watch_landing_signed_in_adds_once(client: AsyncClient, loaded: Db) -> None:
     user = await sign_in(loaded, client, "reader@example.org")
     page = await client.get(ANNEX)
-    assert "Add to a new watchlist" in page.text
+    assert "Start watching" in page.text and "watchlist" not in words(page.text).lower()
+    assert '<a class="back" href="/account/">' in page.text
     token = await csrf(client, ANNEX)
     form = {"csrf": token, "act": HOUSE, "loc": "AN I", "watchlist": "new"}
     first = await client.post("/account/watch", data=form)
     (wl,) = await watchlist_ids(loaded, user)
     assert first.status_code == 303
-    assert first.headers["location"] == f"/account/?notice=added#wl-{wl}"
-    assert "Add to My watchlist" in (await client.get(ANNEX)).text
+    assert first.headers["location"] == f"/account/?list={wl}&notice=added"
+    one = (await client.get(ANNEX)).text
+    assert "Add to your list" in one and "You already watch this." in one
+    assert "My watchlist" not in one and "watchlist" not in words(one).lower()
     again = await client.post("/account/watch", data={**form, "watchlist": str(wl)})
-    assert again.headers["location"] == f"/account/?notice=already#wl-{wl}"
+    assert again.headers["location"] == f"/account/?list={wl}&notice=already"
     assert await items(loaded) == [(ItemKind.PROVISION, "toy", HOUSE, "AN I")]
     shown = await client.get(again.headers["location"])
-    assert "already holds that item" in shown.text
+    assert "Your list already holds that, so nothing was added." in shown.text
     whole = await client.post(
         "/account/watch", data={"csrf": token, "act": HOUSE, "watchlist": str(wl)}
     )
-    assert whole.headers["location"] == f"/account/?notice=added#wl-{wl}"
+    assert whole.headers["location"] == f"/account/?list={wl}&notice=added"
     assert (ItemKind.ACT, "toy", HOUSE, None) in await items(loaded)
+
+
+async def test_svc_watch_landing_several_lists_offer_a_choice(
+    client: AsyncClient, loaded: Db
+) -> None:
+    user = await sign_in(loaded, client, "reader@example.org")
+    async with loaded.transaction() as tx:
+        first = await create_watchlist(tx, user, "Devices", NOW)
+        await create_watchlist(tx, user, "Chemicals", NOW + timedelta(seconds=1))
+        await add_item(tx, user, first, ItemKind.PROVISION, "toy", HOUSE, "AN I", NOW)
+    page = (await client.get(ANNEX)).text
+    assert '<label for="watchlist">List' in page and "Add to the chosen list" in page
+    assert "Already watched in: Devices." in page
 
 
 async def test_svc_watch_landing_unknown_act_and_unread_location(

@@ -1,0 +1,41 @@
+<div class="section-head">
+<div>
+<h2>{{ item_count }} item{{ "" if item_count == 1 else "s" }} across {{ act_count }} act{{ "" if act_count == 1 else "s" }}</h2>
+<p class="muted">A whole act, or a single article or annex.{% if not suspended %} Remove anything you no longer need.{% endif %}</p>
+</div>
+{% if not suspended %}
+<a class="button" href="/account/watchlists/{{ watchlist.id }}/add"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg> Watch an act or provision</a>
+{% endif %}
+</div>
+{% for group in groups %}
+<section class="panel act-group" aria-labelledby="act-{{ loop.index }}">
+<div class="act-group-head">
+<span class="tag">Act</span>
+{% if group.url %}<a class="act-name" id="act-{{ loop.index }}" href="{{ group.url }}">{{ group.label }}</a>{% else %}<span class="act-name" id="act-{{ loop.index }}">{{ group.label }}</span>{% endif %}
+{% if group.long_name %}<span class="muted">{{ group.long_name }}</span>{% endif %}
+<span class="act-coverage{% if group.waiting %} act-coverage--waiting{% endif %}">{{ group.coverage_short }}</span>
+{# A div, not a p: the measure every p carries would keep it beside the coverage, not under it. #}
+{% if group.coverage_note %}<div class="act-coverage-note">{{ group.coverage_note }}</div>{% endif %}
+</div>
+{% for row in group.rows %}
+<div class="item">
+<div class="item-what"><span class="tag">{{ row.where }}</span>
+{%- if row.location is none %} <span>Every change to any article or annex</span>
+{%- elif row.heading %} <span>{% if row.unit and row.unit != row.where %}{{ row.unit }}: {% endif %}{{ row.heading }}</span>
+{%- endif %}</div>
+<div class="item-latest">{% if row.latest_url %}<a href="{{ row.latest_url }}">{{ row.latest_text }}</a>{% else %}{{ row.latest_text }}{% endif %}</div>
+{% if not suspended %}
+<div class="item-remove"><form method="post" action="/account/watchlists/{{ watchlist.id }}/items/{{ row.id }}/delete">
+{{ csrf_field(request) }}
+<button type="submit" class="button quiet" aria-label="Stop watching {{ 'the whole of ' ~ group.label if row.location is none else row.where ~ ' of ' ~ group.label }}">Remove</button>
+</form></div>
+{% endif %}
+</div>
+{% endfor %}
+</section>
+{% else %}
+<p>Nothing is watched here yet.{% if not suspended %} Use <strong>Watch an act or provision</strong>, or <strong>Watch this</strong> on any act or provision page.{% endif %}</p>
+{% endfor %}
+{% if groups %}
+<p class="muted">Emails repeat what the record says. They do not say whether a change affects you.</p>
+{% endif %}

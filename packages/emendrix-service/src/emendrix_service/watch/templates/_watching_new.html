@@ -1,0 +1,10 @@
+<details id="new-list"{% if new %} open{% endif %}>
+<summary>{{ "Start a second list" if mode == "single" else "Start another list" }}</summary>
+<form class="stack" method="post" action="/account/watchlists">
+{{ csrf_field(request) }}
+<label for="new-name">List name
+<span class="hint">A new list starts with a weekly digest, which you can change under Delivery.</span>
+<input type="text" id="new-name" name="name" maxlength="{{ name_limit }}" required></label>
+<p><button type="submit">Create the list</button></p>
+</form>
+</details>

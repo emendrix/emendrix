@@ -4,7 +4,7 @@ The act is named by its key, as the site's link sends it, and must be one `conte
 location is read by the documented parser or shown back unresolved, never guessed. A visitor
 who is signed out is asked for an address and sent a sign-up link carrying the item, and sees
 the same "check your inbox" page whatever became of the request. A reader who is signed in adds
-the item with one button.
+the item with one button, and is shown which list it goes to only once they have more than one.
 """
 
 from __future__ import annotations
@@ -161,4 +161,4 @@ async def watch(request: Request, reader: Reader) -> Response:
     if added is None:
         return not_found(request)
     notice = "added" if added else "already"
-    return RedirectResponse(f"/account/?notice={notice}#wl-{target}", status_code=303)
+    return RedirectResponse(f"/account/?list={target}&notice={notice}", status_code=303)

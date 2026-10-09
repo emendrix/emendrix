@@ -258,7 +258,7 @@ async def test_svc_leave_a_suspended_reader_may_still_export_and_delete(
     user_id = await sign_in(db, client, OWNER)
     async with db.transaction() as tx:
         await tx.execute(update(User).values(status=UserStatus.SUSPENDED))
-    account = await client.get("/account/")
+    account = await client.get("/account/settings")
     assert 'href="/account/export"' in account.text and 'href="/account/delete"' in account.text
     assert (await client.get("/account/export")).status_code == 200
     page = await client.get("/account/delete")

@@ -16,13 +16,9 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix_record.locations import human, parse_location, within
-from emendrix_service.db.enums import Cadence
 from emendrix_service.db.watchlists import ActView, ProvisionView, WatchItemView
 
 __all__ = [
-    "CADENCE_LABELS",
-    "DATE_ALERTS_LABEL",
-    "HEARTBEAT_LABEL",
     "NOTICES",
     "NO_CHANGE_YET",
     "WHAT_A_WATCH_DOES",
@@ -38,27 +34,21 @@ __all__ = [
     "watch_label",
 ]
 
-CADENCE_LABELS: Final[dict[Cadence, str]] = {
-    Cadence.INSTANT: "Every change, as it is recorded",
-    Cadence.DAILY: "Daily digest (07:00 Brussels time, only when something changed)",
-    Cadence.WEEKLY: "Weekly digest (Monday 07:00 Brussels time, only when something changed)",
-    Cadence.NONE: "No email (feed only)",
-}
-DATE_ALERTS_LABEL: Final = "Flag changes that add or remove a date in the text"
-HEARTBEAT_LABEL: Final = "A short note once a month when nothing changed"
-NO_CHANGE_YET: Final = "no change recorded yet"
+NO_CHANGE_YET: Final = "No change recorded yet"
 WHAT_A_WATCH_DOES: Final = (
     "You will get an email when a change to this provision appears in the record. The email "
     "repeats what the record says; it does not say whether the change affects you."
 )
 
 NOTICES: Final[dict[str, str]] = {
-    "added": "Added to the watchlist.",
-    "already": "The watchlist already holds that item, so nothing was added.",
-    "created": "Watchlist created.",
-    "saved": "Settings saved.",
-    "deleted": "Watchlist deleted.",
-    "removed": "Item removed.",
+    "added": "Added to your list.",
+    "already": "Your list already holds that, so nothing was added.",
+    "created": "List created.",
+    "renamed": "List renamed.",
+    "saved": "Delivery settings saved.",
+    "resumed": "Email resumed.",
+    "deleted": "List deleted.",
+    "removed": "Removed from your list.",
 }
 """The sentence a page shows after a form posted and redirected, by the code in `?notice=`."""
 
@@ -125,7 +115,7 @@ def roster_label(act: ActView) -> str:
 
 
 class ItemLine(BaseModel):
-    """One watch item as the account page lists it."""
+    """One watch item as the Watching tab lists it."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -136,7 +126,7 @@ class ItemLine(BaseModel):
     location: str | None = Field(description="The canonical location, None for the whole act.")
     unit: str | None = Field(description="The stored unit containing the location, human form.")
     heading: str | None = Field(description="That unit's stored heading, when it has one.")
-    note: str | None = Field(description="`no change recorded yet`, or None.")
+    note: str | None = Field(description="`No change recorded yet`, or None.")
 
 
 def describe_item(

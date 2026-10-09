@@ -1058,3 +1058,14 @@ Named rather than discovered later; the eval report's disagreement list is the l
   which a plain visit to the link does not trigger and which repeats harmlessly. The hosted database
   is not yet backed up off the host. **No published figure moved**: the payloads, the index, the
   feeds and the eval layer are byte-identical to before.
+
+- **The account pages are three tabs, since 2026-10-09.** A signed-in reader finds Watching at
+  `/account/`, Delivery at `/account/delivery` and Account at `/account/settings`, where one long
+  page mixed all three. Watching groups what is watched by act, with how far the record has read
+  each act beside its name, and gives each item its newest change in the record, linked to that
+  change on its event page, or says none is recorded yet. A first visit shows three steps and
+  every act the catalogue lists. A reader with one list never sees the word, a list's name or a
+  switcher; the switcher, the names and renaming arrive with a second list. The header names the
+  reader on the account pages and says `Account` on every other page. The pages run no script
+  and no inline style and follow the site's light and dark schemes. **No published figure
+  moved**: the payloads, the index, the feeds and the eval layer are byte-identical to before.
