@@ -1,0 +1,8 @@
+<h1>Delete “{{ watchlist.name }}”?</h1>
+<p>The watchlist and its {{ watchlist.items | length }} item{{ "" if watchlist.items | length == 1 else "s" }}
+are removed, and no more email is sent for it. This cannot be undone.</p>
+<form class="stack" method="post" action="/account/watchlists/{{ watchlist.id }}/delete">
+{{ csrf_field(request) }}
+<p><button type="submit" class="danger">Delete the watchlist</button></p>
+</form>
+<p><a href="/account/#wl-{{ watchlist.id }}">Keep it</a></p>

@@ -1,0 +1,31 @@
+<h1>Watch {{ label }}</h1>
+{% include "watch/_what.html" %}
+{% if holding %}
+<div class="notice" role="status">
+<p>Already watched in: {{ holding | join(", ") }}.</p>
+</div>
+{% endif %}
+{% include "web/_form_errors.html" %}
+<form class="stack" method="post" action="/account/watch">
+{{ csrf_field(request) }}
+<input type="hidden" name="act" value="{{ act.act_key }}">
+{% if location %}
+<input type="hidden" name="loc" value="{{ location }}">
+{% endif %}
+{% if not watchlists %}
+<input type="hidden" name="watchlist" value="{{ new }}">
+<p><button type="submit">Add to a new watchlist</button></p>
+{% elif watchlists | length == 1 %}
+<input type="hidden" name="watchlist" value="{{ watchlists[0].id }}">
+<p><button type="submit">Add to {{ watchlists[0].name }}</button></p>
+{% else %}
+<label for="watchlist">Watchlist
+<select id="watchlist" name="watchlist">
+{% for wl in watchlists %}
+<option value="{{ wl.id }}">{{ wl.name }}</option>
+{% endfor %}
+</select></label>
+<p><button type="submit">Add to the chosen watchlist</button></p>
+{% endif %}
+</form>
+<p><a href="/account/">Your account</a></p>

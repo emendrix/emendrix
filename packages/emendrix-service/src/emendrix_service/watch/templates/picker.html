@@ -1,0 +1,63 @@
+<h1>Add to {{ watchlist.name }}</h1>
+<p>{{ what_a_watch_does }}</p>
+{% if added %}
+<div class="notice" role="status">
+<p>Now watched: {% for location in added %}{{ location }}{{ ", " if not loop.last }}{% endfor %}.</p>
+</div>
+{% endif %}
+{% include "web/_form_errors.html" %}
+<form class="stack" method="get" action="/account/watchlists/{{ watchlist.id }}/add">
+<label for="act">Act
+<select id="act" name="act">
+{% for key, text in roster %}
+<option value="{{ key }}"{% if act and key == act.act_key %} selected{% endif %}>{{ text }}</option>
+{% endfor %}
+</select></label>
+<p><button type="submit" class="secondary">Choose this act</button></p>
+</form>
+{% if act %}
+<section id="pick">
+<h2>From the record: {{ act.label }}</h2>
+<p>The provisions the record holds a change to, with the heading of the newest one. A provision
+with no change recorded yet is added by typing it below.</p>
+<form class="stack" method="post" action="/account/watchlists/{{ watchlist.id }}/items">
+{{ csrf_field(request) }}
+<input type="hidden" name="act" value="{{ act.act_key }}">
+<input type="hidden" name="mode" value="pick">
+<label class="check"><input type="checkbox" name="whole" value="yes"{% if none in held %} disabled{% endif %}>
+<span>The whole act: every change to it{% if none in held %} (already watched){% endif %}</span></label>
+{% for row, where in provisions %}
+<label class="check"><input type="checkbox" name="location" value="{{ row.unit }}"{% if row.unit in held %} disabled{% endif %}>
+<span>{{ where }}{% if row.heading %}: {{ row.heading }}{% endif %} ({{ row.changes }} change{{ "" if row.changes == 1 else "s" }} recorded){% if row.unit in held %} (already watched){% endif %}</span></label>
+{% endfor %}
+<p><button type="submit">Add the ticked items</button></p>
+</form>
+</section>
+<section id="type">
+<h2>Type a provision</h2>
+<form class="stack" method="post" action="/account/watchlists/{{ watchlist.id }}/items">
+{{ csrf_field(request) }}
+<input type="hidden" name="act" value="{{ act.act_key }}">
+<input type="hidden" name="mode" value="text">
+<label for="location">Provision
+<span class="hint">{{ location_forms }}. A provision the record has not named is accepted and
+shows “no change recorded yet”.</span>
+<input type="text" id="location" name="location" value="{{ typed }}" required></label>
+<p><button type="submit">Add this provision</button></p>
+</form>
+</section>
+<section id="paste">
+<h2>Paste a list</h2>
+<form class="stack" method="post" action="/account/watchlists/{{ watchlist.id }}/items">
+{{ csrf_field(request) }}
+<input type="hidden" name="act" value="{{ act.act_key }}">
+<input type="hidden" name="mode" value="paste">
+<label for="lines">One provision to a line
+<span class="hint">Each line may start with the act's name. A line that is not one of the forms
+above is shown back here and not added.</span>
+<textarea id="lines" name="lines" rows="8" cols="40">{{ paste }}</textarea></label>
+<p><button type="submit">Add the list</button></p>
+</form>
+</section>
+{% endif %}
+<p><a href="/account/#wl-{{ watchlist.id }}">Back to your account</a></p>

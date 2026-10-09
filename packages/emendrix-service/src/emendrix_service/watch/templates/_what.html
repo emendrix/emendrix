@@ -1,0 +1,8 @@
+{% if unresolved %}
+<div class="notice alert" role="alert">
+<p>“{{ unresolved }}” is not a location this page can read, so it is not offered. You can watch
+the whole act instead, or add a provision from your account page.</p>
+</div>
+{% endif %}
+<p>You are about to watch <strong>{{ label }}</strong>{% if act.long_name and act.long_name != act.label %} ({{ act.long_name }}){% endif %}.</p>
+<p>{{ what_a_watch_does }}</p>

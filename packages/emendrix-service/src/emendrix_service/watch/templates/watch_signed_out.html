@@ -1,0 +1,18 @@
+<h1>Watch {{ label }}</h1>
+{% include "watch/_what.html" %}
+{% if not signup_open %}
+<p>Sign-up is by invitation for now.</p>
+{% endif %}
+{% include "web/_form_errors.html" %}
+<form class="stack" method="post" action="/account/watch">
+{{ csrf_field(request) }}
+<input type="hidden" name="act" value="{{ act.act_key }}">
+{% if location %}
+<input type="hidden" name="loc" value="{{ location }}">
+{% endif %}
+{% include "auth/_signup_fields.html" %}
+<p><button type="submit">Email me a link to confirm</button></p>
+</form>
+<p>We will email a link that confirms the address. Nothing is kept as an account until it is
+opened. The first watchlist sends a weekly digest; that can be changed afterwards.</p>
+<p>Already have an account? <a href="{{ signin }}">Sign in</a>.</p>
