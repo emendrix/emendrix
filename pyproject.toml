@@ -78,18 +78,27 @@ dev = [
     # The reader of the published record that the MCP server reads through, installed here so
     # its own tests run in the gate and the contract test can hold its models to the writer's.
     "emendrix-record",
+    # The account service beside the pipeline, installed here so its own tests and architecture
+    # test run in the gate. It is a workspace member of its own and never depends on `emendrix`.
+    "emendrix-service",
+    # The service's database tests start one Postgres container per session through
+    # `testcontainers`, and `filelock` lets exactly one xdist worker start it.
+    "testcontainers[postgres]>=4.15.0",
+    "filelock>=4.0.12",
 ]
 
 # --- uv workspace -------------------------------------------------------------
 # The MCP server is a distribution of its own beside the pipeline, so its image carries neither
 # `langgraph` nor `pydantic-ai` and it cannot import the explain stage. `emendrix-record` is the
 # one reader of the published record that every member beside the pipeline reads through.
+# `emendrix-service`, the account service, is a third distribution for the same reason.
 [tool.uv.workspace]
-members = ["packages/emendrix-mcp", "packages/emendrix-record"]
+members = ["packages/emendrix-mcp", "packages/emendrix-record", "packages/emendrix-service"]
 
 [tool.uv.sources]
 emendrix-mcp = { workspace = true }
 emendrix-record = { workspace = true }
+emendrix-service = { workspace = true }
 
 # --- ruff ---------------------------------------------------------------------
 [tool.ruff]
@@ -103,6 +112,8 @@ src = [
     "packages/emendrix-mcp/tests",
     "packages/emendrix-record/src",
     "packages/emendrix-record/tests",
+    "packages/emendrix-service/src",
+    "packages/emendrix-service/tests",
 ]
 
 [tool.ruff.lint]
@@ -128,6 +139,8 @@ files = [
     "packages/emendrix-mcp/tests",
     "packages/emendrix-record/src",
     "packages/emendrix-record/tests",
+    "packages/emendrix-service/src",
+    "packages/emendrix-service/tests",
 ]
 # `scripts/validation/` is one-off validation code outside the package, exempt
 # (see scripts/validation/README.md). Excluded explicitly so it stays out even if
@@ -135,7 +148,7 @@ files = [
 exclude = ["^scripts/"]
 # The members' `src` too, so their tests and the main-suite tests importing them resolve them
 # from source under the same strict settings.
-mypy_path = "src:packages/emendrix-mcp/src:packages/emendrix-record/src"
+mypy_path = "src:packages/emendrix-mcp/src:packages/emendrix-record/src:packages/emendrix-service/src"
 warn_unreachable = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 
@@ -143,7 +156,12 @@ enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 [tool.pytest.ini_options]
 minversion = "8.0"
 # The members' own tests run in the same gate, so a green suite covers every distribution.
-testpaths = ["tests", "packages/emendrix-mcp/tests", "packages/emendrix-record/tests"]
+testpaths = [
+    "tests",
+    "packages/emendrix-mcp/tests",
+    "packages/emendrix-record/tests",
+    "packages/emendrix-service/tests",
+]
 # Live-network tests are opt-in: `uv run pytest -m live`. CI never touches the network.
 # `record` rewrites committed cassettes, so it is opt-in for a second reason: a default run
 # must never mutate an artifact the rest of the suite asserts against.

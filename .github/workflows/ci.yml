@@ -141,3 +141,25 @@ jobs:
           docker run --rm --entrypoint python emendrix-mcp:ci -c "import emendrix_record"
           docker run --rm --entrypoint python emendrix-mcp:ci -c \
             "import importlib.util, sys; sys.exit(importlib.util.find_spec('emendrix') is not None)"
+
+  image-service:
+    # The account service's image, best-effort for the same reason as `image`, with the same
+    # smoke run and the check that the pipeline is not in it. Nothing is pushed from here.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build the service image
+        run: docker build -f packages/emendrix-service/Dockerfile -t emendrix-service:ci .
+
+      - name: The image runs the service's CLI
+        run: docker run --rm emendrix-service:ci --help
+
+      - name: The image carries the service and not the pipeline
+        run: |
+          docker run --rm --entrypoint python emendrix-service:ci -c "import emendrix_service"
+          docker run --rm --entrypoint python emendrix-service:ci -c "import emendrix_record"
+          docker run --rm --entrypoint python emendrix-service:ci -c \
+            "import importlib.util, sys; sys.exit(importlib.util.find_spec('emendrix') is not None)"
