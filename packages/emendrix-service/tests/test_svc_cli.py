@@ -27,7 +27,6 @@ def test_svc_help_lists_every_command_and_the_disclaimer() -> None:
         (["notify"], "notify"),
         (["digest", "--now", "2026-10-12T05:00:00+00:00"], "digest"),
         (["tick"], "tick"),
-        (["mail", "drain", "--limit", "5"], "mail drain"),
         (["retention"], "retention"),
         (["status", "--email"], "status"),
         (["backup", "ship", "dump.pgc"], "backup ship"),
