@@ -1,0 +1,12 @@
+Your watchlist "{{ heartbeat.watchlist_name }}" is still watching, and no change to what it watches was recorded in {{ heartbeat.month }}.
+
+It watches:
+{% for watched in heartbeat.watched %}
+- {{ watched }}
+{% endfor %}
+
+This note comes at most once a month, on the first Monday, after a month with nothing to send. It can be turned off for this watchlist on your account page.
+
+Manage this watchlist: {{ manage }}
+
+{% include "web/mail_footer.txt" %}

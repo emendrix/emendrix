@@ -1,0 +1,29 @@
+{% set count = digest.lines | length %}
+{{ count }} provision{{ "" if count == 1 else "s" }} your watchlist "{{ digest.watchlist_name }}" watches changed, as the published record states. Each line links to the change on the site, which carries the full text.
+{% if dated %}
+
+A date in the text changed in {{ dated | length }} of them:
+{% for line in dated %}
+- {{ line.title }}: {{ line.link }}
+{% endfor %}
+{% endif %}
+{% for event in digest.events %}
+{% set outer = loop %}
+
+{{ event.act_label }}, {{ event.from_version }} to {{ event.to_version }}
+In force: {{ event.in_force | join(", ") if event.in_force else "no date stated" }}
+{% if event.amending_acts %}
+Amending acts: {{ event.amending_acts | join(", ") }}
+{% endif %}
+Event page: {{ event.url }}
+
+{% for lines in texts[outer.index0] %}
+{% for text in lines %}
+{{ text }}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+Manage this watchlist: {{ manage }}
+
+{% include "web/mail_footer.txt" %}

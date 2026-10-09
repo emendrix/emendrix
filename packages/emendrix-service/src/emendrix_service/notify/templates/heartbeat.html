@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Emendrix: still watching</title></head>
+<body style="font-family:sans-serif;line-height:1.5">
+<p>Your watchlist &ldquo;{{ heartbeat.watchlist_name }}&rdquo; is still watching, and no change to what it watches was recorded in {{ heartbeat.month }}.</p>
+<p>It watches:</p>
+<ul>
+{% for watched in heartbeat.watched %}
+<li>{{ watched }}</li>
+{% endfor %}
+</ul>
+<p>This note comes at most once a month, on the first Monday, after a month with nothing to send. It can be turned off for this watchlist on your account page.</p>
+<p><a href="{{ manage }}">Manage this watchlist</a></p>
+{% include "web/mail_footer.html" %}
+</body>
+</html>

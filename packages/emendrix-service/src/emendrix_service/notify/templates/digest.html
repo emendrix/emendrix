@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Emendrix: watched provisions changed</title></head>
+<body style="font-family:sans-serif;line-height:1.5">
+{% set count = digest.lines | length %}
+<p>{{ count }} provision{{ "" if count == 1 else "s" }} your watchlist &ldquo;{{ digest.watchlist_name }}&rdquo; watches changed, as the published record states. Each line links to the change on the site, which carries the full text.</p>
+{% if dated %}
+<p><strong>A date in the text changed in {{ dated | length }} of them:</strong></p>
+<ul>
+{% for line in dated %}
+<li><a href="{{ line.link }}">{{ line.title }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+{% for event in digest.events %}
+<h2 style="font-size:18px"><a href="{{ event.url }}">{{ event.act_label }}, {{ event.from_version }} to {{ event.to_version }}</a></h2>
+<p>In force: {{ event.in_force | join(", ") if event.in_force else "no date stated" }}{% if event.amending_acts %}<br>Amending acts: {{ event.amending_acts | join(", ") }}{% endif %}</p>
+<ul>
+{% for line in event.lines %}
+<li><p><strong><a href="{{ line.link }}">{{ line.location }}</a>{% if line.heading %}, {{ line.heading }}{% endif %}</strong>: {{ line.change_type }}{% if line.date_alert %} <strong>(date alert)</strong>{% endif %}</p>
+{% if line.dispute %}
+<p>{{ line.dispute }} <a href="{{ methodology }}">How disputes are decided</a></p>
+{% endif %}
+{% if line.dates %}
+<p>{{ line.dates }}</p>
+{% endif %}
+<p>{{ line.applies }}</p>
+{% if line.sentences %}
+<ul>
+{% for sentence in line.sentences %}
+<li>{% if sentence.prefix %}<em>{{ sentence.prefix }}</em> {% endif %}{{ sentence.text }}{% for citation in sentence.citations %} <a href="{{ citation.url }}">{{ citation.label }}</a>{% endfor %}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% if line.unexplained %}
+<p>{{ line.unexplained }}</p>
+{% endif %}
+<p style="font-size:13px;color:#555">Why: {{ line.why }}</p></li>
+{% endfor %}
+</ul>
+{% endfor %}
+<p><a href="{{ manage }}">Manage this watchlist</a></p>
+{% include "web/mail_footer.html" %}
+</body>
+</html>
