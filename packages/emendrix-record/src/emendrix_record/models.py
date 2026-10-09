@@ -1,15 +1,15 @@
-"""The index and the catalogue as this server reads them.
+"""The index and the catalogue as a reader of the record reads them.
 
-These are the server's own models of files `emendrix` writes, because the server must not
-import `emendrix`: that distribution carries the model stage, and a reader of verified records
-has no business being able to reach it. A contract test in the `emendrix` suite holds every
-model here to the one it mirrors, so a field the writer adds or retypes fails a test there
-rather than a request here.
+These are a reader's own models of files `emendrix` writes, because a reader must not import
+`emendrix`: that distribution carries the model stage, and a reader of verified records has no
+business being able to reach it. A contract test in the `emendrix` suite holds every model here
+to the one it mirrors, so a field the writer adds or retypes fails a test there rather than a
+read here.
 
 Enumerated values are kept as the strings the documents store, and nothing here derives a
 value: a field is either read off the file or absent from the model. Unknown keys are ignored,
 so a document that gains a field still reads. The models of one payload are in `payload.py`:
-the index is what a tool lists from and a payload what it quotes from, and they are read at
+the index is what a reader lists from and a payload what it quotes from, and they are read at
 different moments for different reasons.
 """
 

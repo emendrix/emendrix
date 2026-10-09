@@ -1,10 +1,11 @@
-"""The MCP server's own models stay in step with the documents this package writes.
+"""The reader of the record, `emendrix-record`, stays in step with what this package writes.
 
-The server cannot import `emendrix`, so it carries its own models of the index, the catalogue
-and one payload, its own copy of the disclaimer and its own copy of the dispute-reason
-sentences. This module and `test_mcp_fixture.py` are the only places that import both, and
-this one holds every copy to its original, and the tools `docs/api.md` and the `/api/` page
-list to the ones the server registers.
+Every reader beside the pipeline (the MCP server among them) reads through that member, which
+cannot import `emendrix`, so it carries its own models of the index, the catalogue and one
+payload, its own copy of the disclaimer, of the dispute-reason sentences and of the anchor
+rule. This module and `test_record_fixture.py` are the only places that import both, and this
+one holds every copy to its original, and the tools `docs/api.md` and the `/api/` page list to
+the ones the MCP server registers.
 
 The models are compared through their JSON Schemas, walked recursively: `emendrix`'s in
 serialisation mode, which is what it writes, against the member's in validation mode, which is
@@ -28,21 +29,23 @@ import pytest
 from pydantic import BaseModel
 
 import emendrix
-import emendrix_mcp
+import emendrix_record
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry
 from emendrix.output import index_model as written
 from emendrix.site_ import api_files
 from emendrix.site_.dispute import REASON_SENTENCES
 from emendrix.site_.pages.api_prose import MCP
-from emendrix_mcp import models as read
-from emendrix_mcp import payload as payload_models
-from emendrix_mcp.reasons import REASON_SENTENCES as MCP_REASON_SENTENCES
-from emendrix_mcp.record import Record
+from emendrix.site_.urls import change_anchor, entry_anchors
 from emendrix_mcp.server import build_server
+from emendrix_record import links
+from emendrix_record import models as read
+from emendrix_record import payload as payload_models
+from emendrix_record.reasons import REASON_SENTENCES as RECORD_REASON_SENTENCES
+from emendrix_record.record import Record
 
 REPO = Path(__file__).resolve().parents[2]
-FIXTURES = REPO / "packages" / "emendrix-mcp" / "tests" / "fixtures"
+FIXTURES = REPO / "packages" / "emendrix-record" / "tests" / "fixtures"
 
 Schema = dict[str, Any]
 
@@ -197,11 +200,11 @@ def test_the_walk_notices_a_field_the_member_lacks() -> None:
 
 
 def test_the_disclaimer_is_the_same_sentence() -> None:
-    assert emendrix_mcp.DISCLAIMER == emendrix.DISCLAIMER
+    assert emendrix_record.DISCLAIMER == emendrix.DISCLAIMER
 
 
 def test_the_dispute_reason_sentences_are_the_sites() -> None:
-    assert {code.value: text for code, text in REASON_SENTENCES.items()} == MCP_REASON_SENTENCES
+    assert {code.value: text for code, text in REASON_SENTENCES.items()} == RECORD_REASON_SENTENCES
 
 
 def _documents(pattern: str) -> list[Path]:
@@ -227,6 +230,29 @@ def test_every_member_model_parses_the_fixture() -> None:
             assert ours.change.provision.location == theirs.change.location.canonical
             assert ours.change.before == theirs.change.before
             assert ours.change.after == theirs.change.after
+
+
+def test_links_match_the_site() -> None:
+    """The member's anchor rule is the site's, for every fixture location and a deep one."""
+    entries = [
+        ChangelogEntry.model_validate_json(path.read_bytes())
+        for path in _documents("*/*/changes/*.json")
+    ]
+    locations = {change.change.location.canonical for entry in entries for change in entry.changes}
+    locations |= {"AR 5 PA 1 ALN 1 PTA (bb)"}
+    for canonical in sorted(locations):
+        for occurrence in (1, 2, 3):
+            ours = links.change_anchor("v2", canonical, occurrence)
+            assert ours == change_anchor("v2", canonical, occurrence)
+        assert links.location_slug(canonical) in links.change_anchor("v2", canonical)
+    for entry in entries:
+        canonicals = [change.change.location.canonical for change in entry.changes]
+        assert links.entry_anchors(entry.key, canonicals) == entry_anchors(entry.key, canonicals)
+    for refused in (0, -1):
+        with pytest.raises(ValueError):
+            links.change_anchor("v2", "AR 5", refused)
+        with pytest.raises(ValueError):
+            change_anchor("v2", "AR 5", refused)
 
 
 def _registered() -> list[str]:

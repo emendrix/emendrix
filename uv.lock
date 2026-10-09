@@ -11,6 +11,7 @@ resolution-markers = [
 members = [
     "emendrix",
     "emendrix-mcp",
+    "emendrix-record",
 ]
 
 [[package]]
@@ -541,6 +542,7 @@ dependencies = [
 dev = [
     { name = "brotli" },
     { name = "emendrix-mcp" },
+    { name = "emendrix-record" },
     { name = "fonttools" },
     { name = "mypy" },
     { name = "pillow" },
@@ -568,6 +570,7 @@ requires-dist = [
 dev = [
     { name = "brotli", specifier = ">=1.2.0" },
     { name = "emendrix-mcp", editable = "packages/emendrix-mcp" },
+    { name = "emendrix-record", editable = "packages/emendrix-record" },
     { name = "fonttools", specifier = ">=4.65.0" },
     { name = "mypy", specifier = ">=1.17" },
     { name = "pillow", specifier = ">=12.3.0" },
@@ -583,6 +586,7 @@ name = "emendrix-mcp"
 version = "0.1.0"
 source = { editable = "packages/emendrix-mcp" }
 dependencies = [
+    { name = "emendrix-record" },
     { name = "mcp" },
     { name = "pydantic" },
     { name = "starlette" },
@@ -591,11 +595,23 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "emendrix-record", editable = "packages/emendrix-record" },
     { name = "mcp", specifier = ">=2.2.0,<2.3" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "starlette", specifier = ">=1.7.0" },
     { name = "uvicorn", specifier = ">=0.54.0" },
 ]
+
+[[package]]
+name = "emendrix-record"
+version = "0.1.0"
+source = { editable = "packages/emendrix-record" }
+dependencies = [
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pydantic", specifier = ">=2.13.4" }]
 
 [[package]]
 name = "execnet"

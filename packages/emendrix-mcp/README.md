@@ -20,10 +20,14 @@ a kind of change or a permalink. A page address is one the site catalogue states
 reported unavailable.
 
 It is a separate distribution in the emendrix uv workspace and does not depend on `emendrix`,
-so the server cannot import the pipeline's model stage. Two tests in the `emendrix` suite
-import both: `tests/output/test_mcp_contract.py` holds this package's models, disclaimer and
-dispute-reason sentences to the originals, and `tests/output/test_mcp_fixture.py` holds the
-committed fixture under `tests/fixtures/` to what the emendrix writers produce.
+so the server cannot import the pipeline's model stage. It reads the record through
+[`../emendrix-record`](../emendrix-record/README.md), the workspace member that holds the models
+of every published file and the reader of them, and declares no such model of its own. Two
+tests in the `emendrix` suite import both: `tests/output/test_record_contract.py` holds that
+member's models, disclaimer and dispute-reason sentences to the originals, and the tools this
+server registers to the ones `docs/api.md` lists, and `tests/output/test_record_fixture.py`
+holds the committed fixture under `packages/emendrix-record/tests/fixtures/`, which this
+server's tests read too, to what the emendrix writers produce.
 
 ## What it reads
 
@@ -85,12 +89,7 @@ runs it behind the site's nginx, with both volumes read-only.
 
 | Module | Holds |
 |---|---|
-| `emendrix_mcp/__init__.py` | `DISCLAIMER`, the same sentence as the pipeline's |
-| `emendrix_mcp/models.py` | the root index, an act index and the catalogue |
-| `emendrix_mcp/payload.py` | one payload: the event, its changes, its corroboration |
-| `emendrix_mcp/reasons.py` | `REASON_SENTENCES`, one sentence per `dispute_reason` code |
-| `emendrix_mcp/reads.py` | what a read returns: `PayloadRead`, `ChangeRead`, `Unavailable` |
-| `emendrix_mcp/record.py` | `Record`, which reads all of the above off disk |
+| `emendrix_mcp/__init__.py` | `DISCLAIMER`, re-exported from `emendrix_record` |
 | `emendrix_mcp/tools.py` | what every tool result shares: the sentences a caller is told, the row view |
 | `emendrix_mcp/tools_read.py` | `list_acts`, `find_provisions`, `changes_since` |
 | `emendrix_mcp/tools_event.py` | `provision_history`, `get_event`, `list_disputed` |
@@ -102,8 +101,10 @@ runs it behind the site's nginx, with both volumes read-only.
 | `emendrix_mcp/cli.py` | the settings from the environment and the command line |
 | `emendrix_mcp/__main__.py` | `python -m emendrix_mcp`, the image's entry point |
 
+The models, `Record` and the dispute-reason sentences are in `emendrix_record`.
+
 `tests/test_mcp_architecture.py` checks over the source that no module imports `emendrix`, an
-HTTP client or a model SDK, reads a clock, writes a file or mentions stdio; that only `app.py`
+HTTP client or a model SDK, or declares a model of a published file, reads a clock, writes a file or mentions stdio; that only `app.py`
 may listen and only `cli.py` may read the environment; that no string in the source is an
 address; and that every module stays under the line cap.
 

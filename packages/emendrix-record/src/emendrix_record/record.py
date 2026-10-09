@@ -1,15 +1,16 @@
-"""The published record, read off disk into this server's models, so no tool ever sees bytes.
+"""The published record, read off disk into a reader's models, so no caller ever sees bytes.
 
 Two inputs, both given: the directory of a changelogs repository, and optionally the
 `api/v1/catalogue.json` a site build wrote. Every file is read when it is asked for and dropped
-after: the repository is rewritten underneath a running server every hour, and a copy held
+after: the repository is rewritten underneath a running reader every hour, and a copy held
 across calls would answer from a record that has since moved on.
 
 Paths come from the index and are resolved under the repository root; one that is absolute,
 climbs with `..` or resolves outside the root through a link is refused. A payload's bytes are
 hashed and compared with the `sha256` its index row states, and a mismatch is reported in the
 result rather than hidden, because it means the volume is mid-write. Every failure is a value,
-`Unavailable`, carrying a sentence a calling model can repeat.
+`Unavailable`, carrying a sentence a caller can repeat. The sentences speak of "this server"
+because every reader of the record so far answers over the network.
 
 Nothing here builds an address. A permalink is read out of the catalogue or reported
 unavailable.
@@ -23,7 +24,7 @@ from typing import Final
 
 from pydantic import ValidationError
 
-from emendrix_mcp.models import (
+from emendrix_record.models import (
     ActIndex,
     ActRow,
     Catalogue,
@@ -32,8 +33,8 @@ from emendrix_mcp.models import (
     ProvisionRow,
     RootIndex,
 )
-from emendrix_mcp.payload import ChangeRecord, Payload
-from emendrix_mcp.reads import PERMALINK_UNAVAILABLE, ChangeRead, PayloadRead, Unavailable
+from emendrix_record.payload import ChangeRecord, Payload
+from emendrix_record.reads import PERMALINK_UNAVAILABLE, ChangeRead, PayloadRead, Unavailable
 
 __all__ = [
     "INDEX_FILE",
@@ -43,6 +44,7 @@ __all__ = [
     "Record",
     "Unavailable",
     "entry_key",
+    "row_for",
 ]
 
 INDEX_FILE: Final = "index.json"
@@ -68,7 +70,7 @@ def _unit(index: ActIndex, location: str) -> str | None:
     return None
 
 
-def _row(
+def row_for(
     index: ActIndex, event: EventRow, changes: tuple[ChangeRecord, ...], position: int
 ) -> ProvisionRow | None:
     """The index row of the change at `position` in the payload.
@@ -228,7 +230,7 @@ class Record:
             event=event,
             location=location,
             occurrence=occurrence,
-            row=_row(index, event, changes, position),
+            row=row_for(index, event, changes, position),
             sha256=read.sha256,
             matches_index=read.matches_index,
             change=changes[position],

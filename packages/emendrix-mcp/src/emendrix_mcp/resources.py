@@ -13,11 +13,11 @@ from typing import Final
 from mcp.server import MCPServer
 
 from emendrix_mcp import DISCLAIMER
-from emendrix_mcp.reads import Unavailable
-from emendrix_mcp.record import Record
 from emendrix_mcp.tools_event import describe_act
 from emendrix_mcp.tools_read import list_acts
 from emendrix_mcp.tools_text import get_change
+from emendrix_record.reads import Unavailable
+from emendrix_record.record import Record
 
 __all__ = ["ACT", "ACTS", "CHANGE", "METHODOLOGY", "methodology", "register_resources"]
 

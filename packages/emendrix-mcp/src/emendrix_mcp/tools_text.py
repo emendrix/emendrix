@@ -18,17 +18,17 @@ from typing import Final
 from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix_mcp import DISCLAIMER
-from emendrix_mcp.models import ProvisionRow
-from emendrix_mcp.payload import (
+from emendrix_mcp.tools import EventRef, Links, reason_sentence
+from emendrix_record.models import ProvisionRow
+from emendrix_record.payload import (
     ActRef,
     ApplicabilityUnchanged,
     ApplicabilityUnknown,
     Observations,
     Sentence,
 )
-from emendrix_mcp.reads import Unavailable
-from emendrix_mcp.record import Record
-from emendrix_mcp.tools import EventRef, Links, reason_sentence
+from emendrix_record.reads import Unavailable
+from emendrix_record.record import Record
 
 __all__ = [
     "LEADING_MARKER",

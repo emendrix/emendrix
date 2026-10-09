@@ -1,9 +1,9 @@
 """What each `dispute_reason` code means, one plain sentence per code.
 
 The site prints the same sentences beside a disputed change, and a test in the `emendrix` suite
-holds this copy equal to the site's key for key, so a reader of a tool result and a reader of
-the page are told the same thing. A sentence says which source saw what, never why the
-legislator did anything.
+holds this copy equal to the site's key for key, so whoever reads the record through this
+distribution and a reader of the page are told the same thing. A sentence says which source saw
+what, never why the legislator did anything.
 """
 
 from __future__ import annotations

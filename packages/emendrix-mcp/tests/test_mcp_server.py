@@ -13,13 +13,13 @@ import anyio
 import mcp
 
 from emendrix_mcp import DISCLAIMER
-from emendrix_mcp.record import Record
 from emendrix_mcp.resources import ACT, ACTS, CHANGE, METHODOLOGY
 from emendrix_mcp.server import TOOLS, build_server
 from emendrix_mcp.tools import APPLIES_FROM_SENTENCE, DISPUTED_SENTENCE, WINDOW_SENTENCE
 from emendrix_mcp.tools_text import get_change
+from emendrix_record.record import Record
 
-FIXTURES = Path(__file__).resolve().parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[2] / "emendrix-record" / "tests" / "fixtures"
 
 
 def _with_client[T](use: Callable[[mcp.Client], Awaitable[T]]) -> T:

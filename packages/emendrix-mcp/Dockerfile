@@ -40,6 +40,8 @@ WORKDIR /src
 # fails rather than resolving, so the image ships the dependency set CI tested.
 COPY pyproject.toml uv.lock ./
 COPY packages/emendrix-mcp ./packages/emendrix-mcp
+# The server reads the record through this workspace member, which `uv sync` installs from source.
+COPY packages/emendrix-record ./packages/emendrix-record
 RUN uv sync --frozen --package emendrix-mcp --no-dev --no-editable
 
 

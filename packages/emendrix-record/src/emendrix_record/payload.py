@@ -1,10 +1,10 @@
-"""One committed payload as this server reads it: the event, its changes, its corroboration.
+"""One committed payload as a reader reads it: the event, its changes, its corroboration.
 
-The server's own models of the document `emendrix` commits per event, for the same reason as
-`models.py`: the server must not import `emendrix`. They carry only what a tool hands over, and
+A reader's own models of the document `emendrix` commits per event, for the same reason as
+`models.py`: a reader must not import `emendrix`. They carry only what a reader hands over, and
 default every field a document written before the field existed lacks, exactly as the writer's
 own models default it. `dispute_reason` is the one a reader must not trust here: older payloads
-do not store it, so a tool takes the reason from the index row, which always carries it.
+do not store it, so a reader takes the reason from the index row, which always carries it.
 """
 
 from __future__ import annotations

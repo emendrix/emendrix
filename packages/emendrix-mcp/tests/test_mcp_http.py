@@ -18,11 +18,11 @@ from starlette.testclient import TestClient
 
 from emendrix_mcp import DISCLAIMER
 from emendrix_mcp.app import create_app
-from emendrix_mcp.record import Record
 from emendrix_mcp.server import TOOLS
 from emendrix_mcp.tools_text import get_change
+from emendrix_record.record import Record
 
-FIXTURES = Path(__file__).resolve().parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[2] / "emendrix-record" / "tests" / "fixtures"
 HOST = "mcp.example.org"
 ACCEPT = {"accept": "application/json, text/event-stream"}
 

@@ -1,10 +1,11 @@
-"""The MCP server's committed fixture is what this package's own writers produce.
+"""The record reader's committed fixture is what this package's own writers produce.
 
-The server reads a changelogs repository and a site catalogue it never wrote, so its tests run
-over a copy committed beside them. This test is what keeps that copy honest: it writes toy
-entries through `OutputRepo.write`, the writer every hosted payload went through, and builds
-the catalogue with `api_files`, the function the site build writes it with, then asserts the
-committed copy is byte for byte the result.
+`emendrix-record` reads a changelogs repository and a site catalogue it never wrote, so its
+tests, and those of every member reading through it, run over a copy committed beside them.
+This test is what keeps that copy honest: it writes toy entries through `OutputRepo.write`, the
+writer every hosted payload went through, and builds the catalogue with `api_files`, the
+function the site build writes it with, then asserts the committed copy is byte for byte the
+result.
 
 `api_files` is handed a `SiteInputs` made with `model_construct`, holding only the acts and the
 site URL. A validated one needs an evaluation run, and the catalogue reads neither that nor
@@ -12,13 +13,13 @@ anything else on the model, so the bytes are the ones a full build would write f
 
 One payload is rewritten afterwards with `json`, its changes' `dispute_reason` keys removed,
 and the index rebuilt over it the way `emendrix index rebuild` rebuilds it. That is the shape
-of every payload written before the field was stored, and the server must read it.
+of every payload written before the field was stored, and a reader must read it.
 
 To regenerate, from the repository root, with the path the failure message names::
 
-    uv run pytest -n0 tests/output/test_mcp_fixture.py
-    rm -rf packages/emendrix-mcp/tests/fixtures
-    cp -R <the path> packages/emendrix-mcp/tests/fixtures
+    uv run pytest -n0 tests/output/test_record_fixture.py
+    rm -rf packages/emendrix-record/tests/fixtures
+    cp -R <the path> packages/emendrix-record/tests/fixtures
 
 Then read the diff, because that is the review.
 """
@@ -44,11 +45,13 @@ from emendrix.output.json_out import payload_for
 from emendrix.site_.api_files import CATALOGUE, api_files
 from emendrix.site_.inputs import ActSite, SiteInputs
 
-FIXTURES = Path(__file__).resolve().parents[2] / "packages" / "emendrix-mcp" / "tests" / "fixtures"
-"""The committed copy the server's own tests read."""
+FIXTURES = (
+    Path(__file__).resolve().parents[2] / "packages" / "emendrix-record" / "tests" / "fixtures"
+)
+"""The committed copy the members' tests read."""
 
 SITE_URL = "https://example.org"
-"""Any absolute base will do; the server only ever repeats what the catalogue says."""
+"""Any absolute base will do; a reader only ever repeats what the catalogue says."""
 
 GARDEN = ActId(corpus="toy", key="garden-rules", display_name="Garden Rules of Flat 3B")
 
@@ -122,13 +125,13 @@ def _tree(root: Path) -> dict[str, bytes]:
 def test_the_committed_fixture_is_what_the_writers_produce(
     tmp_path_factory: pytest.TempPathFactory,
 ) -> None:
-    out = tmp_path_factory.mktemp("mcp-fixture")
-    build_fixture(out, tmp_path_factory.mktemp("mcp-scratch"))
+    out = tmp_path_factory.mktemp("record-fixture")
+    build_fixture(out, tmp_path_factory.mktemp("record-scratch"))
     built, committed = _tree(out), _tree(FIXTURES)
     assert built == committed, (
-        f"packages/emendrix-mcp/tests/fixtures differs from what the writers produce now, "
-        f"built in {out}; to accept it run `rm -rf packages/emendrix-mcp/tests/fixtures && "
-        f"cp -R {out} packages/emendrix-mcp/tests/fixtures` and read the diff"
+        f"packages/emendrix-record/tests/fixtures differs from what the writers produce now, "
+        f"built in {out}; to accept it run `rm -rf packages/emendrix-record/tests/fixtures && "
+        f"cp -R {out} packages/emendrix-record/tests/fixtures` and read the diff"
     )
 
 

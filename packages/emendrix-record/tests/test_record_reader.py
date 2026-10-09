@@ -1,4 +1,4 @@
-"""The record reads the committed fixture into the server's models and refuses what it must.
+"""The record reads the committed fixture into its models and refuses what it must.
 
 The fixture under `fixtures/` is written by the `emendrix` writers and held to them by a test
 in that suite: two toy acts, three events, one disputed change in each act, one event naming
@@ -14,15 +14,15 @@ from pathlib import Path
 
 import pytest
 
-from emendrix_mcp import DISCLAIMER
-from emendrix_mcp.models import ActIndex, RootIndex
-from emendrix_mcp.record import (
+from emendrix_record import DISCLAIMER
+from emendrix_record.models import ActIndex, RootIndex
+from emendrix_record.record import (
     PERMALINK_UNAVAILABLE,
     ChangeRead,
     PayloadRead,
     Record,
     Unavailable,
-    _row,
+    row_for,
 )
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -205,8 +205,8 @@ def test_a_sub_provision_change_finds_the_row_filed_under_its_unit(record: Recor
         ),
         template,
     )
-    assert _row(shaped, event, changes, 0) == rows[0]
-    assert _row(shaped, event, changes, 1) == rows[1]
+    assert row_for(shaped, event, changes, 0) == rows[0]
+    assert row_for(shaped, event, changes, 1) == rows[1]
 
 
 def test_a_path_holding_a_nul_is_refused_not_raised(record: Record) -> None:

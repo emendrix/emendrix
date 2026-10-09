@@ -24,10 +24,10 @@ from starlette.datastructures import Headers
 from starlette.responses import PlainTextResponse, Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from emendrix_mcp.reads import Unavailable
-from emendrix_mcp.record import Record
 from emendrix_mcp.server import build_server
 from emendrix_mcp.settings import MCP_PATH, Settings
+from emendrix_record.reads import Unavailable
+from emendrix_record.record import Record
 
 __all__ = ["HEALTH_PATH", "MAX_BODY", "create_app", "health", "refusal", "serve"]
 

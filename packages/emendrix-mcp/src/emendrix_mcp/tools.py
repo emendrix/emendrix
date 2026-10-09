@@ -18,10 +18,10 @@ from typing import Final
 from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix_mcp import DISCLAIMER
-from emendrix_mcp.models import ActIndex, ActRow, CatalogueAct, EventRow, ProvisionRow
-from emendrix_mcp.reads import Unavailable
-from emendrix_mcp.reasons import REASON_SENTENCES
-from emendrix_mcp.record import Record, entry_key
+from emendrix_record.models import ActIndex, ActRow, CatalogueAct, EventRow, ProvisionRow
+from emendrix_record.reads import Unavailable
+from emendrix_record.reasons import REASON_SENTENCES
+from emendrix_record.record import Record, entry_key
 
 __all__ = [
     "APPLIES_FROM_SENTENCE",

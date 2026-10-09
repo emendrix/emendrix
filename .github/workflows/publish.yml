@@ -145,6 +145,7 @@ jobs:
       - name: The image carries the server and not the pipeline
         run: |
           docker run --rm --entrypoint python "${IMAGE}:${SHORT_SHA}" -c "import emendrix_mcp"
+          docker run --rm --entrypoint python "${IMAGE}:${SHORT_SHA}" -c "import emendrix_record"
           docker run --rm --entrypoint python "${IMAGE}:${SHORT_SHA}" -c \
             "import importlib.util, sys; sys.exit(importlib.util.find_spec('emendrix') is not None)"
 

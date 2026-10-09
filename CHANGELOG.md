@@ -1015,3 +1015,14 @@ Named rather than discovered later; the eval report's disagreement list is the l
   no sitemap. It is not a page, so the sitemap does not list it and `robots.txt` is unchanged.
   **No published figure moved**: the eval layer, the payloads, the feeds and every page are
   byte-identical to before.
+
+- **The record has one reader, since 2026-10-09.** `packages/emendrix-record` is a workspace
+  member depending on `pydantic` only that holds the models of the root index, an act index, a
+  payload and the site catalogue, `Record`, the reader that reads each published file fresh on
+  every call and refuses a path outside the repository, the disclaimer and the dispute-reason
+  sentences. It adds the site's anchor rule, held equal to the site's by a test, and canonical
+  location containment, a parser of a few typed forms (`Article 6(1)`, `Annex 4`) that refuses
+  a point rather than guess its spelling, and a human form. The MCP server reads through it and
+  answers byte-identically, its tool tests passing with no expectation edited, and its image
+  carries the member. **No published figure moved**: the eval layer, the payloads, the feeds and
+  every page are byte-identical to before.

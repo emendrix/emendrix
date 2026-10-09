@@ -1,7 +1,7 @@
 """What a read of the record returns: the thing asked for with its provenance, or why not.
 
-Kept apart from `record.py`, which does the reading, because these are the shapes a tool
-hands on: a tool imports them to say what it returns without touching the disk.
+Kept apart from `record.py`, which does the reading, because these are the shapes a reader
+hands on: a caller imports them to say what it returns without touching the disk.
 """
 
 from __future__ import annotations
@@ -10,8 +10,8 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from emendrix_mcp.models import EventRow, ProvisionRow
-from emendrix_mcp.payload import ChangeRecord, Payload
+from emendrix_record.models import EventRow, ProvisionRow
+from emendrix_record.payload import ChangeRecord, Payload
 
 __all__ = ["PERMALINK_UNAVAILABLE", "ChangeRead", "PayloadRead", "Unavailable"]
 

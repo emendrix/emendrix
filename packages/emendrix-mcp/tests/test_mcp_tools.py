@@ -1,8 +1,9 @@
 """Every tool over the committed fixture: what it selects, how it pages, what it carries.
 
-The fixture holds two toy acts and three events (see `test_mcp_record.py`). Its texts are
-short, so paging is exercised with a small `max_chars`; its one disputed change per act has the
-reason `textless_metadata_only`, and the garden act's payload stores no `dispute_reason`.
+The fixture holds two toy acts and three events (see `test_record_reader.py` in the
+`emendrix-record` member). Its texts are short, so paging is exercised with a small
+`max_chars`; its one disputed change per act has the reason `textless_metadata_only`, and the
+garden act's payload stores no `dispute_reason`.
 """
 
 from __future__ import annotations
@@ -17,9 +18,6 @@ import pytest
 from pydantic import BaseModel
 
 from emendrix_mcp import DISCLAIMER
-from emendrix_mcp.reads import PERMALINK_UNAVAILABLE
-from emendrix_mcp.reasons import REASON_SENTENCES
-from emendrix_mcp.record import Record
 from emendrix_mcp.resources import methodology
 from emendrix_mcp.tools import ChangeRow
 from emendrix_mcp.tools_event import describe_act, get_event, list_disputed, provision_history
@@ -32,8 +30,11 @@ from emendrix_mcp.tools_text import (
     get_change,
     page,
 )
+from emendrix_record.reads import PERMALINK_UNAVAILABLE
+from emendrix_record.reasons import REASON_SENTENCES
+from emendrix_record.record import Record
 
-FIXTURES = Path(__file__).resolve().parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[2] / "emendrix-record" / "tests" / "fixtures"
 CHANGELOGS = FIXTURES / "changelogs"
 CATALOGUE = FIXTURES / "catalogue.json"
 

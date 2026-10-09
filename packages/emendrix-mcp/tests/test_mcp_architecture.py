@@ -66,8 +66,37 @@ def offenders(pattern: str, allowed: AbstractSet[str] = frozenset()) -> list[str
 
 
 def test_the_scan_sees_the_modules() -> None:
-    expected = {"__init__.py", "app.py", "cli.py", "models.py", "record.py", "settings.py"}
+    expected = {
+        "__init__.py",
+        "__main__.py",
+        "app.py",
+        "cli.py",
+        "resources.py",
+        "server.py",
+        "settings.py",
+        "tools.py",
+        "tools_event.py",
+        "tools_read.py",
+        "tools_text.py",
+    }
     assert expected <= {path for path, _ in modules()}
+
+
+PUBLISHED_MODEL = (
+    r"(?m)^class (RootIndex|ActIndex|ActRow|EventRow|ProvisionRow|Catalogue\w*|Payload)\b"
+)
+"""A class named for a model of a published file, which only `emendrix_record` declares."""
+
+
+def test_the_record_is_read_only_through_its_own_member() -> None:
+    """One reader of the record: a model of a published file declared here would be a second
+    copy of the schema, and no contract test would hold it to the writer."""
+    assert offenders(PUBLISHED_MODEL) == []
+    assert importers(("emendrix_record",)) != []
+
+
+def test_the_record_scan_sees_a_declaration() -> None:
+    assert re.search(PUBLISHED_MODEL, "x = 1\nclass Payload(BaseModel):\n    pass\n")
 
 
 def test_nothing_imports_the_pipeline() -> None:

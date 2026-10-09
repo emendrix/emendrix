@@ -272,7 +272,10 @@ The same record, for a model: a read-only [Model Context Protocol](https://model
 server at `https://emendrix.eu/mcp`. It answers MCP over streamable HTTP, stateless, with one
 JSON response per request: no session, no stream held open, no `initialize` it needs first. There
 is no key and no account; any rate limit is applied at the edge, in front of the server. Its
-source is the workspace member [`../packages/emendrix-mcp/`](../packages/emendrix-mcp/).
+source is the workspace member [`../packages/emendrix-mcp/`](../packages/emendrix-mcp/). It reads
+the record through [`../packages/emendrix-record/`](../packages/emendrix-record/), the same reader
+any Python consumer can use: the models of the files above and a reader that reads them fresh on
+every call.
 
 In Claude Code:
 

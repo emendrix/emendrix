@@ -15,7 +15,6 @@ from mcp.types import ToolAnnotations
 from pydantic import Field
 
 from emendrix_mcp import DISCLAIMER, __version__
-from emendrix_mcp.record import Record
 from emendrix_mcp.resources import register_resources
 from emendrix_mcp.tools import describe
 from emendrix_mcp.tools_event import (
@@ -36,6 +35,7 @@ from emendrix_mcp.tools_read import (
     list_acts,
 )
 from emendrix_mcp.tools_text import ChangeResult, get_change
+from emendrix_record.record import Record
 
 __all__ = ["INSTRUCTIONS", "NAME", "TOOLS", "build_server"]
 

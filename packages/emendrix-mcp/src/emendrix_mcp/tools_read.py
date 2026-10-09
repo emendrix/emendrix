@@ -14,10 +14,10 @@ from typing import Final, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix_mcp import DISCLAIMER
-from emendrix_mcp.models import ActIndex, ActRow, EventRow
-from emendrix_mcp.reads import Unavailable
-from emendrix_mcp.record import Record
 from emendrix_mcp.tools import ChangeRow, Links, rows_of
+from emendrix_record.models import ActIndex, ActRow, EventRow
+from emendrix_record.reads import Unavailable
+from emendrix_record.record import Record
 
 __all__ = [
     "ActSummary",
