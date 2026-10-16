@@ -16,11 +16,16 @@ inside it numbered `GR.SEQ` sections, nested appendices and enumerated points do
 nodes (`AN I SCT A PO 1`). What does *not*: table interiors — a `TBL` contributes its prose
 to every ancestor's text but no coordinates of its own, so a change inside a REACH annex
 table lands on the enclosing section. That is a v0.1 gap, and it is counted, not hidden.
+
+**Table rows ride beside the tree.** Where `eu/substances` profiles a unit's tables, they are
+walked again with the same placement and read by `tables.py` into `table_entries`; no node,
+text or location moves for it.
 """
 
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element
 
@@ -31,6 +36,7 @@ from emendrix.core import (
     ProvisionLocation,
     ProvisionNode,
     ProvisionTree,
+    TableReading,
     VersionId,
 )
 from emendrix.eu.formex.documents import (
@@ -53,6 +59,7 @@ from emendrix.eu.formex.locations import (
     title_of,
 )
 from emendrix.eu.formex.model import CoverageCounter, ParsedAct
+from emendrix.eu.formex.tables import combine, read_tables
 from emendrix.eu.formex.text import (
     SKIPPED_SUBTREES,
     comparison_text,
@@ -61,8 +68,9 @@ from emendrix.eu.formex.text import (
     verbatim_text,
 )
 from emendrix.eu.packages import FormexPackage
+from emendrix.eu.substances.profiles import profiles_for
 
-__all__ = ["build_tree", "parse_act"]
+__all__ = ["build_tree", "parse_act", "table_elements"]
 
 
 def parse_act(package: FormexPackage) -> ParsedAct:
@@ -82,16 +90,71 @@ def build_tree(
     requested consolidation has no English text the fetch falls back to the act as published
     (`eu/cellar.py`), and a tree that claimed the version it was asked for would lie.
     """
+    profiles = profiles_for(package.act.key)
+    profiled_units = {profile.unit for profile in profiles}
     roots: list[ProvisionNode] = []
+    readings: list[TableReading] = []
     for document in documents_of(documents):
         for unit, is_annex in unit_elements(document):
             node = _unit(unit, is_annex, counter)
-            if node is not None:
-                roots.append(node)
+            if node is None:
+                continue
+            roots.append(node)
+            if node.location.canonical in profiled_units:
+                tables = table_elements(unit, node.location, is_annex)
+                readings.append(read_tables(tables, node.location, profiles))
     counter.units += len(roots)
     act: ActId = package.act
     version: VersionId = package.served_version
-    return ProvisionTree(act=act, version=version, language=package.language, roots=tuple(roots))
+    return ProvisionTree(
+        act=act,
+        version=version,
+        language=package.language,
+        roots=tuple(roots),
+        table_entries=combine(readings),
+    )
+
+
+def table_elements(
+    unit: Element, location: ProvisionLocation, is_annex: bool
+) -> Iterator[tuple[Element, ProvisionLocation, int]]:
+    """Every `TBL` under a unit as `(element, container, ordinal)`, in document order.
+
+    The tree's own placement, with a throwaway counter so the coverage report does not move:
+    the container is the location the tree gives the enclosing node. The ordinal counts every
+    table of a container, inline ones included; a table inside a table is part of the outer.
+    """
+    ordinals: Counter[str] = Counter()
+
+    def walk(
+        element: Element, where: ProvisionLocation, siblings: _Siblings, list_type: str | None
+    ) -> Iterator[tuple[Element, ProvisionLocation, int]]:
+        for child in element:
+            tag = child.tag
+            if tag in SKIPPED_SUBTREES:
+                continue
+            if tag == "TBL" or tag in INLINE:
+                for tbl in _outer_tables(child):
+                    ordinals[where.canonical] += 1
+                    yield tbl, where, ordinals[where.canonical]
+                continue
+            placed = _placed(child, where, is_annex, CoverageCounter(), siblings, list_type)
+            if placed is None:
+                nested = child.get("TYPE") if tag == "LIST" else list_type
+                yield from walk(child, where, siblings, nested)
+            else:
+                yield from walk(child, placed, _Siblings(), None)
+
+    yield from walk(unit, location, _Siblings(), None)
+
+
+def _outer_tables(element: Element) -> Iterator[Element]:
+    """`element` itself if it is a table, else the tables under it that are not inside one."""
+    if element.tag == "TBL":
+        yield element
+    else:
+        for child in element:
+            yield from _outer_tables(child)
 
 
 def _unit(element: Element, is_annex: bool, counter: CoverageCounter) -> ProvisionNode | None:

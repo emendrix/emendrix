@@ -27,6 +27,17 @@ from emendrix.core.claims import (
     comparable_kind,
 )
 from emendrix.core.delta import Change, Delta, DeltaSummary, sort_changes
+from emendrix.core.entries import (
+    EntryGaps,
+    EntryOrder,
+    EntryTable,
+    Identifier,
+    KeyRef,
+    TableEntry,
+    TableReading,
+    TableRef,
+    entry_order,
+)
 from emendrix.core.identifiers import ActId, ProvisionRef, VersionDescriptor, VersionId
 from emendrix.core.location import ProvisionLocation, normalize_location
 from emendrix.core.location_codes import (
@@ -68,6 +79,11 @@ __all__ = [
     "Delta",
     "DeltaSummary",
     "EnglishUnavailable",
+    "EntryGaps",
+    "EntryOrder",
+    "EntryTable",
+    "Identifier",
+    "KeyRef",
     "LocationCode",
     "LocationSegment",
     "ProvisionLocation",
@@ -84,11 +100,15 @@ __all__ = [
     "SignalSet",
     "SignalStatus",
     "StructuredTextUnavailable",
+    "TableEntry",
+    "TableReading",
+    "TableRef",
     "Unavailable",
     "UnknownCode",
     "VersionDescriptor",
     "VersionId",
     "comparable_kind",
+    "entry_order",
     "natural_key",
     "normalize_for_comparison",
     "normalize_location",

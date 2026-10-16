@@ -26,6 +26,7 @@ from typing import Final, NewType, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from emendrix.core.entries import TableReading
 from emendrix.core.identifiers import ActId, VersionId
 from emendrix.core.location import ProvisionLocation
 
@@ -160,7 +161,11 @@ class ProvisionNode(BaseModel):
 
 
 class ProvisionTree(BaseModel):
-    """One version of one act, as a forest of top-level provisions in document order."""
+    """One version of one act, as a forest of top-level provisions in document order.
+
+    Table rows ride beside the nodes in `table_entries`, never as nodes: table interiors as
+    nodes would move sub-localisation and every figure computed over the tree.
+    """
 
     model_config = ConfigDict(frozen=True)
 
@@ -168,6 +173,7 @@ class ProvisionTree(BaseModel):
     version: VersionId
     language: str | None = None
     roots: tuple[ProvisionNode, ...] = ()
+    table_entries: TableReading = TableReading()
 
     def walk(self) -> Iterator[ProvisionNode]:
         """Every node, in document order."""
