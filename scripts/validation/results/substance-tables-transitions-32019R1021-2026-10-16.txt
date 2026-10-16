@@ -1,0 +1,62 @@
+read on 2026-10-16 over the disk cache at ~/Library/Caches/emendrix/cellar
+== 32019R1021 POPs: 15 cached versions
+  20190625 -> 20200704: 1 rows moved
+    AN I #1: +1 -0 ~0 ws 0 =29 unkeyed 0->0 dup 0->0
+  20200704 -> 20200907: 2 rows moved
+    AN I #1: +1 -0 ~1 ws 0 =29 unkeyed 0->0 dup 0->0
+  20200907 -> 20210222: 1 rows moved
+    AN I #1: +0 -0 ~1 ws 0 =30 unkeyed 0->0 dup 0->0
+  20210222 -> 20210315: 1 rows moved
+    AN I #1: +0 -0 ~1 ws 0 =30 unkeyed 0->0 dup 0->0
+  20210315 -> 20221213: 1 rows moved
+    AN I #1: +0 -0 ~1 ws 0 =30 unkeyed 0->0 dup 0->0
+  20221213 -> 20230610: 11 rows moved
+    AN IV #1: +4 -0 ~7 ws 0 =17 unkeyed 2->2 dup 0->0
+  20230610 -> 20230818: 1 rows moved
+    AN I #1: +0 -0 ~1 ws 0 =30 unkeyed 0->0 dup 0->0
+  20230818 -> 20230828: 1 rows moved
+    AN I #1: +1 -0 ~0 ws 0 =31 unkeyed 0->0 dup 0->0
+  20230828 -> 20241017: 2 rows moved
+    AN I #1: +1 -0 ~1 ws 0 =31 unkeyed 0->0 dup 0->0
+  20241017 -> 20250804: 3 rows moved
+    AN I #1: +1 -0 ~2 ws 0 =31 unkeyed 0->0 dup 0->0
+  20250804 -> 20251015: 1 rows moved
+    AN I #1: +1 -0 ~0 ws 0 =34 unkeyed 0->0 dup 0->0
+  20251015 -> 20251203: 6 rows moved
+    AN I #1: +0 -0 ~6 ws 0 =29 unkeyed 0->0 dup 0->0
+  20251203 -> 20260101: 4 rows moved
+    AN IV #1: +0 -0 ~4 ws 0 =24 unkeyed 2->2 dup 0->0
+  20260101 -> 20260930: 1 rows moved
+    AN I #1: +1 -0 ~0 ws 0 =35 unkeyed 0->0 dup 0->0
+
+  stability of keys present in both versions, over every transition:
+    same         792 (0.9694)
+    spacing        0 (0.0000)
+    amended       25 (0.0306)
+    added         11
+    removed        0
+    tables keyed by a different column than the version before: 0
+
+  register of 02019R1021-20260930: 64 entries
+    with cells          74191 bytes indent=2,      58443 compact
+    without cells       30101 bytes indent=2,      17617 compact
+  largest single-transition unit entry diff with cells: 37215 bytes, 20251015->20251203 AN I
+
+  published record 6c4fcdc 2026-10-08
+    32019R1021 -> 02019R1021-20190625 AN I: not cached: 32019R1021
+    32019R1021 -> 02019R1021-20190625 AN III: not cached: 32019R1021
+    02019R1021-20190625 -> 02019R1021-20200704 AN I: +1 -0 ~0 ws 0 =29
+    02019R1021-20200704 -> 02019R1021-20200907 AN I: +1 -0 ~1 ws 0 =29
+    02019R1021-20200907 -> 02019R1021-20210222 AN I: +0 -0 ~1 ws 0 =30
+    02019R1021-20210222 -> 02019R1021-20210315 AN I: +0 -0 ~1 ws 0 =30
+    02019R1021-20210315 -> 02019R1021-20221213 AN I: +0 -0 ~1 ws 0 =30
+    02019R1021-20221213 -> 02019R1021-20230610 AN IV: +4 -0 ~7 ws 0 =17
+    02019R1021-20230610 -> 02019R1021-20230818 AN I: +0 -0 ~1 ws 0 =30
+    02019R1021-20230818 -> 02019R1021-20230828 AN I: +1 -0 ~0 ws 0 =31
+    02019R1021-20230828 -> 02019R1021-20241017 AN I: +1 -0 ~1 ws 0 =31
+    02019R1021-20241017 -> 02019R1021-20250804 AN I: +1 -0 ~2 ws 0 =31
+    02019R1021-20250804 -> 02019R1021-20251015 AN I: +1 -0 ~0 ws 0 =34
+    02019R1021-20251015 -> 02019R1021-20251203 AN I: +0 -0 ~6 ws 0 =29
+    02019R1021-20251203 -> 02019R1021-20260101 AN IV: +0 -0 ~4 ws 0 =24
+    02019R1021-20260101 -> 02019R1021-20260930 AN I: +1 -0 ~0 ws 0 =35
+  published changes 23: in a unit holding a substance table 14 (rows moved 14, none 0); version pair unread here 2

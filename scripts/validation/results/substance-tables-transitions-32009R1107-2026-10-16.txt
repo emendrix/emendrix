@@ -1,0 +1,31 @@
+read on 2026-10-16 over the disk cache at ~/Library/Caches/emendrix/cellar
+== 32009R1107 : 9 cached versions
+  20130701 -> 20140630: 0 rows moved
+  20140630 -> 20170828: 0 rows moved
+  20170828 -> 20181110: 0 rows moved
+  20181110 -> 20190715: 0 rows moved
+  20190715 -> 20191214: 0 rows moved
+  20191214 -> 20210327: 144 rows moved
+    AN III #1 (table new): +144 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+  20210327 -> 20221121: 0 rows moved
+  20221121 -> 20260616: 12 rows moved
+    AN III #1: +12 -0 ~0 ws 0 =144 unkeyed 0->0 dup 0->0
+
+  stability of keys present in both versions, over every transition:
+    same         288 (1.0000)
+    spacing        0 (0.0000)
+    amended        0 (0.0000)
+    added        156
+    removed        0
+    tables keyed by a different column than the version before: 0
+
+  register of 02009R1107-20260616: 156 entries
+    with cells          96484 bytes indent=2,      64484 compact
+    without cells       57969 bytes indent=2,      36733 compact
+  largest single-transition unit entry diff with cells: 100324 bytes, 20191214->20210327 AN III
+
+  published record 6c4fcdc 2026-10-08
+    32009R1107 -> 02009R1107-20130701 AN I: not cached: 32009R1107
+    02009R1107-20191214 -> 02009R1107-20210327 AN III: +144 -0 ~0 ws 0 =0
+    02009R1107-20221121 -> 02009R1107-20260616 AN III: +12 -0 ~0 ws 0 =144
+  published changes 17: in a unit holding a substance table 2 (rows moved 2, none 0); version pair unread here 1

@@ -1,0 +1,78 @@
+read on 2026-10-16 over the disk cache at ~/Library/Caches/emendrix/cellar
+== 32012R0649 PIC: 10 cached versions
+  original -> 20141201: 35 rows moved
+    AN I #1: +13 -5 ~1 ws 0 =180 unkeyed 7->6 dup 3->3
+    AN I #2: +10 -4 ~0 ws 0 =76 unkeyed 3->3 dup 0->0
+    AN I #3: +2 -0 ~0 ws 0 =50 unkeyed 4->4 dup 0->0
+  20141201 -> 20160201: 15 rows moved
+    AN I #1: +10 -0 ~0 ws 0 =194 unkeyed 6->6 dup 3->3
+    AN I #2: +1 -0 ~0 ws 0 =86 unkeyed 3->3 dup 0->0
+    AN I #3: +4 -0 ~0 ws 0 =52 unkeyed 4->6 dup 0->0
+  20160201 -> 20180401: 28 rows moved
+    AN I #1: +11 -0 ~0 ws 0 =204 unkeyed 6->6 dup 3->3
+    AN I #2: +9 -0 ~0 ws 0 =87 unkeyed 3->3 dup 0->0
+    AN I #3: +0 -1 ~0 ws 0 =55 unkeyed 6->6 dup 0->1
+    AN V #1: +7 -0 ~0 ws 0 =18 unkeyed 0->0 dup 0->0
+  20180401 -> 20190501: 70 rows moved
+    AN I #1: +17 -0 ~11 ws 1 =203 unkeyed 6->6 dup 3->3
+    AN I #2: +20 -0 ~2 ws 0 =94 unkeyed 3->3 dup 0->0
+    AN I #3: +6 -0 ~7 ws 0 =48 unkeyed 6->6 dup 1->1
+    AN V #1: +2 -0 ~0 ws 0 =25 unkeyed 0->0 dup 0->0
+    AN V #2 (table new): +4 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+  20190501 -> 20200901: 42 rows moved
+    AN I #1: +18 -1 ~0 ws 0 =231 unkeyed 6->6 dup 3->4
+    AN I #2: +16 -0 ~0 ws 0 =116 unkeyed 3->3 dup 0->0
+    AN I #3: +2 -0 ~0 ws 0 =61 unkeyed 6->6 dup 1->1
+    AN V #2: +4 -0 ~1 ws 0 =3 unkeyed 0->0 dup 0->0
+  20200901 -> 20220701: 506 rows moved
+    AN I #1: +33 -18 ~202 ws 1 =28 unkeyed 6->7 dup 4->2
+    AN I #2: +33 -22 ~81 ws 1 =28 unkeyed 3->2 dup 0->0
+    AN I #3: +6 -7 ~55 ws 1 =0 unkeyed 6->7 dup 1->1
+    AN V #1: +7 -2 ~24 ws 1 =0 unkeyed 0->0 dup 0->0
+    AN V #2: +5 -0 ~4 ws 3 =1 unkeyed 0->0 dup 0->0
+  20220701 -> 20231101: 87 rows moved
+    AN I #1: +36 -1 ~5 ws 3 =255 unkeyed 7->7 dup 2->2
+    AN I #2: +37 -1 ~2 ws 0 =140 unkeyed 2->2 dup 0->0
+    AN I #3: +2 -0 ~0 ws 0 =62 unkeyed 7->7 dup 1->1
+  20231101 -> 20250301: 98 rows moved
+    AN I #1: +44 -1 ~3 ws 0 =295 unkeyed 7->7 dup 2->3
+    AN I #2: +45 -0 ~0 ws 0 =179 unkeyed 2->2 dup 0->0
+    AN I #3: +2 -1 ~0 ws 0 =63 unkeyed 7->7 dup 1->1
+    AN V #1: +1 -0 ~1 ws 0 =31 unkeyed 0->0 dup 0->0
+  20250301 -> 20261001: 63 rows moved
+    AN I #1: +37 -1 ~1 ws 0 =340 unkeyed 7->7 dup 3->3
+    AN I #2: +18 -0 ~0 ws 0 =224 unkeyed 2->2 dup 0->0
+    AN I #3: +2 -0 ~1 ws 0 =64 unkeyed 7->7 dup 1->1
+    AN V #1: +3 -0 ~0 ws 0 =33 unkeyed 0->0 dup 0->0
+
+  stability of keys present in both versions, over every transition:
+    same        3660 (0.8988)
+    spacing       11 (0.0027)
+    amended      401 (0.0985)
+    added        467
+    removed       65
+    tables keyed by a different column than the version before: 0
+
+  register of 02012R0649-20261001: 736 entries
+    with cells         378725 bytes indent=2,     214770 compact
+    without cells      253436 bytes indent=2,     141741 compact
+  largest single-transition unit entry diff with cells: 436130 bytes, 20200901->20220701 AN I
+
+  published record 6c4fcdc 2026-10-08
+    32012R0649 -> 02012R0649-20141201 AN I: +25 -9 ~1 ws 0 =306
+    32012R0649 -> 02012R0649-20141201 AN V: +0 -0 ~0 ws 0 =18
+    02012R0649-20141201 -> 02012R0649-20160201 AN I: +15 -0 ~0 ws 0 =332
+    02012R0649-20160201 -> 02012R0649-20180401 AN I: +20 -1 ~0 ws 0 =346
+    02012R0649-20160201 -> 02012R0649-20180401 AN V: +7 -0 ~0 ws 0 =18
+    02012R0649-20180401 -> 02012R0649-20190501 AN I: +43 -0 ~20 ws 1 =345
+    02012R0649-20180401 -> 02012R0649-20190501 AN V: +6 -0 ~0 ws 0 =25
+    02012R0649-20190501 -> 02012R0649-20200901 AN I: +36 -1 ~0 ws 0 =408
+    02012R0649-20190501 -> 02012R0649-20200901 AN V: +4 -0 ~1 ws 0 =30
+    02012R0649-20200901 -> 02012R0649-20220701 AN I: +72 -47 ~338 ws 3 =56
+    02012R0649-20200901 -> 02012R0649-20220701 AN V: +12 -2 ~28 ws 4 =1
+    02012R0649-20220701 -> 02012R0649-20231101 AN I: +75 -2 ~7 ws 3 =457
+    02012R0649-20231101 -> 02012R0649-20250301 AN I: +91 -2 ~3 ws 0 =537
+    02012R0649-20231101 -> 02012R0649-20250301 AN V: +1 -0 ~1 ws 0 =44
+    02012R0649-20250301 -> 02012R0649-20261001 AN I: +57 -1 ~2 ws 0 =628
+    02012R0649-20250301 -> 02012R0649-20261001 AN V: +3 -0 ~0 ws 0 =46
+  published changes 16: in a unit holding a substance table 16 (rows moved 15, none 1); version pair unread here 0

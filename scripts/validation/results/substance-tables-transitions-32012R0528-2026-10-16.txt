@@ -1,0 +1,41 @@
+read on 2026-10-16 over the disk cache at ~/Library/Caches/emendrix/cellar
+== 32012R0528 Biocides: 10 cached versions
+  20130923 -> 20140425: 2 rows moved
+    AN I #1: +1 -1 ~0 ws 0 =18 unkeyed 1->1 dup 0->0
+  20140425 -> 20191120: 7 rows moved
+    AN I #1: +7 -0 ~0 ws 0 =19 unkeyed 1->1 dup 0->0
+  20191120 -> 20210329: 1 rows moved
+    AN I #1: +1 -0 ~0 ws 0 =26 unkeyed 1->1 dup 0->0
+  20210329 -> 20210610: 2 rows moved
+    AN I #1: +2 -0 ~0 ws 0 =27 unkeyed 1->1 dup 0->0
+  20210610 -> 20220415: 0 rows moved
+  20220415 -> 20240526: 1 rows moved
+    AN I #1: +1 -0 ~0 ws 0 =29 unkeyed 1->1 dup 0->0
+  20240526 -> 20240611: 3 rows moved
+    AN I #1: +0 -0 ~0 ws 3 =27 unkeyed 1->1 dup 0->0
+  20240611 -> 20260615: 0 rows moved
+  20260615 -> 20260819: 1 rows moved
+    AN I #1: +0 -0 ~1 ws 0 =29 unkeyed 1->1 dup 0->0
+
+  stability of keys present in both versions, over every transition:
+    same         234 (0.9832)
+    spacing        3 (0.0126)
+    amended        1 (0.0042)
+    added         12
+    removed        1
+    tables keyed by a different column than the version before: 0
+
+  register of 02012R0528-20260819: 30 entries
+    with cells          13451 bytes indent=2,       8829 compact
+    without cells        7661 bytes indent=2,       4569 compact
+  largest single-transition unit entry diff with cells: 3856 bytes, 20240526->20240611 AN I
+
+  published record 6c4fcdc 2026-10-08
+    32012R0528 -> 02012R0528-20130923 AN III: not cached: 32012R0528
+    02012R0528-20130923 -> 02012R0528-20140425 AN I: +1 -1 ~0 ws 0 =18
+    02012R0528-20140425 -> 02012R0528-20191120 AN I: +7 -0 ~0 ws 0 =19
+    02012R0528-20191120 -> 02012R0528-20210329 AN I: +1 -0 ~0 ws 0 =26
+    02012R0528-20210329 -> 02012R0528-20210610 AN I: +2 -0 ~0 ws 0 =27
+    02012R0528-20220415 -> 02012R0528-20240526 AN I: +1 -0 ~0 ws 0 =29
+    02012R0528-20260615 -> 02012R0528-20260819 AN I: +0 -0 ~1 ws 0 =29
+  published changes 44: in a unit holding a substance table 6 (rows moved 6, none 0); version pair unread here 4

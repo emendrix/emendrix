@@ -1,0 +1,21 @@
+read on 2026-10-16 over the disk cache at ~/Library/Caches/emendrix/cellar
+== 32023R1542 : 3 cached versions
+  20230728 -> 20240718: 0 rows moved
+  20240718 -> 20250731: 0 rows moved
+
+  stability of keys present in both versions, over every transition:
+    same           6 (1.0000)
+    spacing        0 (0.0000)
+    amended        0 (0.0000)
+    added          0
+    removed        0
+    tables keyed by a different column than the version before: 0
+
+  register of 02023R1542-20250731: 3 entries
+    with cells           2113 bytes indent=2,       1559 compact
+    without cells        1116 bytes indent=2,        661 compact
+  largest single-transition unit entry diff with cells: 0 bytes, 
+
+  published record 6c4fcdc 2026-10-08
+    02023R1542-20250731 -> 02023R1542-20260813 AN I: not cached: 02023R1542-20260813
+  published changes 7: in a unit holding a substance table 0 (rows moved 0, none 0); version pair unread here 3

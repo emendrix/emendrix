@@ -12,7 +12,7 @@ assertions. It is **not** production code and nothing under `src/emendrix/` impo
 `trace.py` fetches with a 3-second delay and caches every response under `.cache/` (gitignored), so
 a second run of any command below is offline and free.
 
-Three scripts here do import the package, because what they measure *is* the package. All three
+Four scripts here do import the package, because what they measure *is* the package. All four
 read through the same client, the same composition root and the same disk cache the loop uses,
 write nothing, call no model and are offline unless `--fetch` is passed.
 
@@ -65,6 +65,42 @@ prices the changes it would ask about with the same comparison. This script meas
 of a correction over a whole corpus in one parse per version; the command decides, per entry,
 what a correction would cost and then carries it out.
 
+`substance_tables.py` measures what the parser deliberately does not read: the rows of the
+tables inside annexes. The provision tree takes a `TBL` as prose, joining cells by a space and
+rows by a line break, so a stored annex text cannot be split back into the rows the act prints;
+the markup still holds them. Over every consolidated English Formex package the disk cache
+holds, it asks which annex tables carry CAS numbers, EC numbers or CLP Index numbers and in
+which columns, which column tells a table's rows apart, how those keyed rows move between
+consecutive versions, and how much a full list of one version's rows would weigh:
+
+```bash
+uv run python scripts/validation/substance_tables.py survey             # every cached act
+uv run python scripts/validation/substance_tables.py survey --act 32008R1272 --verbose
+uv run python scripts/validation/substance_tables.py survey --fetch     # fill gaps first
+uv run python scripts/validation/substance_tables.py transitions --act 32008R1272 \
+  --record /tmp/changelogs
+uv run python scripts/validation/substance_tables.py excerpt 32008R1272 \
+  02008R1272-20260701 "AN VI" --rows 40
+```
+
+A table's container is named by the parser's own placement function, its grid is built from
+each cell's `COL`, `ROWSPAN` and `COLSPAN` rather than from position, and a cell's text is
+`verbatim_text` of the `CELL` element. An identifier counts only with a valid check digit; a
+value of the right shape with a wrong one is counted and printed with its row, because it is a
+fact about the act. `--record` holds each published change against the row diff of its unit,
+over a clone of the changelog corpus dated by its commit. `excerpt` prints one table as a
+well-formed fragment, its ancestors reduced to their tags, attributes and the headings a
+location is read from, with its header rows and its first `--rows` body rows; the same input
+gives the same bytes, so a table fixture is cut by a command rather than retyped.
+
+What its figures do not mean. A "substance table" holds at least three cells with a valid CAS
+or EC number or an Index-shaped value: a statement about markup, not about what an act
+regulates. A row naming no identifier is not a row about no substance, since a group entry
+names a family rather than a number. The key column is chosen from the cells alone, per table
+and version, and the row diff it drives is a naive keyed comparison of cell texts, not the
+change an amending act made. Register and diff sizes are of a hypothetical JSON shape, written
+to size a decision rather than to describe a file anything publishes.
+
 ## Commands behind the committed reports
 
 Each command writes `results/<name>.txt`; those files are committed and are the measured record.
@@ -84,6 +120,21 @@ uv run python scripts/validation/trace.py --write trace 32017R0745 20240709 2025
 uv run python scripts/validation/trace.py --write trace 32006R1907 20220501 20221014
 uv run python scripts/validation/trace.py --write trace 32006R1907 20081012 20090120 \
   --substitution preparation:mixture
+```
+
+The substance-table readings are redirected rather than written, and carry their date in the
+name. They were read on 2026-10-16, after `survey --fetch` had filled the six table-bearing
+acts' gaps, against a clone of the changelog corpus at `6c4fcdc` (2026-10-08):
+
+```bash
+uv run python scripts/validation/substance_tables.py survey \
+  > scripts/validation/results/substance-tables-survey-2026-10-16.txt
+for act in 32006R1907 32008R1272 32009R1223 32012R0528 32012R0649 32019R1021 \
+           32009R1107 32023R1542; do
+  uv run python scripts/validation/substance_tables.py transitions --act $act \
+    --record /tmp/changelogs \
+    > scripts/validation/results/substance-tables-transitions-$act-2026-10-16.txt
+done
 ```
 
 `versions` inventories an act's consolidated versions and their English manifestations.

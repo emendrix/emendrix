@@ -1,0 +1,131 @@
+read on 2026-10-16 over the disk cache at ~/Library/Caches/emendrix/cellar
+== 32008R1272 CLP: 32 cached versions
+  original -> 20101201: 2679 rows moved
+    AN VI SCT 3 #1: +764 -0 ~572 ws 0 =2803 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +763 -0 ~580 ws 0 =2785 unkeyed 1->0 dup 0->0
+  20101201 -> 20110419: 81 rows moved
+    AN VI SCT 3 #1: +0 -0 ~28 ws 0 =4111 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +0 -0 ~53 ws 0 =4075 unkeyed 0->0 dup 0->0
+  20110419 -> 20131201: 281 rows moved
+    AN VI SCT 3 #1: +16 -0 ~211 ws 0 =3928 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +14 -0 ~40 ws 0 =4088 unkeyed 0->0 dup 0->0
+  20131201 -> 20150101: 77 rows moved
+    AN VI SCT 3 #1: +22 -0 ~16 ws 0 =4139 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +23 -0 ~16 ws 0 =4126 unkeyed 0->0 dup 0->0
+  20150101 -> 20150601: 1730 rows moved
+    AN VI SCT 3 #1: +14 -0 ~48 ws 667 =3462 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +14 -0 ~138 ws 849 =3178 unkeyed 0->0 dup 0->0
+  20150601 -> 20160101: 0 rows moved
+  20160101 -> 20160401: 2 rows moved
+    AN VI SCT 3 #1: +0 -0 ~1 ws 0 =4190 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +0 -0 ~1 ws 0 =4178 unkeyed 0->0 dup 0->0
+  20160401 -> 20170101: 69 rows moved
+    AN VI SCT 3 #1: +20 -0 ~17 ws 0 =4174 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +20 -0 ~12 ws 0 =4167 unkeyed 0->0 dup 0->0
+  20170101 -> 20170601: 0 rows moved
+  20170601 -> 20180301: 49 rows moved
+    AN VI SCT 3 #1: +26 -0 ~22 ws 0 =4189 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +0 -1 ~0 ws 0 =4198 unkeyed 0->0 dup 0->0
+  20180301 -> 20181201: 46 rows moved
+    AN VI SCT 3 #1: +24 -0 ~21 ws 0 =4216 unkeyed 1->1 dup 0->0
+    AN VI SCT 3 #2: +0 -0 ~1 ws 0 =4197 unkeyed 0->0 dup 0->0
+  20181201 -> 20190726: 0 rows moved
+  20190726 -> 20191201: 2902 rows moved
+    AN VI SCT 3 #1: +1 -1 ~1306 ws 925 =2029 unkeyed 1->0 dup 0->0
+    AN VI SCT 3 #2: +0 -0 ~0 ws 669 =3529 unkeyed 0->0 dup 0->0
+  20191201 -> 20200101: 1 rows moved
+    AN VI SCT 3 #1: +0 -0 ~1 ws 0 =4260 unkeyed 0->0 dup 0->0
+  20200101 -> 20200501: 34 rows moved
+    AN VI SCT 3 #1: +16 -0 ~18 ws 0 =4243 unkeyed 0->0 dup 0->0
+  20200501 -> 20201017: 0 rows moved
+  20201017 -> 20201028: 0 rows moved
+  20201028 -> 20201114: 173 rows moved
+    AN VIII #1 (table new): +7 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #2 (table new): +8 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #3 (table new): +8 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #4 (table new): +8 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #5 (table new): +8 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #6 (table new): +8 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #7 (table new): +8 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #8 (table new): +9 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #9 (table new): +9 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #10 (table new): +9 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #11 (table new): +9 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #12 (table new): +9 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #13 (table new): +9 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #14 (table new): +9 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #15 (table new): +9 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #16 (table new): +8 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #17 (table new): +10 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #19 (table new): +5 -0 ~0 ws 0 =0 unkeyed 0->1 dup 0->0
+    AN VIII #22 (table new): +12 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN VIII #23 (table new): +11 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+  20201114 -> 20210510: 0 rows moved
+  20210510 -> 20211001: 28 rows moved
+    AN VI SCT 3 #1: +17 -0 ~11 ws 0 =4266 unkeyed 0->0 dup 0->0
+  20211001 -> 20220301: 58 rows moved
+    AN VI SCT 3 #1: +37 -0 ~21 ws 0 =4273 unkeyed 0->0 dup 0->0
+  20220301 -> 20221217: 78 rows moved
+    AN VI SCT 3 #1: +23 -2 ~53 ws 0 =4276 unkeyed 0->0 dup 0->0
+  20221217 -> 20230420: 0 rows moved
+  20230420 -> 20230731: 0 rows moved
+  20230731 -> 20231201: 58 rows moved
+    AN VI SCT 3 #1: +39 -0 ~17 ws 0 =4335 unkeyed 0->0 dup 0->0
+    AN VIII #1: +0 -1 ~0 ws 0 =6 unkeyed 0->0 dup 0->0
+    AN VIII #22: +0 -1 ~0 ws 0 =11 unkeyed 0->0 dup 0->0
+  20231201 -> 20241210: 1 rows moved
+    AN VI SCT 3 #2: +0 -0 ~1 ws 0 =4197 unkeyed 0->0 dup 0->0
+  20241210 -> 20250201: 4 rows moved
+    AN VI SCT 3 #1: +0 -0 ~4 ws 0 =4387 unkeyed 0->0 dup 0->0
+  20250201 -> 20250901: 53 rows moved
+    AN VI SCT 3 #1: +28 -0 ~25 ws 0 =4366 unkeyed 0->0 dup 0->0
+  20250901 -> 20260501: 39 rows moved
+    AN VI SCT 3 #1: +25 -0 ~14 ws 0 =4405 unkeyed 0->0 dup 0->0
+  20260501 -> 20260701: 0 rows moved
+  20260701 -> 20270101: 0 rows moved
+
+  stability of keys present in both versions, over every transition:
+    same      256701 (0.9758)
+    spacing     3110 (0.0118)
+    amended     3248 (0.0123)
+    added       2079
+    removed        6
+    tables keyed by a different column than the version before: 0
+
+  register of 02008R1272-20270101: 8813 entries
+    with cells        7068493 bytes indent=2,    4905493 compact
+    without cells     3824105 bytes indent=2,    2540129 compact
+  largest single-transition unit entry diff with cells: 5770036 bytes, 20190726->20191201 AN VI
+
+  published record 6c4fcdc 2026-10-08
+    32008R1272 -> 02008R1272-20101201 AN VI: +1527 -0 ~1152 ws 0 =5588
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI: +0 -0 ~81 ws 0 =8186
+    02008R1272-20110419 -> 02008R1272-20131201 AN VI: +30 -0 ~251 ws 0 =8016
+    02008R1272-20131201 -> 02008R1272-20150101 AN VI: +45 -0 ~32 ws 0 =8265
+    02008R1272-20150101 -> 02008R1272-20150601 AN VI: +28 -0 ~186 ws 1516 =6640
+    02008R1272-20150601 -> 02008R1272-20160101 AN VI: +0 -0 ~0 ws 0 =8370
+    02008R1272-20160101 -> 02008R1272-20160401 AN VI: +0 -0 ~2 ws 0 =8368
+    02008R1272-20160401 -> 02008R1272-20170101 AN VI: +40 -0 ~29 ws 0 =8341
+    02008R1272-20170101 -> 02008R1272-20170601 AN VI: +0 -0 ~0 ws 0 =8410
+    02008R1272-20170601 -> 02008R1272-20180301 AN VI: +26 -1 ~22 ws 0 =8387
+    02008R1272-20180301 -> 02008R1272-20181201 AN VI: +24 -0 ~22 ws 0 =8413
+    02008R1272-20190726 -> 02008R1272-20191201 AN VI: +1 -1 ~1306 ws 1594 =5558
+    02008R1272-20191201 -> 02008R1272-20200101 AN VI: +0 -0 ~1 ws 0 =8458
+    02008R1272-20200101 -> 02008R1272-20200501 AN VI: +16 -0 ~18 ws 0 =8441
+    02008R1272-20200501 -> 02008R1272-20201017 AN VI: +0 -0 ~0 ws 0 =8475
+    02008R1272-20201028 -> 02008R1272-20201114 AN VIII: +173 -0 ~0 ws 0 =0
+    02008R1272-20201114 -> 02008R1272-20210510 AN VI: +0 -0 ~0 ws 0 =8475
+    02008R1272-20210510 -> 02008R1272-20211001 AN VI: +17 -0 ~11 ws 0 =8464
+    02008R1272-20211001 -> 02008R1272-20220301 AN VI: +37 -0 ~21 ws 0 =8471
+    02008R1272-20220301 -> 02008R1272-20221217 AN VI: +23 -2 ~53 ws 0 =8474
+    02008R1272-20221217 -> 02008R1272-20230420 AN VI: +0 -0 ~0 ws 0 =8550
+    02008R1272-20230420 -> 02008R1272-20230731 AN VI: +0 -0 ~0 ws 0 =8550
+    02008R1272-20230731 -> 02008R1272-20231201 AN VI: +39 -0 ~17 ws 0 =8533
+    02008R1272-20231201 -> 02008R1272-20241210 AN VI: +0 -0 ~1 ws 0 =8588
+    02008R1272-20231201 -> 02008R1272-20241210 AN VIII: +0 -0 ~0 ws 0 =171
+    02008R1272-20241210 -> 02008R1272-20250201 AN VI: +0 -0 ~4 ws 0 =8585
+    02008R1272-20241210 -> 02008R1272-20250201 AN VIII: +0 -0 ~0 ws 0 =171
+    02008R1272-20250201 -> 02008R1272-20250901 AN VI: +28 -0 ~25 ws 0 =8564
+    02008R1272-20250901 -> 02008R1272-20260501 AN VI: +25 -0 ~14 ws 0 =8603
+    02008R1272-20260701 -> 02008R1272-20270101 AN VIII: +0 -0 ~0 ws 0 =171
+  published changes 186: in a unit holding a substance table 30 (rows moved 21, none 9); version pair unread here 0

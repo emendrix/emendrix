@@ -1,0 +1,248 @@
+read on 2026-10-16 over the disk cache at ~/Library/Caches/emendrix/cellar
+== 32006R1907 REACH: 64 cached versions
+  20071123 -> 20081012: 49 rows moved
+    AN IV #1: +7 -35 ~7 ws 0 =26 unkeyed 0->0 dup 0->0
+  20081012 -> 20090120: 40 rows moved
+    AN XVII #1: +0 -0 ~31 ws 4 =7 unkeyed 0->0 dup 0->0
+    AN XVII APP 2 #1: +0 -0 ~5 ws 0 =783 unkeyed 0->0 dup 0->0
+  20090120 -> 20090220: 39 rows moved
+    AN XVII #1: +0 -0 ~0 ws 27 =15 unkeyed 0->0 dup 0->0
+    AN XVII APP 1 #1: +0 -0 ~3 ws 0 =185 unkeyed 0->0 dup 0->0
+    AN XVII APP 2 #1: +0 -0 ~2 ws 5 =781 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +0 -0 ~2 ws 0 =174 unkeyed 0->0 dup 0->0
+  20090220 -> 20090627: 49 rows moved
+    AN XVII #1: +7 -2 ~40 ws 0 =0 unkeyed 0->0 dup 0->0
+  20090627 -> 20111210: 36 rows moved
+    AN XIV #1 (table new): +6 -0 ~0 ws 0 =0 unkeyed 0->0 dup 0->0
+    AN XVII #1: +2 -0 ~4 ws 24 =19 unkeyed 0->0 dup 0->0
+  20111210 -> 20120601: 455 rows moved
+    AN XIV #1: +8 -0 ~0 ws 6 =0 unkeyed 0->0 dup 0->0
+    AN XVII #1: +0 -0 ~1 ws 34 =14 unkeyed 0->0 dup 0->0
+    AN XVII APP 1 #1: +50 -0 ~5 ws 0 =183 unkeyed 0->0 dup 0->0
+    AN XVII APP 2 #1: +22 -0 ~12 ws 0 =776 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +248 -2 ~2 ws 0 =172 unkeyed 0->0 dup 0->0
+    AN XVII APP 5 #1: +2 -0 ~0 ws 0 =17 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +61 -0 ~2 ws 0 =64 unkeyed 0->0 dup 0->0
+  20120601 -> 20120605: 42 rows moved
+    AN XIV #1: +0 -0 ~0 ws 6 =8 unkeyed 0->0 dup 0->0
+    AN XVII #1: +1 -0 ~0 ws 35 =14 unkeyed 0->0 dup 0->0
+  20120605 -> 20121009: 3 rows moved
+    AN XVII #1: +1 -0 ~1 ws 1 =48 unkeyed 0->0 dup 0->0
+  20121009 -> 20130306: 10 rows moved
+    AN XVII #1: +0 -0 ~7 ws 0 =44 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +0 -0 ~1 ws 1 =420 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +0 -0 ~1 ws 0 =126 unkeyed 0->3 dup 0->0
+  20130306 -> 20130421: 8 rows moved
+    AN XIV #1: +8 -0 ~0 ws 0 =14 unkeyed 0->0 dup 0->0
+  20130421 -> 20130701: 0 rows moved
+  20130701 -> 20140410: 1 rows moved
+    AN XVII #1: +0 -0 ~1 ws 0 =50 unkeyed 0->0 dup 0->0
+  20140410 -> 20140822: 13 rows moved
+    AN XIV #1: +9 -0 ~0 ws 0 =22 unkeyed 0->0 dup 0->0
+    AN XVII APP 2 #1: +1 -0 ~0 ws 0 =810 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +2 -0 ~1 ws 0 =126 unkeyed 3->3 dup 0->0
+  20140822 -> 20150101: 8 rows moved
+    AN XVII APP 2 #1: +1 -0 ~0 ws 0 =811 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +6 -1 ~0 ws 0 =128 unkeyed 3->3 dup 0->1
+  20150101 -> 20150323: 1 rows moved
+    AN XVII #1: +0 -0 ~1 ws 0 =50 unkeyed 0->0 dup 0->0
+  20150513: skipped, a member is not well-formed and no table was read
+  20150601: skipped, a member is not well-formed and no table was read
+  20150323 -> 20150925: 6 rows moved
+    AN XVII #1: +1 -0 ~5 ws 0 =46 unkeyed 0->0 dup 0->0
+  20150925 -> 20151227: 1 rows moved
+    AN XVII #1: +0 -0 ~1 ws 0 =51 unkeyed 0->0 dup 0->0
+  20151227 -> 20160203: 2 rows moved
+    AN XVII #1: +1 -0 ~1 ws 0 =51 unkeyed 0->0 dup 0->0
+  20160203 -> 20160308: 1 rows moved
+    AN XVII #1: +0 -0 ~1 ws 0 =52 unkeyed 0->0 dup 0->0
+  20160308 -> 20160401: 3 rows moved
+    AN XVII APP 1 #1: +1 -0 ~0 ws 0 =238 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +1 -0 ~0 ws 0 =422 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +1 -0 ~0 ws 0 =134 unkeyed 3->3 dup 1->1
+  20160401 -> 20160621: 0 rows moved
+  20160621 -> 20160714: 2 rows moved
+    AN XVII #1: +1 -0 ~1 ws 0 =52 unkeyed 0->0 dup 0->0
+  20160714 -> 20161011: 286 rows moved
+    AN XVII APP 1 #1: +0 -0 ~0 ws 145 =94 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +0 -0 ~1 ws 140 =282 unkeyed 0->0 dup 0->0
+  20161011 -> 20170102: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =54 unkeyed 0->0 dup 0->0
+  20170102 -> 20170302: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =55 unkeyed 0->0 dup 0->0
+  20170302 -> 20170704: 617 rows moved
+    AN XIV #1: +12 -0 ~0 ws 23 =8 unkeyed 0->0 dup 0->0
+    AN XVII #1: +1 -0 ~0 ws 39 =17 unkeyed 0->0 dup 0->0
+    AN XVII APP 1 #1: +0 -0 ~0 ws 28 =211 unkeyed 0->0 dup 0->0
+    AN XVII APP 2 #1: +0 -0 ~0 ws 332 =480 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +0 -0 ~0 ws 172 =251 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +0 -0 ~0 ws 10 =125 unkeyed 3->3 dup 1->1
+  20170704 -> 20171010: 7 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =57 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +5 -0 ~1 ws 0 =134 unkeyed 3->3 dup 1->1
+  20171010 -> 20180131: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =58 unkeyed 0->0 dup 0->0
+  20180131 -> 20180301: 19 rows moved
+    AN XVII APP 2 #1: +2 -0 ~0 ws 0 =812 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +1 -0 ~0 ws 0 =423 unkeyed 0->0 dup 0->0
+    AN XVII APP 5 #1: +3 -0 ~1 ws 0 =18 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +12 -0 ~0 ws 0 =140 unkeyed 3->3 dup 1->1
+  20180301 -> 20180509: 6 rows moved
+    AN XVII #1: +2 -0 ~0 ws 1 =58 unkeyed 0->0 dup 0->0
+    AN XVII APP 2 #1: +0 -0 ~0 ws 1 =813 unkeyed 0->0 dup 0->0
+    AN XVII APP 5 #1: +0 -0 ~0 ws 2 =20 unkeyed 0->0 dup 0->0
+  20180509 -> 20181201: 52 rows moved
+    AN XVII #1: +1 -0 ~1 ws 1 =59 unkeyed 0->0 dup 0->0
+    AN XVII APP 12 #1 (table new): +27 -0 ~0 ws 0 =0 unkeyed 0->4 dup 0->1
+    AN XVII APP 2 #1: +10 -0 ~0 ws 0 =814 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +3 -0 ~0 ws 0 =424 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +9 -0 ~0 ws 0 =152 unkeyed 3->3 dup 1->1
+  20181201 -> 20190107: 1 rows moved
+    AN XVII #1: +0 -0 ~1 ws 0 =61 unkeyed 0->0 dup 0->0
+  20190107 -> 20190702: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =62 unkeyed 0->0 dup 0->0
+  20190702 -> 20191030: 0 rows moved
+  20191030 -> 20200101: 0 rows moved
+  20200101 -> 20200227: 23 rows moved
+    AN XIV #1: +11 -0 ~0 ws 12 =31 unkeyed 0->0 dup 0->0
+  20200227 -> 20200428: 4 rows moved
+    AN XIV #1: +0 -0 ~1 ws 3 =50 unkeyed 0->0 dup 0->0
+  20200428 -> 20200824: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =63 unkeyed 0->0 dup 0->0
+  20200824 -> 20210101: 0 rows moved
+  20210101 -> 20210215: 95 rows moved
+    AN XIV #1: +0 -0 ~1 ws 0 =53 unkeyed 0->0 dup 0->0
+    AN XVII #1: +1 -0 ~3 ws 0 =61 unkeyed 0->0 dup 0->0
+    AN XVII APP 13 #1 (table new): +90 -0 ~0 ws 0 =0 unkeyed 0->1 dup 0->0
+  20210215 -> 20210705: 6 rows moved
+    AN XVII APP 2 #1: +3 -0 ~0 ws 0 =824 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +3 -0 ~0 ws 0 =161 unkeyed 3->3 dup 1->1
+  20210705 -> 20210825: 1 rows moved
+    AN XVII #1: +0 -0 ~1 ws 0 =64 unkeyed 0->0 dup 0->0
+  20210825 -> 20211001: 11 rows moved
+    AN XVII APP 2 #1: +3 -0 ~0 ws 0 =827 unkeyed 0->0 dup 0->0
+    AN XVII APP 5 #1: +1 -0 ~0 ws 0 =22 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +7 -0 ~0 ws 0 =164 unkeyed 3->3 dup 1->1
+  20211001 -> 20220108: 6 rows moved
+    AN XIV #1: +0 -0 ~4 ws 0 =50 unkeyed 0->0 dup 0->0
+    AN XVII #1: +1 -0 ~0 ws 1 =64 unkeyed 0->0 dup 0->0
+  20220108 -> 20220301: 21 rows moved
+    AN XVII #1: +0 -1 ~0 ws 0 =65 unkeyed 0->0 dup 0->1
+    AN XVII APP 2 #1: +7 -0 ~0 ws 0 =830 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +2 -0 ~0 ws 0 =427 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +11 -0 ~0 ws 0 =171 unkeyed 3->3 dup 1->1
+  20220301 -> 20220501: 5 rows moved
+    AN XIV #1: +5 -0 ~0 ws 0 =54 unkeyed 0->0 dup 0->0
+  20220501 -> 20221014: 0 rows moved
+  20221014 -> 20221217: 9 rows moved
+    AN XVII APP 2 #1: +3 -0 ~0 ws 0 =837 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +6 -0 ~0 ws 0 =182 unkeyed 3->3 dup 1->1
+  20221217 -> 20230528: 1 rows moved
+    AN XVII #1: +0 -0 ~1 ws 0 =64 unkeyed 0->0 dup 1->1
+  20230528 -> 20230629: 5 rows moved
+    AN XVII APP 1 #1: +0 -0 ~1 ws 0 =238 unkeyed 0->0 dup 0->0
+    AN XVII APP 2 #1: +0 -0 ~1 ws 0 =839 unkeyed 0->0 dup 0->0
+    AN XVII APP 5 #1: +0 -0 ~1 ws 0 =22 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +0 -0 ~2 ws 0 =186 unkeyed 3->3 dup 1->1
+  20230629 -> 20230806: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =65 unkeyed 0->0 dup 1->1
+  20230806 -> 20231201: 26 rows moved
+    AN XIV #1: +0 -0 ~1 ws 0 =58 unkeyed 0->0 dup 0->0
+    AN XVII #1: +1 -0 ~0 ws 0 =66 unkeyed 0->0 dup 1->1
+    AN XVII APP 2 #1: +4 -0 ~0 ws 0 =840 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +20 -0 ~0 ws 0 =188 unkeyed 3->3 dup 1->1
+  20231201 -> 20240606: 2 rows moved
+    AN XVII #1: +0 -0 ~2 ws 0 =65 unkeyed 0->0 dup 1->1
+  20240606 -> 20241010: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =67 unkeyed 0->0 dup 1->1
+  20241010 -> 20241218: 0 rows moved
+  20241218 -> 20250422: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =68 unkeyed 0->0 dup 1->1
+  20250422 -> 20250623: 3 rows moved
+    AN XVII #1: +2 -0 ~1 ws 0 =68 unkeyed 0->0 dup 1->1
+  20250623 -> 20250901: 18 rows moved
+    AN XVII APP 2 #1: +5 -0 ~0 ws 0 =844 unkeyed 0->0 dup 0->0
+    AN XVII APP 4 #1: +1 -0 ~0 ws 0 =429 unkeyed 0->0 dup 0->0
+    AN XVII APP 6 #1: +12 -0 ~0 ws 0 =208 unkeyed 3->3 dup 1->1
+  20250901 -> 20251023: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =71 unkeyed 0->0 dup 1->1
+  20251023 -> 20260511: 1 rows moved
+    AN XVII #1: +1 -0 ~0 ws 0 =72 unkeyed 0->0 dup 1->1
+  20260511 -> 20260622: 1 rows moved
+    AN XVII #1: +0 -0 ~1 ws 0 =72 unkeyed 0->0 dup 1->1
+
+  stability of keys present in both versions, over every transition:
+    same      110483 (0.9891)
+    spacing     1053 (0.0094)
+    amended      164 (0.0015)
+    added        746
+    removed       41
+    tables keyed by a different column than the version before: 0
+
+  register of 02006R1907-20260622: 2072 entries
+    with cells        1951068 bytes indent=2,    1507886 compact
+    without cells     1125850 bytes indent=2,     804549 compact
+  largest single-transition unit entry diff with cells: 1504345 bytes, 20170302->20170704 AN XVII
+
+  published record 6c4fcdc 2026-10-08
+    02006R1907-20071123 -> 02006R1907-20081012 AN IV: +7 -35 ~7 ws 0 =26
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII: +0 -0 ~36 ws 4 =1259
+    02006R1907-20090120 -> 02006R1907-20090220 AN XVII: +0 -0 ~7 ws 32 =1260
+    02006R1907-20090220 -> 02006R1907-20090627 AN XVII: +7 -2 ~40 ws 0 =1257
+    02006R1907-20111210 -> 02006R1907-20120601 AN XIV: +8 -0 ~0 ws 6 =0
+    02006R1907-20111210 -> 02006R1907-20120601 AN XVII: +383 -2 ~22 ws 34 =1248
+    02006R1907-20120601 -> 02006R1907-20120605 AN XVII: +1 -0 ~0 ws 35 =1652
+    02006R1907-20120605 -> 02006R1907-20121009 AN XVII: +1 -0 ~1 ws 1 =1686
+    02006R1907-20121009 -> 02006R1907-20130306 AN XVII: +0 -0 ~9 ws 1 =1679
+    02006R1907-20130306 -> 02006R1907-20130421 AN XIV: +8 -0 ~0 ws 0 =14
+    02006R1907-20130701 -> 02006R1907-20140410 AN XVII: +0 -0 ~1 ws 0 =1688
+    02006R1907-20140410 -> 02006R1907-20140822 AN XIV: +9 -0 ~0 ws 0 =22
+    02006R1907-20140410 -> 02006R1907-20140822 AN XVII: +3 -0 ~1 ws 0 =1688
+    02006R1907-20140822 -> 02006R1907-20150101 AN XVII: +7 -1 ~0 ws 0 =1691
+    02006R1907-20150101 -> 02006R1907-20150323 AN XVII: +0 -0 ~1 ws 0 =1697
+    02006R1907-20150925 -> 02006R1907-20151227 AN XVII: +0 -0 ~1 ws 0 =1698
+    02006R1907-20151227 -> 02006R1907-20160203 AN XVII: +1 -0 ~1 ws 0 =1698
+    02006R1907-20160203 -> 02006R1907-20160308 AN XVII: +0 -0 ~1 ws 0 =1699
+    02006R1907-20160308 -> 02006R1907-20160401 AN XVII: +3 -0 ~0 ws 0 =1700
+    02006R1907-20160621 -> 02006R1907-20160714 AN XVII: +1 -0 ~1 ws 0 =1702
+    02006R1907-20160714 -> 02006R1907-20161011 AN XVII: +0 -0 ~1 ws 285 =1418
+    02006R1907-20161011 -> 02006R1907-20170102 AN XVII: +1 -0 ~0 ws 0 =1704
+    02006R1907-20170102 -> 02006R1907-20170302 AN XVII: +1 -0 ~0 ws 0 =1705
+    02006R1907-20170302 -> 02006R1907-20170704 AN XIV: +12 -0 ~0 ws 23 =8
+    02006R1907-20170302 -> 02006R1907-20170704 AN XVII: +1 -0 ~0 ws 581 =1125
+    02006R1907-20170704 -> 02006R1907-20171010 AN XVII: +6 -0 ~1 ws 0 =1706
+    02006R1907-20171010 -> 02006R1907-20180131 AN XVII: +1 -0 ~0 ws 0 =1713
+    02006R1907-20180131 -> 02006R1907-20180301 AN XVII: +18 -0 ~1 ws 0 =1713
+    02006R1907-20180301 -> 02006R1907-20180509 AN XVII: +2 -0 ~0 ws 4 =1728
+    02006R1907-20180509 -> 02006R1907-20181201 AN XVII: +50 -0 ~1 ws 1 =1732
+    02006R1907-20181201 -> 02006R1907-20190107 AN XVII: +0 -0 ~1 ws 0 =1783
+    02006R1907-20190107 -> 02006R1907-20190702 AN XVII: +1 -0 ~0 ws 0 =1784
+    02006R1907-20190702 -> 02006R1907-20191030 AN XIV: +0 -0 ~0 ws 0 =43
+    02006R1907-20200101 -> 02006R1907-20200227 AN XIV: +11 -0 ~0 ws 12 =31
+    02006R1907-20200227 -> 02006R1907-20200428 AN XIV: +0 -0 ~1 ws 3 =50
+    02006R1907-20200428 -> 02006R1907-20200824 AN XVII: +1 -0 ~0 ws 0 =1785
+    02006R1907-20210101 -> 02006R1907-20210215 AN XIV: +0 -0 ~1 ws 0 =53
+    02006R1907-20210101 -> 02006R1907-20210215 AN XVII: +91 -0 ~3 ws 0 =1783
+    02006R1907-20210215 -> 02006R1907-20210705 AN XVII: +6 -0 ~0 ws 0 =1877
+    02006R1907-20210705 -> 02006R1907-20210825 AN XVII: +0 -0 ~1 ws 0 =1882
+    02006R1907-20210825 -> 02006R1907-20211001 AN XVII: +11 -0 ~0 ws 0 =1883
+    02006R1907-20211001 -> 02006R1907-20220108 AN XIV: +0 -0 ~4 ws 0 =50
+    02006R1907-20211001 -> 02006R1907-20220108 AN XVII: +1 -0 ~0 ws 1 =1893
+    02006R1907-20220108 -> 02006R1907-20220301 AN XVII: +20 -1 ~0 ws 0 =1894
+    02006R1907-20220301 -> 02006R1907-20220501 AN XIV: +5 -0 ~0 ws 0 =54
+    02006R1907-20221014 -> 02006R1907-20221217 AN XVII: +9 -0 ~0 ws 0 =1914
+    02006R1907-20221217 -> 02006R1907-20230528 AN XVII: +0 -0 ~1 ws 0 =1922
+    02006R1907-20230528 -> 02006R1907-20230629 AN XVII: +0 -0 ~5 ws 0 =1918
+    02006R1907-20230629 -> 02006R1907-20230806 AN XVII: +1 -0 ~0 ws 0 =1923
+    02006R1907-20230806 -> 02006R1907-20231201 AN XIV: +0 -0 ~1 ws 0 =58
+    02006R1907-20230806 -> 02006R1907-20231201 AN XVII: +25 -0 ~0 ws 0 =1924
+    02006R1907-20231201 -> 02006R1907-20240606 AN XVII: +0 -0 ~2 ws 0 =1947
+    02006R1907-20240606 -> 02006R1907-20241010 AN XVII: +1 -0 ~0 ws 0 =1949
+    02006R1907-20241010 -> 02006R1907-20241218 AN XVII: +0 -0 ~0 ws 0 =1950
+    02006R1907-20241218 -> 02006R1907-20250422 AN XVII: +1 -0 ~0 ws 0 =1950
+    02006R1907-20250422 -> 02006R1907-20250623 AN XVII: +2 -0 ~1 ws 0 =1950
+    02006R1907-20250623 -> 02006R1907-20250901 AN XVII: +18 -0 ~0 ws 0 =1953
+    02006R1907-20250901 -> 02006R1907-20251023 AN XVII: +1 -0 ~0 ws 0 =1971
+    02006R1907-20251023 -> 02006R1907-20260511 AN XVII: +1 -0 ~0 ws 0 =1972
+    02006R1907-20260511 -> 02006R1907-20260622 AN XVII: +0 -0 ~1 ws 0 =1972
+  published changes 136: in a unit holding a substance table 60 (rows moved 58, none 2); version pair unread here 0
