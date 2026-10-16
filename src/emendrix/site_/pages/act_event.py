@@ -62,8 +62,11 @@ from __future__ import annotations
 
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry
+from emendrix.output.json_out import payload_for
+from emendrix.site_.api_files import API_ROOT
 from emendrix.site_.diffview import summary_words
 from emendrix.site_.dispute import QUIET_NOTE, SHAPE_CLASS, dispute_shape, named_by, quiet_heading
+from emendrix.site_.entry_table import entry_table
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, INDEX_ID, touched
@@ -134,6 +137,10 @@ def _change_block(
     heading. A change with no text on either side has nothing to measure and prints no count.
     The dates line follows where a date moved.
 
+    A change to a profiled table carries its entry table after the sentences and before the
+    text (`site_/entry_table.py`): the rows the act prints, keyed, which is what a reader of a
+    table too large to follow as a diff reads instead. A change that read no table shows nothing.
+
     Where the sources differ the block carries the shape as a class and says it twice, as the
     shape's tag with its definition link and as the lead and detail of the note. A change with
     no text names its naming source in the heading: that heading is the whole of such a row
@@ -168,6 +175,8 @@ def _change_block(
     if change.disputed:
         lines.extend(differ_note(change.signals, up(_DEPTH)))
     lines.extend(prose(emitted, entry))
+    rows = f"{up(_DEPTH)}{API_ROOT}{payload_for(entry.act, entry.to_version)}"
+    lines.extend(entry_table(change.table_entries, rows))
     lines.extend(
         (
             Html(

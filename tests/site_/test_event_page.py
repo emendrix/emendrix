@@ -1002,3 +1002,26 @@ def test_a_coded_date_that_is_not_the_in_force_date_is_explained_where_the_codes
     assert "this version, coded 20180101, is in force from 31 December 2015." in page
     assert "the previous version, coded" not in page
     assert '<span class="side-before">Previous version</span>' in page
+
+
+def test_a_change_with_table_entries_carries_its_entry_table_inside_its_own_block() -> None:
+    """After the block's sentences and before its text, linking the change's own API file for
+    rows listed by key alone; and taking the table away gives back the page byte for byte."""
+    from toy_table_entries import added, delta
+
+    entry = diff_only_entry(_delta(), detected_on=OBSERVED)
+    plain = _page(entry)
+    assert 'class="entries"' not in plain
+    first = entry.changes[0]
+    tabled = first.change.model_copy(update={"table_entries": delta(added("k1"))})
+    changed = entry.model_copy(
+        update={"changes": (first.model_copy(update={"change": tabled}), *entry.changes[1:])}
+    )
+    page = _page(changed)
+    section = page.index('<section class="entries"')
+    blocks = [match.start() for match in re.finditer(r'<div class="chg[ "]', page)]
+    assert blocks[0] < section < blocks[1]
+    assert section < page.index("<details", blocks[0])
+    assert "<span>Entry k1</span>" in page
+    stripped = re.sub(r'\n<section class="entries".*?</section>', "", page, flags=re.DOTALL)
+    assert stripped == plain

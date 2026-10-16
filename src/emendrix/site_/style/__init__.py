@@ -22,10 +22,11 @@ documents: header lines, the two columns and the sidebar, the rail, the version 
 masthead, the act's dates list and the pager), `change` (one change as a statement: its heading,
 facts line, the note where its sources differ, the model's register and the citations), `evidence`
 (the text it quotes: the touched index, the gathered rows with no text, the diff and verbatim
-blocks, tables) and `media` (print and forced colours). A rule in a later module may rely on an
-earlier one and never the reverse, which is what makes the order a contract rather than a
-preference. A class used by more than one page family lives in `base`; a class one page owns lives
-with that page. `timeline` was split off `evidence` on 2026-09-05, when gathering an event's
+blocks, tables), `entries` (a change's table entries, the rows an act prints, keyed) and `media`
+(print and forced colours). A rule in a later module may rely on an earlier one and never the
+reverse, which is what makes the order a contract rather than a preference. A class used by
+more than one page family lives in `base`; a class one page owns lives with that page.
+`timeline` was split off `evidence` on 2026-09-05, when gathering an event's
 changes with no text to show needed rules that module had no room for under the cap, and `media` on
 2026-09-18, when forced colours joined print, and `change` off `evidence` the same day, when the
 change block gained its registers.
@@ -69,6 +70,7 @@ from emendrix.site_.style.account import ACCOUNT
 from emendrix.site_.style.account_pages import ACCOUNT_PAGES
 from emendrix.site_.style.base import BASE
 from emendrix.site_.style.change import CHANGE
+from emendrix.site_.style.entries import ENTRIES
 from emendrix.site_.style.evidence import EVIDENCE
 from emendrix.site_.style.fonts import FONTS_CSS
 from emendrix.site_.style.forms import FORMS
@@ -94,6 +96,7 @@ STYLE: Final = (
     + TIMELINE
     + CHANGE
     + EVIDENCE
+    + ENTRIES
     + MEDIA
 )
 """The whole sheet, in cascade order. `build.py` writes exactly this, and `fingerprint`

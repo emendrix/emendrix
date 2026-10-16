@@ -1067,4 +1067,16 @@ the site's served copies of the two schemas that describe a change moved:
 did not move. Every page, feed, `search-index.json`, the sitemaps, `robots.txt`, `llms.txt`, the
 stylesheet, the script, the fonts, `icon.svg`, `og.png`, the catalogue and every other schema are
 byte-identical.
+
+Read again on 2026-10-16, later the same day, when a change block began showing the entries of a
+profiled table its change moved, as a table under the table's own header rows, after the
+block's sentences and before its text. The golden's one transition, the MDR's, reads no
+profiled table, so no page gained a table and nothing in any page's body moved. The stylesheet
+gained the entry table's rules, their print line and their forced-colour lines: it grew from
+72 574 to 75 340 bytes, and its fingerprinted name moved from `style.5cc19b83.css` to
+`style.01dbaca0.css` in the head of all 24 pages and of `account-shell.html`, at the same
+length. **No `id=` moved or went**, every
+`<title>` and description is unchanged, and `_LARGEST_PAGE` did not move. Every feed,
+`search-index.json`, the sitemaps, `robots.txt`, `llms.txt`, the script, the fonts, `icon.svg`,
+`og.png`, the catalogue and the schemas under `api/v1/` are byte-identical.
 """

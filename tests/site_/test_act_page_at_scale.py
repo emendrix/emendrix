@@ -556,3 +556,41 @@ def test_the_tree_weight_is_a_reviewed_number() -> None:
     assert total == _TOTAL_BYTES, (
         f"the tree now totals {total} bytes; if that is intended, update _TOTAL_BYTES and say why"
     )
+
+
+_TABLE_EVENT: Final = 198_173
+"""The event page carrying a change with 2,000 amended entries of eleven cells, in bytes.
+
+Measured 2026-10-16, when event pages began showing a change's table entries. The figure is
+what the 200-entry cap holds still: the first 50 entries open, the next 150 behind one fold,
+both sides of each with its marked cell, and the remaining 1,800 as keys with their
+identifiers. Without the cap the same page would carry ten times the rows.
+"""
+
+
+def test_an_event_with_two_thousand_amended_entries_is_held_by_the_cap() -> None:
+    """Rows stop at `LISTED` per kind and the rest are keys pointing at the change's file."""
+    from toy_table_entries import amended, delta
+
+    from emendrix.site_.entry_table import LISTED
+
+    def row(key: str, last: str) -> tuple[str | None, ...]:
+        return (key, *(f"{key} cell {column}" for column in range(1, 10)), last)
+
+    changes = tuple(
+        amended(f"k{index}", row(f"k{index}", "old value"), row(f"k{index}", "new value"))
+        for index in range(1, 2001)
+    )
+    first, *rest = _entries()[:1]
+    lead = first.changes[0]
+    tabled = lead.change.model_copy(update={"table_entries": delta(*changes)})
+    entry = first.model_copy(
+        update={"changes": (lead.model_copy(update={"change": tabled}), *first.changes[1:])}
+    )
+    pages = _pages((entry, *rest))
+    (path,) = [name for name in pages if f"/{entry.key}/" in name]
+    page = pages[path]
+    assert page.count("<tbody>") == LISTED
+    assert "1800 more amended entries, by key only:" in page
+    assert f'href="../../../api/v1/{entry.act_dir}/changes/{entry.key}.json"' in page
+    assert len(page.encode()) == _TABLE_EVENT, f"the page weighs {len(page.encode())} bytes"

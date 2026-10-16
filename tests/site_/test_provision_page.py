@@ -441,3 +441,33 @@ def test_a_step_where_sources_differ_is_graded_as_its_version_page_grades_it() -
         assert 'href="../../../methodology/#sources-differ">What this means</a>' in rendered
         assert '<p class="differ"><strong>' in rendered
     assert graded
+
+
+def _tabled(entry: ChangelogEntry) -> ChangelogEntry:
+    """Every change of the entry carrying one added keyed row."""
+    from toy_table_entries import added, delta
+
+    changes = tuple(
+        emitted.model_copy(
+            update={
+                "change": emitted.change.model_copy(update={"table_entries": delta(added("k1"))})
+            }
+        )
+        for emitted in entry.changes
+    )
+    return entry.model_copy(update={"changes": changes})
+
+
+def test_only_the_newest_step_carries_the_entry_table_above_its_text() -> None:
+    """The table its event page shows, in the step whose text is on this page; an older step's
+    table is on its own event page, one link away, for the weight reason the text is."""
+    rendered, _, _ = _page(_tabled(_entry(2)), _tabled(_entry(1)))
+    steps = _STEPS.findall(rendered)
+    newest, older = steps[0][1], steps[1][1]
+    assert newest.count('<section class="entries"') == 1
+    assert newest.index('<section class="entries"') < newest.index("<details open>")
+    assert "<span>Entry k1</span>" in newest
+    assert 'class="entries"' not in older
+    plain, _, _ = _page(_entry(2), _entry(1))
+    stripped = re.sub(r'\n<section class="entries".*?</section>', "", rendered, flags=re.DOTALL)
+    assert stripped == plain

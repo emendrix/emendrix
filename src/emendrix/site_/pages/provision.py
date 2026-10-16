@@ -30,12 +30,15 @@ of every title a provision has ever had would be a second history nobody asked f
 
 from __future__ import annotations
 
+from emendrix.output.json_out import payload_for
 from emendrix.site_.amending import amenders, made_by
+from emendrix.site_.api_files import API_ROOT
 from emendrix.site_.attribution import UNATTRIBUTED_LABEL, unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import version_heading
 from emendrix.site_.diffview import summary_words
 from emendrix.site_.dispute import SHAPE_CLASS, dispute_shape
+from emendrix.site_.entry_table import entry_table
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.history import ProvisionHistory, ProvisionStep
 from emendrix.site_.identity import masthead
@@ -144,6 +147,8 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
     `text` is the evidence for the newest step and `None` for every other one. The newest opens
     its `<details>`, because a reader arriving from a search for this provision wants the
     current text visible; an older step links the block on the event page that holds its own.
+    The newest step also carries the entry table its event page shows, above the text, for the
+    same reason; an older step's table is on its event page.
 
     The heading carries how much moved only where the evidence is on this page, for the same
     reason: the count is measured on a rendered comparison, and an older step's comparison is
@@ -188,6 +193,8 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
             )
         )
     else:
+        rows = f"{up(_DEPTH)}{API_ROOT}{payload_for(entry.act, entry.to_version)}"
+        lines.extend(entry_table(change.table_entries, rows))
         lines.extend(
             (
                 Html(f"<details open><summary>{escape(summary_words(change))}</summary>"),

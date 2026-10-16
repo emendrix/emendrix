@@ -357,6 +357,29 @@ both through `pages/prose.py`) is read in this order:
   and named by its role alone where none did. On a version of fewer than six changes the text is
   open; a longer version, which has an index, keeps it closed.
 
+**A table's entries** sit between the sentences and the text, on a version page, when the change
+carries `table_entries` (`site_/entry_table.py`). The rows come from the act's own table markup,
+keyed by the column the act numbers them by and diffed deterministically; no model reads or
+writes any of it, and the page says only which entries were added, amended or removed and what
+each row prints, never what a row means for a substance. Three states are kept apart: `null`
+shows nothing, because the unit was never read as a table; a delta with no changes says `No keyed
+table entry changed between these two versions. The text below shows where the provision did
+change.`; a delta with changes opens on a count line, `38 entries added, 4 amended, 0 removed`,
+followed where they apply by `(1 of the amended differ only in spacing, dash forms or accents)`
+and `12 more changed only in whitespace and are not listed.` A whitespace-only difference is not
+a change; a typography-only amendment is one, and sits in its own closed `<details>` under the
+amended table, counted in its summary. Where either version has gaps, one sentence names them:
+rows that carry no key, tables whose header could not be recognised, keys printed a different
+number of times in the two versions. Each kind gets one `<table>` per table the unit holds,
+captioned with the kind, the container and the table's ordinal, under the table's own header
+rows with their spans, and led by an `Identifiers` column naming the entry's key (its name,
+where the name is the key) and its CAS, EC and Index numbers. An amended entry shows its rows
+before and after, the differing cells word-diffed. Per kind the first 50 entries are open,
+entries 51 to 200 sit behind one `<details>` with their count, and past 200 only the keys are
+listed, with their identifiers and a link to the change's file under `api/v1/`, where every row
+is. A wide table scrolls inside its own box, never the page. A provision page's newest step shows
+the same table above its text; an older step's table is on its version page, one link away.
+
 **The glossary** is the last section of the methodology page, `Words this site uses`, at
 `methodology/#glossary`, with an `id` on every term (`#sources-differ`, `#dates-only`,
 `#first-seen`, …). Every tag kind the site prints maps to one of its terms, and a test holds the

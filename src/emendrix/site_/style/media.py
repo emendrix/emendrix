@@ -68,6 +68,8 @@ MEDIA: Final = """\
   .masthead { background: none; box-shadow: none; clip-path: none; border-image: none;
               border-top: 2px solid currentColor; }
   .version-masthead { background: none; box-shadow: none; clip-path: none; }
+  /* An entry table cannot scroll on paper, so it prints whole; its marks keep their lines. */
+  .entries-scroll { overflow: visible; }
 }
 /* Forced colours replace every colour with the reader's own, and a mark drawn only as a
    background vanishes. So every boundary that is the information becomes `CanvasText`, and the
@@ -101,5 +103,9 @@ MEDIA: Final = """\
   .act-coverage::before { border: 1px solid CanvasText; }
   header.bar .account, .panel, .banner, .choice, .danger-zone, .state-on, .state-off, textarea
     { border-color: CanvasText; }
+  /* An entry table's grid and its differing cells, and the marks inside them. */
+  .entries th, .entries td, .entries td.differs { border-color: CanvasText; }
+  .entries ins { text-decoration: underline; }
+  .entries del { text-decoration: line-through; }
 }
 """
