@@ -1,0 +1,281 @@
+read on 2026-10-16 over the disk cache at ~/Library/Caches/emendrix/cellar
+published record 6c4fcdc 2026-10-08
+
+== 32006R1907 REACH
+  published changes checked 60 (rows moved 58, none 2); not checked 0
+  amending acts named by none: 1, the change: 54, the transition's metadata: 5
+  changes whose window folds an act they do not name: 17
+  distinct amending acts named 63: read 63
+    printed                       824  (added 732, amended 92)
+      of which matched by notation only: 0
+    named in prose                 28  (added 0, amended 28)
+    not printed                    31  (added 5, amended 26)
+      cause, typography only: 3
+      cause, identifier under another key: 12
+      cause, folded, not named: 5
+      cause, earlier modifier: 3
+      cause, only a whole-table reprint: 0
+      cause, corrigendum in the window: 0
+      cause, unclassified: 8
+    no amending act readable        9  (added 0, amended 9)
+      no amending act readable, no table in any named act: 8
+      no amending act readable, none named: 1
+    agreement (printed + named in prose) / checked keys: 852/883 (0.965)
+    printed but unmoved (key unchanged in the newer version): 1002
+    whitespace-only keys, apart: 1023 (of which printed 1)
+    removed keys: 41 (printed or named 3)
+    printed but unmoved   896: 02006R1907-20081012 -> 02006R1907-20090120 AN XVII by 32008R1272
+    printed but unmoved    26: 02006R1907-20071123 -> 02006R1907-20081012 AN IV by 32008R0987
+    printed but unmoved    18: 02006R1907-20221014 -> 02006R1907-20221217 AN XVII by 32021R2204
+    printed but unmoved    10: 02006R1907-20160308 -> 02006R1907-20160401 AN XVII by 32014R0317
+    printed but unmoved     7: 02006R1907-20140410 -> 02006R1907-20140822 AN XVII by 32014R0895
+  disagreements 31:
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 12  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 16  by 32008R1272  [unclassified]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 18  by 32008R1272  [unclassified]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 19  by 32008R1272  [unclassified]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 21  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 22  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 23  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 24  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 26  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 31  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 32  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 43  by 32008R1272  [unclassified]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 44  by 32008R1272  [unclassified]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 46  by 32008R1272  [unclassified]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 47  by 32008R1272  [unclassified]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 49  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 51  by 32008R1272  [identifier under another key]
+    02006R1907-20081012 -> 02006R1907-20090120 AN XVII #1 amended 52  by 32008R1272  [unclassified]
+    02006R1907-20120605 -> 02006R1907-20121009 AN XVII #1 amended 23  by 32012R0836  [folded, not named: 32012R0835]
+    02006R1907-20121009 -> 02006R1907-20130306 AN XVII APP 4 #1 amended 649-093-00-5  by 32013R0126  [typography only]
+    ... and 11 more (--verbose prints every one)
+
+  profiled tables absent from a version read here (versions): AN XIV #1 5, AN XVII APP 12 #1 31, AN XVII APP 13 #1 40
+
+  modifier CELEX numbers the grammar refuses, set aside: 307R1354, 308R0987, 308R1272, 309R0134, 309R0552
+
+== 32008R1272 CLP
+  published changes checked 26 (rows moved 20, none 6); not checked 0
+  amending acts named by none: 3, the change: 21, the transition's metadata: 2
+  changes whose window folds an act they do not name: 9
+  distinct amending acts named 29: read 29
+    printed                      4662  (added 1795, amended 2867)
+      of which matched by notation only: 0
+    named in prose                  0  (added 0, amended 0)
+    not printed                   365  (added 40, amended 325)
+      cause, typography only: 259
+      cause, identifier under another key: 2
+      cause, folded, not named: 63
+      cause, earlier modifier: 39
+      cause, only a whole-table reprint: 0
+      cause, corrigendum in the window: 0
+      cause, unclassified: 2
+    no amending act readable      127  (added 71, amended 56)
+      no amending act readable, none named: 127
+    agreement (printed + named in prose) / checked keys: 4662/5027 (0.927)
+    printed but unmoved (key unchanged in the newer version): 2899
+    whitespace-only keys, apart: 3110 (of which printed 1539)
+    removed keys: 4 (printed or named 2)
+    printed but unmoved  2829: 02008R1272-20190726 -> 02008R1272-20191201 AN VI by 32018R0669, 32018R1480, 32020R0217
+    printed but unmoved    21: 02008R1272-20160401 -> 02008R1272-20170101 AN VI by 32016R0918, 32016R1179
+    printed but unmoved    17: 02008R1272-20110419 -> 02008R1272-20131201 AN VI by 32012R0618, 32013R0487, 32013R0758, 32013R0944
+    printed but unmoved    13: 02008R1272-20170101 -> 02008R1272-20170601 AN VI by 32017R0776
+    printed but unmoved    12: 02008R1272-20150601 -> 02008R1272-20160101 AN VI by 32015R1221
+  disagreements 365:
+    32008R1272 -> 02008R1272-20101201 AN VI SCT 3 #1 amended 607-386-00-5  by 32009R0790  [typography only]
+    32008R1272 -> 02008R1272-20101201 AN VI SCT 3 #2 amended 007-001-00-5  by 32009R0790  [unclassified]
+    32008R1272 -> 02008R1272-20101201 AN VI SCT 3 #2 amended 649-480-00-9  by 32009R0790  [unclassified]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 016-011-00-9  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 017-002-00-2  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 024-003-00-1  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 024-005-00-2  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 028-002-00-7  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 033-002-00-5  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 048-001-00-5  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 050-005-00-7  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 050-006-00-2  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 050-007-00-8  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 050-008-00-3  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 050-011-00-X  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 050-012-00-5  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 050-013-00-0  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 051-003-00-9  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 053-002-00-9  by 32011R0286  [typography only]
+    02008R1272-20101201 -> 02008R1272-20110419 AN VI SCT 3 #1 amended 056-002-00-7  by 32011R0286  [typography only]
+    ... and 345 more (--verbose prints every one)
+
+  modifier CELEX numbers the grammar refuses, set aside: 52018XC0709(01)
+
+== 32009R1223 Cosmetics
+  published changes checked 89 (rows moved 82, none 7); not checked 4
+    not checked, version not readable from the cache: 32009R1223: 4
+  amending acts named by none: 1, the change: 80, the transition's metadata: 8
+  changes whose window folds an act they do not name: 25
+  distinct amending acts named 50: read 50
+    printed                       582  (added 498, amended 84)
+      of which matched by notation only: 0
+    named in prose                  2  (added 0, amended 2)
+    not printed                    99  (added 58, amended 41)
+      cause, typography only: 5
+      cause, identifier under another key: 26
+      cause, folded, not named: 10
+      cause, earlier modifier: 55
+      cause, only a whole-table reprint: 0
+      cause, corrigendum in the window: 2
+      cause, unclassified: 1
+    no amending act readable        0  (added 0, amended 0)
+    agreement (printed + named in prose) / checked keys: 584/683 (0.855)
+    printed but unmoved (key unchanged in the newer version): 166
+    whitespace-only keys, apart: 807 (of which printed 8)
+    removed keys: 2 (printed or named 1)
+    printed but unmoved    28: 02009R1223-20130711 -> 02009R1223-20130901 AN II by 32013R0658
+    printed but unmoved    25: 02009R1223-20191218 -> 02009R1223-20200501 AN II by 32019R1966
+    printed but unmoved    11: 02009R1223-20260501 -> 02009R1223-20260518 AN II by 32026R0909
+    printed but unmoved     8: 02009R1223-20180801 -> 02009R1223-20190617 AN II by 32019R0681, 32019R0831, 32019R1966
+    printed but unmoved     8: 02009R1223-20240404 -> 02009R1223-20240424 AN II by 32024R0996
+  disagreements 99:
+    02009R1223-20130901 -> 02009R1223-20140401 AN II #1 amended 433  by 32013R0483  [unclassified]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 added 8b  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 12  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 203  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 217  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 22  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 225  by 32013R0483  [typography only]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 229  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 241  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 242  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 244  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 245  by 32013R0483  [folded, not named: 32013R1197]
+    02009R1223-20130901 -> 02009R1223-20140401 AN III #1 amended 9a  by 32013R0483  [typography only]
+    02009R1223-20140401 -> 02009R1223-20140701 AN III #1 added 265  by 32014R0358  [earlier modifier: 32013R1197]
+    02009R1223-20140401 -> 02009R1223-20140701 AN III #1 added 266  by 32014R0358  [earlier modifier: 32013R1197]
+    02009R1223-20140401 -> 02009R1223-20140701 AN III #1 added 267  by 32014R0358  [earlier modifier: 32013R1197]
+    02009R1223-20140401 -> 02009R1223-20140701 AN III #1 added 268  by 32014R0358  [earlier modifier: 32013R1197]
+    02009R1223-20140401 -> 02009R1223-20140701 AN III #1 added 269  by 32014R0358  [earlier modifier: 32013R1197]
+    02009R1223-20140401 -> 02009R1223-20140701 AN III #1 added 270  by 32014R0358  [earlier modifier: 32013R1197]
+    02009R1223-20140401 -> 02009R1223-20140701 AN III #1 added 271  by 32014R0358  [earlier modifier: 32013R1197]
+    ... and 79 more (--verbose prints every one)
+
+== 32012R0528 Biocides
+  published changes checked 6 (rows moved 6, none 0); not checked 0
+  amending acts named by the change: 6
+  changes whose window folds an act they do not name: 0
+  distinct amending acts named 13: read 13
+    printed                        12  (added 11, amended 1)
+      of which matched by notation only: 0
+    named in prose                  0  (added 0, amended 0)
+    not printed                     0  (added 0, amended 0)
+      cause, typography only: 0
+      cause, identifier under another key: 0
+      cause, folded, not named: 0
+      cause, earlier modifier: 0
+      cause, only a whole-table reprint: 0
+      cause, corrigendum in the window: 0
+      cause, unclassified: 0
+    no amending act readable        1  (added 1, amended 0)
+      no amending act readable, no table in any named act: 1
+    agreement (printed + named in prose) / checked keys: 12/12 (1.000)
+    printed but unmoved (key unchanged in the newer version): 0
+    whitespace-only keys, apart: 0 (of which printed 0)
+    removed keys: 1 (printed or named 0)
+  disagreements 0:
+
+== 32012R0649 PIC
+  published changes checked 16 (rows moved 15, none 1); not checked 0
+  amending acts named by the change: 16
+  changes whose window folds an act they do not name: 3
+  distinct amending acts named 10: read 10
+    printed                       837  (added 447, amended 390)
+      of which matched by notation only: 3
+    named in prose                  2  (added 0, amended 2)
+    not printed                    25  (added 21, amended 4)
+      cause, typography only: 0
+      cause, identifier under another key: 1
+      cause, folded, not named: 24
+      cause, earlier modifier: 0
+      cause, only a whole-table reprint: 0
+      cause, corrigendum in the window: 0
+      cause, unclassified: 0
+    no amending act readable        0  (added 0, amended 0)
+    agreement (printed + named in prose) / checked keys: 839/864 (0.971)
+    printed but unmoved (key unchanged in the newer version): 45
+    whitespace-only keys, apart: 12 (of which printed 10)
+    removed keys: 68 (printed or named 33)
+    printed but unmoved    30: 02012R0649-20200901 -> 02012R0649-20220701 AN I by 32022R0643
+    printed but unmoved     7: 32012R0649 -> 02012R0649-20141201 AN I by 32014R1078, 32019R1701
+    printed but unmoved     5: 02012R0649-20200901 -> 02012R0649-20220701 AN V by 32022R0643
+    printed but unmoved     1: 02012R0649-20190501 -> 02012R0649-20200901 AN V by 32020R1068
+    printed but unmoved     1: 02012R0649-20220701 -> 02012R0649-20231101 AN I by 32023R1656
+  disagreements 25:
+    32012R0649 -> 02012R0649-20141201 AN I #1 added Perfluorooctane sulfonates (PFOS) C8F17SO2X (X = OH, Metal …  by 32014R1078, 32019R1701  [identifier under another key]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 added Acetochlor  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 added Asulam  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 added Chloropicrin  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 added Flufenoxuron  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 added Naled  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 added Propargite  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 amended Alachlor  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 amended Aldicarb  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #1 amended Dichlorvos  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added 2-naphthyloxyacetic acid  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Acetochlor  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Aldicarb (#)  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Asulam  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Chloropicrin  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Diphenylamine  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Flufenoxuron  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Naled  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Propanil  by 32019R0330  [folded, not named: 32019R1701]
+    02012R0649-20180401 -> 02012R0649-20190501 AN I #2 added Propargite  by 32019R0330  [folded, not named: 32019R1701]
+    ... and 5 more (--verbose prints every one)
+
+== 32019R1021 POPs
+  published changes checked 14 (rows moved 14, none 0); not checked 1
+    not checked, version not readable from the cache: 32019R1021: 1
+  amending acts named by the change: 14
+  changes whose window folds an act they do not name: 0
+  distinct amending acts named 18: read 18
+    printed                        19  (added 13, amended 6)
+      of which matched by notation only: 0
+    named in prose                  9  (added 1, amended 8)
+    not printed                     3  (added 1, amended 2)
+      cause, typography only: 0
+      cause, identifier under another key: 0
+      cause, folded, not named: 0
+      cause, earlier modifier: 0
+      cause, only a whole-table reprint: 0
+      cause, corrigendum in the window: 0
+      cause, unclassified: 3
+    no amending act readable        7  (added 0, amended 7)
+      no amending act readable, no table in any named act: 7
+    agreement (printed + named in prose) / checked keys: 28/31 (0.903)
+    printed but unmoved (key unchanged in the newer version): 0
+    whitespace-only keys, apart: 0 (of which printed 0)
+    removed keys: 4 (printed or named 2)
+  disagreements 3:
+    02019R1021-20200704 -> 02019R1021-20200907 AN I #1 amended Perfluorooctane sulfonic acid and its derivatives (PFOS) C8…  by 32020R1203, 32020R1204  [unclassified]
+    02019R1021-20230828 -> 02019R1021-20241017 AN I #1 amended Hexabromocyclododecane Hexabromocyclododecane means: hexabr…  by 32024R2555, 32024R2570  [unclassified]
+    02019R1021-20241017 -> 02019R1021-20250804 AN I #1 added Perfluorooctanoic acid (PFOA), its salts and PFOA-related c…  by 32025R0718, 32025R0843, 32025R1399  [unclassified]
+
+== total
+    printed                      6936  (added 3496, amended 3440)
+      of which matched by notation only: 3
+    named in prose                 41  (added 1, amended 40)
+    not printed                   523  (added 125, amended 398)
+      cause, typography only: 267
+      cause, identifier under another key: 41
+      cause, folded, not named: 102
+      cause, earlier modifier: 97
+      cause, only a whole-table reprint: 0
+      cause, corrigendum in the window: 2
+      cause, unclassified: 14
+    no amending act readable      144  (added 72, amended 72)
+      no amending act readable, no table in any named act: 16
+      no amending act readable, none named: 128
+    agreement (printed + named in prose) / checked keys: 6977/7500 (0.930)
+    printed but unmoved (key unchanged in the newer version): 4112
+    whitespace-only keys, apart: 4952 (of which printed 1558)
+    removed keys: 120 (printed or named 41)
+  network calls 0
