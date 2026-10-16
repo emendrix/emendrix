@@ -21,7 +21,14 @@ from toy_entries import (
 )
 
 from emendrix import DISCLAIMER
-from emendrix.core import ChangeType
+from emendrix.core import (
+    ChangeType,
+    EntryChange,
+    EntryDelta,
+    EntryTable,
+    ProvisionLocation,
+    TableEntry,
+)
 from emendrix.core.changes import DisputeReason
 from emendrix.gate import GateOutcome
 from emendrix.output import SCHEMA_VERSION, ChangelogEntry, diff_only_entry
@@ -30,7 +37,7 @@ from emendrix.output.json_out import DIFF_ONLY_NOTE, slug
 
 def test_the_document_declares_its_schema_version_and_its_disclaimer() -> None:
     payload = json.loads(toy_entry().to_json())
-    assert payload["schema_version"] == SCHEMA_VERSION == "1.2"
+    assert payload["schema_version"] == SCHEMA_VERSION == "1.3"
     assert payload["disclaimer"] == DISCLAIMER
 
 
@@ -163,7 +170,7 @@ def test_a_document_written_before_the_reason_existed_reads_back_with_it(version
         DisputeReason.TEXTLESS_METADATA_ONLY
     ]
     assert entry.to_json() == disputed_entry().to_json().replace(
-        '"schema_version": "1.2"', f'"schema_version": "{version}"'
+        '"schema_version": "1.3"', f'"schema_version": "{version}"'
     )
 
 
@@ -207,3 +214,55 @@ def test_identifiers_that_are_not_path_safe_are_made_safe() -> None:
     assert slug("2024R1689/20260727") == "2024R1689_20260727"
     assert slug("../../etc") == "etc"
     assert slug("///") == "unnamed"
+
+
+# ------------------------------------------------------------ table entries, schema 1.3
+
+
+def _with_entries(entry: ChangelogEntry) -> ChangelogEntry:
+    """The toy entry with an entry delta attached to its first change: cells are invented."""
+    at = ProvisionLocation.parse("AR 2")
+    older = TableEntry(unit=at, container=at, table=1, key="k1", rows=(("k1", "one two"),))
+    newer = TableEntry(unit=at, container=at, table=1, key="k1", rows=(("k1", "one  two", None),))
+    delta = EntryDelta(
+        tables=(EntryTable(unit=at, container=at, table=1, key_label="No", header=(("No",),)),),
+        changes=(
+            EntryChange(kind="amended", container=at, table=1, key="k1", before=older, after=newer),
+        ),
+        unchanged=3,
+    )
+    first, *rest = entry.changes
+    replaced = first.model_copy(
+        update={"change": first.change.model_copy(update={"table_entries": delta})}
+    )
+    return entry.model_copy(update={"changes": (replaced, *rest)})
+
+
+def test_a_change_without_table_entries_stores_null_which_means_not_read() -> None:
+    payload = json.loads(toy_entry().to_json())
+    assert all(change["change"]["table_entries"] is None for change in payload["changes"])
+
+
+def test_a_document_written_at_the_earlier_schema_reads_back_with_no_table_entries() -> None:
+    """Every payload published before 2026-10-16 has no `table_entries` key at all; reading one
+    says the entries were not read, which is true, and never that no entry moved."""
+    payload = json.loads(disputed_entry().to_json())
+    payload["schema_version"] = "1.2"
+    for item in payload["changes"]:
+        del item["change"]["table_entries"]
+    entry = ChangelogEntry.model_validate(payload)
+    assert entry.schema_version == "1.2"
+    assert all(item.change.table_entries is None for item in entry.changes)
+
+
+def test_an_entry_delta_round_trips_byte_for_byte_with_its_cells_verbatim() -> None:
+    entry = _with_entries(toy_entry())
+    text = entry.to_json()
+    restored = ChangelogEntry.model_validate_json(text)
+    assert restored == entry
+    assert restored.to_json() == text
+    stored = json.loads(text)["changes"][0]["change"]["table_entries"]
+    assert stored["changes"][0]["after"]["rows"] == [["k1", "one  two", None]], "two spaces, kept"
+    assert stored["changes"][0]["container"] == "AR 2"
+    assert stored["tables"][0]["key_label"] == "No"
+    assert (stored["unchanged"], stored["whitespace_only"]) == (3, 0)

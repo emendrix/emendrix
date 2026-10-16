@@ -28,7 +28,10 @@ from emendrix.core.claims import (
 )
 from emendrix.core.delta import Change, Delta, DeltaSummary, sort_changes
 from emendrix.core.entries import (
+    EntryChange,
+    EntryDelta,
     EntryGaps,
+    EntryKind,
     EntryOrder,
     EntryTable,
     Identifier,
@@ -79,7 +82,10 @@ __all__ = [
     "Delta",
     "DeltaSummary",
     "EnglishUnavailable",
+    "EntryChange",
+    "EntryDelta",
     "EntryGaps",
+    "EntryKind",
     "EntryOrder",
     "EntryTable",
     "Identifier",

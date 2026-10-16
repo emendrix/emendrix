@@ -24,6 +24,7 @@ from emendrix.core.changes import (
     SignalSet,
     SignalStatus,
 )
+from emendrix.core.entries import EntryDelta
 from emendrix.core.identifiers import ActId, ProvisionRef, VersionId
 from emendrix.core.location import ProvisionLocation
 from emendrix.core.provisions import ProvisionText
@@ -61,6 +62,12 @@ class Change(BaseModel):
     changed_within: tuple[ProvisionLocation, ...] = Field(
         default=(),
         description="Sub-provision coordinates whose own text differs: detail, not the unit.",
+    )
+    table_entries: EntryDelta | None = Field(
+        default=None,
+        description="The keyed diff of the unit's table entries. None means not read: no "
+        "profiled table in the unit on either side, or a document written before schema 1.3. "
+        "An empty delta means read, and no keyed entry changed.",
     )
     amending_acts: tuple[ActId, ...] = Field(
         default=(),

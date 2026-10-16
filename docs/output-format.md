@@ -146,9 +146,64 @@ change, and it is kept so that an older document read again still gets a code. A
 reading of stored verdicts and says nothing about the law. **Adding it is not a schema bump**:
 the field has a default reading, derived from data every document already carries, and its
 absence from an older document means nothing a consumer has to interpret, so `schema_version`
-stays `1.2`.
+did not move for it.
 
-`schema_version` is `1.2`. It moved there on 2026-09-05, when a document gained `evidence`: one
+`schema_version` is `1.3`. It moved there on 2026-10-16, when a change gained `table_entries`:
+the keyed diff of the rows of the unit's profiled tables, computed by the structural diff beside
+the text comparison and carried through corroboration, explanation and the gate untouched.
+**`null` means the entries were not read**, because no profiled table sits in the unit on either
+side or because the document was written before this version; a delta with no `changes` means
+they were read and no keyed entry moved. That reading of absence is the bump, as it was for
+`evidence`: a consumer taking a missing delta for "no row changed" would be wrong about every
+document published earlier and about every unit nobody profiled.
+
+| `table_entries` field | Meaning |
+|---|---|
+| `tables[]` | the unit's profiled tables, the newer version's where both have one, then any only the older had; each with `unit`, `container`, `table` (1-based ordinal within the container), `key_label` (`null` when the key is the entry's name) and `header`, its header rows |
+| `changes[]` | one row per keyed entry that differs: `kind` (`added`, `removed`, `amended`), `container`, `table`, `key`, `occurrence`, `typography_only`, and the entry `before` and `after` (`null` on the side the entry does not exist on) |
+| `changes[].before`, `changes[].after` | the entry as read: `key`, `occurrence`, `group` (the verbatim heading of the block the rows sit in), `rows`, `identifiers` (`scheme` and canonical `value`, check-digit valid only), `failed_check_digits` and `name` |
+| `unchanged` | paired entries equal verbatim |
+| `whitespace_only` | paired entries equal once every cell passes the comparison normaliser: counted, and **not changes**, for the reason the comparison text exists at all |
+| `unpaired[]` | keys printed a different number of times on the two sides, as `container`, `table`, `key`; none of their rows is diffed |
+| `gaps_before`, `gaps_after` | per side: `unrecognised_tables` (profiled positions whose header did not match, never read), `unkeyed_rows` (entries with no key, never paired), `failed_check_digits`, and `repeated_keys[]` (every key one table prints more than once) |
+
+**Cells are verbatim and uncapped.** A `rows` entry is one table row as the markup holds it, one
+value per grid column: the cell's text exactly as stored, or `null` where the row has no cell of
+its own at that position because a span from another cell covers it. Nothing is joined, trimmed
+or normalised, and no cap applies: the evidence is the whole row. Two entries are **amended**
+when their `group` or `rows` differ; equal once whitespace collapses is `whitespace_only`; and an
+amendment that is equal once spacing, dash forms and accents are set aside (NFKD, combining marks
+dropped, every hyphen and dash form and the minus sign read as `-`, all whitespace removed) is
+labelled `typography_only: true`. The label never removes a change: a character swap in legal
+text is a difference, and only whitespace is exempt from being one.
+
+**Pairing is by key, and by occurrence where a table prints a key twice.** Entries pair on the
+table and the key, where a table is told by its container's path below the unit and its
+ordinal, so a renumbered unit still pairs its tables with the ones it had under its old number;
+when both versions print the key the same number of times, the first pairs with the first and so
+on, and a key printed more often on one side than the other goes to `unpaired`. Unkeyed rows are never paired. `changes` are sorted by the table's position in
+`tables`, then by the key in natural order (digit runs compare as numbers, so `5` before `46a`
+before `68`), then by occurrence, and two runs over the same versions produce identical bytes.
+A unit inserted whole lists every keyed entry as `added`; one deleted whole lists each as
+`removed`.
+
+**The model never sees it.** The delta is not in the explain prompt and not in any cassette key,
+so no explanation changed when the field arrived, and the citation gate reads none of it. It is
+deterministic detail beside the verbatim texts, like `changed_within`.
+
+**Size.** Measured on 2026-10-16 over every consecutive pair of cached versions of the eight
+profiled acts, the largest `table_entries` a single change carries is 4 700 505 bytes at the
+payload's indentation: CLP `32008R1272`, the original text to the consolidation of 2010-12-01,
+Annex VI, 1 527 entries added and 1 152 amended (3 of them typography alone). The next is the
+re-typesetting of 2019-07-26 to 2019-12-01, 3 353 231 bytes, where 1 594 rows moved in
+whitespace alone and are counted rather than carried; the same transition measured 5.77 MB
+before that rule. Outside CLP the largest is REACH Annex XVII at 2 142 840 bytes, where the
+consolidations of 2015-05-13 and 2015-06-01 carry no annex at all, so the structural diff
+deletes and re-inserts the annex and the entry diff lists its 1 698 entries as removed and then
+as added, exactly as the tree diff reads the same two packages; then PIC Annex I at 635 927
+bytes. Every other unit of every other act stays under 0.6 MB.
+
+`schema_version` moved to `1.2` on 2026-09-05, when a document gained `evidence`: one
 record per change saying what its explanation was written about, as
 `sha256` over the change's canonical location and its two verbatim texts, in that order,
 NUL-separated and UTF-8 encoded, with an absent side tagged apart from an empty one. **A missing
@@ -190,11 +245,12 @@ buckets `substantive`, `date_only` and `textless` sum to `touched`. Adding the f
 have been a bump, since it has a default; re-meaning `substantive` is one, because a consumer
 summing it with `date_only` to get `touched` was right before that date and is wrong after it.
 
-Documents written before either move say `1.0` and stay valid, so a reader of the corpus meets all
-three versions. One read under the newest schema reports `textless` as 0, the wider `substantive`
-its own run computed and no evidence at all, which is the older question answered under the older
-name; the counts are corrected when something rewrites the entry, by the same rule the rest of
-this page states and never in bulk, and the missing provenance is never corrected at all.
+Documents written before any of these moves say `1.0` and stay valid, so a reader of the corpus
+meets all four versions. One read under the newest schema reports `textless` as 0, the wider
+`substantive` its own run computed, no evidence and no table entries at all, which is the older
+question answered under the older name; the counts are corrected when something rewrites the
+entry, by the same rule the rest of this page states and never in bulk, and the missing
+provenance is never corrected at all.
 
 ## The index
 

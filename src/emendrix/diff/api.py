@@ -16,6 +16,10 @@ these changes and cannot speak for the other two signals, which stay `UNAVAILABL
 
 A deletion is referenced in the version that still contains it, the old one. Everything else is
 referenced in the new version, at the location it now occupies.
+
+A unit holding a profiled table on either side also carries `table_entries`, the keyed diff of
+its rows (`diff/entries.py`). It is computed here and nowhere later, rides through
+corroboration, explain and gate untouched, and never enters the explain prompt.
 """
 
 from __future__ import annotations
@@ -28,6 +32,8 @@ from emendrix.core import (
     Change,
     ChangeType,
     Delta,
+    EntryDelta,
+    ProvisionLocation,
     ProvisionNode,
     ProvisionRef,
     ProvisionTree,
@@ -35,9 +41,11 @@ from emendrix.core import (
     SignalObservation,
     SignalSet,
     SignalStatus,
+    TableReading,
     VersionId,
 )
 from emendrix.diff.deferred import read_dates
+from emendrix.diff.entries import diff_entries, profiled_units
 from emendrix.diff.sub_localise import changed_sublocations
 from emendrix.diff.tree_diff import UnitMatch, diff_units
 
@@ -65,7 +73,14 @@ def compute_delta(
     if before.act != after.act:
         raise ValueError(f"cannot diff {before.act} against {after.act}: different acts")
     diff = diff_units(before, after)
-    builder = _Builder(after.act, before.version, after.version, in_force)
+    builder = _Builder(
+        after.act,
+        before.version,
+        after.version,
+        in_force,
+        before.table_entries,
+        after.table_entries,
+    )
     return Delta(
         act=after.act,
         from_version=before.version,
@@ -79,12 +94,21 @@ class _Builder:
     """The per-delta constants a `Change` needs beyond the two nodes it is built from."""
 
     def __init__(
-        self, act: ActId, from_version: VersionId, to_version: VersionId, in_force: date | None
+        self,
+        act: ActId,
+        from_version: VersionId,
+        to_version: VersionId,
+        in_force: date | None,
+        before: TableReading | None = None,
+        after: TableReading | None = None,
     ) -> None:
         self.act = act
         self.from_version = from_version
         self.to_version = to_version
         self.in_force = in_force
+        self.before = before if before is not None else TableReading()
+        self.after = after if after is not None else TableReading()
+        self.profiled = profiled_units(self.before) | profiled_units(self.after)
 
     def change(self, match: UnitMatch) -> Change:
         if match.change_type is ChangeType.INSERTED and match.after is not None:
@@ -98,6 +122,17 @@ class _Builder:
     def _ref(self, node: ProvisionNode, version: VersionId) -> ProvisionRef:
         return ProvisionRef(act=self.act, version=version, location=node.location)
 
+    def _entries(
+        self, unit: ProvisionLocation, unit_before: ProvisionLocation | None = None
+    ) -> EntryDelta | None:
+        """The unit's entry diff, or `None` when neither side holds a profiled table in it."""
+        units = {unit.top_level.canonical, (unit_before or unit).top_level.canonical}
+        if not units & self.profiled:
+            return None
+        return diff_entries(
+            self.before, self.after, unit.top_level, unit_before=(unit_before or unit).top_level
+        )
+
     def _one_sided(self, node: ProvisionNode, version: VersionId, *, inserted: bool) -> Change:
         return Change(
             change_type=ChangeType.INSERTED if inserted else ChangeType.DELETED,
@@ -110,6 +145,7 @@ class _Builder:
             ),
             in_force=self.in_force,
             signals=STRUCTURAL_ONLY,
+            table_entries=self._entries(node.location),
         )
 
     def _two_sided(
@@ -137,4 +173,5 @@ class _Builder:
             applies_from=verdict.applies_from,
             in_force=self.in_force,
             signals=STRUCTURAL_ONLY,
+            table_entries=self._entries(after.location, before.location),
         )

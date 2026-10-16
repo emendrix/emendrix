@@ -1056,4 +1056,15 @@ the link carries none, every `<title>` and description is unchanged, and `_LARGE
 the 15 bytes its docstring states. Every feed, `search-index.json`, the sitemaps, `robots.txt`,
 `llms.txt`, the script, the fonts, `icon.svg`, `og.png`, the catalogue and the schemas under
 `api/` are byte-identical.
+
+Read again on 2026-10-16, when the change payload moved to schema `1.3` and every change gained
+`table_entries`, the keyed diff of a profiled table's rows, `null` where no table was read. Only
+the site's served copies of the two schemas that describe a change moved:
+`api/v1/schema/change.schema.json` grew from 15 055 to 27 035 bytes and
+`api/v1/schema/entry.schema.json` from 39 721 to 51 716, each byte-identical to its source under
+`docs/schema/`. No toy act holds a profiled table, so no page, payload copy or figure moved.
+**No `id=` moved or went**, every `<title>` and description is unchanged, and `_LARGEST_PAGE`
+did not move. Every page, feed, `search-index.json`, the sitemaps, `robots.txt`, `llms.txt`, the
+stylesheet, the script, the fonts, `icon.svg`, `og.png`, the catalogue and every other schema are
+byte-identical.
 """

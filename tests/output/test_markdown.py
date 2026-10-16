@@ -34,12 +34,16 @@ from emendrix.core import (
     ActId,
     Change,
     ChangeType,
+    EntryChange,
+    EntryDelta,
+    EntryTable,
     ProvisionLocation,
     ProvisionRef,
     ProvisionText,
     SignalObservation,
     SignalSet,
     SignalStatus,
+    TableEntry,
     VersionId,
 )
 from emendrix.core.changes import DisputeReason
@@ -50,10 +54,10 @@ from emendrix.output.markdown import (
     QUOTE_CHAR_CAP,
     REASON_PHRASES,
     TITLE_CAP,
-    _detail,
     dispute_text,
     short_title,
 )
+from emendrix.output.markdown_change import KEY_SAMPLE, _detail, table_entries_line
 from eu_pins import FIXTURE_DIR, OBSERVED_ON
 from run_pins import RUN_CASSETTE_DIR, TRANSITION
 
@@ -421,3 +425,98 @@ def _with_after_text(entry: ChangelogEntry, text: str) -> ChangelogEntry:
     first, *rest = entry.changes
     replaced = first.model_copy(update={"change": first.change.model_copy(update={"after": text})})
     return entry.model_copy(update={"changes": (replaced, *rest)})
+
+
+# ------------------------------------------------------------------ the table-entries line
+
+
+AT = ProvisionLocation.parse("AN I")
+APPENDIX = ProvisionLocation.parse("AN I APP 2")
+
+
+def _entry(key: str, container: ProvisionLocation = AT, name: str | None = None) -> TableEntry:
+    return TableEntry(
+        unit=AT, container=container, table=1, key=key, rows=((key, "cell"),), name=name
+    )
+
+
+def _change(
+    kind: str, key: str, *, container: ProvisionLocation = AT, name: str | None = None
+) -> EntryChange:
+    before = _entry(key, container, name) if kind != "added" else None
+    after = _entry(key, container, name) if kind != "removed" else None
+    return EntryChange.model_validate(
+        {
+            "kind": kind,
+            "container": container,
+            "table": 1,
+            "key": key,
+            "before": before,
+            "after": after,
+            "typography_only": kind == "amended" and key.endswith("t"),
+        }
+    )
+
+
+def _delta(*changes: EntryChange, name_keyed: bool = False) -> EntryDelta:
+    tables = (
+        EntryTable(unit=AT, container=AT, table=1, key_label=None if name_keyed else "Index No"),
+        EntryTable(unit=AT, container=APPENDIX, table=1, key_label="Entry"),
+    )
+    return EntryDelta(tables=tables, changes=changes, unchanged=4)
+
+
+def test_the_line_counts_the_three_kinds_and_names_the_keys_in_delta_order() -> None:
+    delta = _delta(
+        _change("added", "001-001-00-9"),
+        _change("amended", "002-001-00-t"),
+        _change("amended", "003-001-00-2"),
+        _change("removed", "004-001-00-7"),
+        _change("added", "46a", container=APPENDIX),
+    )
+    assert table_entries_line(delta) == (
+        "Table entries: 2 added, 2 amended (1 only in spacing, dash forms or accents), "
+        "1 removed: Index No 001-001-00-9, Index No 002-001-00-t, Index No 003-001-00-2, "
+        "Index No 004-001-00-7, Entry 46a"
+    )
+
+
+def test_the_parenthesis_appears_only_when_an_amendment_is_typography_alone() -> None:
+    line = table_entries_line(_delta(_change("amended", "k1")))
+    assert line == "Table entries: 0 added, 1 amended, 0 removed: Index No k1"
+
+
+def test_a_name_keyed_table_prints_the_entry_name_in_quotes() -> None:
+    delta = _delta(_change("added", "aldicarb", name="Aldicarb (#)"), name_keyed=True)
+    assert (
+        table_entries_line(delta) == 'Table entries: 1 added, 0 amended, 0 removed: "Aldicarb (#)"'
+    )
+    nameless = _delta(_change("added", "k1"), name_keyed=True)
+    assert table_entries_line(nameless).endswith(': "k1"')
+
+
+def test_at_most_ten_keys_are_named_and_the_rest_are_counted() -> None:
+    delta = _delta(*(_change("added", f"k{n}") for n in range(1, 14)))
+    line = table_entries_line(delta)
+    assert KEY_SAMPLE == 10
+    assert line.endswith("Index No k9, Index No k10 and 3 more")
+    assert "k11" not in line
+
+
+def test_an_empty_delta_says_none_changed_and_no_delta_says_nothing() -> None:
+    assert table_entries_line(_delta()) == "Table entries: none changed."
+    entry = toy_entry()
+    assert all(item.change.table_entries is None for item in entry.changes)
+    assert "Table entries" not in render_entry(entry)
+
+
+def test_the_line_is_rendered_under_the_headline_and_above_the_prose() -> None:
+    entry = toy_entry()
+    first, *rest = entry.changes
+    delta = _delta(_change("added", "k1"))
+    replaced = first.model_copy(
+        update={"change": first.change.model_copy(update={"table_entries": delta})}
+    )
+    rendered = render_entry(entry.model_copy(update={"changes": (replaced, *rest)}))
+    assert "\n\nTable entries: 1 added, 0 amended, 0 removed: Index No k1\n\n*before*" in rendered
+    assert rendered.count("Table entries:") == 1

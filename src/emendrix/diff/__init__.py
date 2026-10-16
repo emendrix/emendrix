@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from emendrix.diff.api import STRUCTURAL_ONLY, compute_delta
 from emendrix.diff.deferred import DateVerdict, read_dates
+from emendrix.diff.entries import diff_entries
 from emendrix.diff.sub_localise import changed_sublocations, residual_text
 from emendrix.diff.tree_diff import (
     RENUMBER_CANDIDATE_CAP,
@@ -35,6 +36,7 @@ __all__ = [
     "UnitMatch",
     "changed_sublocations",
     "compute_delta",
+    "diff_entries",
     "diff_units",
     "read_dates",
     "residual_text",

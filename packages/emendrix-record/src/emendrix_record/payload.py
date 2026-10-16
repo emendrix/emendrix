@@ -23,6 +23,12 @@ __all__ = [
     "CitationRecord",
     "Corroboration",
     "Disagreement",
+    "EntryChangeRecord",
+    "EntryDeltaRecord",
+    "EntryGapsRecord",
+    "EntryTableRecord",
+    "IdentifierRecord",
+    "KeyRefRecord",
     "Observation",
     "Observations",
     "Payload",
@@ -30,6 +36,7 @@ __all__ = [
     "Sentence",
     "SignalUnits",
     "StoredChange",
+    "TableEntryRecord",
 ]
 
 _FROZEN = ConfigDict(frozen=True)
@@ -114,6 +121,99 @@ class Sentence(BaseModel):
     citations: tuple[CitationRecord, ...] = Field(default=(), description="What it cites.")
 
 
+class IdentifierRecord(BaseModel):
+    """One identifier a table row carries, as stored."""
+
+    model_config = _FROZEN
+
+    scheme: str = Field(description="The corpus-defined scheme, such as `cas` or `ec`.")
+    value: str = Field(description="The canonical spelling under that scheme.")
+
+
+class EntryTableRecord(BaseModel):
+    """One profiled table of a unit: where it sits, how its key is named, its header rows.
+
+    Cells are stored verbatim, `None` where a span from another cell covers the position."""
+
+    model_config = _FROZEN
+
+    unit: str = Field(description="The top-level unit's canonical location.")
+    container: str = Field(description="The located node holding the table.")
+    table: int = Field(ge=1, description="1-based ordinal among the container's tables.")
+    key_label: str | None = Field(default=None, description="How a key is named; null: the name.")
+    header: tuple[tuple[str | None, ...], ...] = Field(default=(), description="Header rows.")
+
+
+class TableEntryRecord(BaseModel):
+    """One keyed group of rows of a table, cells verbatim, as stored."""
+
+    model_config = _FROZEN
+
+    unit: str = Field(description="The top-level unit's canonical location.")
+    container: str = Field(description="The located node holding the table.")
+    table: int = Field(ge=1, description="1-based ordinal among the container's tables.")
+    key: str | None = Field(default=None, description="The row key; null for an unkeyed row.")
+    occurrence: int = Field(default=1, ge=1, description="Which repeat of the key in its table.")
+    group: str | None = Field(default=None, description="The innermost block heading, verbatim.")
+    rows: tuple[tuple[str | None, ...], ...] = Field(default=(), description="The entry's rows.")
+    identifiers: tuple[IdentifierRecord, ...] = Field(default=(), description="Check-digit valid.")
+    failed_check_digits: int = Field(default=0, ge=0, description="Values that failed the check.")
+    name: str | None = Field(default=None, description="First line of the name cell, if any.")
+
+
+class KeyRefRecord(BaseModel):
+    """One key of one table, named without its rows."""
+
+    model_config = _FROZEN
+
+    container: str = Field(description="The located node holding the table.")
+    table: int = Field(ge=1, description="1-based ordinal among the container's tables.")
+    key: str = Field(description="The key as the entry carries it.")
+
+
+class EntryGapsRecord(BaseModel):
+    """What one side's reading could not key, read or trust, counted."""
+
+    model_config = _FROZEN
+
+    unrecognised_tables: int = Field(default=0, ge=0, description="Profiled tables not read.")
+    unkeyed_rows: int = Field(default=0, ge=0, description="Entries with no key.")
+    failed_check_digits: int = Field(default=0, ge=0, description="Values that failed the check.")
+    repeated_keys: tuple[KeyRefRecord, ...] = Field(default=(), description="Keys printed twice.")
+
+
+class EntryChangeRecord(BaseModel):
+    """One keyed entry that differs between the two versions, both sides verbatim."""
+
+    model_config = _FROZEN
+
+    kind: str = Field(description="`added`, `removed` or `amended`.")
+    container: str = Field(description="The located node holding the table.")
+    table: int = Field(ge=1, description="1-based ordinal among the container's tables.")
+    key: str = Field(description="The key both sides are paired on.")
+    occurrence: int = Field(default=1, ge=1, description="Which repeat of the key in its table.")
+    typography_only: bool = Field(
+        default=False,
+        description="Amended only: equal once spacing, dashes, accents are set aside.",
+    )
+    before: TableEntryRecord | None = Field(default=None, description="The older entry, if any.")
+    after: TableEntryRecord | None = Field(default=None, description="The newer entry, if any.")
+
+
+class EntryDeltaRecord(BaseModel):
+    """The keyed diff of one unit's table entries, as a payload written at `1.3` stores it."""
+
+    model_config = _FROZEN
+
+    tables: tuple[EntryTableRecord, ...] = Field(default=(), description="The unit's tables.")
+    changes: tuple[EntryChangeRecord, ...] = Field(default=(), description="In stored order.")
+    unchanged: int = Field(default=0, ge=0, description="Paired entries equal verbatim.")
+    whitespace_only: int = Field(default=0, ge=0, description="Equal once whitespace collapses.")
+    unpaired: tuple[KeyRefRecord, ...] = Field(default=(), description="Keys not diffed.")
+    gaps_before: EntryGapsRecord = Field(default=EntryGapsRecord(), description="Older side.")
+    gaps_after: EntryGapsRecord = Field(default=EntryGapsRecord(), description="Newer side.")
+
+
 class StoredChange(BaseModel):
     """The deterministic facts of one change, as the payload stores them."""
 
@@ -126,6 +226,9 @@ class StoredChange(BaseModel):
     after: str | None = Field(default=None, description="Verbatim text after; null if none.")
     previous_location: str | None = Field(default=None, description="Location before renumbering.")
     changed_within: tuple[str, ...] = Field(default=(), description="Sub-provisions that differ.")
+    table_entries: EntryDeltaRecord | None = Field(
+        default=None, description="The unit's table-entry diff; null means not read, never unmoved."
+    )
     amending_acts: tuple[ActRef, ...] = Field(default=(), description="Acts named as amending it.")
     dates_removed: tuple[date, ...] = Field(default=(), description="Dates carried before only.")
     dates_added: tuple[date, ...] = Field(default=(), description="Dates carried after only.")

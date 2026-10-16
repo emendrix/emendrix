@@ -55,7 +55,7 @@ __all__ = [
     "slug",
 ]
 
-SCHEMA_VERSION: Final = "1.2"
+SCHEMA_VERSION: Final = "1.3"
 """Bumped whenever a consumer would have to change to keep reading these documents.
 
 `1.0` is the first published shape. A field added with a default is *not* a bump; a field
@@ -69,10 +69,16 @@ would not have been a bump, since it has a default; the reading of its absence i
 a consumer that took a missing digest for an unmoved text would be wrong about every document
 published before 2026-09-05.
 
-Documents already published say `1.0` and stay readable, which is why the field's type is a
-union of the three. An entry written under `1.0` reads back with `textless` at 0, the
-`substantive` its own run computed and no evidence at all; it is corrected when something
-rewrites it, not in bulk, and no rewrite ever invents a digest for it.
+`1.3` says a change may carry `table_entries`, the keyed diff of the rows of the unit's
+profiled tables, and that a change without it is one whose table entries were not read, not
+one whose entries did not move. Again the field has a default and the reading of its absence
+is the bump: a consumer that took a missing delta for "no row changed" would be wrong about
+every document published before 2026-10-16, and about every unit nobody profiled.
+
+Documents already published say `1.0`, `1.1` or `1.2` and stay readable, which is why the
+field's type is a union of the four. An entry written under `1.0` reads back with `textless`
+at 0, the `substantive` its own run computed, no evidence and no table entries at all; it is
+corrected when something rewrites it, not in bulk, and no rewrite ever invents a digest for it.
 """
 
 DIFF_ONLY_NOTE: Final = "diff-only mode: the explain stage did not run for this entry"
@@ -140,7 +146,7 @@ class ChangelogEntry(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    schema_version: Literal["1.0", "1.1", "1.2"] = SCHEMA_VERSION
+    schema_version: Literal["1.0", "1.1", "1.2", "1.3"] = SCHEMA_VERSION
     disclaimer: str = DISCLAIMER
     act: ActId
     from_version: VersionId

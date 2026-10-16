@@ -22,20 +22,30 @@ What the format *forces* is the reason for every decision below:
   verbatim fallback is correct by construction and the model's prose is not; a reader who
   cannot tell them apart has lost the more useful half of that distinction.
 
+This module frames an entry: its header, its title and the standalone form with the
+disclaimer. How one change is written down lives in `markdown_change.py`, whose names are
+re-exported here so the site and the tests keep importing them from this module.
+
 No clock, no corpus, no model: `detected_on` arrives on the entry, and two runs of one event
 produce identical bytes.
 """
 
 from __future__ import annotations
 
-from datetime import date
 from typing import Final
 
-from emendrix.core import Applicability, Change, Citation, Signal, SignalStatus
-from emendrix.core.changes import DisputeReason
-from emendrix.graph.report import EmittedChange, EmittedSentence
 from emendrix.output.disclaimer import MARKDOWN_DISCLAIMER
 from emendrix.output.json_out import ChangelogEntry
+from emendrix.output.markdown_change import (
+    FALLBACK_PREFIX,
+    QUOTE_CHAR_CAP,
+    REASON_PHRASES,
+    TRUNCATION_MARKER,
+    applies_text,
+    change_block,
+    dispute_text,
+    short_label,
+)
 
 __all__ = [
     "FALLBACK_PREFIX",
@@ -51,17 +61,6 @@ __all__ = [
     "short_title",
 ]
 
-QUOTE_CHAR_CAP: Final = 1500
-"""How much of a provision a `before`/`after` block quotes before the marker takes over.
-
-Twice the gate's sentence cap (`gate.QUOTE_CHAR_CAP` = 600) and for a different job: that one
-replaces a sentence, this one *is* the evidence a reader checks the sentence against. An annex
-of 12,000 characters is still not a changelog entry, so there is a cap, and every use of it says
-so in the text with the number of characters dropped.
-"""
-
-TRUNCATION_MARKER: Final = "[…truncated by emendrix: {dropped} characters omitted…]"
-
 TITLE_CAP: Final = 120
 """Where an act's official title is cut in the heading, visibly, with `[…]`.
 
@@ -70,195 +69,12 @@ directives it amends) and an H2 that wide is not a heading. The cut is marked an
 is in the JSON document's `act.display_name`, uncut.
 """
 
-_SIGNAL_NAMES: Final[dict[Signal, str]] = {
-    Signal.STRUCTURAL_DIFF: "the structural diff",
-    Signal.CORPUS_METADATA: "corpus metadata",
-    Signal.INSTRUCTION_PARSE: "the instruction parse",
-}
-
-REASON_PHRASES: Final[dict[DisputeReason, str]] = {
-    DisputeReason.KIND_MISMATCH: "the kinds named share nothing",
-    DisputeReason.TEXTLESS_BOTH_OTHERS: "no text, named by both signals that carry none",
-    DisputeReason.TEXTLESS_METADATA_ONLY: "no text, named by corpus metadata alone",
-    DisputeReason.TEXTLESS_INSTRUCTION_ONLY: "no text, named by the instruction parse alone",
-    DisputeReason.BOTH_OTHERS_SILENT: "found by the structural diff alone",
-    DisputeReason.METADATA_SILENT: "corpus metadata is silent",
-    DisputeReason.INSTRUCTION_SILENT: "the instruction parse is silent",
-}
-"""`Change.dispute_reason` in words, printed after the marker. Says which signal saw what."""
-
-FALLBACK_PREFIX: Final = (
-    "Quoted verbatim by the citation gate — the model's own sentence did not resolve:"
-)
-"""Said in the text, because a sentence the gate wrote and one the model wrote are different
-kinds of claim. The site's act pages mark the same sentences with the same words
-(`site_/pages/act_event.py`)."""
-
-
-# ------------------------------------------------------------------ small renderings
-
-
-def applies_text(applies: Applicability) -> str:
-    """`applies_from` in words. `unknown` is an answer and says why when it knows."""
-    if isinstance(applies, date):
-        return applies.isoformat()
-    if applies.kind == "unchanged":
-        return "unchanged"
-    return f"unknown ({applies.reason})" if applies.reason else "unknown"
-
 
 def short_title(title: str) -> str:
     """An act's name for a heading, cut at `TITLE_CAP` and marked when it is cut."""
     if len(title) <= TITLE_CAP:
         return title
     return f"{title[:TITLE_CAP].rsplit(' ', 1)[0].rstrip(' ,;')} […]"
-
-
-def short_label(label: str, entry: ChangelogEntry) -> str:
-    """`Art. 4, 02024R1689-20260727` → `Art. 4, v2`, with the mapping printed in the header."""
-    for tag, short in ((entry.to_version, "v2"), (entry.from_version, "v1")):
-        suffix = f", {tag}"
-        if label.endswith(suffix):
-            return f"{label[: -len(suffix)]}, {short}"
-    return label
-
-
-def _links(citations: tuple[Citation, ...], entry: ChangelogEntry) -> str:
-    return " ".join(f"[{short_label(item.label, entry)}]({item.url})" for item in citations)
-
-
-def _sentence(sentence: EmittedSentence, entry: ChangelogEntry) -> str:
-    """One shipped sentence with its citations, on one line.
-
-    Whitespace inside the *sentence* is collapsed: it is prose, it is one line by construction,
-    and folding it guarantees no generated line can ever begin with one of `changelog.py`'s
-    sentinels. The verbatim quotes below are untouched; those are the ones the "verbatim means
-    verbatim" rule is about.
-    """
-    text = " ".join(sentence.text.split())
-    body = f"*{FALLBACK_PREFIX}* {text}" if sentence.fallback else text
-    links = _links(sentence.citations, entry)
-    return f"{body} {links}".rstrip()
-
-
-def _quote(text: str) -> list[str]:
-    """A verbatim text as a Markdown blockquote, capped visibly and otherwise untouched.
-
-    Every line is prefixed, including lines inside the legal text, which is what makes a
-    sentinel collision structurally impossible: `changelog.py` anchors its markers at the
-    start of a line and no line of quoted text starts there.
-    """
-    body = text
-    if len(body) > QUOTE_CHAR_CAP:
-        dropped = len(body) - QUOTE_CHAR_CAP
-        body = body[:QUOTE_CHAR_CAP].rstrip() + " " + TRUNCATION_MARKER.format(dropped=dropped)
-    lines = [f"> {line}".rstrip() for line in body.splitlines()]
-    return lines or [">"]
-
-
-def dispute_text(change: Change) -> str:
-    """What disagreed, in words. Read off the signals the change actually carries.
-
-    A source that saw the change and named no kind (an unlabelled role code, counted) still
-    looked, so it gets a clause of its own, as it does on the page (`site_/dispute.py`). The
-    two renderers read the same verdicts and may differ only in how plainly they say them.
-    """
-    observed = [
-        _SIGNAL_NAMES[signal] for signal, seen in change.signals.observations if seen.observed
-    ]
-    absent = [
-        _SIGNAL_NAMES[signal]
-        for signal, seen in change.signals.observations
-        if seen.status is SignalStatus.ABSENT
-    ]
-    if absent:
-        seen = ", ".join(observed) or "no signal"
-        return f"seen by {seen}, not by {', '.join(absent)}"
-    kinds = ", ".join(
-        f"{_SIGNAL_NAMES[signal]} says {'/'.join(sorted(seen.change_types))}"
-        if seen.change_types
-        else f"{_SIGNAL_NAMES[signal]} names no kind"
-        for signal, seen in change.signals.observations
-        if seen.observed
-    )
-    return f"the signals disagree on the kind of change — {kinds}"
-
-
-# ------------------------------------------------------------------ the blocks
-
-
-def _headline(change: Change) -> str:
-    heading = f" — {change.heading}" if change.heading else ""
-    was = "" if change.previous_location is None else f" (was {change.previous_location.human})"
-    return (
-        f"**{change.change_type.value} · {change.location.human}{was}{heading}** · "
-        f"applies from: {applies_text(change.applies_from)}"
-    )
-
-
-def _detail(change: Change) -> list[str]:
-    """The one-line detail under a headline: finer coordinates, dates that moved, the amender.
-
-    The amending act is the bare identifier its corpus published, in the order corroboration
-    claimed it: an official title needs the adapter, which `output/` does not import.
-    """
-    parts: list[str] = []
-    if change.changed_within:
-        inside = ", ".join(f"`{item.canonical}`" for item in change.changed_within)
-        parts.append(f"*within* {inside}")
-    if change.dates_removed or change.dates_added:
-        moved = " ".join(
-            [
-                *(f"-{value.isoformat()}" for value in change.dates_removed),
-                *(f"+{value.isoformat()}" for value in change.dates_added),
-            ]
-        )
-        parts.append(f"*dates* {moved}")
-    if change.amending_acts:
-        named = ", ".join(f"`{act.key}`" for act in change.amending_acts)
-        parts.append(f"*amended by* {named}")
-    return ["", " · ".join(parts)] if parts else []
-
-
-def _prose(emitted: EmittedChange, entry: ChangelogEntry) -> list[str]:
-    lines: list[str] = []
-    for sentence in emitted.sentences:
-        lines.extend(("", _sentence(sentence, entry)))
-    note = emitted.applicability_note
-    if note is not None:
-        lines.extend(("", f"*Applicability:* {_sentence(note, entry)}"))
-    if not emitted.sentences and not entry.diff_only:
-        reason = emitted.unexplained or "no explanation"
-        lines.extend(("", f"*No explanation shipped — {reason}.*"))
-    return lines
-
-
-def _texts(change: Change, entry: ChangelogEntry) -> list[str]:
-    lines: list[str] = []
-    if change.before is not None:
-        lines.extend(("", f"*before* (`{entry.from_version}`)", "", *_quote(change.before)))
-    if change.after is not None:
-        lines.extend(("", f"*after* (`{entry.to_version}`)", "", *_quote(change.after)))
-    if change.textless:
-        lines.extend(
-            (
-                "",
-                "*No text on either side: this unit was named by a signal that carries no "
-                "text, and only the structural diff carries any.*",
-            )
-        )
-    return lines
-
-
-def _change_block(emitted: EmittedChange, entry: ChangelogEntry) -> list[str]:
-    change = emitted.change
-    lines = ["", _headline(change), *_detail(change)]
-    if change.dispute_reason is not None:
-        reason = REASON_PHRASES[change.dispute_reason]
-        lines.extend(("", f"**DISPUTED** — {reason}: {dispute_text(change)}"))
-    lines.extend(_prose(emitted, entry))
-    lines.extend(_texts(change, entry))
-    return lines
 
 
 def _header(entry: ChangelogEntry) -> list[str]:
@@ -301,7 +117,7 @@ def render_entry(entry: ChangelogEntry) -> str:
     """One amendment event as Markdown, newline-terminated. Deterministic and byte-stable."""
     lines = list(_header(entry))
     for emitted in entry.changes:
-        lines.extend(_change_block(emitted, entry))
+        lines.extend(change_block(emitted, entry))
     return "\n".join(lines).rstrip() + "\n"
 
 

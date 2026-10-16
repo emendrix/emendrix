@@ -4,8 +4,9 @@ A provision tree knows a table only as prose inside the enclosing provision's te
 are still there in the markup, and some acts number their rows and give each one identifiers
 that a reader looks a substance up by. This module is the vocabulary for those rows once an
 adapter has read them: a **table entry** is a keyed group of rows, with the identifiers its
-cells carry and its cells verbatim, and a **table reading** is every entry of one version of
-an act together with what could not be read.
+cells carry and its cells verbatim, a **table reading** is every entry of one version of
+an act together with what could not be read, and an **entry delta** is the keyed diff of one
+unit's entries between two versions, as the structural diff attaches it to a change.
 
 Entries ride *beside* the nodes, never as nodes. A table interior turned into locations would
 move sub-localisation and every figure computed over the tree, and the rows of one act's
@@ -23,14 +24,17 @@ Nothing here knows which act, which annex or which column.
 from __future__ import annotations
 
 import re
-from typing import Final
+from typing import Final, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from emendrix.core.location import ProvisionLocation
 
 __all__ = [
+    "EntryChange",
+    "EntryDelta",
     "EntryGaps",
+    "EntryKind",
     "EntryOrder",
     "EntryTable",
     "Identifier",
@@ -142,6 +146,83 @@ class EntryGaps(BaseModel):
     repeated_keys: tuple[KeyRef, ...] = Field(
         default=(), description="Every key one table prints more than once."
     )
+
+
+EntryKind = Literal["added", "removed", "amended"]
+"""What happened to one keyed entry between two versions."""
+
+
+class EntryChange(BaseModel):
+    """One keyed entry that differs between two versions, with both sides verbatim.
+
+    `typography_only` labels an amendment whose cells are equal once spacing, dash forms and
+    accents are set aside. It is a label and never a reason to drop the change: a character
+    swap in legal text is a difference, and only whitespace is exempt from being one.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: EntryKind
+    container: ProvisionLocation = Field(description="The located node holding the table.")
+    table: int = Field(ge=1, description="1-based ordinal among every table in the container.")
+    key: str = Field(description="The key both sides are paired on.")
+    occurrence: int = Field(
+        default=1, ge=1, description="Which repeat of the key, when a table prints it twice."
+    )
+    typography_only: bool = Field(
+        default=False,
+        description="Amended only: equal once spacing, dash forms and accents are set aside.",
+    )
+    before: TableEntry | None = Field(default=None, description="The older entry; None if added.")
+    after: TableEntry | None = Field(default=None, description="The newer entry; None if removed.")
+
+    @model_validator(mode="after")
+    def _sides_match_kind(self) -> Self:
+        if self.kind == "added" and (self.before is not None or self.after is None):
+            raise ValueError("an added entry has no `before` and must have an `after`")
+        if self.kind == "removed" and (self.after is not None or self.before is None):
+            raise ValueError("a removed entry has no `after` and must have a `before`")
+        if self.kind == "amended" and (self.before is None or self.after is None):
+            raise ValueError("an amended entry must carry both sides")
+        if self.typography_only and self.kind != "amended":
+            raise ValueError("only an amended entry can be typography-only")
+        return self
+
+
+class EntryDelta(BaseModel):
+    """The keyed diff of one unit's table entries between two versions, with what it skipped.
+
+    An empty `changes` means the unit was read on both sides and no keyed entry moved; the
+    absence of a delta altogether (`None` on the change) means the unit was never read. The
+    two must never be confused, which is why both are stated rather than one implied.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    tables: tuple[EntryTable, ...] = Field(
+        default=(),
+        description="The unit's profiled tables, the newer side's where both have one, in order.",
+    )
+    changes: tuple[EntryChange, ...] = Field(
+        default=(), description="Sorted by table position, then natural key order, then occurrence."
+    )
+    unchanged: int = Field(default=0, ge=0, description="Paired entries equal verbatim.")
+    whitespace_only: int = Field(
+        default=0, ge=0, description="Paired entries equal once whitespace collapses: not changes."
+    )
+    unpaired: tuple[KeyRef, ...] = Field(
+        default=(), description="Keys printed a different number of times on each side; not diffed."
+    )
+    gaps_before: EntryGaps = Field(default=EntryGaps(), description="The older side's gaps.")
+    gaps_after: EntryGaps = Field(default=EntryGaps(), description="The newer side's gaps.")
+
+    def count(self, kind: EntryKind) -> int:
+        return sum(1 for change in self.changes if change.kind == kind)
+
+    @property
+    def typography_only(self) -> int:
+        """How many of the amended entries differ only in spacing, dash forms or accents."""
+        return sum(1 for change in self.changes if change.typography_only)
 
 
 EntryOrder = tuple[tuple[tuple[int, int, str], ...], str, int]

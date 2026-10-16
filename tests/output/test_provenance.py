@@ -118,7 +118,7 @@ def test_a_run_that_explained_records_what_it_showed() -> None:
     """The one place a digest is written: the run holding the changes it handed over."""
     changes = _changes()
     entry = entries_for(RunReport(observed_on=OBSERVED_ON, deltas=(_emitted(changes),)))[0]
-    assert entry.schema_version == "1.2"
+    assert entry.schema_version == "1.3"
     assert len(entry.evidence) == len(changes)
     recorded = recorded_digests(entry.evidence)
     for key, item in zip(keys_of(item.change for item in changes), changes, strict=True):

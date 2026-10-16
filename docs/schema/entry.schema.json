@@ -273,6 +273,18 @@
               "status": "unavailable"
             }
           }
+        },
+        "table_entries": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntryDelta"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The keyed diff of the unit's table entries. None means not read: no profiled table in the unit on either side, or a document written before schema 1.3. An empty delta means read, and no keyed entry changed."
         }
       },
       "required": [
@@ -580,6 +592,80 @@
       "title": "EmittedSentence",
       "type": "object"
     },
+    "EntryChange": {
+      "description": "One keyed entry that differs between two versions, with both sides verbatim.\n\n`typography_only` labels an amendment whose cells are equal once spacing, dash forms and\naccents are set aside. It is a label and never a reason to drop the change: a character\nswap in legal text is a difference, and only whitespace is exempt from being one.",
+      "properties": {
+        "after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TableEntry"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The newer entry; None if removed."
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TableEntry"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The older entry; None if added."
+        },
+        "container": {
+          "$ref": "#/$defs/ProvisionLocation",
+          "description": "The located node holding the table."
+        },
+        "key": {
+          "description": "The key both sides are paired on.",
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "added",
+            "removed",
+            "amended"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "occurrence": {
+          "default": 1,
+          "description": "Which repeat of the key, when a table prints it twice.",
+          "minimum": 1,
+          "title": "Occurrence",
+          "type": "integer"
+        },
+        "table": {
+          "description": "1-based ordinal among every table in the container.",
+          "minimum": 1,
+          "title": "Table",
+          "type": "integer"
+        },
+        "typography_only": {
+          "default": false,
+          "description": "Amended only: equal once spacing, dash forms and accents are set aside.",
+          "title": "Typography Only",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "container",
+        "table",
+        "key"
+      ],
+      "title": "EntryChange",
+      "type": "object"
+    },
     "EntryCounts": {
       "description": "The counts a reader is shown first, at the unit of change.\n\n`substantive`, `date_only` and `textless` split the touched units three ways, and every\ntouched unit falls in exactly one of them: a unit whose every change is `DEFERRED` moved a\ndate and nothing else, a unit whose every change carries no text on either side was named\nby a signal that carries none, and what is left is a unit whose text moved. The split is\nthe one the Markdown header prints and the site's count line repeats, and it is computed,\nnever asserted.\n\nThe identity `touched == substantive + date_only + textless` holds of counts this module\nderives and is asserted over them. It is deliberately not a validator: a document published\nunder schema `1.0` reads back with `textless` at 0 and the wider `substantive` of its own\nrun, which satisfies the identity while answering the older question.",
       "properties": {
@@ -634,6 +720,166 @@
         }
       },
       "title": "EntryCounts",
+      "type": "object"
+    },
+    "EntryDelta": {
+      "description": "The keyed diff of one unit's table entries between two versions, with what it skipped.\n\nAn empty `changes` means the unit was read on both sides and no keyed entry moved; the\nabsence of a delta altogether (`None` on the change) means the unit was never read. The\ntwo must never be confused, which is why both are stated rather than one implied.",
+      "properties": {
+        "changes": {
+          "default": [],
+          "description": "Sorted by table position, then natural key order, then occurrence.",
+          "items": {
+            "$ref": "#/$defs/EntryChange"
+          },
+          "title": "Changes",
+          "type": "array"
+        },
+        "gaps_after": {
+          "$ref": "#/$defs/EntryGaps",
+          "default": {
+            "failed_check_digits": 0,
+            "repeated_keys": [],
+            "unkeyed_rows": 0,
+            "unrecognised_tables": 0
+          },
+          "description": "The newer side's gaps."
+        },
+        "gaps_before": {
+          "$ref": "#/$defs/EntryGaps",
+          "default": {
+            "failed_check_digits": 0,
+            "repeated_keys": [],
+            "unkeyed_rows": 0,
+            "unrecognised_tables": 0
+          },
+          "description": "The older side's gaps."
+        },
+        "tables": {
+          "default": [],
+          "description": "The unit's profiled tables, the newer side's where both have one, in order.",
+          "items": {
+            "$ref": "#/$defs/EntryTable"
+          },
+          "title": "Tables",
+          "type": "array"
+        },
+        "unchanged": {
+          "default": 0,
+          "description": "Paired entries equal verbatim.",
+          "minimum": 0,
+          "title": "Unchanged",
+          "type": "integer"
+        },
+        "unpaired": {
+          "default": [],
+          "description": "Keys printed a different number of times on each side; not diffed.",
+          "items": {
+            "$ref": "#/$defs/KeyRef"
+          },
+          "title": "Unpaired",
+          "type": "array"
+        },
+        "whitespace_only": {
+          "default": 0,
+          "description": "Paired entries equal once whitespace collapses: not changes.",
+          "minimum": 0,
+          "title": "Whitespace Only",
+          "type": "integer"
+        }
+      },
+      "title": "EntryDelta",
+      "type": "object"
+    },
+    "EntryGaps": {
+      "description": "What a reading could not key, read or trust, counted rather than hidden.",
+      "properties": {
+        "failed_check_digits": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Failed Check Digits",
+          "type": "integer"
+        },
+        "repeated_keys": {
+          "default": [],
+          "description": "Every key one table prints more than once.",
+          "items": {
+            "$ref": "#/$defs/KeyRef"
+          },
+          "title": "Repeated Keys",
+          "type": "array"
+        },
+        "unkeyed_rows": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Unkeyed Rows",
+          "type": "integer"
+        },
+        "unrecognised_tables": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Unrecognised Tables",
+          "type": "integer"
+        }
+      },
+      "title": "EntryGaps",
+      "type": "object"
+    },
+    "EntryTable": {
+      "description": "A table whose rows are read as entries: how its key is named, and its header rows.",
+      "properties": {
+        "container": {
+          "$ref": "#/$defs/ProvisionLocation",
+          "description": "The deepest located node holding the table, as the tree places it."
+        },
+        "header": {
+          "default": [],
+          "description": "The header rows, cells verbatim; `None` where a span covers.",
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "title": "Header",
+          "type": "array"
+        },
+        "key_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "How a key is named in prose, or `None` when the key is the entry's name.",
+          "title": "Key Label"
+        },
+        "table": {
+          "description": "1-based ordinal among every table in the container.",
+          "minimum": 1,
+          "title": "Table",
+          "type": "integer"
+        },
+        "unit": {
+          "$ref": "#/$defs/ProvisionLocation",
+          "description": "The top-level unit the table sits in."
+        }
+      },
+      "required": [
+        "unit",
+        "container",
+        "table",
+        "key_label"
+      ],
+      "title": "EntryTable",
       "type": "object"
     },
     "EvidenceDigest": {
@@ -753,6 +999,54 @@
         }
       },
       "title": "GateStats",
+      "type": "object"
+    },
+    "Identifier": {
+      "description": "One identifier a row carries, in the canonical form of its scheme.",
+      "properties": {
+        "scheme": {
+          "description": "The corpus-defined scheme name, lower case.",
+          "title": "Scheme",
+          "type": "string"
+        },
+        "value": {
+          "description": "The canonical spelling of the value under its scheme.",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scheme",
+        "value"
+      ],
+      "title": "Identifier",
+      "type": "object"
+    },
+    "KeyRef": {
+      "description": "One key of one table, named without its rows.",
+      "properties": {
+        "container": {
+          "$ref": "#/$defs/ProvisionLocation",
+          "description": "The located node holding the table."
+        },
+        "key": {
+          "description": "The key as the entry carries it.",
+          "title": "Key",
+          "type": "string"
+        },
+        "table": {
+          "description": "1-based ordinal among every table in the container.",
+          "minimum": 1,
+          "title": "Table",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "container",
+        "table",
+        "key"
+      ],
+      "title": "KeyRef",
       "type": "object"
     },
     "ProvisionLocation": {
@@ -1185,6 +1479,113 @@
       ],
       "title": "SignalUnits",
       "type": "object"
+    },
+    "TableEntry": {
+      "description": "A keyed group of rows, with its identifiers and its cells verbatim.",
+      "properties": {
+        "container": {
+          "$ref": "#/$defs/ProvisionLocation",
+          "description": "The deepest located node holding the table, as the tree places it."
+        },
+        "failed_check_digits": {
+          "default": 0,
+          "description": "Identifier-shaped values in identifier columns that fail.",
+          "minimum": 0,
+          "title": "Failed Check Digits",
+          "type": "integer"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim heading of the innermost block the rows sit in.",
+          "title": "Group"
+        },
+        "identifiers": {
+          "default": [],
+          "description": "Sorted, deduplicated, and valid under the scheme's check.",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "title": "Identifiers",
+          "type": "array"
+        },
+        "key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The row key by the adapter's rule; `None` is an unkeyed row, kept and counted.",
+          "title": "Key"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "First line of the name cell; a leading entry number and its `.` dropped.",
+          "title": "Name"
+        },
+        "occurrence": {
+          "default": 1,
+          "description": "1-based among this table's entries sharing this key.",
+          "minimum": 1,
+          "title": "Occurrence",
+          "type": "integer"
+        },
+        "rows": {
+          "description": "Every row of the entry, cells verbatim; `None` where a span covers.",
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "table": {
+          "description": "1-based ordinal among every table in the container.",
+          "minimum": 1,
+          "title": "Table",
+          "type": "integer"
+        },
+        "unit": {
+          "$ref": "#/$defs/ProvisionLocation",
+          "description": "The top-level unit the table sits in."
+        }
+      },
+      "required": [
+        "unit",
+        "container",
+        "table",
+        "key",
+        "rows"
+      ],
+      "title": "TableEntry",
+      "type": "object"
     }
   },
   "$id": "entry.schema.json",
@@ -1293,11 +1694,12 @@
       "type": "array"
     },
     "schema_version": {
-      "default": "1.2",
+      "default": "1.3",
       "enum": [
         "1.0",
         "1.1",
-        "1.2"
+        "1.2",
+        "1.3"
       ],
       "title": "Schema Version",
       "type": "string"

@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
   "act": {
     "corpus": "toy",
@@ -50,6 +50,7 @@
         "changed_within": [
           "AR 2"
         ],
+        "table_entries": null,
         "amending_acts": [],
         "dates_removed": [],
         "dates_added": [],
@@ -104,6 +105,7 @@
         "after": null,
         "previous_location": null,
         "changed_within": [],
+        "table_entries": null,
         "amending_acts": [],
         "dates_removed": [],
         "dates_added": [],
@@ -159,6 +161,7 @@
         "after": "Parcels left in the hallway are moved to the shelf by whoever finds them.",
         "previous_location": null,
         "changed_within": [],
+        "table_entries": null,
         "amending_acts": [],
         "dates_removed": [],
         "dates_added": [],
@@ -214,6 +217,7 @@
         "after": null,
         "previous_location": null,
         "changed_within": [],
+        "table_entries": null,
         "amending_acts": [],
         "dates_removed": [],
         "dates_added": [],
@@ -268,6 +272,7 @@
           "AN I",
           "AN I SLOT 2"
         ],
+        "table_entries": null,
         "amending_acts": [],
         "dates_removed": [],
         "dates_added": [],
