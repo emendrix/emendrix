@@ -104,7 +104,10 @@ address and are omitted entirely without `--site-url`, which is the rule the fee
 `robots.txt` and the favicon link need no base and are written either way, so the only thing
 `robots.txt` loses is its `Sitemap:` line. That line names the index rather than the sitemap, and
 the index names the sitemap: one address for a search engine to keep, behind which the sitemap may
-be split or renamed without the submitted address moving. And every `<lastmod>` comes from the
+be split or renamed without the submitted address moving. `robots.txt` allows every path except
+the account service's `/account/` and `/u/`, listed before `Allow: /` so that a parser applying
+the first matching rule reads them too: each act and provision page links its own
+`/account/watch` address, and a crawler walking them reaches per-reader pages never worth indexing. And every `<lastmod>` comes from the
 corpus, an act's newest event or the report's run date, never from the build clock, so a rebuild
 that changed nothing tells a crawler nothing changed, and an act nothing has happened to yet
 carries no `<lastmod>` at all rather than a guessed one.

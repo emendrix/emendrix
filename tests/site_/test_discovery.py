@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from pathlib import Path
+from urllib.robotparser import RobotFileParser
 from xml.etree import ElementTree
 
 import pytest
@@ -331,16 +332,33 @@ def test_rendering_a_sitemap_without_a_base_address_refuses() -> None:
 # ------------------------------------------------------------------ robots.txt
 
 
-def test_the_crawl_policy_is_written_on_every_build_and_allows_everything(
+def test_the_crawl_policy_is_written_on_every_build_and_keeps_out_only_the_service(
     site: Path, tmp_path: Path, changelog_repo: Path
 ) -> None:
-    """It is about paths, so it needs no base address and is published either way."""
+    """It is about paths, so it needs no base address and is published either way.
+
+    Every published page stays open; only the account service's prefixes are closed, because
+    each provision page links its own `/account/watch` address and none of them is a page.
+    """
     bare = _bare(tmp_path / "bare", changelog_repo)
     for out in (site, bare):
         text = (out / "robots.txt").read_text(encoding="utf-8")
-        assert text.startswith("User-agent: *\nAllow: /\n"), out
+        assert text.startswith("User-agent: *\nDisallow: /account/\nDisallow: /u/\nAllow: /\n"), out
         assert text.endswith("\n"), out
-        assert "Disallow" not in text, out
+        assert text.count("Disallow") == 2, out
+
+
+def test_a_first_match_parser_reads_the_service_as_closed_and_every_page_as_open(
+    site: Path,
+) -> None:
+    """`urllib.robotparser` applies the first rule that matches rather than the longest, as many
+    scrapers do, so the order of the lines is what this checks."""
+    parser = RobotFileParser()
+    parser.parse((site / "robots.txt").read_text(encoding="utf-8").splitlines())
+    for closed in ("/account/watch?act=x&loc=AR%201", "/account/signin", "/u/feed/x"):
+        assert not parser.can_fetch("AnyBot", closed), closed
+    for opened in ("/", "/acts/", "/sitemap_index.xml"):
+        assert parser.can_fetch("AnyBot", opened), opened
 
 
 def test_the_sitemap_line_appears_only_with_a_base_address_and_is_absolute(

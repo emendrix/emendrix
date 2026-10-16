@@ -1081,3 +1081,12 @@ Named rather than discovered later; the eval report's disagreement list is the l
   tabs, saving a delivery choice, pausing and resuming, a second list and the account pages in
   either scheme rest on the service's tests alone. **No published figure moved**: the payloads,
   the index, the feeds and the eval layer are byte-identical to before.
+
+- **`robots.txt` asks crawlers to keep out of the account service.** It allows every path but
+  `/account/` and `/u/`, written before `Allow: /` so that a parser applying the first matching
+  rule, Python's `urllib.robotparser` among them, reads them too. Each act and provision page
+  links its own `/account/watch` address, and on 2026-10-16 the hosted instance's edge counted
+  that path as the most requested, with `/account/signin` second. Sign-in is by emailed link, so
+  there is no password to guess, and the service's own per-address limits are unchanged. A
+  crawler that ignores `robots.txt` is not stopped by it. **No published figure moved**: the
+  payloads, the index, the feeds and the eval layer are byte-identical to before.

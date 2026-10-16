@@ -85,8 +85,12 @@ _UNCONFIGURED = (
 )
 
 
+_SERVICE_PREFIXES = ("/account/", "/u/")
+"""The account service's paths, kept out of the crawl whether or not the build links them."""
+
+
 def robots_txt(site: SiteInputs) -> str:
-    """The crawl policy, newline-terminated. Four lines with a base address, two without.
+    """The crawl policy, newline-terminated. Six lines with a base address, four without.
 
     `Allow: /` is written explicitly even though an empty `Disallow:` and a file with no
     directive at all mean the same thing to every crawler: a policy that states what it permits
@@ -95,8 +99,13 @@ def robots_txt(site: SiteInputs) -> str:
     decision made the same way, because the site is published to be found. No comment header
     either: a host may append a managed comment block of its own, and two stacked blocks
     explaining different things is noise in a file whose whole audience is machines.
+
+    `/account/` and `/u/` are the account service's prefixes. Every act and provision page links
+    a distinct `/account/watch` address, which a crawler would otherwise walk one by one into
+    pages that are per reader and never worth indexing. They precede `Allow: /` because a
+    first-match parser, Python's `urllib.robotparser` among them, would otherwise stop there.
     """
-    lines = ["User-agent: *", "Allow: /"]
+    lines = ["User-agent: *", *(f"Disallow: {path}" for path in _SERVICE_PREFIXES), "Allow: /"]
     if site.site_url:
         lines.extend(("", f"Sitemap: {canonical_url(site.site_url, SITEMAP_INDEX)}"))
     return "\n".join(lines) + "\n"

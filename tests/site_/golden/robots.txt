@@ -1,4 +1,6 @@
 User-agent: *
+Disallow: /account/
+Disallow: /u/
 Allow: /
 
 Sitemap: https://example.invalid/site/sitemap_index.xml
