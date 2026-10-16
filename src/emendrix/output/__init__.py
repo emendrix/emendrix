@@ -26,6 +26,8 @@ Layout:
 - `changelog.py`: the `CHANGELOG.md` file: header, entry markers, newest version first.
 - `git.py`: the git command line, scoped so it cannot touch anything but that repository.
 - `repo.py`: the writer: open-or-init, write, commit, never push, idempotent.
+- `repo_git.py`: the writer's git half: the two refusals, creating the repository, a commit.
+- `register.py`: each act's register, the newest version's table entries, cells verbatim.
 - `index_model.py`, `index.py`: the text-free change index over the committed payloads.
 - `config.py`: where the repository lives: flag > environment > `watchlist.toml`.
 """
@@ -61,11 +63,20 @@ from emendrix.output.provenance import (
     evidence_for,
     recorded_digests,
 )
+from emendrix.output.register import (
+    REGISTER_FILE,
+    REGISTER_SCHEMA,
+    Register,
+    register_for,
+    register_path,
+    render_register,
+)
 from emendrix.output.repo import (
     MARKER_FILE,
     ForeignRepository,
     NestedRepository,
     OutputRepo,
+    RegisterResult,
     WriteResult,
 )
 
@@ -81,6 +92,8 @@ __all__ = [
     "MARKER_FILE",
     "OUTPUT_REPO_ENV",
     "QUOTE_CHAR_CAP",
+    "REGISTER_FILE",
+    "REGISTER_SCHEMA",
     "SCHEMA_VERSION",
     "TRUNCATION_MARKER",
     "ActIndex",
@@ -93,6 +106,8 @@ __all__ = [
     "GitError",
     "NestedRepository",
     "OutputRepo",
+    "Register",
+    "RegisterResult",
     "RootIndex",
     "WriteResult",
     "act_index",
@@ -105,8 +120,11 @@ __all__ = [
     "header_for",
     "index_files",
     "recorded_digests",
+    "register_for",
+    "register_path",
     "render_entry",
     "render_index",
+    "render_register",
     "render_standalone",
     "resolve_repo_path",
     "root_index",

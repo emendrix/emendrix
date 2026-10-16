@@ -11,6 +11,7 @@ loop ends as a commit in a repository somebody can diff, review in a pull reques
 <repo>/eu/32017R0745/CHANGELOG.md                     newest entry first, rewritten in place
 <repo>/eu/32017R0745/changes/02017R0745-20200424.json  the same event, structured
 <repo>/eu/32017R0745/index.json                       every event and changed provision, no text
+<repo>/eu/32008R1272/register.json                    the newest version's table entries, whole
 ```
 
 Three policies, each of which is a decision rather than an implementation detail:
@@ -34,6 +35,10 @@ entry that runs this hourly produces one commit per amendment, not one per hour.
 The index rides the entry's commit, so every commit is self-consistent. Only the written act's
 index is rebuilt from its payloads and every other act's is read as it stands, since rebuilding
 them all per write would make a backfill quadratic; `emendrix index rebuild` repairs a stale one.
+The register of an act whose tables are read as entries rides it too when the entry is the act's
+newest, so a backfill writing history underneath leaves a newer register where it is.
+
+The git half, the two refusals and the commit itself, is in `repo_git.py`.
 """
 
 from __future__ import annotations
@@ -45,12 +50,20 @@ from typing import Final, Self
 from pydantic import BaseModel, ConfigDict
 
 from emendrix.core import ActId, VersionId
-from emendrix.output.changelog import MARKER, changelog_text, repo_readme
-from emendrix.output.git import GitError, commit, git, init_repo, staged
+from emendrix.output.changelog import changelog_text
 from emendrix.output.index import act_index, root_index
 from emendrix.output.index import render as render_index
 from emendrix.output.index_model import INDEX_FILE, ActIndex
-from emendrix.output.json_out import ChangelogEntry, payload_for
+from emendrix.output.json_out import ChangelogEntry, payload_for, slug
+from emendrix.output.register import Register, register_path, render_register
+from emendrix.output.repo_git import (
+    MARKER_FILE,
+    ForeignRepository,
+    NestedRepository,
+    commit_paths,
+    ensure_repository,
+    refuse_foreign,
+)
 
 __all__ = [
     "INDEX_SUBJECT",
@@ -58,27 +71,12 @@ __all__ = [
     "ForeignRepository",
     "NestedRepository",
     "OutputRepo",
+    "RegisterResult",
     "WriteResult",
 ]
 
-MARKER_FILE: Final = ".emendrix-output"
-"""Written and committed when emendrix creates the repository, and required ever after.
-
-It is what distinguishes "the repository emendrix made for this" from "a repository", and
-without that distinction the guard below would be half a guard: refusing a path *inside*
-somebody's working tree while accepting the working tree itself.
-"""
-
 INDEX_SUBJECT: Final = "index the repository"
 """The subject of a commit that moved the index and no entry."""
-
-
-class NestedRepository(GitError):
-    """The configured path lies inside an existing working tree, so emendrix refuses it."""
-
-
-class ForeignRepository(GitError):
-    """The configured path is already a git repository that emendrix did not create."""
 
 
 class WriteResult(BaseModel):
@@ -99,9 +97,17 @@ class WriteResult(BaseModel):
         return bool(self.revision)
 
 
-def _enclosing_worktree(path: Path) -> Path | None:
-    """The nearest *strict* ancestor of `path` that is a git working tree, if there is one."""
-    return next((parent for parent in path.parents if (parent / ".git").exists()), None)
+class RegisterResult(BaseModel):
+    """What one `write_register` did: placed and committed, already current, or not the newest."""
+
+    model_config = ConfigDict(frozen=True)
+
+    act: str
+    path: Path
+    newest: bool = True
+    unchanged: bool = False
+    revision: str = ""
+    message: str = ""
 
 
 class OutputRepo:
@@ -112,26 +118,9 @@ class OutputRepo:
 
     @classmethod
     def open(cls, path: Path) -> Self:
-        """Resolve, refuse any path emendrix may not write in, and create it if it is absent.
-
-        Two refusals, because there are two ways to end up committing into a repository nobody
-        asked emendrix to touch: a path *inside* one, and a path that *is* one.
-        """
+        """Resolve, refuse any path emendrix may not write in (`refuse_foreign`), or create it."""
         resolved = path.expanduser().resolve()
-        enclosing = _enclosing_worktree(resolved)
-        if enclosing is not None:
-            raise NestedRepository(
-                f"{resolved} is inside the git working tree at {enclosing}; the emendrix output "
-                f"repository must be a repository of its own, so that a commit of one can never "
-                f"pick up files of the other. Point --output-repo somewhere outside it."
-            )
-        if (resolved / ".git").exists() and not (resolved / MARKER_FILE).is_file():
-            raise ForeignRepository(
-                f"{resolved} is already a git repository and carries no {MARKER_FILE}, so it is "
-                f"not one emendrix created; refusing to commit into somebody else's repository. "
-                f"Point --output-repo at a new path, or add {MARKER_FILE} if this really is an "
-                f"emendrix output repository."
-            )
+        refuse_foreign(resolved)
         return cls(resolved)
 
     def act_dir(self, entry: ChangelogEntry) -> Path:
@@ -182,14 +171,22 @@ class OutputRepo:
                 error
             )
 
-    def write(self, entry: ChangelogEntry, *, message: str | None = None) -> WriteResult:
+    def write(
+        self,
+        entry: ChangelogEntry,
+        *,
+        register: Register | None = None,
+        message: str | None = None,
+    ) -> WriteResult:
         """Write one amendment event and commit it. Idempotent: identical bytes → no commit.
 
-        `message` replaces the emit subject `message_for` builds. A commit that repaired part of
-        a committed entry is not an emission of it, and a subject that says otherwise is the one
-        place a reader of `git log` would be misled.
+        `register` is placed in the same commit when its version is the act's newest entry once
+        this one is written, and left out otherwise. `message` replaces the emit subject
+        `message_for` builds. A commit that repaired part of a committed entry is not an
+        emission of it, and a subject that says otherwise is the one place a reader of
+        `git log` would be misled.
         """
-        initialised = self._ensure_repository()
+        initialised = ensure_repository(self.path)
         changelog = self.act_dir(entry) / "CHANGELOG.md"
         payload = self.act_dir(entry) / "changes" / f"{entry.key}.json"
         previous = _read(changelog)
@@ -200,16 +197,63 @@ class OutputRepo:
             payload.parent.mkdir(parents=True, exist_ok=True)
             changelog.write_text(rendered, encoding="utf-8")
             payload.write_text(document, encoding="utf-8")
+        placed = register is not None and self._place(register) is True
         indexed = self._index(entry.act_dir)
-        if current and not indexed:
+        if current and not indexed and not placed:
             return WriteResult(
                 act=str(entry.act), changelog=changelog, payload=payload, unchanged=True
             )
         if current and message is None:
-            message = INDEX_SUBJECT
-        return self._commit(
-            entry, changelog, payload, indexed, initialised=initialised, message=message
+            message = _registered(register) if placed and register is not None else INDEX_SUBJECT
+        subject = self.message_for(entry) if message is None else message
+        targets = [str(self.act_dir(entry).relative_to(self.path)), *indexed]
+        revision = commit_paths(self.path, targets, subject, initialised=initialised)
+        if not revision:
+            return WriteResult(
+                act=str(entry.act), changelog=changelog, payload=payload, unchanged=True
+            )
+        return WriteResult(
+            act=str(entry.act),
+            changelog=changelog,
+            payload=payload,
+            initialised=initialised,
+            revision=revision,
+            message=subject,
         )
+
+    def write_register(self, register: Register, *, message: str | None = None) -> RegisterResult:
+        """Place one act's register on its own and commit it, when it is of the newest entry.
+
+        For a pass that brings a repository's registers up to date after its entries: one
+        commit per act, never one per entry, because a register can run to megabytes.
+        """
+        path = self.path / register_path(_act_of(register))
+        placed = self._place(register)
+        if placed is None:
+            return RegisterResult(act=register.key, path=path, newest=False, unchanged=True)
+        subject = _registered(register) if message is None else message
+        relative = path.relative_to(self.path).as_posix()
+        revision = commit_paths(self.path, [relative], subject, initialised=False)
+        if not revision:
+            return RegisterResult(act=register.key, path=path, unchanged=True)
+        return RegisterResult(act=register.key, path=path, revision=revision, message=subject)
+
+    def _place(self, register: Register) -> bool | None:
+        """Write the register when its version is the act's newest entry: True if bytes moved.
+
+        `None` when it is not the newest, which leaves a newer register where it is. Newest is
+        the greatest entry key, the order `changelog.py` sorts entries of one act by.
+        """
+        path = self.path / register_path(_act_of(register))
+        changes = path.parent / "changes"
+        keys = [item.stem for item in changes.glob("*.json")] if changes.is_dir() else []
+        if not keys or max(keys) != slug(register.version):
+            return None
+        text = render_register(register)
+        if _read(path) == text:
+            return False
+        path.write_text(text, encoding="utf-8")
+        return True
 
     def _index(self, act_dir: str) -> tuple[str, ...]:
         """Rebuild `act_dir`'s index and the root's; return the paths whose bytes moved.
@@ -235,48 +279,6 @@ class OutputRepo:
             (self.path / path).write_text(files[path], encoding="utf-8")
         return moved
 
-    # ------------------------------------------------------------------ the git half
-
-    def _ensure_repository(self) -> bool:
-        created = init_repo(self.path)
-        if created:
-            (self.path / "README.md").write_text(repo_readme(), encoding="utf-8")
-            (self.path / MARKER_FILE).write_text(_marker_text(), encoding="utf-8")
-        return created
-
-    def _commit(
-        self,
-        entry: ChangelogEntry,
-        changelog: Path,
-        payload: Path,
-        indexed: tuple[str, ...],
-        *,
-        initialised: bool,
-        message: str | None = None,
-    ) -> WriteResult:
-        """Stage this act's directory, the index files that moved, and on a fresh repo the root.
-
-        Paths are given relative to the repository root and after `--`, so nothing outside it
-        can be staged even if a path ever arrived containing something surprising.
-        """
-        targets = [str(self.act_dir(entry).relative_to(self.path)), *indexed]
-        if initialised:
-            targets.extend(("README.md", MARKER_FILE))
-        git("add", "--", *targets, cwd=self.path)
-        subject = self.message_for(entry) if message is None else message
-        if not staged(self.path):
-            return WriteResult(
-                act=str(entry.act), changelog=changelog, payload=payload, unchanged=True
-            )
-        return WriteResult(
-            act=str(entry.act),
-            changelog=changelog,
-            payload=payload,
-            initialised=initialised,
-            revision=commit(self.path, subject),
-            message=subject,
-        )
-
     @staticmethod
     def message_for(entry: ChangelogEntry) -> str:
         """`32017R0745: 02017R0745-20170505 -> 02017R0745-20200424 (9 changes)`.
@@ -291,16 +293,14 @@ class OutputRepo:
         )
 
 
+def _act_of(register: Register) -> ActId:
+    return ActId(corpus=register.corpus, key=register.key)
+
+
+def _registered(register: Register) -> str:
+    """`32008R1272: register of 02008R1272-20250901 (4312 entries)`."""
+    return f"{register.key}: register of {register.version} ({len(register.entries)} entries)"
+
+
 def _read(path: Path) -> str | None:
     return path.read_text(encoding="utf-8") if path.is_file() else None
-
-
-def _marker_text() -> str:
-    return (
-        f"emendrix output repository {MARKER}\n"
-        "\n"
-        "This file marks the repository as one emendrix created and may commit into. Without it\n"
-        "emendrix refuses to write here, which is the point: a path naming somebody else's\n"
-        "repository would otherwise be indistinguishable from this one, and a mis-scoped commit\n"
-        "is the one mistake this tool must not be able to make.\n"
-    )

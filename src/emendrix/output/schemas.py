@@ -15,6 +15,7 @@ installed package has no `docs/` to read.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from typing import Final
 
 from pydantic import BaseModel
@@ -22,8 +23,16 @@ from pydantic import BaseModel
 from emendrix.graph.report import EmittedChange
 from emendrix.output.index_model import ActIndex, RootIndex
 from emendrix.output.json_out import ChangelogEntry
+from emendrix.output.register import Register
 
-__all__ = ["DIALECT", "SCHEMAS", "SUFFIX", "schema_document", "schema_documents"]
+__all__ = [
+    "COMMITTED",
+    "DIALECT",
+    "SCHEMAS",
+    "SUFFIX",
+    "schema_document",
+    "schema_documents",
+]
 
 DIALECT: Final = "https://json-schema.org/draft/2020-12/schema"
 """The JSON Schema dialect every document declares."""
@@ -37,7 +46,14 @@ SCHEMAS: Final[dict[str, type[BaseModel]]] = {
     "entry": ChangelogEntry,
     "index": RootIndex,
 }
-"""Each published name and the model whose serialised form it describes."""
+"""Each name the site serves a schema under, and the model whose serialised form it describes."""
+
+COMMITTED: Final[dict[str, type[BaseModel]]] = {**SCHEMAS, "register": Register}
+"""Every schema committed under `docs/schema/`: the served ones, and the register's.
+
+The register is served from the record as committed, beside each act's index; its schema is
+committed here and is not among the files the site build writes.
+"""
 
 
 def schema_document(name: str, model: type[BaseModel]) -> str:
@@ -49,6 +65,6 @@ def schema_document(name: str, model: type[BaseModel]) -> str:
     return json.dumps(schema, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
-def schema_documents() -> dict[str, str]:
-    """`<name>.schema.json` to its text, for every published schema, in name order."""
-    return {f"{name}{SUFFIX}": schema_document(name, SCHEMAS[name]) for name in sorted(SCHEMAS)}
+def schema_documents(schemas: Mapping[str, type[BaseModel]] = SCHEMAS) -> dict[str, str]:
+    """`<name>.schema.json` to its text, for every schema in `schemas`, in name order."""
+    return {f"{name}{SUFFIX}": schema_document(name, schemas[name]) for name in sorted(schemas)}

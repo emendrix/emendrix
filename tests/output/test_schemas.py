@@ -23,7 +23,7 @@ from toy_entries import disputed_entry, toy_entry
 from emendrix import DISCLAIMER
 from emendrix.core.changes import DisputeReason
 from emendrix.output import act_index, render_index
-from emendrix.output.schemas import DIALECT, SCHEMAS, SUFFIX, schema_documents
+from emendrix.output.schemas import COMMITTED, DIALECT, SUFFIX, schema_documents
 
 REPO = Path(__file__).resolve().parents[2]
 SCHEMA_DIR = REPO / "docs" / "schema"
@@ -34,6 +34,7 @@ LAYOUT = (
     "/api/v1/index.json",
     "/api/v1/<act_dir>/index.json",
     "/api/v1/<act_dir>/changes/<version>.json",
+    "/api/v1/<act_dir>/register.json",
     "/api/v1/catalogue.json",
     "/api/v1/schema/<name>.schema.json",
 )
@@ -41,22 +42,22 @@ LAYOUT = (
 
 _REGENERATE = (
     "uv run python -c 'from pathlib import Path; from emendrix.output.schemas import "
-    'schema_documents; [Path("docs/schema", n).write_text(t, encoding="utf-8") '
-    "for n, t in schema_documents().items()]'"
+    'COMMITTED, schema_documents; [Path("docs/schema", n).write_text(t, encoding="utf-8") '
+    "for n, t in schema_documents(COMMITTED).items()]'"
 )
 
 
 def _schema(name: str) -> dict[str, Any]:
-    loaded: dict[str, Any] = json.loads(schema_documents()[f"{name}{SUFFIX}"])
+    loaded: dict[str, Any] = json.loads(schema_documents(COMMITTED)[f"{name}{SUFFIX}"])
     return loaded
 
 
 def test_the_committed_schemas_are_what_the_models_generate() -> None:
-    generated = schema_documents()
+    generated = schema_documents(COMMITTED)
     committed = {
         path.name: path.read_text(encoding="utf-8") for path in sorted(SCHEMA_DIR.glob("*.json"))
     }
-    model_names = {f"{name}{SUFFIX}" for name in SCHEMAS}
+    model_names = {f"{name}{SUFFIX}" for name in COMMITTED}
     assert model_names <= set(committed), sorted(model_names - set(committed))
     assert {name: committed[name] for name in model_names} == generated, (
         f"the schemas under {SCHEMA_DIR} differ from the models; if the change is intended, "
@@ -65,7 +66,7 @@ def test_the_committed_schemas_are_what_the_models_generate() -> None:
 
 
 def test_every_schema_identifies_itself_by_its_own_file_name() -> None:
-    for file_name, text in schema_documents().items():
+    for file_name, text in schema_documents(COMMITTED).items():
         document = json.loads(text)
         assert document["$id"] == file_name
         assert "/" not in document["$id"] and ":" not in document["$id"]

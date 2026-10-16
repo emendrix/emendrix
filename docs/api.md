@@ -31,19 +31,23 @@ in the event's payload, which the act index names by `path`.
 | `/api/v1/index.json` | the root index: one row per act | the record, served as committed |
 | `/api/v1/<act_dir>/index.json` | one act's index: its events, and every change per provision | the record, served as committed |
 | `/api/v1/<act_dir>/changes/<version>.json` | one event's payload, with the verbatim texts and the explanations | the record, served as committed |
+| `/api/v1/<act_dir>/register.json` | for an act whose tables are read as entries, every entry of the newest version the record holds, cells verbatim | the record, as committed, where the deployment routes it |
 | `/api/v1/catalogue.json` | what the record cannot know: watchlist labels, aliases, sectors, page and feed addresses, and what the poller is waiting for | the site build |
 | `/api/v1/schema/<name>.schema.json` | the JSON Schema of each document: `index`, `act-index`, `entry`, `change`, `catalogue` | the site build |
 
 `<act_dir>` is the act's corpus and key, `eu/32017R0745` for the Medical Devices Regulation, and
 `<version>` is the version the event produced, `02017R0745-20260101` for one of its events. Every
 `path` and `index` field in an index is relative to the root, so it resolves against
-`https://emendrix.eu/api/v1/` and against a clone alike. The three files the record holds are the
+`https://emendrix.eu/api/v1/` and against a clone alike. The four files the record holds are the
 committed bytes, unaltered, which is why an index's `sha256` of a payload can be checked against
-the file a consumer downloads. Nothing else is served under `/api/v1/`: there is no file per
+the file a consumer downloads. The register is in every clone of the record; the hosted instance
+answers it only once [`deploy/default.conf`](../deploy/default.conf) names it among the files its
+`/api/v1/` location serves. Nothing else is served under `/api/v1/`: there is no file per
 change, and a path not in this table is not part of the API.
 
 The schemas are generated from the models that write the documents, and the ones for the record
-are committed in this repository under [`./schema/`](./schema/). Each declares JSON Schema
+are committed in this repository under [`./schema/`](./schema/), the register's
+(`register.schema.json`) among them, though the site does not serve that one. Each declares JSON Schema
 2020-12 and carries its own file name as a relative `$id`, so the same bytes resolve correctly
 wherever they are served. A schema describes a document as the current model writes it. A
 payload committed earlier can lack a field added since with a default, which a schema treats as

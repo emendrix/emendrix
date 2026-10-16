@@ -27,11 +27,12 @@ import anyio
 import mcp
 import pytest
 from pydantic import BaseModel
+from test_register import toy_snapshot
 
 import emendrix
 import emendrix_record
 from emendrix.graph.report import EmittedChange
-from emendrix.output import ChangelogEntry
+from emendrix.output import ChangelogEntry, Register, register_for, render_register
 from emendrix.output import index_model as written
 from emendrix.site_ import api_files
 from emendrix.site_.dispute import REASON_SENTENCES
@@ -53,6 +54,7 @@ WHOLE: tuple[tuple[type[BaseModel], type[BaseModel]], ...] = (
     (read.RootIndex, written.RootIndex),
     (read.ActIndex, written.ActIndex),
     (read.Catalogue, api_files.Catalogue),
+    (read.Register, Register),
 )
 """Documents the member reads whole: it must accept every field the writer emits."""
 
@@ -230,6 +232,14 @@ def test_every_member_model_parses_the_fixture() -> None:
             assert ours.change.provision.location == theirs.change.location.canonical
             assert ours.change.before == theirs.change.before
             assert ours.change.after == theirs.change.after
+
+
+def test_the_members_register_is_what_the_writer_renders() -> None:
+    """The register the member's tests read is the writer's rendering of invented rows."""
+    committed = FIXTURES.parent / "registers" / "toy" / "house-rules" / "register.json"
+    assert committed.read_text(encoding="utf-8") == render_register(register_for(toy_snapshot()))
+    raw = committed.read_bytes()
+    assert read.Register.model_validate_json(raw).model_dump(mode="json") == json.loads(raw)
 
 
 def test_links_match_the_site() -> None:

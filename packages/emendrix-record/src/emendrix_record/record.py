@@ -31,6 +31,7 @@ from emendrix_record.models import (
     CatalogueAct,
     EventRow,
     ProvisionRow,
+    Register,
     RootIndex,
 )
 from emendrix_record.payload import ChangeRecord, Payload
@@ -39,6 +40,7 @@ from emendrix_record.reads import PERMALINK_UNAVAILABLE, ChangeRead, PayloadRead
 __all__ = [
     "INDEX_FILE",
     "PERMALINK_UNAVAILABLE",
+    "REGISTER_FILE",
     "ChangeRead",
     "PayloadRead",
     "Record",
@@ -49,6 +51,9 @@ __all__ = [
 
 INDEX_FILE: Final = "index.json"
 """The root index's file name, at the top of the changelogs repository."""
+
+REGISTER_FILE: Final = "register.json"
+"""An act's register, beside its act index, for an act whose tables are read as entries."""
 
 
 def _sha256(raw: bytes) -> str:
@@ -175,6 +180,24 @@ class Record:
         return Unavailable(
             reason=f"the record holds no event of {index.corpus}/{index.key} producing {version!r}"
         )
+
+    def register(self, corpus: str, key: str) -> Register | Unavailable:
+        """The act's register, read now: every table entry of the newest version it holds.
+
+        Only an act whose tables the corpus reads as entries has one, so its absence is said
+        as that and never as "no entries".
+        """
+        row = self.act_row(f"{corpus}/{key}")
+        if isinstance(row, Unavailable):
+            return row
+        path = str(PurePosixPath(row.index).with_name(REGISTER_FILE))
+        raw = self._bytes(path)
+        if isinstance(raw, Unavailable):
+            return Unavailable(reason=f"the record holds no register for {row.corpus}/{row.key}")
+        try:
+            return Register.model_validate_json(raw)
+        except ValidationError:
+            return Unavailable(reason=f"{path} is not a register this server can read")
 
     # --- payloads --------------------------------------------------------------------------
 

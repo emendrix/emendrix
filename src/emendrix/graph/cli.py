@@ -50,7 +50,7 @@ from emendrix.eu.identifiers import Celex, act_id
 from emendrix.explain import CassetteMode
 from emendrix.graph.report import RunReport, summarise_run
 from emendrix.graph.state import PipelineState
-from emendrix.output import GitError, OutputRepo, entries_for, resolve_repo_path
+from emendrix.output import GitError, OutputRepo, entries_for, register_for, resolve_repo_path
 from emendrix.session import adapter_for, deps_for, execute, manual_event
 from emendrix.watch.cli import DATE_FORMATS
 from emendrix.watch.config import load_watchlist
@@ -229,11 +229,16 @@ def _write_changelog(report: RunReport, repo_path: Path) -> None:
     failure — no git on PATH, a path inside somebody else's working tree — is a message and a
     non-zero exit, not a traceback: by this point the report has already been printed, and the
     run genuinely did the work it was asked to do.
+
+    An act whose newer version holds a profiled table also gets its register in the entry's
+    commit, which the writer places only when the entry is the act's newest.
     """
     try:
         repository = OutputRepo.open(repo_path)
-        for entry in entries_for(report):
-            written = repository.write(entry)
+        for delta, entry in zip(report.deltas, entries_for(report), strict=True):
+            snapshot = delta.register_snapshot
+            register = None if snapshot is None else register_for(snapshot)
+            written = repository.write(entry, register=register)
             state = "unchanged" if written.unchanged else f"committed {written.revision[:7]}"
             typer.echo(f"{written.changelog}: {state}", err=True)
     except GitError as error:

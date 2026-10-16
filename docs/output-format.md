@@ -362,4 +362,47 @@ prints which files would change and their sizes and writes nothing. History-leve
 changelogs repository, such as a re-root or a fast-forward, must run `emendrix index rebuild` inside
 the same window in which the poller is suspended.
 
+## The register
+
+A payload holds only what changed, so it cannot say where an identifier appears today: an entry
+nobody amended since the first version the record holds is in no payload at all. For an act whose
+tables are read as entries, the repository therefore also holds the act's **register**, the
+newest version's whole reading, cells verbatim:
+
+```
+<repo>/eu/32008R1272/register.json   every table entry of the newest version the record holds
+```
+
+It is written in the same commit as the act's newest entry, and only when the entry is the
+newest: an older entry written later, as a backfill writes them, leaves a newer register where it
+is, and re-emitting identical bytes commits nothing. `emendrix backfill` writes entries without
+one; `emendrix repair tables` writes each profiled act's register from its newest published
+version, one commit per act, after bringing the act's entries up to `1.3`. It is the newest
+version's list and never a diff or a history: the history of an entry is in the payloads'
+`table_entries`, and the register's own history is the repository's.
+
+| Field | Meaning |
+|---|---|
+| `register_schema` | the register format's version, `1.0` |
+| `disclaimer` | not legal advice |
+| `corpus`, `key` | the act's identity |
+| `version` | the version the entries were read from, the `to_version` of the act's newest entry |
+| `tables[]` | every table read as entries, in document order, as in `table_entries.tables` |
+| `entries[]` | every entry, in document order (table position, then row order), with the fields of `table_entries.changes[].before`, plus `unit`, `container` and `table`; unkeyed rows are kept with `key: null`, so their identifiers are still listed |
+| `unrecognised[]` | profiled table positions whose header did not match, as `unit`, `container`, `table`; never read |
+| `coverage` | over the whole reading: `unrecognised_tables`, `unkeyed_rows`, `failed_check_digits`, and `repeated_keys[]` (each key one table prints more than once, listed once, where its second print stands) |
+
+Like every derived file of the record it is indented JSON ending in a newline, with no timestamp,
+and two builds over one version are byte-identical. **Cells are kept**, because without them a
+reader cannot show the row an identifier appears in. Measured on 2026-10-16 over the newest
+version each profiled act had published by 2026-10-08, read from the local cache: CLP 8 196 241
+bytes (8 642 entries), REACH 2 043 737 (2 086), Cosmetics 1 896 414 (2 425), PIC 469 190 (731),
+plant protection products 103 723 (156), POPs 80 613 (63), Biocides 20 327 (31). A size says
+how many rows an act prints, nothing about how much of the law changed. The register's schema is
+committed as [`./schema/register.schema.json`](./schema/register.schema.json).
+
+**A register says where an identifier appears, never whether a substance is regulated.** A
+group entry names no identifier, so an identifier no entry carries is not thereby outside the
+act.
+
 A rendering of these artifacts as a browsable site is in [`./site.md`](./site.md).

@@ -32,6 +32,7 @@ from emendrix.core import (
     Delta,
     DeltaSummary,
     ProvisionRef,
+    TableReading,
     VersionId,
 )
 from emendrix.corroborate import CorroborationReport
@@ -44,6 +45,7 @@ __all__ = [
     "EmittedChange",
     "EmittedDelta",
     "EmittedSentence",
+    "RegisterSnapshot",
     "RunReport",
     "RunSummary",
     "SkippedAct",
@@ -85,8 +87,29 @@ class EmittedChange(BaseModel):
     )
 
 
+class RegisterSnapshot(BaseModel):
+    """Every table entry of the version a transition produced, for the act's register.
+
+    Payloads hold only what changed, and a reader asking where an identifier appears today
+    needs the entries nobody amended too. The writer renders this into the register file
+    (`output/register.py`); it lives here because `output` imports this module, never the
+    other way round.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    act: ActId
+    version: VersionId = Field(description="The version the reading is of: the newer side.")
+    reading: TableReading
+
+
 class EmittedDelta(BaseModel):
-    """One act's transition, complete: the changes, the corroboration and both stages' counts."""
+    """One act's transition, complete: the changes, the corroboration and both stages' counts.
+
+    `register_snapshot` rides in memory to the output writer and is never serialised: the run report
+    stays the size of what changed, and the register file is the one place the whole reading
+    is written.
+    """
 
     model_config = ConfigDict(frozen=True)
 
@@ -98,6 +121,11 @@ class EmittedDelta(BaseModel):
     corroboration: CorroborationReport | None = None
     explain: RunStats | None = None
     gate: GateStats = GateStats()
+    register_snapshot: RegisterSnapshot | None = Field(
+        default=None,
+        exclude=True,
+        description="The newer side's table entries, when it holds a profiled table.",
+    )
 
 
 class SkippedAct(BaseModel):
@@ -236,6 +264,7 @@ def build_delta_report(
     *,
     corroboration: CorroborationReport | None = None,
     explain: RunStats | None = None,
+    register: RegisterSnapshot | None = None,
 ) -> EmittedDelta:
     """Assemble one act's emitted delta. Pure, ordered, and free of any clock or network."""
     if not len(delta.changes) == len(gated.changes) == len(contexts):
@@ -255,4 +284,5 @@ def build_delta_report(
         corroboration=corroboration,
         explain=explain,
         gate=gated.stats,
+        register_snapshot=register,
     )

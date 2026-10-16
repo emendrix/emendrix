@@ -38,7 +38,13 @@ from emendrix.explain import (
 )
 from emendrix.gate import GatedDelta, GateStats, TreeResolver, first_round, second_round
 from emendrix.graph.deps import PipelineDeps
-from emendrix.graph.report import EmittedDelta, RunReport, SkippedAct, build_delta_report
+from emendrix.graph.report import (
+    EmittedDelta,
+    RegisterSnapshot,
+    RunReport,
+    SkippedAct,
+    build_delta_report,
+)
 from emendrix.graph.state import ActRun, PipelineState
 from emendrix.watch.events import AmendmentEvent
 
@@ -49,6 +55,7 @@ __all__ = [
     "fetch",
     "gate",
     "localise",
+    "register_of",
     "revise",
     "settle",
 ]
@@ -254,6 +261,7 @@ def emit(deps: PipelineDeps, state: PipelineState) -> RunReport:
                 deps.adapter.render_citation,
                 corroboration=run.corroboration,
                 explain=None if run.explained is None else run.explained.stats,
+                register=register_of(run.after),
             )
         )
     return RunReport(
@@ -263,6 +271,20 @@ def emit(deps: PipelineDeps, state: PipelineState) -> RunReport:
         skipped=tuple(skipped),
         gate=totals,
     )
+
+
+def register_of(tree: ProvisionTree | None) -> RegisterSnapshot | None:
+    """The newer side's table entries for the act's register, when it read any table at all.
+
+    A tree whose profiled positions all failed their header still answers: the register then
+    says what could not be read, which is a different fact from an act with no tables.
+    """
+    if tree is None:
+        return None
+    reading = tree.table_entries
+    if not reading.tables and not reading.unrecognised:
+        return None
+    return RegisterSnapshot(act=tree.act, version=tree.version, reading=reading)
 
 
 def _resolver(run: ActRun) -> TreeResolver:

@@ -1,0 +1,120 @@
+{
+  "register_schema": "1.0",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "corpus": "toy",
+  "key": "house-rules",
+  "version": "v3",
+  "tables": [
+    {
+      "unit": "AN I",
+      "container": "AN I",
+      "table": 1,
+      "key_label": "No",
+      "header": [
+        [
+          "No",
+          "Rule",
+          "Code"
+        ]
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "unit": "AN I",
+      "container": "AN I",
+      "table": 1,
+      "key": "2",
+      "occurrence": 1,
+      "group": null,
+      "rows": [
+        [
+          "2",
+          "Keep the stairwell clear",
+          "100-00-5"
+        ]
+      ],
+      "identifiers": [
+        {
+          "scheme": "code",
+          "value": "100-00-5"
+        }
+      ],
+      "failed_check_digits": 0,
+      "name": "Keep the stairwell clear"
+    },
+    {
+      "unit": "AN I",
+      "container": "AN I",
+      "table": 1,
+      "key": "10",
+      "occurrence": 1,
+      "group": null,
+      "rows": [
+        [
+          "10",
+          "Bicycles stay in the yard",
+          null
+        ]
+      ],
+      "identifiers": [],
+      "failed_check_digits": 0,
+      "name": "Bicycles stay in the yard"
+    },
+    {
+      "unit": "AN I",
+      "container": "AN I",
+      "table": 1,
+      "key": "2",
+      "occurrence": 2,
+      "group": null,
+      "rows": [
+        [
+          "2",
+          "Quiet after ten",
+          null
+        ]
+      ],
+      "identifiers": [],
+      "failed_check_digits": 0,
+      "name": "Quiet after ten"
+    },
+    {
+      "unit": "AN I",
+      "container": "AN I",
+      "table": 1,
+      "key": null,
+      "occurrence": 1,
+      "group": null,
+      "rows": [
+        [
+          null,
+          "Unnumbered note on bins",
+          null
+        ]
+      ],
+      "identifiers": [],
+      "failed_check_digits": 0,
+      "name": "Unnumbered note on bins"
+    }
+  ],
+  "unrecognised": [
+    {
+      "unit": "AN II",
+      "container": "AN II",
+      "table": 1
+    }
+  ],
+  "coverage": {
+    "unrecognised_tables": 1,
+    "unkeyed_rows": 1,
+    "failed_check_digits": 0,
+    "repeated_keys": [
+      {
+        "container": "AN I",
+        "table": 1,
+        "key": "2"
+      }
+    ]
+  }
+}

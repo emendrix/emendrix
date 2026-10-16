@@ -10,7 +10,8 @@ Enumerated values are kept as the strings the documents store, and nothing here 
 value: a field is either read off the file or absent from the model. Unknown keys are ignored,
 so a document that gains a field still reads. The models of one payload are in `payload.py`:
 the index is what a reader lists from and a payload what it quotes from, and they are read at
-different moments for different reasons.
+different moments for different reasons. The register reuses the payload's models of a table and
+an entry, because it holds the same rows.
 """
 
 from __future__ import annotations
@@ -19,6 +20,8 @@ from datetime import date
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from emendrix_record.payload import EntryGapsRecord, EntryTableRecord, TableEntryRecord
 
 __all__ = [
     "ActIndex",
@@ -29,9 +32,11 @@ __all__ = [
     "EntryCounts",
     "EventRow",
     "ProvisionRow",
+    "Register",
     "RepairRow",
     "RootIndex",
     "SignalRow",
+    "TableRefRecord",
 ]
 
 _FROZEN = ConfigDict(frozen=True)
@@ -170,6 +175,39 @@ class RootIndex(BaseModel):
     index_schema: str = Field(description="The index format's version.")
     disclaimer: str = Field(description="Not legal advice.")
     acts: tuple[ActRow, ...] = Field(description="One row per act, sorted by (corpus, key).")
+
+
+# --- the register ---------------------------------------------------------------------------
+
+
+class TableRefRecord(BaseModel):
+    """A profiled table position whose header did not match, so it was never read."""
+
+    model_config = _FROZEN
+
+    unit: str = Field(description="The top-level unit's canonical location.")
+    container: str = Field(description="The located node holding the table.")
+    table: int = Field(ge=1, description="1-based ordinal among the container's tables.")
+
+
+class Register(BaseModel):
+    """Every table entry of an act's newest version the record holds, cells verbatim."""
+
+    model_config = _FROZEN
+
+    register_schema: str = Field(description="The register format's version.")
+    disclaimer: str = Field(description="Not legal advice.")
+    corpus: str = Field(description="The act's corpus namespace.")
+    key: str = Field(description="The act's key within its corpus.")
+    version: str = Field(description="The version the entries were read from.")
+    tables: tuple[EntryTableRecord, ...] = Field(default=(), description="In document order.")
+    entries: tuple[TableEntryRecord, ...] = Field(default=(), description="In document order.")
+    unrecognised: tuple[TableRefRecord, ...] = Field(
+        default=(), description="Profiled positions whose header did not match; never read."
+    )
+    coverage: EntryGapsRecord = Field(
+        default=EntryGapsRecord(), description="What the reading could not key, read or trust."
+    )
 
 
 # --- the catalogue --------------------------------------------------------------------------
