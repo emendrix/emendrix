@@ -34,6 +34,7 @@ def _recorded() -> tuple[re.Pattern[str], str]:
     [
         "/api/v1/index.json",
         "/api/v1/eu/32017R0745/index.json",
+        "/api/v1/eu/32008R1272/register.json",
         f"/api/v1/{payload_for(ActId(corpus='eu', key='32017R0745'), '02017R0745-20200424')}",
     ],
 )
