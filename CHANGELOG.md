@@ -1225,3 +1225,28 @@ Named rather than discovered later; the eval report's disagreement list is the l
   500 changes before matching, so in an event with more than 500 a late match can be missing from
   the feed, though not from email. **No published figure moved**: the payloads, the index, the
   feeds and the eval layer are byte-identical to before.
+
+- **The hosted instance serves the chemicals lens, since 2026-10-17.** Images
+  `emendrix@sha256:d6b10528`, `emendrix-mcp@sha256:f1933810` and `emendrix-service@sha256:cb3e645d`,
+  built from `28538de`. The service database moved to migration `0002` on the account pod's start,
+  after the `app` and `notify` schemas were dumped. `emendrix repair tables` ran over the hosted
+  record with the poller suspended: a dry run examined 457 entries and would rewrite 149 of the 178
+  entries of the eight acts, giving 210 changes an entry diff with none underivable; the write made
+  149 entry commits and 8 register commits in 150 s; a second dry run found nothing. The planning
+  count before the work was 154 entries and 219 changes: it counted every change in a unit holding
+  a table, and the 9 changes it adds are ones only the metadata names, which carry no text and so
+  no entry diff, on the hosted record as in a fresh run; five entries held nothing else. The next
+  poll built 14 642 pages, 11 363 of them substance pages, and the account service loaded the 149
+  rewritten payloads, 26 297 table hits over 7 081 numbers, announcing none. Verified from the edge
+  the same day: the CLP event of 2025-09-01 with its entry table (28 added, 25 amended, 0 removed)
+  and 50 links to substance pages; `substances/`, the pages of CAS 50-00-0, 83-32-9 and 51-19-4 with
+  the standing note and the disclaimer; EC 200-001-8 canonical to CAS 50-00-0 and absent from
+  `sitemap-substances.xml`, which `sitemap_index.xml` names; `api/v1/substances.json`, one substance
+  file and CLP's `register.json`, which the recorded API route now admits; `/llms.txt` and `/api/`
+  naming `find_substance`; `find_substance` over HTTP answering `50-00-0`, `50000` and
+  `605-001-00-5` with the same page and refusing `50-00-1` by its check digit; the search box in a
+  browser finding the number from `50-00-0`, `50000`, `200-001-8` and `605-001-00-5`; and the watch
+  landing for a reader not signed in. The signed-in substance flow, the paste and a substance
+  notification were not checked from the edge and rest on the service's tests alone. **No
+  published figure moved**: the eval layer is byte-identical to before; the 149 payloads moved to
+  schema 1.3 by gaining `table_entries`, with every sentence carried over.
