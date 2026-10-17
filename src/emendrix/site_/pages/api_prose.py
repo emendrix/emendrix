@@ -138,9 +138,9 @@ MCP: Final = """
 ## mcp The MCP server
 
 The same record, for a model: a read-only MCP server at `/mcp`, answering streamable HTTP with one
-JSON response per request, with no session, no key and no account. Its seven tools are
-`list_acts`, `find_provisions`, `changes_since`, `provision_history`, `get_change`, `get_event`
-and `list_disputed`, and its four resources `emendrix://acts`, `emendrix://acts/{act}`,
+JSON response per request, with no session, no key and no account. Its eight tools are
+`list_acts`, `find_provisions`, `changes_since`, `provision_history`, `get_change`, `get_event`,
+`list_disputed` and `find_substance`, and its four resources `emendrix://acts`, `emendrix://acts/{act}`,
 `emendrix://changes/{act}/{version}/{location}` and `emendrix://methodology`. Every result carries
 the disclaimer and the file each fact was read from, with that file's `sha256`.
 

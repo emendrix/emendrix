@@ -32,8 +32,8 @@ class Settings(BaseModel):
     changelogs: Path = Field(description="The directory of a changelogs repository, read-only.")
     catalogue: Path | None = Field(
         default=None,
-        description="A site build's `api/v1/catalogue.json`; without it permalinks are "
-        "reported unavailable.",
+        description="A site build's `api/v1/catalogue.json`, with the substance files beside "
+        "it; without it permalinks and substance answers are reported unavailable.",
     )
     allowed_hosts: tuple[str, ...] = Field(
         min_length=1, description="The `Host` values a request to the endpoint may carry."

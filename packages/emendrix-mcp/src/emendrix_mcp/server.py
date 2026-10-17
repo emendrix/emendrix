@@ -1,4 +1,4 @@
-"""The MCP server object: seven read-only tools and four resources over one `Record`.
+"""The MCP server object: eight read-only tools and four resources over one `Record`.
 
 Building it opens nothing: no transport and no socket. Every tool is a thin wrapper that hands
 its arguments to the function in `tools_*.py` that answers it, so the descriptions here are the
@@ -34,6 +34,7 @@ from emendrix_mcp.tools_read import (
     find_provisions,
     list_acts,
 )
+from emendrix_mcp.tools_substance import FIND_SUBSTANCE, SubstanceAnswer, find_substance
 from emendrix_mcp.tools_text import ChangeResult, get_change
 from emendrix_record.record import Record
 
@@ -49,7 +50,8 @@ INSTRUCTIONS: Final = (
     "law, and decides nothing: it never works out whether, where or how something changed, "
     "and it cannot search law text or resolve a free reference such as 'Art. 50(2)'. Name an "
     "act by its key, a provision by its canonical location string (`AR 50`, `AN I`) as "
-    "`list_acts` and `find_provisions` give them, and say the provenance you relied on. "
+    "`list_acts` and `find_provisions` give them, and hand a CAS or EC number to "
+    "`find_substance`. Say the provenance you relied on. "
     f"{DISCLAIMER}"
 )
 
@@ -61,6 +63,7 @@ TOOLS: Final = (
     "get_change",
     "get_event",
     "list_disputed",
+    "find_substance",
 )
 
 _READ_ONLY: Final = ToolAnnotations(
@@ -194,6 +197,16 @@ def build_server(record: Record) -> MCPServer:
         limit: Annotated[int, Field(description="At most this many rows, 1 to 2000.")] = 200,
     ) -> DisputesResult:
         return list_disputed(record, act, reason, limit)
+
+    @server.tool(
+        name="find_substance", annotations=_READ_ONLY, description=describe(FIND_SUBSTANCE)
+    )
+    def find_substance_tool(
+        identifier: Annotated[
+            str, Field(description="A CAS, EC or CLP Index number, hyphens optional.")
+        ],
+    ) -> SubstanceAnswer:
+        return find_substance(record, identifier)
 
     register_resources(server, record)
     return server

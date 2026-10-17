@@ -111,6 +111,12 @@ def test_the_mcp_section_names_the_endpoint_under_the_site_url(page: str) -> Non
     assert page.count('id="mcp"') == 1
 
 
+def test_the_mcp_section_names_the_substance_tool_last(page: str) -> None:
+    section = _mcp_section(page)
+    assert "Its eight tools are" in section
+    assert "<code>list_disputed</code> and <code>find_substance</code>" in section
+
+
 def test_the_page_names_no_mcp_address_but_its_own(page: str) -> None:
     for found in re.findall(r"https?://[^\s\"<]*mcp\b", html.unescape(page)):
         assert found == f"{SITE_URL}/mcp", found

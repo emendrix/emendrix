@@ -67,7 +67,7 @@ anything is read or bound. `--help` lists them all.
 | Variable | Flag | Required | Meaning |
 |---|---|---|---|
 | `EMENDRIX_MCP_CHANGELOGS` | `--changelogs` | yes | the directory of a changelogs repository, read-only |
-| `EMENDRIX_MCP_CATALOGUE` | `--catalogue` | no | a site build's `api/v1/catalogue.json`; without it every permalink is reported unavailable |
+| `EMENDRIX_MCP_CATALOGUE` | `--catalogue` | no | a site build's `api/v1/catalogue.json`; `find_substance` reads the substance files beside it; without it every permalink and every substance answer is reported unavailable |
 | `EMENDRIX_MCP_ALLOWED_HOSTS` | `--allowed-hosts` | yes | comma-separated `Host` values to answer, spaces trimmed; there is no default |
 | `EMENDRIX_MCP_BIND` | `--bind` | no | the address to listen on, default `0.0.0.0` |
 | `EMENDRIX_MCP_PORT` | `--port` | no | the port to listen on, default `8000` |
@@ -94,8 +94,9 @@ runs it behind the site's nginx, with both volumes read-only.
 | `emendrix_mcp/tools_read.py` | `list_acts`, `find_provisions`, `changes_since` |
 | `emendrix_mcp/tools_event.py` | `provision_history`, `get_event`, `list_disputed` |
 | `emendrix_mcp/tools_text.py` | `get_change`, with each verbatim side paged behind a visible marker |
+| `emendrix_mcp/tools_substance.py` | `find_substance`, where a CAS or EC number appears and every change to those entries |
 | `emendrix_mcp/resources.py` | the four resources |
-| `emendrix_mcp/server.py` | `build_server(record)`: the seven tools and four resources, no transport |
+| `emendrix_mcp/server.py` | `build_server(record)`: the eight tools and four resources, no transport |
 | `emendrix_mcp/settings.py` | `Settings`, and the fixed path `/mcp` |
 | `emendrix_mcp/app.py` | `create_app` and `serve`: the HTTP app, its Host and Origin check, `/healthz` |
 | `emendrix_mcp/cli.py` | the settings from the environment and the command line |

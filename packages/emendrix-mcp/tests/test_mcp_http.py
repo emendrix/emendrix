@@ -47,13 +47,13 @@ def _call(
     return client.post("/mcp", json=body, headers={**ACCEPT, **headers})
 
 
-def test_tools_list_is_one_json_response_naming_the_seven_tools(client: TestClient) -> None:
+def test_tools_list_is_one_json_response_naming_the_eight_tools(client: TestClient) -> None:
     response = _call(client, "tools/list")
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("application/json")
     assert "mcp-session-id" not in response.headers
     names = [tool["name"] for tool in response.json()["result"]["tools"]]
-    assert sorted(names) == sorted(TOOLS) and len(names) == 7
+    assert sorted(names) == sorted(TOOLS) and len(names) == 8
 
 
 def test_get_change_over_http_returns_the_stored_change(client: TestClient) -> None:

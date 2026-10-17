@@ -1,11 +1,12 @@
 """The reader of the record, `emendrix-record`, stays in step with what this package writes.
 
 Every reader beside the pipeline (the MCP server among them) reads through that member, which
-cannot import `emendrix`, so it carries its own models of the index, the catalogue and one
-payload, its own copy of the disclaimer, of the dispute-reason sentences and of the anchor
-rule. This module and `test_record_fixture.py` are the only places that import both, and this
-one holds every copy to its original, and the tools `docs/api.md` and the `/api/` page list to
-the ones the MCP server registers.
+cannot import `emendrix`, so it carries its own models of the index, the catalogue, the
+substance files and one payload, its own copy of the disclaimer, of the dispute-reason
+sentences, of the anchor rule and of the check-digit rules a typed number is read by. This
+module and `test_record_fixture.py` are the only places that import both, and this one holds
+every copy to its original, and the tools `docs/api.md` and the `/api/` page list to the ones
+the MCP server registers.
 
 The models are compared through their JSON Schemas, walked recursively: `emendrix`'s in
 serialisation mode, which is what it writes, against the member's in validation mode, which is
@@ -31,10 +32,11 @@ from test_register import toy_snapshot
 
 import emendrix
 import emendrix_record
+from emendrix.eu.substances import read_identifier
 from emendrix.graph.report import EmittedChange
 from emendrix.output import ChangelogEntry, Register, register_for, render_register
 from emendrix.output import index_model as written
-from emendrix.site_ import api_files
+from emendrix.site_ import api_files, substance_api
 from emendrix.site_.dispute import REASON_SENTENCES
 from emendrix.site_.pages.api_prose import MCP
 from emendrix.site_.urls import change_anchor, entry_anchors
@@ -42,11 +44,15 @@ from emendrix_mcp.server import build_server
 from emendrix_record import links
 from emendrix_record import models as read
 from emendrix_record import payload as payload_models
+from emendrix_record import substances as substance_models
+from emendrix_record.identifiers import parse_identifier
 from emendrix_record.reasons import REASON_SENTENCES as RECORD_REASON_SENTENCES
 from emendrix_record.record import Record
 
 REPO = Path(__file__).resolve().parents[2]
 FIXTURES = REPO / "packages" / "emendrix-record" / "tests" / "fixtures"
+SUBSTANCE_FILES = FIXTURES.parent / "substances"
+TABLES = REPO / "tests" / "fixtures" / "eu" / "tables"
 
 Schema = dict[str, Any]
 
@@ -55,6 +61,8 @@ WHOLE: tuple[tuple[type[BaseModel], type[BaseModel]], ...] = (
     (read.ActIndex, written.ActIndex),
     (read.Catalogue, api_files.Catalogue),
     (read.Register, Register),
+    (substance_models.SubstanceIndex, substance_api.SubstanceIndex),
+    (substance_models.SubstanceFile, substance_api.SubstanceFile),
 )
 """Documents the member reads whole: it must accept every field the writer emits."""
 
@@ -242,6 +250,74 @@ def test_the_members_register_is_what_the_writer_renders() -> None:
     assert read.Register.model_validate_json(raw).model_dump(mode="json") == json.loads(raw)
 
 
+def test_the_members_substance_files_are_what_the_writer_emits() -> None:
+    """The substance files the members' tests read are documents the site build's own models
+    accept and write back byte for byte, and the member's models read them whole."""
+    pairs: list[tuple[type[BaseModel], type[BaseModel], Path]] = [
+        (
+            substance_models.SubstanceIndex,
+            substance_api.SubstanceIndex,
+            SUBSTANCE_FILES / "substances.json",
+        ),
+        *(
+            (substance_models.SubstanceFile, substance_api.SubstanceFile, path)
+            for path in sorted((SUBSTANCE_FILES / "substances").glob("*.json"))
+        ),
+    ]
+    assert len(pairs) == 3
+    for member, writer, path in pairs:
+        raw = path.read_text(encoding="utf-8")
+        assert writer.model_validate_json(raw).model_dump_json(indent=2) + "\n" == raw, path
+        assert member.model_validate_json(raw).model_dump(mode="json") == json.loads(raw), path
+
+
+PRINTED = (
+    "1333-74-0",
+    "215-605-7",
+    "001-001-00-9",
+    "001-003-00-X",
+    "418-070-1",
+    "309-00-2",
+    "231-106-7",
+    "231-100-4",
+    "65-85-0",
+    "532-32-1",
+)
+"""Numbers the committed table fixtures print, among them an EC number whose remainder is 10."""
+
+TYPED = (
+    *PRINTED,
+    *(value.replace("-", "") for value in PRINTED),
+    "0" + PRINTED[0],
+    "00" + PRINTED[8],
+    PRINTED[0].replace("-", chr(0x2011)),
+    PRINTED[1].replace("-", chr(0x2212)),
+    " " + PRINTED[2] + " ",
+    PRINTED[3].lower(),
+    PRINTED[0][:-1] + "1",
+    PRINTED[4][:-1] + "0",
+    PRINTED[3][:-1] + "0",
+    "0-00-0",
+    "12",
+    "12345678901",
+    "",
+    "hydrogen",
+)
+"""The printed numbers as a reader might type them: without hyphens, with leading zeros, with a
+non-ASCII hyphen, padded, in lower case, with the check changed, and values that are no number."""
+
+
+def test_the_members_identifier_reading_is_the_pipelines() -> None:
+    """Every typed value reads as the same numbers in both, and a refusal in one is one in both."""
+    printed = "".join(path.read_text(encoding="utf-8") for path in sorted(TABLES.glob("*.xml")))
+    assert [value for value in PRINTED if value not in printed] == []
+    for typed in TYPED:
+        theirs = tuple((one.scheme, one.value) for one in read_identifier(typed))
+        ours = parse_identifier(typed)
+        assert (ours if isinstance(ours, tuple) else ()) == theirs, typed
+        assert isinstance(ours, str) == (theirs == ()), typed
+
+
 def test_links_match_the_site() -> None:
     """The member's anchor rule is the site's, for every fixture location and a deep one."""
     entries = [
@@ -285,5 +361,5 @@ def test_the_documented_tools_are_the_ones_the_server_registers() -> None:
 
 def test_the_api_page_names_the_tools_the_server_registers() -> None:
     """The `/api/` page lists the tools in one sentence, in the order the server registers them."""
-    listed = MCP.split("seven tools are", 1)[1].split("four resources", 1)[0]
+    listed = MCP.split("eight tools are", 1)[1].split("four resources", 1)[0]
     assert re.findall(r"`([a-z_]+)`", listed) == _registered()

@@ -77,13 +77,15 @@ def test_the_scan_sees_the_modules() -> None:
         "tools.py",
         "tools_event.py",
         "tools_read.py",
+        "tools_substance.py",
         "tools_text.py",
     }
     assert expected <= {path for path, _ in modules()}
 
 
 PUBLISHED_MODEL = (
-    r"(?m)^class (RootIndex|ActIndex|ActRow|EventRow|ProvisionRow|Catalogue\w*|Payload)\b"
+    r"(?m)^class (RootIndex|ActIndex|ActRow|EventRow|ProvisionRow|Catalogue\w*|Payload"
+    r"|Substance(?:File|Index|Entry|Change|Row))\b"
 )
 """A class named for a model of a published file, which only `emendrix_record` declares."""
 

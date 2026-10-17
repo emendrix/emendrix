@@ -85,7 +85,7 @@ def test_the_install_line_and_the_tools_are_the_api_pages_own(site: Path) -> Non
     (line,) = _INSTALL.findall(text)
     assert _INSTALL.findall(page) == [line]
     assert line.endswith(f"{SITE_URL}/mcp")
-    tools = MCP.split("Its seven tools are", 1)[1].split("four resources", 1)[0]
+    tools = MCP.split("Its eight tools are", 1)[1].split("four resources", 1)[0]
     assert tools in text
     assert "## mcp " not in text
 

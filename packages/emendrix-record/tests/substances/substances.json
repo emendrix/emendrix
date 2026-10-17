@@ -1,0 +1,28 @@
+{
+  "substance_schema": "1.0",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "provenance": "Derived by the site build from the committed registers and changelogs; not part of the record.",
+  "substances": [
+    {
+      "scheme": "cas",
+      "value": "1333-74-0",
+      "page": "https://example.org/substances/cas-1333-74-0/",
+      "file": "https://example.org/api/v1/substances/cas-1333-74-0.json",
+      "canonical": "https://example.org/substances/cas-1333-74-0/"
+    },
+    {
+      "scheme": "ec",
+      "value": "215-605-7",
+      "page": "https://example.org/substances/ec-215-605-7/",
+      "file": "https://example.org/api/v1/substances/ec-215-605-7.json",
+      "canonical": "https://example.org/substances/cas-1333-74-0/"
+    },
+    {
+      "scheme": "index",
+      "value": "001-001-00-9",
+      "page": "https://example.org/substances/cas-1333-74-0/",
+      "file": "https://example.org/api/v1/substances/cas-1333-74-0.json",
+      "canonical": "https://example.org/substances/cas-1333-74-0/"
+    }
+  ]
+}

@@ -64,6 +64,7 @@ def offenders(pattern: str, allowed: AbstractSet[str] = frozenset()) -> list[str
 def test_the_scan_sees_the_modules() -> None:
     expected = {
         "__init__.py",
+        "identifiers.py",
         "links.py",
         "locations.py",
         "models.py",
@@ -71,6 +72,8 @@ def test_the_scan_sees_the_modules() -> None:
         "reads.py",
         "reasons.py",
         "record.py",
+        "site_files.py",
+        "substances.py",
     }
     assert expected <= {path for path, _ in modules()}
 

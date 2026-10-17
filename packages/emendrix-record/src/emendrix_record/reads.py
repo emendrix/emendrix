@@ -12,8 +12,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix_record.models import EventRow, ProvisionRow
 from emendrix_record.payload import ChangeRecord, Payload
+from emendrix_record.substances import SubstanceFile
 
-__all__ = ["PERMALINK_UNAVAILABLE", "ChangeRead", "PayloadRead", "Unavailable"]
+__all__ = ["PERMALINK_UNAVAILABLE", "ChangeRead", "PayloadRead", "SubstanceRead", "Unavailable"]
 
 PERMALINK_UNAVAILABLE: Final = "permalink unavailable: this server was given no site catalogue"
 
@@ -56,3 +57,16 @@ class ChangeRead(BaseModel):
     sha256: str = Field(description="Hex sha256 of the payload bytes this read found.")
     matches_index: bool = Field(description="Whether those bytes are the ones the index states.")
     change: ChangeRecord = Field(description="The change as the payload stores it.")
+
+
+class SubstanceRead(BaseModel):
+    """One number's substance file as read now, with where it was read and its hash."""
+
+    model_config = ConfigDict(frozen=True)
+
+    path: str = Field(
+        description="The file's path relative to the site catalogue's directory, such as "
+        "`substances/cas-50-00-0.json`."
+    )
+    sha256: str = Field(description="Hex sha256 of the bytes this read found.")
+    document: SubstanceFile = Field(description="The file, read through this reader's model.")

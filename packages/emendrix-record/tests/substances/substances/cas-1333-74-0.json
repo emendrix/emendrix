@@ -1,0 +1,338 @@
+{
+  "substance_schema": "1.0",
+  "disclaimer": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+  "provenance": "Derived by the site build from the committed registers and changelogs; not part of the record.",
+  "scheme": "cas",
+  "value": "1333-74-0",
+  "page": "https://example.org/substances/cas-1333-74-0/",
+  "canonical": "https://example.org/substances/cas-1333-74-0/",
+  "identifiers": [
+    {
+      "scheme": "cas",
+      "value": "1333-74-0"
+    },
+    {
+      "scheme": "ec",
+      "value": "215-605-7"
+    },
+    {
+      "scheme": "index",
+      "value": "001-001-00-9"
+    }
+  ],
+  "entries": [
+    {
+      "corpus": "toy",
+      "act": "garden-rules",
+      "label": "Garden Rules of Flat 3B",
+      "version": "v2",
+      "key_label": "No",
+      "header": [
+        [
+          "No",
+          "Rule",
+          "CAS No",
+          "EC No",
+          "Index No"
+        ]
+      ],
+      "entry": {
+        "unit": "AN I",
+        "container": "AN I",
+        "table": 1,
+        "key": "7",
+        "occurrence": 1,
+        "group": null,
+        "rows": [
+          [
+            "7",
+            "No open flame near the shed",
+            "1333-74-0",
+            "215-605-7",
+            "001-001-00-9"
+          ]
+        ],
+        "identifiers": [
+          {
+            "scheme": "cas",
+            "value": "1333-74-0"
+          },
+          {
+            "scheme": "ec",
+            "value": "215-605-7"
+          },
+          {
+            "scheme": "index",
+            "value": "001-001-00-9"
+          }
+        ],
+        "failed_check_digits": 0,
+        "name": "No open flame near the shed"
+      },
+      "act_page": "https://example.org/acts/garden-rules/",
+      "provision_page": "https://example.org/acts/garden-rules/an-i/",
+      "last_changed": "https://example.org/acts/garden-rules/v2/#v2-an-i"
+    },
+    {
+      "corpus": "toy",
+      "act": "house-rules",
+      "label": "House Rules of Flat 3B",
+      "version": "v3",
+      "key_label": "No",
+      "header": [
+        [
+          "No",
+          "Rule",
+          "CAS No",
+          "EC No",
+          "Index No"
+        ]
+      ],
+      "entry": {
+        "unit": "AN I",
+        "container": "AN I",
+        "table": 1,
+        "key": "2",
+        "occurrence": 1,
+        "group": null,
+        "rows": [
+          [
+            "2",
+            "Keep the boiler cupboard shut",
+            "1333-74-0",
+            "215-605-7",
+            "001-001-00-9"
+          ]
+        ],
+        "identifiers": [
+          {
+            "scheme": "cas",
+            "value": "1333-74-0"
+          },
+          {
+            "scheme": "ec",
+            "value": "215-605-7"
+          },
+          {
+            "scheme": "index",
+            "value": "001-001-00-9"
+          }
+        ],
+        "failed_check_digits": 0,
+        "name": "Keep the boiler cupboard shut"
+      },
+      "act_page": "https://example.org/acts/house-rules/",
+      "provision_page": "https://example.org/acts/house-rules/an-i/",
+      "last_changed": "https://example.org/acts/house-rules/v3/#v3-an-i"
+    }
+  ],
+  "history": [
+    {
+      "corpus": "toy",
+      "act": "house-rules",
+      "label": "House Rules of Flat 3B",
+      "version": "v3",
+      "dated": "2026-08-09",
+      "in_force": false,
+      "kind": "amended",
+      "typography_only": false,
+      "key_label": "No",
+      "header": [
+        [
+          "No",
+          "Rule",
+          "CAS No",
+          "EC No",
+          "Index No"
+        ]
+      ],
+      "before": {
+        "unit": "AN I",
+        "container": "AN I",
+        "table": 1,
+        "key": "2",
+        "occurrence": 1,
+        "group": null,
+        "rows": [
+          [
+            "2",
+            "Keep the boiler cupboard closed",
+            "1333-74-0",
+            "215-605-7",
+            "001-001-00-9"
+          ]
+        ],
+        "identifiers": [
+          {
+            "scheme": "cas",
+            "value": "1333-74-0"
+          },
+          {
+            "scheme": "ec",
+            "value": "215-605-7"
+          },
+          {
+            "scheme": "index",
+            "value": "001-001-00-9"
+          }
+        ],
+        "failed_check_digits": 0,
+        "name": "Keep the boiler cupboard closed"
+      },
+      "after": {
+        "unit": "AN I",
+        "container": "AN I",
+        "table": 1,
+        "key": "2",
+        "occurrence": 1,
+        "group": null,
+        "rows": [
+          [
+            "2",
+            "Keep the boiler cupboard shut",
+            "1333-74-0",
+            "215-605-7",
+            "001-001-00-9"
+          ]
+        ],
+        "identifiers": [
+          {
+            "scheme": "cas",
+            "value": "1333-74-0"
+          },
+          {
+            "scheme": "ec",
+            "value": "215-605-7"
+          },
+          {
+            "scheme": "index",
+            "value": "001-001-00-9"
+          }
+        ],
+        "failed_check_digits": 0,
+        "name": "Keep the boiler cupboard shut"
+      },
+      "amending_acts": [
+        "toy-amendment-2"
+      ],
+      "event": "https://example.org/acts/house-rules/v3/#v3-an-i",
+      "file": "https://example.org/api/v1/toy/house-rules/changes/v3.json"
+    },
+    {
+      "corpus": "toy",
+      "act": "garden-rules",
+      "label": "Garden Rules of Flat 3B",
+      "version": "v2",
+      "dated": "2026-08-06",
+      "in_force": false,
+      "kind": "added",
+      "typography_only": false,
+      "key_label": "No",
+      "header": [
+        [
+          "No",
+          "Rule",
+          "CAS No",
+          "EC No",
+          "Index No"
+        ]
+      ],
+      "before": null,
+      "after": {
+        "unit": "AN I",
+        "container": "AN I",
+        "table": 1,
+        "key": "7",
+        "occurrence": 1,
+        "group": null,
+        "rows": [
+          [
+            "7",
+            "No open flame near the shed",
+            "1333-74-0",
+            "215-605-7",
+            "001-001-00-9"
+          ]
+        ],
+        "identifiers": [
+          {
+            "scheme": "cas",
+            "value": "1333-74-0"
+          },
+          {
+            "scheme": "ec",
+            "value": "215-605-7"
+          },
+          {
+            "scheme": "index",
+            "value": "001-001-00-9"
+          }
+        ],
+        "failed_check_digits": 0,
+        "name": "No open flame near the shed"
+      },
+      "amending_acts": [],
+      "event": "https://example.org/acts/garden-rules/v2/#v2-an-i",
+      "file": "https://example.org/api/v1/toy/garden-rules/changes/v2.json"
+    },
+    {
+      "corpus": "toy",
+      "act": "house-rules",
+      "label": "House Rules of Flat 3B",
+      "version": "v2",
+      "dated": "2026-08-06",
+      "in_force": false,
+      "kind": "added",
+      "typography_only": false,
+      "key_label": "No",
+      "header": [
+        [
+          "No",
+          "Rule",
+          "CAS No",
+          "EC No",
+          "Index No"
+        ]
+      ],
+      "before": null,
+      "after": {
+        "unit": "AN I",
+        "container": "AN I",
+        "table": 1,
+        "key": "2",
+        "occurrence": 1,
+        "group": null,
+        "rows": [
+          [
+            "2",
+            "Keep the boiler cupboard closed",
+            "1333-74-0",
+            "215-605-7",
+            "001-001-00-9"
+          ]
+        ],
+        "identifiers": [
+          {
+            "scheme": "cas",
+            "value": "1333-74-0"
+          },
+          {
+            "scheme": "ec",
+            "value": "215-605-7"
+          },
+          {
+            "scheme": "index",
+            "value": "001-001-00-9"
+          }
+        ],
+        "failed_check_digits": 0,
+        "name": "Keep the boiler cupboard closed"
+      },
+      "amending_acts": [
+        "toy-amendment-1"
+      ],
+      "event": "https://example.org/acts/house-rules/v2/#v2-an-i",
+      "file": "https://example.org/api/v1/toy/house-rules/changes/v2.json"
+    }
+  ]
+}

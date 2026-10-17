@@ -1100,4 +1100,13 @@ the JSON API. No act page gained a door, because no act has a register, and only
 went**, every `<title>` and description is unchanged, and `_LARGEST_PAGE` did not move. Every
 feed, `search-index.json`, `robots.txt`, the stylesheet, the fonts, `icon.svg`, `og.png`, the
 catalogue and every other schema are byte-identical.
+
+Read again on 2026-10-17, later the same day, when the MCP server gained an eighth tool,
+`find_substance`, which says where a CAS or EC number appears. The MCP section of `/api/` and of
+`llms.txt` now reads "Its eight tools are" and ends its list "`list_disputed` and
+`find_substance`": `api/index.html` grew from 15 735 to 15 764 bytes and `llms.txt` from 3 263
+to 3 281. **No `id=` moved or went**, every `<title>` and description is unchanged, and
+`_LARGEST_PAGE` did not move. Every other page, every feed, both search files, the sitemaps,
+`robots.txt`, the stylesheet, the script, the fonts, `icon.svg`, `og.png`, the catalogue, the
+substance list and every schema are byte-identical.
 """

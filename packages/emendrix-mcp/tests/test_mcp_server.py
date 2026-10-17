@@ -32,12 +32,12 @@ def _with_client[T](use: Callable[[mcp.Client], Awaitable[T]]) -> T:
     return anyio.run(main)
 
 
-def test_the_server_lists_exactly_the_seven_tools() -> None:
+def test_the_server_lists_exactly_the_eight_tools() -> None:
     async def use(client: mcp.Client) -> list[str]:
         return [tool.name for tool in (await client.list_tools()).tools]
 
     assert sorted(_with_client(use)) == sorted(TOOLS)
-    assert len(TOOLS) == 7
+    assert len(TOOLS) == 8
 
 
 def test_every_tool_description_says_what_an_answer_means() -> None:

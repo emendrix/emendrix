@@ -13,13 +13,13 @@ result rather than hidden, because it means the volume is mid-write. Every failu
 because every reader of the record so far answers over the network.
 
 Nothing here builds an address. A permalink is read out of the catalogue or reported
-unavailable.
+unavailable. The catalogue and the substance files beside it are read by `SiteFiles`
+(`site_files.py`), which `Record` extends: they are the site build's files, not the record's.
 """
 
 from __future__ import annotations
 
-import hashlib
-from pathlib import Path, PurePosixPath, PureWindowsPath
+from pathlib import Path, PurePosixPath
 from typing import Final
 
 from pydantic import ValidationError
@@ -27,23 +27,30 @@ from pydantic import ValidationError
 from emendrix_record.models import (
     ActIndex,
     ActRow,
-    Catalogue,
-    CatalogueAct,
     EventRow,
     ProvisionRow,
     Register,
     RootIndex,
 )
 from emendrix_record.payload import ChangeRecord, Payload
-from emendrix_record.reads import PERMALINK_UNAVAILABLE, ChangeRead, PayloadRead, Unavailable
+from emendrix_record.reads import (
+    PERMALINK_UNAVAILABLE,
+    ChangeRead,
+    PayloadRead,
+    SubstanceRead,
+    Unavailable,
+)
+from emendrix_record.site_files import SUBSTANCES_FILE, SiteFiles, entry_key, inside, sha256_of
 
 __all__ = [
     "INDEX_FILE",
     "PERMALINK_UNAVAILABLE",
     "REGISTER_FILE",
+    "SUBSTANCES_FILE",
     "ChangeRead",
     "PayloadRead",
     "Record",
+    "SubstanceRead",
     "Unavailable",
     "entry_key",
     "row_for",
@@ -54,15 +61,6 @@ INDEX_FILE: Final = "index.json"
 
 REGISTER_FILE: Final = "register.json"
 """An act's register, beside its act index, for an act whose tables are read as entries."""
-
-
-def _sha256(raw: bytes) -> str:
-    return hashlib.sha256(raw).hexdigest()
-
-
-def entry_key(event: EventRow) -> str:
-    """The key the catalogue files an event under: its payload's file name, without `.json`."""
-    return PurePosixPath(event.path).stem
 
 
 def _unit(index: ActIndex, location: str) -> str | None:
@@ -94,33 +92,17 @@ def row_for(
     return rows[ordinal] if ordinal < len(rows) else None
 
 
-class Record:
+class Record(SiteFiles):
     """The changelogs repository at `changelogs`, and the site catalogue at `catalogue`."""
 
     def __init__(self, changelogs: Path, catalogue: Path | None) -> None:
+        super().__init__(catalogue)
         self._root = changelogs
-        self._catalogue = catalogue
 
     # --- files -----------------------------------------------------------------------------
 
     def _within(self, relative: str) -> Path | Unavailable:
-        refused = Unavailable(
-            reason=f"refused the path {relative!r}: every path must stay inside the changelogs "
-            f"repository"
-        )
-        pure = PurePosixPath(relative)
-        if (
-            not relative
-            or pure.is_absolute()
-            or "\\" in relative
-            or PureWindowsPath(relative).drive
-            or ".." in pure.parts
-            or "\x00" in relative
-        ):
-            return refused
-        root = self._root.resolve()
-        target = (root / pure).resolve()
-        return target if target.is_relative_to(root) else refused
+        return inside(self._root, relative, "the changelogs repository")
 
     def _bytes(self, relative: str) -> bytes | Unavailable:
         path = self._within(relative)
@@ -206,7 +188,7 @@ class Record:
         raw = self._bytes(path)
         if isinstance(raw, Unavailable):
             return raw
-        found = _sha256(raw)
+        found = sha256_of(raw)
         try:
             payload = Payload.model_validate_json(raw)
         except ValidationError:
@@ -258,56 +240,3 @@ class Record:
             matches_index=read.matches_index,
             change=changes[position],
         )
-
-    # --- the catalogue ---------------------------------------------------------------------
-
-    def catalogue(self) -> Catalogue | Unavailable:
-        """The site catalogue, read now; unavailable when this server was given none."""
-        if self._catalogue is None:
-            return Unavailable(reason=PERMALINK_UNAVAILABLE)
-        try:
-            return Catalogue.model_validate_json(self._catalogue.read_bytes())
-        except (OSError, ValidationError):
-            return Unavailable(
-                reason="permalink unavailable: the site catalogue this server was given could "
-                "not be read"
-            )
-
-    def listing(self, corpus: str, key: str) -> CatalogueAct | Unavailable:
-        """The catalogue's row for one act: its labels, aliases, domain and page addresses."""
-        catalogue = self.catalogue()
-        if isinstance(catalogue, Unavailable):
-            return catalogue
-        for act in catalogue.acts:
-            if (act.corpus, act.key) == (corpus, key):
-                return act
-        return Unavailable(reason=f"permalink unavailable: the catalogue lists no {corpus}/{key}")
-
-    def act_url(self, index: ActIndex) -> str | Unavailable:
-        """The act's page, as the catalogue gives it."""
-        listing = self.listing(index.corpus, index.key)
-        return listing if isinstance(listing, Unavailable) else listing.url
-
-    def event_url(self, index: ActIndex, event: EventRow) -> str | Unavailable:
-        """The event's page, as the catalogue gives it."""
-        listing = self.listing(index.corpus, index.key)
-        if isinstance(listing, Unavailable):
-            return listing
-        url = listing.events.get(entry_key(event))
-        if url is None:
-            return Unavailable(
-                reason=f"permalink unavailable: the catalogue lists no page for {event.to_version}"
-            )
-        return url
-
-    def provision_url(self, index: ActIndex, location: str) -> str | Unavailable:
-        """The provision's page, as the catalogue gives it, for a top-level location."""
-        listing = self.listing(index.corpus, index.key)
-        if isinstance(listing, Unavailable):
-            return listing
-        url = listing.provisions.get(location)
-        if url is None:
-            return Unavailable(
-                reason=f"permalink unavailable: the catalogue lists no page for {location}"
-            )
-        return url

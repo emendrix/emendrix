@@ -34,8 +34,8 @@ VARIABLES: Final = {
 
 _HELP: Final = {
     "changelogs": "required: the directory of a changelogs repository, read-only",
-    "catalogue": "optional: a site build's api/v1/catalogue.json; without it every permalink "
-    "is reported unavailable",
+    "catalogue": "optional: a site build's api/v1/catalogue.json, with the substance files "
+    "beside it; without it every permalink and every substance answer is reported unavailable",
     "allowed_hosts": "required: comma-separated Host values to answer, such as "
     "'mcp.example.org,mcp:8000'; there is no default",
     "bind": f"optional: the address to listen on, default {DEFAULT_BIND}",

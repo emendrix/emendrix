@@ -361,7 +361,7 @@ A client configured by a JSON file takes the same address, in the shape most of 
 A connector form that asks only for a URL, with no key and no header, needs nothing else: give it
 `https://emendrix.eu/mcp`.
 
-Seven tools, every one read-only:
+Eight tools, every one read-only:
 
 | Tool | Answers |
 |---|---|
@@ -372,6 +372,26 @@ Seven tools, every one read-only:
 | `get_change` | one change in full: the verbatim texts, paged behind a visible marker, its citations, signals and dates |
 | `get_event` | one event of one act: its counts, repairs, stored corroboration and every row |
 | `list_disputed` | disputed changes grouped by `dispute_reason`, with the sentence the site prints for each |
+| `find_substance` | where a CAS or EC number, with or without hyphens, appears: the entries that print it in the newest version of each act the record holds, and every recorded change to them, with the amending acts each change names |
+
+`find_substance` reads a typed value by the same check-digit rules the pipeline recognises numbers
+by: a CAS number, an EC number (a remainder of 10 is written `1`) or a CLP Index No, and without
+hyphens 5 to 10 digits as a CAS number and exactly 7 also as an EC number, every reading whose
+check passes answered. A value that passes none is answered with the reason (its shape, or which
+check digit failed and what the digits give), never a guess. An Index No is answered with the CAS
+or EC number whose page its entry lands on, as `api/v1/substances.json` states it, or with the
+reason it lands on none. Each answer comes from the number's
+`api/v1/substances/<scheme>-<value>.json`, read beside the catalogue, with that file's path and
+`sha256`, and each recorded change names its payload in the changelogs repository and the hash
+the act index states for it. A number no entry prints is answered with one sentence: "No entry in
+the record prints this number. Many entries name a group of substances and print no number, so
+absence here is not absence from the law." It says where a number appears and decides nothing
+about legal status. One call, as an MCP client sends it:
+
+```json
+{"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+ "params": {"name": "find_substance", "arguments": {"identifier": "50-00-0"}}}
+```
 
 Four resources, each the JSON of the tool result that answers the same question:
 `emendrix://acts`, `emendrix://acts/{act}`, `emendrix://changes/{act}/{version}/{location}` and
@@ -397,7 +417,7 @@ environment, and each variable has a flag of the same name that wins over it:
 | Variable | Flag | Required | Meaning |
 |---|---|---|---|
 | `EMENDRIX_MCP_CHANGELOGS` | `--changelogs` | yes | the directory of a changelogs repository |
-| `EMENDRIX_MCP_CATALOGUE` | `--catalogue` | no | a site build's `api/v1/catalogue.json`; without it every permalink is reported unavailable |
+| `EMENDRIX_MCP_CATALOGUE` | `--catalogue` | no | a site build's `api/v1/catalogue.json`; `find_substance` reads the substance files beside it; without it every permalink and every substance answer is reported unavailable |
 | `EMENDRIX_MCP_ALLOWED_HOSTS` | `--allowed-hosts` | yes | comma-separated `Host` values to answer, such as `mcp.example.org,localhost:8080`; there is no default |
 | `EMENDRIX_MCP_BIND` | `--bind` | no | the address to listen on, default `0.0.0.0` |
 | `EMENDRIX_MCP_PORT` | `--port` | no | the port to listen on, default `8000` |
