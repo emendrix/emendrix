@@ -23,6 +23,7 @@ from emendrix_service.db.tables import Watchlist
 from emendrix_service.load.run import load
 from emendrix_service.web.csrf import SESSION_COOKIE
 from tests.conftest import NOW
+from tests.test_svc_load_tables import tabled_record
 
 FIXTURE = Path(__file__).resolve().parents[2] / "emendrix-record" / "tests" / "fixtures"
 TOKEN = re.compile(r'name="csrf" value="([^"]+)"')
@@ -42,6 +43,18 @@ async def load_record(db: Db) -> None:
 async def loaded(db: Db) -> Db:
     """`content` holding the record fixture: two toy acts, House Rules and Garden Rules."""
     await load_record(db)
+    return db
+
+
+@pytest.fixture
+async def tabled(db: Db, tmp_path: Path) -> Db:
+    """`content` holding the record fixture with `house-rules` v3 moving three table rows.
+
+    The rows carry CAS 50-00-0 and EC 200-001-8 (entry 7, amended), CAS 64-17-5 (entry 9,
+    amended only in typography) and CAS 7732-18-5 (the entry for Dust of the shelves, added).
+    """
+    counts = await load(db, tabled_record(tmp_path), clock=FixedClock(NOW))
+    assert counts.status == "complete"
     return db
 
 

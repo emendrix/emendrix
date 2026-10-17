@@ -14,6 +14,7 @@ from datetime import date
 from typing import Final
 
 from emendrix_service import DISCLAIMER
+from emendrix_service.db.enums import ItemKind
 from emendrix_service.feed.model import FeedChange, FeedEntry
 from emendrix_service.notify.compose import change_line, location_order
 from emendrix_service.notify.facts import EventFacts, ItemFacts
@@ -60,7 +61,9 @@ def feed_entries(
 ) -> tuple[FeedEntry, ...]:
     """The newest `limit` changes any of `items` matches, newest event first.
 
-    Within an event, changes follow the location order the email uses.
+    Within an event, changes follow the location order the email uses. An act or provision
+    item is matched only against changes of its own act; a substance item against a change of
+    any act, by the table hits it carries.
     """
     by_location = sorted(
         changes, key=lambda c: (location_order(c.change.location), c.change.occurrence)
@@ -73,7 +76,11 @@ def feed_entries(
     entries: list[FeedEntry] = []
     for found in ordered:
         act = (found.event.corpus, found.event.act_key)
-        watching = [item for item in items if (item.corpus, item.act_key) == act]
+        watching = [
+            item
+            for item in items
+            if item.kind == ItemKind.SUBSTANCE or (item.corpus, item.act_key) == act
+        ]
         entry = _entry(found, watching, site_url=site_url) if watching else None
         if entry is not None:
             entries.append(entry)

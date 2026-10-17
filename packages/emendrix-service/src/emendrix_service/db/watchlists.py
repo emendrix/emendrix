@@ -3,16 +3,16 @@
 **Every read and write of a watchlist is scoped by the account that asks.** A watchlist or item
 id belonging to another account reads as absent (`None`, `False`), never as forbidden, so a
 page cannot reveal that an id exists. The `content` reads return what the loader
-stored, unchanged: an act's waiting rows are read back with the catalogue's own model.
+stored, unchanged: an act's waiting rows are read back with the catalogue's own model. The
+views returned are declared in `watch.views`, so the pure rules there need no database.
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterable
-from datetime import date, datetime
+from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import Exists, delete, exists, func, or_, select, tuple_, update
 
 from emendrix_record.models import CatalogueWaiting
@@ -20,11 +20,20 @@ from emendrix_service.db.engine import Tx
 from emendrix_service.db.enums import Cadence, ItemKind, UserStatus
 from emendrix_service.db.guards import insert_once
 from emendrix_service.db.tables_app import User, WatchItem, Watchlist
-from emendrix_service.db.tables_content import Act, Provision
+from emendrix_service.db.tables_content import Act, Change, Event, Provision, TableHit
+from emendrix_service.watch.views import (
+    ActKey,
+    ActView,
+    EntryStamp,
+    ProvisionView,
+    WatchItemView,
+    WatchlistView,
+)
 
 __all__ = [
     "ActKey",
     "ActView",
+    "EntryStamp",
     "ProvisionView",
     "WatchItemView",
     "WatchlistView",
@@ -35,6 +44,8 @@ __all__ = [
     "content_loaded",
     "create_watchlist",
     "delete_watchlist",
+    "entry_stamps",
+    "identifiers_of_row",
     "provisions_by_act",
     "provisions_of",
     "remove_item",
@@ -43,62 +54,6 @@ __all__ = [
     "watchlist_of",
     "watchlists_for",
 ]
-
-ActKey = tuple[str, str]
-
-_FROZEN = ConfigDict(frozen=True)
-
-
-class WatchItemView(BaseModel):
-    """One item of a watchlist."""
-
-    model_config = _FROZEN
-
-    id: UUID = Field(description="The item's id.")
-    kind: ItemKind = Field(description="A whole act or one provision of it.")
-    corpus: str = Field(description="The act's corpus.")
-    act_key: str = Field(description="The act's key.")
-    location: str | None = Field(description="The canonical location; None for the whole act.")
-
-
-class WatchlistView(BaseModel):
-    """One watchlist with its settings and its items, oldest item first."""
-
-    model_config = _FROZEN
-
-    id: UUID = Field(description="The watchlist's id.")
-    name: str = Field(description="The name its owner gave it.")
-    cadence: Cadence = Field(description="How often its matches are mailed.")
-    date_alerts: bool = Field(description="Whether a change adding or removing a date is flagged.")
-    heartbeat: bool = Field(description="Whether a monthly note is sent when nothing changed.")
-    paused: bool = Field(description="Whether delivery is paused.")
-    has_feed: bool = Field(description="Whether a personal feed token has been issued.")
-    items: tuple[WatchItemView, ...] = Field(description="Its items.")
-
-
-class ActView(BaseModel):
-    """One watched act, as `content.acts` holds it."""
-
-    model_config = _FROZEN
-
-    corpus: str = Field(description="The act's corpus.")
-    act_key: str = Field(description="The act's key.")
-    label: str = Field(description="The catalogue's short label.")
-    long_name: str = Field(description="The catalogue's long form, or ''.")
-    aliases: tuple[str, ...] = Field(description="The catalogue's other names for the act.")
-    url: str = Field(description="The act's page.")
-    checked_through: date | None = Field(description="How far the poller has read, or None.")
-    waiting: tuple[CatalogueWaiting, ...] = Field(description="Versions announced, not read.")
-
-
-class ProvisionView(BaseModel):
-    """One top-level unit of an act that the record holds a change to."""
-
-    model_config = _FROZEN
-
-    unit: str = Field(description="The canonical top-level location.")
-    heading: str | None = Field(description="The heading of its newest stored change.")
-    changes: int = Field(description="How many stored changes are filed under it.")
 
 
 def _act(row: Act) -> ActView:
@@ -143,6 +98,7 @@ async def watchlists_for(tx: Tx, user_id: UUID) -> list[WatchlistView]:
                     corpus=item.corpus,
                     act_key=item.act_key,
                     location=item.location,
+                    identifier=item.identifier,
                 )
             )
     return [
@@ -318,3 +274,51 @@ async def user_status(tx: Tx, user_id: UUID) -> UserStatus | None:
     """Whether the account may be mailed; None when it does not exist."""
     status: UserStatus | None = await tx.scalar(select(User.status).where(User.id == user_id))
     return status
+
+
+async def entry_stamps(tx: Tx, identifiers: Iterable[str]) -> list[EntryStamp]:
+    """Every stored change to a table row carrying one of `identifiers`, in a fixed order.
+
+    A row amended only in spacing, dash forms or accents is left out, as matching leaves it out,
+    so the Watching tab never names a change no email or feed entry would carry.
+    """
+    wanted = sorted(set(identifiers))
+    if not wanted:
+        return []
+    rows = await tx.execute(
+        select(TableHit, Change.in_force, Change.anchor, Event, Act.label)
+        .join(
+            Change,
+            tuple_(Change.event_key, Change.location, Change.occurrence)
+            == tuple_(TableHit.event_key, TableHit.location, TableHit.occurrence),
+        )
+        .join(Event, Event.event_key == TableHit.event_key)
+        .outerjoin(Act, (Act.corpus == Event.corpus) & (Act.act_key == Event.act_key))
+        .where(TableHit.identifier.in_(wanted), TableHit.typography_only.is_(False))
+        .order_by(TableHit.identifier, TableHit.event_key, TableHit.location, TableHit.row_key)
+    )
+    return [
+        EntryStamp(
+            identifier=hit.identifier,
+            row_key=hit.row_key,
+            key_label=hit.key_label,
+            name=hit.name,
+            kind=hit.kind,
+            unit=hit.unit,
+            act_label=label or event.act_key,
+            in_force=in_force,
+            detected_on=event.detected_on,
+            event_key=event.event_key,
+            url=event.url,
+            anchor=anchor,
+        )
+        for hit, in_force, anchor, event, label in rows
+    ]
+
+
+async def identifiers_of_row(tx: Tx, row_key: str) -> list[str]:
+    """The CAS and EC numbers any stored change gives a table row keyed `row_key`, sorted."""
+    rows = await tx.scalars(
+        select(TableHit.identifier).where(TableHit.row_key == row_key).distinct()
+    )
+    return sorted(rows)

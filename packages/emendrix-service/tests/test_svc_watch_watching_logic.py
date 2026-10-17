@@ -9,7 +9,15 @@ from emendrix_record.models import CatalogueWaiting
 from emendrix_service.db.enums import Cadence, ItemKind
 from emendrix_service.db.latest import ChangeStamp
 from emendrix_service.db.watchlists import ActView, ProvisionView, WatchItemView, WatchlistView
+from emendrix_service.watch.forms import PASTE_CAP, Pasted, parse_identifiers_field
 from emendrix_service.watch.logic import coverage_line
+from emendrix_service.watch.substances import (
+    NOT_PRINTED_YET,
+    entry_line,
+    read_substance,
+    substance_rows,
+)
+from emendrix_service.watch.views import EntryStamp
 from emendrix_service.watch.watching import (
     NOT_LISTED,
     coverage_short,
@@ -196,3 +204,102 @@ def test_svc_watch_watching_strip_says_how_a_list_is_heard() -> None:
         "Not flagged",
     )
     assert strip_for(watchlist.model_copy(update={"paused": True})).email == "Paused"
+
+
+def entry(
+    identifier: str,
+    *,
+    key: str = "605-001-00-5",
+    key_label: str | None = "Index No",
+    name: str | None = None,
+    kind: str = "amended",
+    in_force: date | None = date(2025, 9, 1),
+    detected: date = date(2025, 9, 10),
+    event: str = "e1",
+) -> EntryStamp:
+    return EntryStamp(
+        identifier=identifier,
+        row_key=key,
+        key_label=key_label,
+        name=name,
+        kind=kind,
+        unit="AN VI",
+        act_label="CLP",
+        in_force=in_force,
+        detected_on=detected,
+        event_key=event,
+        url="https://example.org/acts/clp/v9/",
+        anchor="an-vi",
+    )
+
+
+def number(identifier: str) -> WatchItemView:
+    return WatchItemView(id=uuid4(), kind=ItemKind.SUBSTANCE, identifier=identifier)
+
+
+def test_svc_watch_watching_an_entry_line_names_the_key_as_the_act_does() -> None:
+    assert entry_line(entry("cas:50-00-0")) == (
+        "Index No 605-001-00-5 in CLP Annex VI was amended in the version in force 2025-09-01"
+    )
+    assert entry_line(entry("ec:200-001-8", key="77", key_label="Entry", kind="added")) == (
+        "Entry 77 in CLP Annex VI was added in the version in force 2025-09-01"
+    )
+    named = entry("cas:116-06-3", key_label=None, name="Aldicarb; and its salts", in_force=None)
+    assert entry_line(named) == (
+        "The entry for Aldicarb in CLP Annex VI was amended in the version recorded 2025-09-10"
+    )
+
+
+def test_svc_watch_watching_numbers_group_apart_by_scheme_then_value() -> None:
+    items = [
+        number("ec:200-001-8"),
+        number("cas:7732-18-5"),
+        number("cas:50-00-0"),
+        item(None),
+    ]
+    stamps = [
+        entry("cas:50-00-0", in_force=date(2024, 1, 1), event="old"),
+        entry("cas:50-00-0", key="603-001-00-X", event="new"),
+        entry("cas:999-99-5"),
+    ]
+    rows = substance_rows(items, stamps, site_url="https://example.org")
+    assert [row.label for row in rows] == ["CAS 50-00-0", "CAS 7732-18-5", "EC 200-001-8"]
+    first, water, ec = rows
+    assert first.page == "https://example.org/substances/cas-50-00-0/"
+    assert first.latest_text.startswith("Index No 603-001-00-X in CLP Annex VI")
+    assert first.latest_url == "https://example.org/acts/clp/v9/#an-vi"
+    for empty in (water, ec):
+        assert (empty.page, empty.latest_url) == (None, None)
+        assert empty.latest_text == NOT_PRINTED_YET
+    assert substance_rows([item("AN I")], stamps, site_url="https://example.org") == ()
+    groups = group_by_act(items, {}, {}, [])
+    assert [len(group.rows) for group in groups] == [1], "a watched number names no act"
+
+
+def test_svc_watch_watching_a_substance_value_is_read_never_guessed() -> None:
+    assert read_substance("cas-50-00-0").identifiers == ("cas:50-00-0",)
+    assert read_substance("ec-2000018").identifiers == ("ec:200-001-8",)
+    assert read_substance(" 50000 ").outcome == "watchable"
+    both = read_substance("2000002")
+    assert (both.outcome, both.identifiers) == ("ambiguous", ("cas:2000-00-2", "ec:200-000-2"))
+    assert read_substance("cas-2000002").identifiers == ("cas:2000-00-2",)
+    index = read_substance("index-605-001-00-5")
+    assert (index.outcome, index.index) == ("index", "605-001-00-5")
+    assert read_substance("605-001-00-5").outcome == "index"
+    wrong = read_substance("ec-200-001-9")
+    assert wrong.outcome == "invalid" and "EC check digit is 9" in (wrong.reason or "")
+    assert read_substance("ec-50-00-0").reason == "'50-00-0' is not an EC number."
+    assert read_substance("").outcome == "invalid"
+
+
+def test_svc_watch_watching_a_paste_is_split_and_capped() -> None:
+    pasted = parse_identifiers_field("50000;50-00-0,\n2000002 x 605-001-00-5")
+    assert isinstance(pasted, Pasted)
+    assert pasted.valid == ("cas:50-00-0",)
+    assert pasted.ambiguous == (("2000002", ("CAS 2000-00-2", "EC 200-000-2")),)
+    assert [value for value, _ in pasted.invalid] == ["x", "605-001-00-5"]
+    assert isinstance(parse_identifiers_field(" ".join(["50000"] * PASTE_CAP)), Pasted)
+    assert parse_identifiers_field(" ".join(["50000"] * (PASTE_CAP + 1))) == (
+        f"Paste 1 to {PASTE_CAP} CAS or EC numbers.",
+    )
+    assert parse_identifiers_field("\n") == (f"Paste 1 to {PASTE_CAP} CAS or EC numbers.",)

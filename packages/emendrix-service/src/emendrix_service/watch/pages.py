@@ -17,8 +17,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from emendrix_service.db import Db
 from emendrix_service.db.accounts import session_user
 from emendrix_service.db.enums import UserStatus
-from emendrix_service.watch.forms import LOCATION_FORMS, NAME_LIMIT
+from emendrix_service.watch.forms import LOCATION_FORMS, NAME_LIMIT, PASTE_CAP
 from emendrix_service.watch.logic import WHAT_A_WATCH_DOES
+from emendrix_service.watch.substances import WHAT_A_NUMBER_WATCH_DOES
 from emendrix_service.web.csrf import SESSION_COOKIE, session_hash
 from emendrix_service.web.session import SignedIn, SignInRequired, current_user, remember_reader
 from emendrix_service.web.templating import render_page
@@ -48,6 +49,8 @@ def copy() -> dict[str, object]:
         "what_a_watch_does": WHAT_A_WATCH_DOES,
         "name_limit": NAME_LIMIT,
         "location_forms": LOCATION_FORMS,
+        "what_a_number_watch_does": WHAT_A_NUMBER_WATCH_DOES,
+        "paste_cap": PASTE_CAP,
     }
 
 

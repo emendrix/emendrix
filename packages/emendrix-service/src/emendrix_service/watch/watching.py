@@ -1,5 +1,8 @@
 """The Watching tab: what a reader watches, grouped by act, each item with its newest change.
 
+Watched CAS and EC numbers name no act, so they form a group of their own, "Substances",
+after the acts (`watch.substances`).
+
 The tab has three shapes. A reader with no list, or with one list that watches nothing, sees the
 first visit: three steps and every act the catalogue lists. A reader with one list sees its items
 and never the word "list", a list's name, a rename box or a switcher, because that list is their
@@ -24,13 +27,9 @@ from emendrix_service.db import Db
 from emendrix_service.db.enums import Cadence, UserStatus
 from emendrix_service.db.latest import ChangeStamp, change_stamps
 from emendrix_service.db.watchlists import (
-    ActKey,
-    ActView,
-    ProvisionView,
-    WatchItemView,
-    WatchlistView,
     acts_by_key,
     acts_roster,
+    entry_stamps,
     provisions_by_act,
     user_status,
     watchlists_for,
@@ -47,6 +46,14 @@ from emendrix_service.watch.logic import (
     describe_item,
 )
 from emendrix_service.watch.pages import Holder
+from emendrix_service.watch.substances import SUBSTANCES_HEADING, substance_rows
+from emendrix_service.watch.views import (
+    ActKey,
+    ActView,
+    ProvisionView,
+    WatchItemView,
+    WatchlistView,
+)
 from emendrix_service.web.frame import EYEBROW, AccountFrame, frame_context
 from emendrix_service.web.templating import render_page
 
@@ -145,7 +152,8 @@ def latest_for(item: WatchItemView, stamps: Sequence[ChangeStamp]) -> ChangeStam
     found = [
         stamp
         for stamp in stamps
-        if (stamp.corpus, stamp.act_key) == (item.corpus, item.act_key)
+        if item.identifier is None
+        and (stamp.corpus, stamp.act_key) == (item.corpus, item.act_key)
         and (item.location is None or _touches(stamp, item.location))
     ]
     return max(found, key=_newest, default=None)
@@ -200,24 +208,25 @@ def group_by_act(
     provisions: Mapping[ActKey, list[ProvisionView]],
     stamps: Sequence[ChangeStamp],
 ) -> tuple[ActGroup, ...]:
-    """`items` grouped by act, by act label, each act's whole-act item first, then in order."""
+    """`items` grouped by act, by act label, each act's whole-act item first, then in order.
+
+    A watched number names no act and is left to `substance_rows`."""
 
     def label(key: ActKey) -> str:
         return acts[key].label if key in acts else key[1]
 
+    keyed = [(key, item) for item in items if (key := item.act()) is not None]
     ordered = sorted(
-        items,
-        key=lambda item: (
-            label((item.corpus, item.act_key)),
-            item.corpus,
-            item.act_key,
-            item.location is not None,
-            canonical_sort_key(item.location or ""),
+        keyed,
+        key=lambda pair: (
+            label(pair[0]),
+            pair[0],
+            pair[1].location is not None,
+            canonical_sort_key(pair[1].location or ""),
         ),
     )
     grouped: dict[ActKey, list[ItemRow]] = {}
-    for item in ordered:
-        key = (item.corpus, item.act_key)
+    for key, item in ordered:
         line = describe_item(item, acts.get(key), provisions.get(key, []))
         text, url = latest_line(latest_for(item, stamps))
         grouped.setdefault(key, []).append(
@@ -263,10 +272,11 @@ async def watching_page(
         lists = await watchlists_for(tx, holder.user_id)
         current = pick_list(lists, raw_list)
         items = current.items if current is not None else ()
-        keys: set[ActKey] = {(item.corpus, item.act_key) for item in items}
+        keys = {key for item in items if (key := item.act()) is not None}
         acts = await acts_by_key(tx, keys)
         provisions = await provisions_by_act(tx, keys)
         stamps = await change_stamps(tx, keys)
+        entries = await entry_stamps(tx, (i.identifier for i in items if i.identifier))
         mode = _mode(lists)
         roster = await acts_roster(tx) if mode == "first_visit" else []
     first = mode == "first_visit"
@@ -283,6 +293,7 @@ async def watching_page(
         eyebrow="Welcome" if first else EYEBROW,
     )
     groups = group_by_act(items, acts, provisions, stamps)
+    numbers = substance_rows(items, entries, site_url=request.app.state.settings.site_url)
     return render_page(
         request,
         "watch/watching.html",
@@ -298,6 +309,8 @@ async def watching_page(
         groups=groups,
         item_count=len(items),
         act_count=len(groups),
+        substances=numbers,
+        substances_heading=SUBSTANCES_HEADING,
         roster=roster,
         new=new,
         errors=errors,

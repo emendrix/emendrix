@@ -6,9 +6,13 @@
 {% include "web/_form_errors.html" %}
 <form class="stack" method="post" action="/account/watch">
 {{ csrf_field(request) }}
+{% if substance %}
+<input type="hidden" name="substance" value="{{ substance }}">
+{% else %}
 <input type="hidden" name="act" value="{{ act.act_key }}">
 {% if location %}
 <input type="hidden" name="loc" value="{{ location }}">
+{% endif %}
 {% endif %}
 {% include "auth/_signup_fields.html" %}
 <p><button type="submit">Email me a link to confirm</button></p>

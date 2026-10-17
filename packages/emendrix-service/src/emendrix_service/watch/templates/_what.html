@@ -4,5 +4,10 @@
 the whole act instead, or add a provision from your account page.</p>
 </div>
 {% endif %}
+{% if substance %}
+<p>You are about to watch <strong>{{ label }}</strong>, wherever a table entry in the record prints it.</p>
+<p>{{ what_a_number_watch_does }}</p>
+{% else %}
 <p>You are about to watch <strong>{{ label }}</strong>{% if act.long_name and act.long_name != act.label %} ({{ act.long_name }}){% endif %}.</p>
 <p>{{ what_a_watch_does }}</p>
+{% endif %}

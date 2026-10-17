@@ -14,6 +14,7 @@ from emendrix_service.db import Db
 from emendrix_service.db.enums import Cadence
 from emendrix_service.db.tables import WatchItem, Watchlist
 from tests.conftest import SITE_URL
+from tests.test_svc_watch_account import assert_clean
 from tests.test_svc_watch_fixtures import GARDEN, HOUSE, csrf, sign_in, watchlist_ids
 from tests.test_svc_watch_fixtures import loaded as loaded
 
@@ -235,3 +236,63 @@ async def test_svc_watch_editor_refuses_oversized_and_control_input(
     assert named.status_code == 400
     assert await item_locations(loaded, wl) == []
     assert (await client.get("/account/")).status_code == 200
+
+
+async def watched_numbers(db: Db, watchlist: UUID) -> list[str | None]:
+    async with db.transaction() as tx:
+        found = await tx.scalars(
+            select(WatchItem.identifier)
+            .where(WatchItem.watchlist_id == watchlist, WatchItem.identifier.is_not(None))
+            .order_by(WatchItem.identifier)
+        )
+        return list(found)
+
+
+async def test_svc_watch_editor_a_paste_of_numbers_names_every_value(
+    client: AsyncClient, other: AsyncClient, loaded: Db
+) -> None:
+    user = await sign_in(loaded, client, "owner@example.org")
+    wl = await make_list(client, loaded, user, "Chemicals")
+    picker = await client.get(f"/account/watchlists/{wl}/add")
+    assert 'action="/account/watchlists/' + str(wl) + '/substances"' in picker.text
+    assert "Up to 500 at once" in picker.text and 'id="numbers"' in picker.text
+    token = await csrf(client, SETTINGS)
+    first = await client.post(
+        f"/account/watchlists/{wl}/substances", data={"csrf": token, "numbers": "50-00-0"}
+    )
+    assert first.status_code == 200 and "Now watched: CAS 50-00-0." in first.text
+    paste = "50000\n7732-18-5, 2000018; 2000002 50-00-1\t605-001-00-5 cas-50 7732185"
+    page = await client.post(
+        f"/account/watchlists/{wl}/substances", data={"csrf": token, "numbers": paste}
+    )
+    assert page.status_code == 200
+    text = page.text
+    assert "Now watched: CAS 7732-18-5, EC 200-001-8." in text
+    assert "Already watched, so not added again: CAS 50-00-0." in text
+    assert "“2000002” reads as CAS 2000-00-2 and as EC 200-000-2." in text
+    assert "its CAS check digit is 1 where its other digits give 0" in text
+    assert "&#39;605-001-00-5&#39; is a CLP Index No" in text
+    assert "&#39;cas-50&#39; is not shaped like a CAS number" in text
+    assert ">2000002\n50-00-1\n605-001-00-5\ncas-50</textarea>" in text
+    assert "<h1>Watch CAS and EC numbers</h1>" in text and "Chemicals" not in text
+    assert "regulated" not in text and "restricted" not in text
+    assert_clean(text)
+    assert await watched_numbers(loaded, wl) == ["cas:50-00-0", "cas:7732-18-5", "ec:200-001-8"]
+    too_many = await client.post(
+        f"/account/watchlists/{wl}/substances",
+        data={"csrf": token, "numbers": " ".join(["50-00-0"] * 501)},
+    )
+    assert too_many.status_code == 400 and "Paste 1 to 500 CAS or EC numbers." in too_many.text
+    empty = await client.post(
+        f"/account/watchlists/{wl}/substances", data={"csrf": token, "numbers": " ,; "}
+    )
+    assert empty.status_code == 400
+    await sign_in(loaded, other, "stranger@example.org")
+    stolen = await other.post(
+        f"/account/watchlists/{wl}/substances",
+        data={"csrf": await csrf(other, SETTINGS), "numbers": "64-17-5"},
+    )
+    assert stolen.status_code == 404
+    unsigned = await client.post(f"/account/watchlists/{wl}/substances", data={"numbers": "1"})
+    assert unsigned.status_code == 403
+    assert len(await watched_numbers(loaded, wl)) == 3

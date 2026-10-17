@@ -22,6 +22,7 @@ from emendrix_service.settings import ServiceSettings
 from tests.conftest import NOW, SITE_URL
 from tests.test_svc_auth_flow import count, link_of, press
 from tests.test_svc_auth_flow import settings as settings
+from tests.test_svc_watch_account import assert_clean
 from tests.test_svc_watch_fixtures import HOUSE, csrf, sign_in, watchlist_ids
 from tests.test_svc_watch_fixtures import loaded as loaded
 
@@ -192,3 +193,100 @@ async def test_svc_watch_landing_closed_sign_up(
     await press(http, link_of(mail))
     assert await items(loaded) == [(ItemKind.PROVISION, "toy", HOUSE, "AN I")]
     assert await count(loaded, WatchItem) == 1
+
+
+FORMALDEHYDE = "/account/watch?substance=cas-50-00-0"
+
+
+async def numbers(db: Db) -> list[str | None]:
+    async with db.transaction() as tx:
+        query = select(WatchItem.identifier).where(WatchItem.kind == ItemKind.SUBSTANCE)
+        return list(await tx.scalars(query))
+
+
+async def test_svc_watch_landing_a_substance_signed_out_carries_it_through_sign_up(
+    client: AsyncClient, loaded: Db, mailer: RecordingMailer
+) -> None:
+    page = await client.get(FORMALDEHYDE)
+    assert page.status_code == 200
+    assert "Watch CAS 50-00-0" in page.text
+    assert 'name="substance" value="cas-50-00-0"' in page.text and 'name="act"' not in page.text
+    assert "print no number" in page.text and "does not say whether the change affects" in page.text
+    assert 'href="/account/signin?next=/account/watch%3Fsubstance%3Dcas-50-00-0"' in page.text
+    form = {
+        "csrf": await csrf(client, FORMALDEHYDE),
+        "substance": "cas-50-00-0",
+        "email": "reader@example.org",
+        "consent": "yes",
+    }
+    sent = await client.post("/account/watch", data=form)
+    assert sent.status_code == 200 and "Check your inbox" in sent.text
+    (mail,) = mailer.sent
+    assert mail.subject == "Confirm your address for Emendrix"
+    found = re.search(r"https://example\.org(/account/confirm/\S+)", mail.text)
+    assert found is not None and found.group(1).endswith(
+        "?next=/account/watch%3Fsubstance%3Dcas-50-00-0"
+    )
+    confirm = (await client.get(found.group(1))).text
+    carried = re.search(r'name="next" value="([^"]+)"', confirm)
+    assert carried is not None and carried.group(1) == FORMALDEHYDE.replace("&", "&amp;")
+    confirmed = await client.post(
+        found.group(1), data={"csrf": await csrf(client, found.group(1)), "next": FORMALDEHYDE}
+    )
+    assert (confirmed.status_code, confirmed.headers["location"]) == (303, FORMALDEHYDE)
+    landed = await client.get(FORMALDEHYDE)
+    assert "Start watching" in landed.text and "watchlist" not in words(landed.text).lower()
+    token = await csrf(client, FORMALDEHYDE)
+    added = await client.post(
+        "/account/watch", data={"csrf": token, "substance": "cas-50-00-0", "watchlist": "new"}
+    )
+    assert added.status_code == 303 and added.headers["location"].endswith("&notice=added")
+    assert await numbers(loaded) == ["cas:50-00-0"]
+
+
+async def test_svc_watch_landing_a_substance_signed_in_adds_once(
+    client: AsyncClient, loaded: Db
+) -> None:
+    user = await sign_in(loaded, client, "reader@example.org")
+    async with loaded.transaction() as tx:
+        wl = await create_watchlist(tx, user, "My watchlist", NOW)
+    hyphenless = await client.get("/account/watch?substance=cas-50000")
+    assert "Add to your list" in hyphenless.text
+    assert 'name="substance" value="cas-50-00-0"' in hyphenless.text
+    form = {"csrf": await csrf(client, FORMALDEHYDE), "substance": "cas-50-00-0"}
+    first = await client.post("/account/watch", data={**form, "watchlist": str(wl)})
+    assert first.headers["location"] == f"/account/?list={wl}&notice=added"
+    assert "You already watch this." in (await client.get(FORMALDEHYDE)).text
+    again = await client.post("/account/watch", data={**form, "watchlist": str(wl)})
+    assert again.headers["location"] == f"/account/?list={wl}&notice=already"
+    ec = await client.post(
+        "/account/watch", data={**form, "substance": "ec-200-001-8", "watchlist": str(wl)}
+    )
+    assert ec.headers["location"] == f"/account/?list={wl}&notice=added"
+    assert sorted(n or "" for n in await numbers(loaded)) == ["cas:50-00-0", "ec:200-001-8"]
+    refused = await client.post("/account/watch", data={**form, "substance": "cas-50-00-1"})
+    assert refused.status_code == 400
+    assert len(await numbers(loaded)) == 2
+
+
+async def test_svc_watch_landing_a_value_that_is_no_number_says_why(
+    client: AsyncClient, loaded: Db
+) -> None:
+    wrong = await client.get("/account/watch?substance=cas-50-00-1")
+    assert wrong.status_code == 400
+    assert "This is not a CAS or EC number" in wrong.text
+    assert "its CAS check digit is 1 where its other digits give 0" in wrong.text
+    assert "<form" not in words(wrong.text) and 'name="substance"' not in wrong.text
+    crossed = await client.get("/account/watch?substance=cas-200-001-8")
+    assert crossed.status_code == 400 and "is not a CAS number" in crossed.text
+    both = await client.get("/account/watch?substance=2000002")
+    assert both.status_code == 200 and "reads two ways" in both.text
+    assert 'href="/account/watch?substance=cas-2000-00-2">Watch CAS 2000-00-2' in both.text
+    assert 'href="/account/watch?substance=ec-200-000-2">Watch EC 200-000-2' in both.text
+    index = await client.get("/account/watch?substance=index-605-001-00-5")
+    assert index.status_code == 200 and "An Index No cannot be watched" in index.text
+    assert "No change the record holds names a row keyed 605-001-00-5" in index.text
+    assert f'href="{SITE_URL}/substances/"' in index.text
+    for page in (wrong, both, index):
+        assert "regulated" not in page.text and "restricted" not in page.text
+        assert_clean(page.text)

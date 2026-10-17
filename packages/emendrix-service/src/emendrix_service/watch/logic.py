@@ -16,7 +16,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from emendrix_record.locations import human, parse_location, within
-from emendrix_service.db.watchlists import ActView, ProvisionView, WatchItemView
+from emendrix_service.watch.views import ActView, ProvisionView, WatchItemView
 
 __all__ = [
     "NOTICES",
@@ -145,7 +145,7 @@ def describe_item(
         unknown = not provisions
     return ItemLine(
         id=item.id,
-        act_label=act.label if act is not None else item.act_key,
+        act_label=act.label if act is not None else item.act_key or "",
         act_url=act.url if act is not None else None,
         where=human(item.location) if item.location else "The whole act",
         location=item.location,

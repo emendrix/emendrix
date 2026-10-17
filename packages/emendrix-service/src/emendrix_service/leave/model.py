@@ -95,10 +95,13 @@ class ExportItem(BaseModel):
 
     id: UUID = Field(description="The item's id.")
     watchlist_id: UUID = Field(description="Its watchlist.")
-    kind: ItemKind = Field(description="A whole act or one provision of it.")
-    corpus: str = Field(description="The act's corpus.")
-    act_key: str = Field(description="The act's key.")
+    kind: ItemKind = Field(description="A whole act, one provision of it, or a substance.")
+    corpus: str | None = Field(description="The act's corpus; null for a substance.")
+    act_key: str | None = Field(description="The act's key; null for a substance.")
     location: str | None = Field(description="The canonical location; null for the whole act.")
+    identifier: str | None = Field(
+        description="`scheme:value` of a watched CAS or EC number; null for an act or provision."
+    )
     created_at: datetime = Field(description="When it was added.")
 
 

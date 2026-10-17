@@ -1,10 +1,12 @@
 <div class="section-head">
 <div>
-<h2>{{ item_count }} item{{ "" if item_count == 1 else "s" }} across {{ act_count }} act{{ "" if act_count == 1 else "s" }}</h2>
-<p class="muted">A whole act, or a single article or annex.{% if not suspended %} Remove anything you do not need.{% endif %}</p>
+{% set number_count = substances | length %}
+<h2>{{ item_count }} item{{ "" if item_count == 1 else "s" }}{% if act_count or not number_count %} across {{ act_count }} act{{ "" if act_count == 1 else "s" }}{% endif %}{% if number_count %}{{ " and " if act_count else ": " }}{{ number_count }} CAS or EC number{{ "" if number_count == 1 else "s" }}{% endif %}</h2>
+<p class="muted">A whole act, a single article or annex, or a CAS or EC number in any act.{% if not suspended %} Remove anything you do not need.{% endif %}</p>
 </div>
 {% if not suspended %}
 <a class="button" href="/account/watchlists/{{ watchlist.id }}/add"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg> Watch an act or provision</a>
+<a class="button secondary" href="/account/watchlists/{{ watchlist.id }}/add#numbers">Watch CAS or EC numbers</a>
 {% endif %}
 </div>
 {% for group in groups %}
@@ -33,9 +35,30 @@
 </div>
 {% endfor %}
 </section>
-{% else %}
-<p>Nothing is watched here yet.{% if not suspended %} Use <strong>Watch an act or provision</strong>, or <strong>Watch this</strong> on any act or provision page.{% endif %}</p>
 {% endfor %}
-{% if groups %}
+{% if substances %}
+<section class="panel act-group" aria-labelledby="substances">
+<div class="act-group-head">
+<span class="act-name" id="substances">{{ substances_heading }}</span>
+<span class="muted">Every table entry printing the number, in any act the record holds</span>
+</div>
+{% for row in substances %}
+<div class="item">
+<div class="item-what">{% if row.page %}<a class="tag" href="{{ row.page }}">{{ row.label }}</a>{% else %}<span class="tag">{{ row.label }}</span>{% endif %}</div>
+<div class="item-latest">{% if row.latest_url %}<a href="{{ row.latest_url }}">{{ row.latest_text }}</a>{% else %}{{ row.latest_text }}{% endif %}</div>
+{% if not suspended %}
+<div class="item-remove"><form method="post" action="/account/watchlists/{{ watchlist.id }}/items/{{ row.id }}/delete">
+{{ csrf_field(request) }}
+<button type="submit" class="button quiet" aria-label="Stop watching {{ row.label }}">Remove</button>
+</form></div>
+{% endif %}
+</div>
+{% endfor %}
+</section>
+{% endif %}
+{% if not groups and not substances %}
+<p>Nothing is watched here yet.{% if not suspended %} Use <strong>Watch an act or provision</strong>, or <strong>Watch this</strong> on any act or provision page.{% endif %}</p>
+{% endif %}
+{% if groups or substances %}
 <p class="muted">Emails repeat what the record says. They do not say whether a change affects you.</p>
 {% endif %}

@@ -6,6 +6,7 @@ is on when it posts `yes` and off when it is absent, which is how a browser send
 
 from __future__ import annotations
 
+import re
 from typing import Annotated, Final, Literal
 from uuid import UUID
 
@@ -14,19 +15,24 @@ from starlette.datastructures import FormData
 
 from emendrix_service.auth.logic import normalise_email
 from emendrix_service.db.enums import Cadence
+from emendrix_service.notify.matching import substance_label
 from emendrix_service.watch.logic import read_location
+from emendrix_service.watch.substances import INDEX_NOT_WATCHED, readings_of
 
 __all__ = [
     "LOCATION_FORMS",
     "NAME_LIMIT",
+    "PASTE_CAP",
     "Back",
     "Errors",
+    "Pasted",
     "SignUp",
     "WatchlistDelivery",
     "WatchlistName",
     "parse_back",
     "parse_delivery",
     "parse_id",
+    "parse_identifiers_field",
     "parse_location_field",
     "parse_name",
     "parse_pick",
@@ -38,6 +44,9 @@ LOCATION_FORMS: Final = (
     "Article 6, Art. 6, Article 6a, Article 6(1), Annex IV, Annex 4, or a canonical form such "
     "as AR 6 PA 1"
 )
+
+PASTE_CAP: Final = 500
+"""The most values one paste of CAS and EC numbers may hold."""
 
 Errors = tuple[str, ...]
 Back = Literal["watching", "delivery", "account"]
@@ -174,3 +183,52 @@ def parse_pick(form: FormData) -> list[str | None] | Errors:
     if not picked:
         return ("Tick the whole act or at least one provision.",)
     return picked
+
+
+_SEPARATORS: Final = re.compile(r"[\s,;]+")
+
+
+class Pasted(BaseModel):
+    """A paste of CAS and EC numbers, read value by value, each value named as it was given."""
+
+    model_config = ConfigDict(frozen=True)
+
+    valid: tuple[str, ...] = Field(description="`scheme:value` of each number, first order.")
+    ambiguous: tuple[tuple[str, tuple[str, ...]], ...] = Field(
+        description="A value read as both a CAS and an EC number, with both labels."
+    )
+    invalid: tuple[tuple[str, str], ...] = Field(
+        description="A value, and the sentence saying why it is no watchable number."
+    )
+
+
+def parse_identifiers_field(text: str) -> Pasted | Errors:
+    """The numbers a pasted block names, split on line breaks, commas, semicolons and spaces.
+
+    Hyphens are optional, as spreadsheets drop them. A value that passes as both a CAS and an
+    EC number is listed with both readings and added as neither; a CLP Index No is not watched.
+    """
+    values = [value for value in _SEPARATORS.split(text) if value]
+    if not values or len(values) > PASTE_CAP:
+        return (f"Paste 1 to {PASTE_CAP} CAS or EC numbers.",)
+    valid: list[str] = []
+    ambiguous: list[tuple[str, tuple[str, ...]]] = []
+    invalid: list[tuple[str, str]] = []
+    for value in values:
+        shown = value[:40]
+        watchable, index, reason = readings_of(value)
+        if len(watchable) > 1:
+            ambiguous.append((shown, tuple(substance_label(found) for found in watchable)))
+        elif watchable:
+            if watchable[0] not in valid:
+                valid.append(watchable[0])
+        elif index is not None:
+            invalid.append(
+                (
+                    shown,
+                    f"{shown!r} is a CLP Index No, which keys one table row: {INDEX_NOT_WATCHED}",
+                )
+            )
+        else:
+            invalid.append((shown, reason or f"{shown!r} is no number."))
+    return Pasted(valid=tuple(valid), ambiguous=tuple(ambiguous), invalid=tuple(invalid))

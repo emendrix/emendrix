@@ -1,0 +1,17 @@
+<section class="settings" id="numbers" aria-labelledby="numbers-head">
+<div class="settings-intro">
+<h2 id="numbers-head">CAS and EC numbers</h2>
+<p>Hear when a table entry printing a number is added, removed or amended, in any act the record
+holds. Many entries name a group of substances and print no number, so a change to one of those
+does not reach you through a number.</p>
+</div>
+<form class="stack" method="post" action="/account/watchlists/{{ watchlist.id }}/substances">
+{{ csrf_field(request) }}
+<label for="numbers-field">CAS or EC numbers
+<span class="hint">Up to {{ paste_cap }} at once, separated by line breaks, commas, semicolons or
+spaces. Hyphens are optional: 50-00-0 and 50000 are the same number. A value that reads as both
+a CAS and an EC number is shown back and not added; type it with its hyphens.</span>
+<textarea id="numbers-field" name="numbers" rows="8" cols="40">{{ numbers | default("") }}</textarea></label>
+<p><button type="submit">Watch these numbers</button></p>
+</form>
+</section>

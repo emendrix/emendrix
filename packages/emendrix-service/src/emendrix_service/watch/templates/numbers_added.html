@@ -1,0 +1,35 @@
+<a class="back" href="{{ back }}">Back to your account</a>
+<h1>{{ heading }}</h1>
+<p class="lede">{{ what_a_number_watch_does }}</p>
+{% include "web/_form_errors.html" %}
+{% if added %}
+<div class="banner banner--ok" role="status">
+<p>Now watched: {{ added | join(", ") }}.</p>
+</div>
+{% endif %}
+{% if already %}
+<div class="banner banner--info" role="status">
+<p>Already watched, so not added again: {{ already | join(", ") }}.</p>
+</div>
+{% endif %}
+{% if ambiguous %}
+<div class="notice alert" role="alert">
+<p><strong>Read two ways, so not added:</strong> type the one you mean with its hyphens.</p>
+<ul>
+{% for value, labels in ambiguous %}
+<li>“{{ value }}” reads as {{ labels | join(" and as ") }}.</li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+{% if invalid %}
+<div class="notice alert" role="alert">
+<p><strong>Not a CAS or EC number, so not added:</strong></p>
+<ul>
+{% for value, reason in invalid %}
+<li>{{ reason }}</li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+{% include "watch/_numbers_form.html" %}

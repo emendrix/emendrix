@@ -21,7 +21,7 @@ from emendrix_service.db import Db
 from emendrix_service.db.accounts import audit
 from emendrix_service.db.enums import AuditAction
 from emendrix_service.db.feed import (
-    recent_changes_for_acts,
+    recent_changes,
     set_feed_token,
     touch_seen,
     watchlist_by_feed_hash,
@@ -65,7 +65,11 @@ async def feed(request: Request, token: str) -> Response:
         if watchlist is None:
             return render_error(request, 410)
         items = await watchlist_items(tx, watchlist.id)
-        changes = await recent_changes_for_acts(tx, {(i.corpus, i.act_key) for i in items})
+        changes = await recent_changes(
+            tx,
+            {(i.corpus, i.act_key) for i in items},
+            {i.identifier for i in items if i.identifier is not None},
+        )
         await touch_seen(tx, watchlist.user_id, state.clock.now())
     head = FeedHead(watchlist_id=watchlist.id, name=watchlist.name, created_at=watchlist.created_at)
     body = atom(

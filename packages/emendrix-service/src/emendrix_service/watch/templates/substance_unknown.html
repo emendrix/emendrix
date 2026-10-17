@@ -1,0 +1,31 @@
+<a class="back" href="/account/">Back to your account</a>
+{% if reading.outcome == "ambiguous" %}
+<h1>This number reads two ways</h1>
+<p class="lede">“{{ reading.shown }}”, typed without hyphens, passes the check digit both as a CAS
+number and as an EC number. Choose the one you mean.</p>
+<ul>
+{% for label, landing in choices %}
+<li><a href="{{ landing }}">Watch {{ label }}</a></li>
+{% endfor %}
+</ul>
+{% elif reading.outcome == "index" %}
+<h1>An Index No cannot be watched</h1>
+<p class="lede">{{ reading.index }} is a CLP Index No, which keys one table row: {{ index_not_watched }}</p>
+{% if printed %}
+<p>The changes the record holds to the row keyed {{ reading.index }} print these numbers:</p>
+<ul>
+{% for label, page, landing in printed %}
+<li><a href="{{ page }}">{{ label }}</a>: <a href="{{ landing }}">watch {{ label }}</a></li>
+{% endfor %}
+</ul>
+{% else %}
+<p>No change the record holds names a row keyed {{ reading.index }}, so this page cannot say which
+numbers that row prints. The <a href="{{ lookup }}">substances lookup</a> finds an entry by its
+Index No.</p>
+{% endif %}
+{% else %}
+<h1>This is not a CAS or EC number</h1>
+<p class="lede">{{ reading.reason }}</p>
+<p>Nothing is guessed from a number that does not pass its check. Copy it again from the act, or
+find it with the <a href="{{ lookup }}">substances lookup</a>.</p>
+{% endif %}

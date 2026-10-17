@@ -23,6 +23,7 @@ from emendrix_service.db.watchlists import add_item, create_watchlist
 from tests.conftest import NOW, SITE_URL
 from tests.test_svc_watch_fixtures import HOUSE, csrf, sign_in
 from tests.test_svc_watch_fixtures import loaded as loaded
+from tests.test_svc_watch_fixtures import tabled as tabled
 
 pytestmark = pytest.mark.anyio
 
@@ -159,3 +160,30 @@ async def test_svc_feed_a_fetch_moves_last_seen_at_most_daily(
     clock.advance(timedelta(hours=20))
     await reader.get(path)
     assert await seen() == NOW + timedelta(days=2)
+
+
+async def test_svc_feed_a_substance_match_appears_in_any_act(
+    client: AsyncClient, reader: AsyncClient, tabled: Db
+) -> None:
+    user = await sign_in(tabled, client, "owner@example.org")
+    async with tabled.transaction() as tx:
+        watchlist = await create_watchlist(tx, user, "Numbers", NOW)
+        for identifier in ("cas:50-00-0", "cas:64-17-5"):
+            assert await add_item(
+                tx,
+                user,
+                watchlist,
+                ItemKind.SUBSTANCE,
+                None,
+                None,
+                None,
+                NOW,
+                identifier=identifier,
+            )
+    root = fromstring((await reader.get(await rotate(client, watchlist))).content)
+    entries = root.findall(f"{NS}entry")
+    assert len(entries) == 1, "one change moved a row carrying a watched number"
+    content = entries[0].findtext(f"{NS}content") or ""
+    assert "you watch CAS 50-00-0; entry 7 in House Rules of Flat 3B Annex I was amended" in content
+    assert "64-17-5" not in content, "a typography-only amendment reaches no one"
+    assert (entries[0].findtext(f"{NS}id") or "").startswith(f"{SITE_URL}/acts/house-rules/v3/#")

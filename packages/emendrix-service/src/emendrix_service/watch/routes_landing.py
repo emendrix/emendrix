@@ -1,5 +1,7 @@
 """The landing every "Watch this" link opens: `/account/watch?act=<key>[&loc=<location>]`.
 
+A `?substance=` link is answered by `watch.landing_substance`, on the same address.
+
 The act is named by its key, as the site's link sends it, and must be one `content` holds; the
 location is read by the documented parser or shown back unresolved, never guessed. A visitor
 who is signed out is asked for an address and sent a sign-up link carrying the item, and sees
@@ -19,17 +21,21 @@ from emendrix_service.auth.logic import WatchIntent
 from emendrix_service.auth.ratelimit import post_limit
 from emendrix_service.auth.service import request_link_from
 from emendrix_service.db import Db
-from emendrix_service.db.accounts import FIRST_WATCHLIST
 from emendrix_service.db.enums import ItemKind, TokenPurpose
 from emendrix_service.db.watchlists import (
     ActView,
     act_by_key,
     add_item,
     content_loaded,
-    create_watchlist,
     watchlists_for,
 )
-from emendrix_service.watch.forms import Errors, parse_id, parse_signup
+from emendrix_service.watch.forms import Errors, parse_signup
+from emendrix_service.watch.landing_substance import (
+    NEW,
+    substance_landing,
+    substance_watch,
+    target_watchlist,
+)
 from emendrix_service.watch.logic import read_location, readable, watch_label
 from emendrix_service.watch.pages import copy, not_found, not_loaded, unknown_act
 from emendrix_service.web.csrf import csrf_protect
@@ -41,8 +47,6 @@ __all__ = ["router"]
 router = APIRouter(prefix="/account", dependencies=[Depends(csrf_protect)])
 
 Reader = Annotated[SignedIn | None, Depends(current_user)]
-NEW = "new"
-"""The watchlist field's value when the reader has none and one is to be made."""
 
 
 async def _act(request: Request, act_key: str) -> ActView | Response:
@@ -69,6 +73,7 @@ async def _landing(
         "location": location,
         "unresolved": " ".join(loc.split())[:80] if loc and location is None else "",
         "label": watch_label(act, location),
+        "substance": "",
         "errors": errors,
         **copy(),
     }
@@ -111,7 +116,11 @@ async def _landing(
 
 
 @router.get("/watch")
-async def landing(request: Request, reader: Reader, act: str = "", loc: str = "") -> Response:
+async def landing(
+    request: Request, reader: Reader, act: str = "", loc: str = "", substance: str = ""
+) -> Response:
+    if substance and not act:
+        return await substance_landing(request, reader, substance)
     found = await _act(request, act)
     if isinstance(found, Response):
         return found
@@ -121,6 +130,9 @@ async def landing(request: Request, reader: Reader, act: str = "", loc: str = ""
 @router.post("/watch")
 async def watch(request: Request, reader: Reader) -> Response:
     form = await request.form()
+    number = form.get("substance")
+    if isinstance(number, str) and number:
+        return await substance_watch(request, reader, form, number)
     act_key, loc = form.get("act"), form.get("loc")
     found = await _act(request, act_key if isinstance(act_key, str) else "")
     if isinstance(found, Response):
@@ -148,13 +160,9 @@ async def watch(request: Request, reader: Reader) -> Response:
     now = request.app.state.clock.now()
     kind = ItemKind.ACT if location is None else ItemKind.PROVISION
     async with db.transaction() as tx:
-        if chosen == NEW and not await watchlists_for(tx, reader.user_id):
-            target = await create_watchlist(tx, reader.user_id, FIRST_WATCHLIST, now)
-        else:
-            target_id = parse_id(chosen) if isinstance(chosen, str) else None
-            if target_id is None:
-                return not_found(request)
-            target = target_id
+        target = await target_watchlist(tx, reader.user_id, chosen, now)
+        if target is None:
+            return not_found(request)
         added = await add_item(
             tx, reader.user_id, target, kind, found.corpus, found.act_key, location, now
         )
