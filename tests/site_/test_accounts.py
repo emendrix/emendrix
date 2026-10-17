@@ -107,7 +107,7 @@ def test_every_page_ends_its_header_bar_with_the_account_link(linked: Path) -> N
         assert "account/" not in nav, page
         header = text.split('<header class="bar">', 1)[1].split("</header>", 1)[0] + "</header>"
         assert re.search(
-            r'<div id="search" data-root="[^"]*"></div>'
+            r'<div id="search" data-root="[^"]*"( data-substances)?></div>'
             r'<a class="account" href="[^"]*account/">Account</a></header>$',
             header,
         ), page

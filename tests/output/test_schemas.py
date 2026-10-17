@@ -37,6 +37,8 @@ LAYOUT = (
     "/api/v1/<act_dir>/register.json",
     "/api/v1/catalogue.json",
     "/api/v1/schema/<name>.schema.json",
+    "/api/v1/substances.json",
+    "/api/v1/substances/<scheme>-<value>.json",
 )
 """Every path the API serves, as the layout table of `docs/api.md` names it."""
 

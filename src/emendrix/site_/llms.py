@@ -34,6 +34,8 @@ from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.pages.api_prose import CLIENTS, LEDE, MCP
 from emendrix.site_.pages.take_away import DOORS
 from emendrix.site_.pitch import PITCH
+from emendrix.site_.substance_api import SUBSTANCES
+from emendrix.site_.substance_doors import LLMS_DOOR
 
 __all__ = ["LLMS", "llms_txt"]
 
@@ -89,6 +91,7 @@ def llms_txt(site: SiteInputs) -> str:
                     "one row per act, naming its act index",
                 ),
                 _link(url, "Catalogue", CATALOGUE, "every watched act's names and page addresses"),
+                _link(url, "Substances", SUBSTANCES, LLMS_DOOR),
                 _link(url, "JSON Schemas", "api/#layout", "one per document the API serves"),
             )
         ),

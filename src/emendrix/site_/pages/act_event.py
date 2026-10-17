@@ -80,10 +80,12 @@ from emendrix.site_.pages.prose import (
 )
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.sources import repo_file
+from emendrix.site_.substance_doors import EVENT_DOOR
+from emendrix.site_.substance_inputs import NO_LINKS, SubstanceLinks
 from emendrix.site_.tags import SPOKEN_COMMA, kind_tag
 from emendrix.site_.urls import location_slug, up
 
-__all__ = ["render_event"]
+__all__ = ["first_table", "render_event"]
 
 _DEPTH = 3
 """`acts/<slug>/<key>/index.html`, the version page every block here is printed on."""
@@ -115,6 +117,8 @@ def _change_block(
     *,
     open_: bool,
     indexed: bool,
+    links: SubstanceLinks = NO_LINKS,
+    door: bool = False,
 ) -> list[Html]:
     """One change: what it is, where its sources differ, what was said, and the text itself.
 
@@ -140,6 +144,8 @@ def _change_block(
     A change to a profiled table carries its entry table after the sentences and before the
     text (`site_/entry_table.py`): the rows the act prints, keyed, which is what a reader of a
     table too large to follow as a diff reads instead. A change that read no table shows nothing.
+    `links` names the substance pages its numbers link to, and `door` puts the sentence saying
+    so above the table, which the caller asks of the first block whose table lists an entry.
 
     Where the sources differ the block carries the shape as a class and says it twice, as the
     shape's tag with its definition link and as the lead and detail of the note. A change with
@@ -176,7 +182,9 @@ def _change_block(
         lines.extend(differ_note(change.signals, up(_DEPTH)))
     lines.extend(prose(emitted, entry))
     rows = f"{up(_DEPTH)}{API_ROOT}{payload_for(entry.act, entry.to_version)}"
-    lines.extend(entry_table(change.table_entries, rows))
+    if door:
+        lines.append(Html(f'<p class="lookup">{escape(EVENT_DOOR)}</p>'))
+    lines.extend(entry_table(change.table_entries, rows, links))
     lines.extend(
         (
             Html(
@@ -211,11 +219,24 @@ def _quiet(rows: list[Html], number: int) -> list[Html]:
     ]
 
 
+def first_table(entry: ChangelogEntry) -> int | None:
+    """The position of the first change whose entry table lists an entry, or None."""
+    return next(
+        (
+            at
+            for at, emitted in enumerate(entry.changes)
+            if emitted.change.table_entries is not None and emitted.change.table_entries.changes
+        ),
+        None,
+    )
+
+
 def render_event(
     entry: ChangelogEntry,
     anchors: tuple[str, ...],
     texts: tuple[RenderedText, ...],
     changelogs_url: str = "",
+    links: SubstanceLinks = NO_LINKS,
 ) -> list[Html]:
     """One event's full body. `anchors` is one fragment per change, in the entry's own order.
 
@@ -239,8 +260,18 @@ def render_event(
     hushed: list[Html] = []
     quiet = 0
     long = len(entry.changes) >= INDEX_ABOVE
-    for emitted, anchor, text in zip(entry.changes, anchors, texts, strict=True):
-        block = _change_block(emitted, entry, anchor, text, open_=not long, indexed=long)
+    first = first_table(entry)
+    for at, (emitted, anchor, text) in enumerate(zip(entry.changes, anchors, texts, strict=True)):
+        block = _change_block(
+            emitted,
+            entry,
+            anchor,
+            text,
+            open_=not long,
+            indexed=long,
+            links=links,
+            door=at == first,
+        )
         if emitted.change.textless:
             quiet += 1
             hushed.extend(block)

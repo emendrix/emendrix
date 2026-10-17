@@ -2,7 +2,9 @@
 
 `robots.txt` states the crawl policy and points at `sitemap_index.xml`, which names
 `sitemap.xml`, which lists every page the site publishes with the date each one's content last
-moved. None of the three is a page: no shell, no navigation, no disclaimer.
+moved, and `sitemap-substances.xml`, which lists the substance pages the same way
+(`substance_sitemap` says which). None of them is a page: no shell, no navigation, no
+disclaimer.
 
 Both are assembled as strings rather than through an XML library, for the reason the feeds give:
 two builds of one repository state have to produce identical bytes, and a serialiser free to
@@ -18,7 +20,7 @@ only its `Sitemap:` line, because a crawl policy is about paths. Every `<loc>` i
 `head.canonical_url`, the same function that writes the page's canonical, so a sitemap entry and
 a canonical cannot name two addresses for one page.
 
-Pages only: the eight fixed ones, one per act, one per amendment event, one per provision any
+Pages only: the nine fixed ones, one per act, one per amendment event, one per provision any
 event touched and one per amending instrument a committed event names. An event page's
 `<lastmod>` is that event's own `event_dated`, the same clock its feed entry's `<updated>`
 reads, so the two records of one fact cannot disagree. Feeds are advertised by `rel="alternate"` in
@@ -51,6 +53,7 @@ from emendrix.site_.history import histories
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, escape, join
+from emendrix.site_.substance_sitemap import substance_entries
 from emendrix.site_.urls import (
     act_href,
     amendment_href,
@@ -58,19 +61,23 @@ from emendrix.site_.urls import (
     dates_href,
     event_href,
     provision_href,
+    substances_href,
 )
 
 __all__ = [
     "ROBOTS",
     "SITEMAP",
     "SITEMAP_INDEX",
+    "SITEMAP_SUBSTANCES",
     "robots_txt",
     "sitemap_index_xml",
+    "sitemap_substances_xml",
     "sitemap_xml",
 ]
 
 ROBOTS = "robots.txt"
 SITEMAP = "sitemap.xml"
+SITEMAP_SUBSTANCES = "sitemap-substances.xml"
 SITEMAP_INDEX = "sitemap_index.xml"
 """Where the builder writes each file. All three sit at the site root, which is where a crawler
 looks, and `robots.txt` names the index rather than the sitemap: one address a search engine
@@ -131,7 +138,7 @@ def _moved(dates: Iterable[date | None], built: date) -> date | None:
 def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     """Every page a crawler should know about, with the date its content last moved.
 
-    The seven fixed paths are literals, the same site-root-relative paths the page modules are
+    The fixed paths are literals, the same site-root-relative paths the page modules are
     rendered under and the builder writes them to. Nothing derives one from the other, so
     `test_discovery.py` compares the sitemap against the built tree in both directions: a path
     that stops matching a file, and a page that gains no entry, both fail there rather than
@@ -142,7 +149,8 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     stamp a URL with. That is the same rule an act nothing has happened to yet is under, and
     the same answer the dates page gets: it splits its list at the build date, so its content
     moves with the build too, and dating it by the newest event would say it last changed when
-    the corpus did, which is false.
+    the corpus did, which is false. `substances/` carries none either: its counts move with the
+    registers, which no single event dates.
 
     Every date goes through `_moved`, which is where the rule that a page cannot have moved
     after the build that wrote it lives, and which supplies the `None` a page with no date it
@@ -165,6 +173,7 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
         ("api/", None),
         (amendments_href(), newest),
         (dates_href(), None),
+        (substances_href(), None),
     ]
     fixed.extend(
         (act_href(act.slug), _moved((event_dated(entry) for entry in act.entries), built))
@@ -193,6 +202,12 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     return tuple(fixed)
 
 
+def _substance_entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
+    """The second sitemap's pages, each date held to what this build can stand behind."""
+    built = site.generated_on
+    return tuple((path, _moved(dated, built)) for path, dated in substance_entries(site))
+
+
 def _url(site_url: str, path: str, dated: date | None) -> Html:
     """One `<url>` block. No date means no `<lastmod>` element, never an empty one."""
     lines = [
@@ -205,6 +220,17 @@ def _url(site_url: str, path: str, dated: date | None) -> Html:
     return join(lines, "\n")
 
 
+def _urlset(site_url: str, entries: Iterable[tuple[str, date | None]]) -> str:
+    lines = [
+        Html('<?xml version="1.0" encoding="utf-8"?>'),
+        Html(f'<urlset xmlns="{_NAMESPACE}">'),
+        *(_url(site_url, path, dated) for path, dated in entries),
+        Html("</urlset>"),
+        Html(""),
+    ]
+    return join(lines, "\n")
+
+
 def sitemap_xml(site: SiteInputs) -> str:
     """The sitemap, newline-terminated. Deterministic: no clock, no network, no set iteration.
 
@@ -213,38 +239,47 @@ def sitemap_xml(site: SiteInputs) -> str:
     """
     if not site.site_url:
         raise ValueError(_UNCONFIGURED)
-    lines = [
-        Html('<?xml version="1.0" encoding="utf-8"?>'),
-        Html(f'<urlset xmlns="{_NAMESPACE}">'),
-        *(_url(site.site_url, path, dated) for path, dated in _entries(site)),
-        Html("</urlset>"),
-        Html(""),
-    ]
-    return join(lines, "\n")
+    return _urlset(site.site_url, _entries(site))
+
+
+def sitemap_substances_xml(site: SiteInputs) -> str:
+    """The second sitemap: every canonical substance page and every act's list of numbers.
+
+    Written on every build with a base address, empty where no act has a register, so the
+    index names one file whatever the build holds. Thousands of numbers would otherwise crowd
+    the main sitemap, and a crawler reads the two at its own pace.
+    """
+    if not site.site_url:
+        raise ValueError(_UNCONFIGURED)
+    return _urlset(site.site_url, _substance_entries(site))
 
 
 def sitemap_index_xml(site: SiteInputs) -> str:
-    """The index, newline-terminated: one entry, naming the sitemap written beside it.
+    """The index, newline-terminated: one entry per sitemap written beside it.
 
-    An index is what a search engine is given to remember, and the file behind it can grow,
-    split or be renamed without the submitted address moving. One entry today is not a
-    degenerate index: it is the indirection itself that is the point, and a second sitemap
-    joins it here rather than anywhere a crawler has to be told about.
+    An index is what a search engine is given to remember, and the files behind it can grow,
+    split or be renamed without the submitted address moving. The substance pages are the
+    second sitemap that joined it here rather than anywhere a crawler has to be told about.
 
-    `<lastmod>` is the newest date the sitemap it names publishes, which is when that file's
-    contents last moved under the same rule every entry in it is dated by. A sitemap with no
-    dated entry at all carries none, for the reason `_moved` gives.
+    Each `<lastmod>` is the newest date the sitemap it names publishes, which is when that
+    file's contents last moved under the same rule every entry in it is dated by. A sitemap
+    with no dated entry at all carries none, for the reason `_moved` gives.
     """
     if not site.site_url:
         raise ValueError(_UNCONFIGURED)
     lines = [
         Html('<?xml version="1.0" encoding="utf-8"?>'),
         Html(f'<sitemapindex xmlns="{_NAMESPACE}">'),
-        Html("<sitemap>"),
-        Html(f"<loc>{escape(canonical_url(site.site_url, SITEMAP))}</loc>"),
     ]
-    newest = _moved((dated for _, dated in _entries(site)), site.generated_on)
-    if newest is not None:
-        lines.append(Html(f"<lastmod>{escape(newest.isoformat())}</lastmod>"))
-    lines.extend((Html("</sitemap>"), Html("</sitemapindex>"), Html("")))
+    sitemaps = ((SITEMAP, _entries(site)), (SITEMAP_SUBSTANCES, _substance_entries(site)))
+    for name, entries in sitemaps:
+        lines += [
+            Html("<sitemap>"),
+            Html(f"<loc>{escape(canonical_url(site.site_url, name))}</loc>"),
+        ]
+        newest = _moved((dated for _, dated in entries), site.generated_on)
+        if newest is not None:
+            lines.append(Html(f"<lastmod>{escape(newest.isoformat())}</lastmod>"))
+        lines.append(Html("</sitemap>"))
+    lines.extend((Html("</sitemapindex>"), Html("")))
     return join(lines, "\n")

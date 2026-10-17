@@ -47,6 +47,7 @@ from emendrix.site_.pages.api_prose import (
     UNCONFIGURED,
 )
 from emendrix.site_.pages.take_away import take_away
+from emendrix.site_.substance_doors import API_DOOR
 from emendrix.site_.urls import depth_of, up
 
 __all__ = ["SNIPPET_TEMPLATE", "render_api_page", "snippet"]
@@ -62,6 +63,8 @@ _LAYOUT: Final = (
     ("v1/<act_dir>/changes/<version>.json", "one version's payload, with the texts", "the record"),
     ("v1/catalogue.json", "labels, aliases, sectors, page and feed addresses", "the site build"),
     ("v1/schema/<name>.schema.json", "the JSON Schema of each document", "the site build"),
+    ("v1/substances.json", "every CAS and EC number an entry prints", "the site build"),
+    ("v1/substances/<scheme>-<value>.json", "one number's entries and changes", "the site build"),
 )
 """Every path the API serves, relative to this page, with what it is and who writes it."""
 
@@ -112,7 +115,7 @@ def _layout(site: SiteInputs) -> Html:
 def _schemas(site: SiteInputs) -> Html:
     """One link per published schema, each a file this build writes beside the page."""
     links = []
-    for name in (*sorted(SCHEMAS), "catalogue"):
+    for name in (*sorted(SCHEMAS), "catalogue", "substance"):
         path = f"{API_ROOT}schema/{name}.schema.json"
         href = canonical_url(site.site_url, path) if site.site_url else up(_DEPTH) + path
         links.append(f'<a href="{escape(href)}"><code>{escape(name)}</code></a>')
@@ -208,6 +211,7 @@ def render_api_page(site: SiteInputs) -> Html:
     if not site.site_url:
         lines.append(Html(f'<p class="none">{escape(UNCONFIGURED)}</p>'))
     lines.append(take_away(root, heading="Three ways in", here=True))
+    lines.extend(_prose(API_DOOR))
     lines.extend((Html('<h2 id="layout">Layout</h2>'), _layout(site), _schemas(site)))
     lines.extend((*_prose(FIELDS), *_prose(_REASONS), _methodology(root), *_prose(RECORD)))
     lines.extend(_licence(site.changelogs_url))

@@ -194,7 +194,7 @@ def _step(site: SiteInputs, step: ProvisionStep, text: RenderedText | None) -> l
         )
     else:
         rows = f"{up(_DEPTH)}{API_ROOT}{payload_for(entry.act, entry.to_version)}"
-        lines.extend(entry_table(change.table_entries, rows))
+        lines.extend(entry_table(change.table_entries, rows, site.substances.links(up(_DEPTH))))
         lines.extend(
             (
                 Html(f"<details open><summary>{escape(summary_words(change))}</summary>"),

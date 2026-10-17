@@ -558,13 +558,17 @@ def test_the_tree_weight_is_a_reviewed_number() -> None:
     )
 
 
-_TABLE_EVENT: Final = 198_173
+_TABLE_EVENT: Final = 295_240
 """The event page carrying a change with 2,000 amended entries of eleven cells, in bytes.
 
-Measured 2026-10-16, when event pages began showing a change's table entries. The figure is
-what the 200-entry cap holds still: the first 50 entries open, the next 150 behind one fold,
-both sides of each with its marked cell, and the remaining 1,800 as keys with their
+Measured 2026-10-16, when event pages began showing a change's table entries, at 198 173. The
+figure is what the 200-entry cap holds still: the first 50 entries open, the next 150 behind
+one fold, both sides of each with its marked cell, and the remaining 1,800 as keys with their
 identifiers. Without the cap the same page would carry ten times the rows.
+
+Measured again 2026-10-17, when every number an entry carries began linking to its substance
+page: each of the 2,000 entries' one CAS number is now a link, about 48 bytes each, and the
+page gained the sentence above its first table and the search mount's `data-substances`.
 """
 
 

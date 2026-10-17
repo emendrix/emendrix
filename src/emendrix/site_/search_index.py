@@ -24,6 +24,10 @@ lands on the coordinate's whole history, which is the question the row was alway
 The dedupe by canonical string is unchanged and is what that means: one coordinate, one page,
 one row.
 
+A second file, `substance-index.json`, holds every CAS, EC and Index number an entry prints, in
+the same row shape. It is apart because a single table can print thousands of numbers, and the
+script fetches it only when a query can use it, so the first file stays the size it was.
+
 Deterministic bytes: entries are sorted by label, kind and url before serialisation, object
 keys are sorted by the serialiser, and the separators are pinned, so two builds of one
 repository state produce one file.
@@ -40,11 +44,23 @@ from emendrix.site_.amending import resolve
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.subject import provision_title
-from emendrix.site_.urls import act_href, amendment_href, provision_href
+from emendrix.site_.substance_inputs import Substance
+from emendrix.site_.substance_words import page_name
+from emendrix.site_.urls import act_href, amendment_href, provision_href, substance_href
 
-__all__ = ["IndexEntry", "IndexKind", "search_index_json"]
+__all__ = [
+    "SUBSTANCE_INDEX",
+    "IndexEntry",
+    "IndexKind",
+    "search_index_json",
+    "substance_index_json",
+]
 
-IndexKind = Literal["act", "alias", "amending", "celex", "provision"]
+SUBSTANCE_INDEX = "substance-index.json"
+"""The second file the script fetches, beside the first: only for a query that opens with a
+digit, or on the first keystroke on a page whose search mount asks for it."""
+
+IndexKind = Literal["act", "alias", "amending", "celex", "provision", "substance"]
 """What a hit is, shown beside it so a reader can tell a name from a coordinate."""
 
 
@@ -133,6 +149,52 @@ def search_index_json(site: SiteInputs) -> str:
     """The whole index as committed bytes, newline-terminated. No clock, no network."""
     entries = [item for act in site.acts for item in (*_names(act), *_provisions(act))]
     entries.extend(_instruments(site))
+    return _serialised(entries)
+
+
+def _serialised(entries: list[IndexEntry]) -> str:
     entries.sort(key=lambda item: (item.label.casefold(), item.kind, item.url))
     payload = {"entries": [item.model_dump(exclude_defaults=True) for item in entries]}
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + "\n"
+
+
+def _titled(substance: Substance) -> str:
+    """The name the page's heading prints, then the acts whose entries print the number."""
+    labels: dict[str, None] = {}
+    for act in [h.act for h in substance.holdings] + [m.act for m in substance.history]:
+        labels.setdefault(act.label, None)
+    name = page_name(substance)
+    acts = ", ".join(labels)
+    return f"{name} · {acts}" if name else acts
+
+
+def substance_index_json(site: SiteInputs) -> str:
+    """The second file: every CAS, EC and Index number, each landing on a substance page.
+
+    Labels are canonical values and nothing else, so a typed number matches a row exactly or by
+    its leading digits, and the script reads a hyphenless number into these forms itself. An
+    Index No lands on the page of the first CAS, else EC, number its entry carries; one whose
+    entry carries neither has no page to land on and no row. Same row shape and the same bytes
+    rule as the first file.
+    """
+    pages = {(one.scheme, one.value): one for one in site.substances.substances}
+    entries = [
+        IndexEntry(
+            label=one.value,
+            kind="substance",
+            url=substance_href(one.scheme, one.value),
+            title=_titled(one),
+        )
+        for one in site.substances.substances
+    ]
+    for label in site.substances.labels:
+        target = pages[(label.target.scheme, label.target.value)]
+        entries.append(
+            IndexEntry(
+                label=label.value,
+                kind="substance",
+                url=substance_href(target.scheme, target.value),
+                title=_titled(target),
+            )
+        )
+    return _serialised(entries)

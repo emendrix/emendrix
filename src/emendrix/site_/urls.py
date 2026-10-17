@@ -45,6 +45,9 @@ __all__ = [
     "location_slug",
     "provision_href",
     "shared_path",
+    "substance_href",
+    "substance_list_href",
+    "substances_href",
     "up",
 ]
 
@@ -203,6 +206,31 @@ def amendment_href(key: str) -> str:
     module to know what an identifier means, which is the one thing it may not know.
     """
     return f"{amendments_href()}{slug(key)}/"
+
+
+def substances_href() -> str:
+    """The index of every CAS and EC number an entry prints, relative to the site root."""
+    return "substances/"
+
+
+def substance_href(scheme: str, value: str) -> str:
+    """One identifier's page at the root's `substances/`, never under an act: `cas-50-00-0`.
+
+    An identifier is not any one act's: the same number can sit in entries of several acts, and
+    a page under one act's directory would say it belongs there. Scheme and value are already
+    canonical and hyphenated, so the segment is their join and no slug rule applies.
+    """
+    return f"{substances_href()}{scheme}-{value}/"
+
+
+def substance_list_href(act_slug: str, page: int = 1) -> str:
+    """One act's list of identifiers, `substances/acts/<slug>/`, its continuations numbered.
+
+    Under `acts/` inside `substances/` rather than beside the identifiers, which all begin with
+    a scheme and a hyphen, so the two vocabularies cannot mint one path.
+    """
+    first = f"{substances_href()}acts/{act_slug}/"
+    return first if page == 1 else f"{first}{page}/"
 
 
 def depth_of(path: str) -> int:

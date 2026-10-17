@@ -34,6 +34,7 @@ from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.pages.take_away import DOORS
+from emendrix.site_.substance_doors import not_found_door
 from emendrix.site_.urls import depth_of, up
 
 __all__ = ["not_found_root", "render_not_found"]
@@ -69,6 +70,7 @@ def render_not_found(site: SiteInputs) -> Html:
             "An act's own page carries its whole watched history, every version recorded for it "
             "in one place, so that is usually the page worth reaching for.</p>"
         ),
+        not_found_door(root),
         Html("<ul>"),
         Html(f'<li><a href="{root}acts/">All watched acts</a>, the full roster</li>'),
         Html(f'<li><a href="{root}methodology/">Methodology</a>, what the numbers mean</li>'),

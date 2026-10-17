@@ -22,11 +22,14 @@ from xml.etree import ElementTree
 import pytest
 from helpers import REPORTS, SITE_URL, WATCHLIST, build, runner
 from site_entries import attributed_entry, unattributed_entry
+from toy_substances import SITE_URL as TOY_URL
+from toy_substances import substance_site
 
 from emendrix.cli import app
 from emendrix.eval_.readme_table import latest_report
 from emendrix.eval_.runner import EvalRun
 from emendrix.output import ChangelogEntry
+from emendrix.site_.build import write_site
 from emendrix.site_.discovery import (
     SITEMAP_INDEX,
     robots_txt,
@@ -71,6 +74,16 @@ def _urls(site: Path) -> list[tuple[str, str | None]]:
         found.append((loc, url.findtext(f"{SITEMAP_NS}lastmod")))
     assert found
     return found
+
+
+def _listed(path: Path) -> list[tuple[str, str | None]]:
+    """Every `<url>` of one sitemap file as `(loc, lastmod or None)`; empty is allowed."""
+    root = ElementTree.fromstring(path.read_text(encoding="utf-8"))
+    assert root.tag == f"{SITEMAP_NS}urlset"
+    return [
+        (url.findtext(f"{SITEMAP_NS}loc") or "", url.findtext(f"{SITEMAP_NS}lastmod"))
+        for url in root.findall(f"{SITEMAP_NS}url")
+    ]
 
 
 def _addresses(site: Path) -> set[str]:
@@ -145,7 +158,8 @@ def test_every_page_but_the_not_found_one_is_listed_and_every_location_is_a_page
     the builder never writes and the second does. A membership loop in one direction would let
     the sitemap rot in the other.
     """
-    listed = {loc.removeprefix(f"{SITE_URL}/") for loc, _ in _urls(site)}
+    found = [*_urls(site), *_listed(site / "sitemap-substances.xml")]
+    listed = {loc.removeprefix(f"{SITE_URL}/") for loc, _ in found}
     written = _addresses(site) - UNLISTED
     assert _addresses(site) >= UNLISTED, "both unlisted pages are in the tree this checks"
     assert not written - listed, "pages the build wrote that the sitemap does not list"
@@ -391,14 +405,16 @@ def test_the_crawl_policy_carries_no_comment_of_its_own(site: Path) -> None:
 def test_a_site_with_no_events_at_all_still_has_a_sitemap() -> None:
     """A checkout with a watchlist and an empty changelog repository is a real state.
 
-    The eight fixed pages are still published, so they are still listed, and the only date
+    The nine fixed pages are still published, so they are still listed, and the only date
     anything has is the report's: the about and API pages' content moves with the build rather
     than with the corpus, so neither carries a `<lastmod>` on any site, and the list of dates ahead
     carries none for the same reason, its own split being made against the build date.
     `/amendments/` is dated by the newest event on the site like the home page, the roster and
     the feeds page, because it lists every instrument a committed event names and so moves
     whenever an event does; on a site with no events at all that date does not exist, which is
-    why it carries no `<lastmod>` here either. Two renderings of one input agree, which is the
+    why it carries no `<lastmod>` here either. `/substances/` carries none on any site: its
+    content moves with the registers, which no single event dates. Two renderings of one input
+    agree, which is the
     module's half of the byte-stability the whole tree is held to.
     """
     inputs = _empty_site()
@@ -416,6 +432,7 @@ def test_a_site_with_no_events_at_all_still_has_a_sitemap() -> None:
         f"{SITE_URL}/api/",
         f"{SITE_URL}/amendments/",
         f"{SITE_URL}/dates/",
+        f"{SITE_URL}/substances/",
     ]
     assert document.count("<lastmod>") == 1
 
@@ -463,12 +480,16 @@ def test_a_page_is_dated_by_the_newest_event_the_build_can_vouch_for() -> None:
 # ------------------------------------------------------------------ the sitemap index
 
 
-def test_the_index_names_the_sitemap_and_nothing_else() -> None:
-    """One entry point for a crawler, and the sitemap it names is the one the build writes."""
+def test_the_index_names_the_two_sitemaps_and_nothing_else() -> None:
+    """One entry point for a crawler, and the sitemaps it names are the ones the build writes:
+    the pages, then the substance pages, the second named even where it lists nothing."""
     document = sitemap_index_xml(_empty_site())
     root = ElementTree.fromstring(document)
     assert root.tag == f"{SITEMAP_NS}sitemapindex"
-    assert [loc for loc, _ in _blocks(document, "sitemap")] == [f"{SITE_URL}/sitemap.xml"]
+    assert [loc for loc, _ in _blocks(document, "sitemap")] == [
+        f"{SITE_URL}/sitemap.xml",
+        f"{SITE_URL}/sitemap-substances.xml",
+    ]
 
 
 def test_the_index_is_dated_by_the_newest_date_the_sitemap_publishes() -> None:
@@ -480,7 +501,8 @@ def test_the_index_is_dated_by_the_newest_date_the_sitemap_publishes() -> None:
         if lastmod is not None
     )
     assert dict(_blocks(sitemap_index_xml(inputs), "sitemap")) == {
-        f"{SITE_URL}/sitemap.xml": newest.isoformat()
+        f"{SITE_URL}/sitemap.xml": newest.isoformat(),
+        f"{SITE_URL}/sitemap-substances.xml": None,
     }
 
 
@@ -503,3 +525,34 @@ def test_the_crawl_policy_points_a_crawler_at_the_index(site: Path) -> None:
     text = (site / "robots.txt").read_text(encoding="utf-8")
     assert f"Sitemap: {SITE_URL}/{SITEMAP_INDEX}\n" in text
     assert text.count("Sitemap:") == 1
+
+
+# ------------------------------------------------------------------ the substance sitemap
+
+
+def test_substance_pages_are_listed_in_their_own_sitemap_dated_by_their_changes(
+    tmp_path: Path,
+) -> None:
+    """Every canonical number page and each act's list, and nothing else; a page only a register
+    names carries no date, and one a change named is dated by that change's in-force date. The
+    EC page that defers to a CAS page is written and deliberately left out."""
+    write_site(tmp_path, substance_site())
+    dated = dict(_listed(tmp_path / "sitemap-substances.xml"))
+    base = f"{TOY_URL}/substances/"
+    assert list(dated) == [
+        f"{base}acts/house-rules/",
+        f"{base}cas-toy-1/",
+        f"{base}cas-toy-2/",
+        f"{base}cas-toy-4/",
+        f"{base}cas-toy-9/",
+        f"{base}ec-toy-e2/",
+    ]
+    assert (tmp_path / "substances" / "ec-toy-e1" / "index.html").is_file()
+    assert dated[f"{base}cas-toy-1/"] == dated[f"{base}cas-toy-9/"] == "2026-06-01"
+    assert dated[f"{base}cas-toy-2/"] is None and dated[f"{base}cas-toy-4/"] is None
+    assert dated[f"{base}acts/house-rules/"] == "2026-06-01"
+    index = dict(_blocks((tmp_path / SITEMAP_INDEX).read_text(encoding="utf-8"), "sitemap"))
+    assert index[f"{TOY_URL}/sitemap-substances.xml"] == "2026-06-01"
+    main = {loc for loc, _ in _listed(tmp_path / "sitemap.xml")}
+    assert f"{base}" in main and not any(loc.startswith(f"{base}cas-") for loc in main)
+    assert "Disallow: /substances" not in (tmp_path / "robots.txt").read_text(encoding="utf-8")

@@ -1079,4 +1079,25 @@ length. **No `id=` moved or went**, every
 `<title>` and description is unchanged, and `_LARGEST_PAGE` did not move. Every feed,
 `search-index.json`, the sitemaps, `robots.txt`, `llms.txt`, the script, the fonts, `icon.svg`,
 `og.png`, the catalogue and the schemas under `api/v1/` are byte-identical.
+
+Read again on 2026-10-17, when every CAS and EC number an entry of a profiled table prints gained
+a page under `substances/`, with a second search file, a second sitemap and two API files. The
+golden's acts hold no register and no change reads a profiled table, so it shows the empty case
+and no number page. New files: `substances/index.html` (3 724 bytes), which says no act in this
+build has a register; `substance-index.json`, `{"entries":[]}`; `sitemap-substances.xml`, an
+empty `<urlset>` of 110 bytes; `api/v1/substances.json`, the disclaimer, the provenance and no
+row (321 bytes); and `api/v1/schema/substance.schema.json` (12 167 bytes), byte-identical to its
+source under `docs/schema/`. `sitemap_index.xml` names the second sitemap after the first, with no
+`<lastmod>`, and `sitemap.xml` lists `substances/`, undated. The script gained the second file's
+fetch, the check-digit reading of a number typed without hyphens and the `Substance` kind: it
+grew from 8 370 to 12 799 bytes and its fingerprinted name moved from `search.d80bbdfb.js` to
+`search.9ab649e2.js` in the head of all 24 pages and of `account-shell.html`, at the same length.
+Home gained the lookup door after the stat strip, `404.html` the sentence that a missing
+substance page is not a statement about the law, `/api/` two layout rows, the line under
+"Three ways in" and `substance` among its schemas, and `llms.txt` the `Substances` line under
+the JSON API. No act page gained a door, because no act has a register, and only
+`substances/index.html` asks the script for the substance index. **No `id=` moved or
+went**, every `<title>` and description is unchanged, and `_LARGEST_PAGE` did not move. Every
+feed, `search-index.json`, `robots.txt`, the stylesheet, the fonts, `icon.svg`, `og.png`, the
+catalogue and every other schema are byte-identical.
 """

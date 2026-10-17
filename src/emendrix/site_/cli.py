@@ -58,6 +58,7 @@ from emendrix.site_.entries import read_entries
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.markup import count
 from emendrix.site_.polled import read_polled
+from emendrix.site_.substance_inputs import read_registers
 from emendrix.watch.config import Watchlist, load_watchlist
 
 __all__ = ["app", "build"]
@@ -233,7 +234,9 @@ def build(
         root = resolve_repo_path(
             changelogs, None if watchlist is None else watchlist.output.repo_path
         )
-        entries = read_entries(root) if root is not None and root.is_dir() else ()
+        held = root if root is not None and root.is_dir() else None
+        entries = read_entries(held) if held is not None else ()
+        registers = read_registers(held) if held is not None else ()
     except (FileNotFoundError, ValueError) as error:
         typer.echo(str(error), err=True)
         raise typer.Exit(code=2) from error
@@ -263,6 +266,7 @@ def build(
         version_dates=version_dates,
         polled=read_polled(watch_state),
         accounts=accounts,
+        registers=registers,
     )
     comparisons, reuse = NO_COMPARISONS, ""
     if comparison_cache is not None:

@@ -13,8 +13,10 @@ og.png                          the link-preview card, the one raster image publ
 robots.txt                      the crawl policy, and where the sitemap is
 llms.txt                        what the site offers a model, and how to fetch the record instead
 search-index.json               what that script fetches, prebuilt
+substance-index.json            what it fetches for a number: every CAS, EC and Index No
 sitemap.xml                     every page, with the date its content last moved
-sitemap_index.xml               the one address a search engine is given, naming the sitemap
+sitemap-substances.xml          every canonical substance page and every act's list of numbers
+sitemap_index.xml               the one address a search engine is given, naming both sitemaps
 acts/index.html                 the roster
 acts/<slug>/index.html          one page per watched act: its timeline and index
 acts/<slug>/<key>/index.html    one page per event: the changes and the verbatim text
@@ -29,9 +31,14 @@ feeds/all.xml                   every event, newest first
 feeds/<slug>.xml                one feed per act, quiet acts included
 feeds/acts/<slug>/<prov>.xml    one feed per touched provision: its changes, newest first
 feeds/acts/<slug>/provisions.opml  every provision feed of one act, for a feed reader's import
+substances/index.html           every act whose entries print a CAS or EC number, counted
+substances/acts/<slug>/index.html  one act's numbers, sorted, continued under `2/`, `3/` ...
+substances/<scheme>-<value>/index.html  one number: where it appears now, and its history
 api/index.html                  the JSON API: its layout, its fields, and an example for CI
 api/v1/catalogue.json           every watched act's names and the addresses of its pages
 api/v1/schema/<name>.schema.json  the JSON Schema of each document the API serves
+api/v1/substances.json          every number with a page, and every Index No landing on one
+api/v1/substances/<scheme>-<value>.json  one number's page as data
 ```
 
 The stylesheet, the script and the icon live at the site root because `chrome.page` links them
@@ -82,8 +89,10 @@ from emendrix.site_.discovery import (
     ROBOTS,
     SITEMAP,
     SITEMAP_INDEX,
+    SITEMAP_SUBSTANCES,
     robots_txt,
     sitemap_index_xml,
+    sitemap_substances_xml,
     sitemap_xml,
 )
 from emendrix.site_.feeds import feed_path, render_feed
@@ -106,10 +115,18 @@ from emendrix.site_.pages.home import render_home
 from emendrix.site_.pages.methodology import render_methodology
 from emendrix.site_.pages.not_found import render_not_found
 from emendrix.site_.pages.provision import render_provision_page
+from emendrix.site_.pages.substance import Drawn, render_substance
+from emendrix.site_.pages.substances_index import (
+    PER_PAGE,
+    act_lists,
+    render_substance_list,
+    render_substances_index,
+)
 from emendrix.site_.pages.texts import text_blocks
 from emendrix.site_.provision_feeds import provision_feed_files
-from emendrix.site_.search_index import search_index_json
+from emendrix.site_.search_index import SUBSTANCE_INDEX, search_index_json, substance_index_json
 from emendrix.site_.style import STYLE
+from emendrix.site_.substance_api import substance_files
 from emendrix.site_.urls import (
     act_href,
     amendment_href,
@@ -117,9 +134,12 @@ from emendrix.site_.urls import (
     dates_href,
     event_href,
     provision_href,
+    substance_href,
+    substance_list_href,
+    substances_href,
 )
 
-__all__ = ["act_pages", "write_site"]
+__all__ = ["act_pages", "substance_pages", "write_site"]
 
 INDEX = "search-index.json"
 """What the script fetches, at the root the script is handed as `data-root`. A fixed name: it
@@ -163,6 +183,26 @@ def act_pages(
     return files
 
 
+def substance_pages(site: SiteInputs) -> dict[str, str]:
+    """The substance surface, path -> contents: the index, each act's lists, each number's page,
+    the second search file and the API's two kinds of file. Written whether or not any act has
+    a register, so every door on the site leads to a page that says what it holds."""
+    files = {
+        f"{substances_href()}index.html": render_substances_index(site),
+        SUBSTANCE_INDEX: substance_index_json(site),
+    }
+    for act, numbers in act_lists(site):
+        for number in range(1, -(-len(numbers) // PER_PAGE) + 1):
+            path = substance_list_href(act.slug, number)
+            files[f"{path}index.html"] = render_substance_list(site, act, numbers, number)
+    drawn: Drawn = {}
+    for substance in site.substances.substances:
+        path = substance_href(substance.scheme, substance.value)
+        files[f"{path}index.html"] = render_substance(site, substance, drawn)
+    files.update(substance_files(site))
+    return files
+
+
 def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[str, str | bytes]:
     """Every file the site is, as `relative path -> contents`. Pure; writes nothing."""
     files: dict[str, str | bytes] = {
@@ -183,6 +223,7 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
         "api/index.html": render_api_page(site),
     }
     files.update(api_files(site))
+    files.update(substance_pages(site))
     for name, content in font_files():
         files[FONTS[name]] = content
     for act in site.acts:
@@ -195,6 +236,7 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
         )
     if site.site_url:
         files[SITEMAP] = sitemap_xml(site)
+        files[SITEMAP_SUBSTANCES] = sitemap_substances_xml(site)
         files[SITEMAP_INDEX] = sitemap_index_xml(site)
         files[LLMS] = llms_txt(site)
         files[feed_path(None)] = render_feed(site, None)

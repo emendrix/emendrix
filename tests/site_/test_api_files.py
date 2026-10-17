@@ -15,12 +15,21 @@ from typing import Any
 
 import pytest
 from helpers import REPO, REPORTS, SITE_URL, WATCHLIST, build, runner
+from toy_substances import SITE_URL as TOY_URL
+from toy_substances import substance_site
 
 from emendrix import DISCLAIMER
 from emendrix.cli import app
 from emendrix.output import ChangelogEntry
 from emendrix.output.schemas import SUFFIX, schema_document, schema_documents
 from emendrix.site_.api_files import CATALOGUE, PROVENANCE, Catalogue
+from emendrix.site_.build import write_site
+from emendrix.site_.substance_api import (
+    SUBSTANCES,
+    SubstanceFile,
+    SubstanceIndex,
+    substance_file_path,
+)
 from emendrix.watch.state import PendingConsolidation, WatchState
 from eu_pins import OBSERVED_ON
 
@@ -105,7 +114,7 @@ def test_the_api_files_are_byte_identical_across_two_builds(
 
 def test_every_schema_the_site_writes_is_the_committed_file(site: Path) -> None:
     written = sorted((site / "api" / "v1" / "schema").iterdir())
-    expected = {*schema_documents(), f"catalogue{SUFFIX}"}
+    expected = {*schema_documents(), f"catalogue{SUFFIX}", f"substance{SUFFIX}"}
     assert {path.name for path in written} == expected
     for path in written:
         assert path.read_bytes() == (SCHEMA_DIR / path.name).read_bytes(), path.name
@@ -120,13 +129,19 @@ def test_the_committed_catalogue_schema_is_what_the_model_generates() -> None:
 
 
 def test_the_site_writes_nothing_of_the_record(site: Path) -> None:
-    """The record is served from the changelogs volume; a copy here would shadow it or go stale."""
+    """The record is served from the changelogs volume; a copy here would shadow it or go stale.
+
+    The substance files are derived, like the catalogue: their list, and one file per number
+    under `substances/`, which no path of the record uses."""
     under = sorted(
         path.relative_to(site / "api" / "v1").as_posix()
         for path in (site / "api" / "v1").rglob("*")
     )
     assert not (site / "api" / "v1" / "index.json").exists()
-    assert all(name == "catalogue.json" or name.startswith("schema") for name in under), under
+    derived = ("catalogue.json", "substances.json")
+    assert all(name in derived or name.startswith(("schema", "substances/")) for name in under), (
+        under
+    )
 
 
 def test_without_a_site_url_addresses_are_relative_and_no_feed_is_named(
@@ -206,3 +221,72 @@ def test_the_poller_record_reaches_the_catalogue_per_act_oldest_first(
     assert "31999R9999" not in rows
     assert all(waiting == [] for key, waiting in rows.items() if key != "32017R0745")
     Catalogue.model_validate(catalogue)
+
+
+# ------------------------------------------------------------------ the substance files
+
+_REGENERATE_SUBSTANCE = (
+    "uv run python -c 'from pathlib import Path; from emendrix.site_.substance_api import "
+    "SubstanceFile; from emendrix.output.schemas import schema_document; "
+    'Path("docs/schema/substance.schema.json").write_text('
+    'schema_document("substance", SubstanceFile), encoding="utf-8")\''
+)
+
+
+@pytest.fixture(scope="module")
+def substances(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    out = tmp_path_factory.mktemp("substance-api") / "site"
+    write_site(out, substance_site())
+    return out
+
+
+def _local(site: Path, url: str) -> Path:
+    path = site / url.removeprefix(f"{TOY_URL}/").split("#", 1)[0]
+    return path / "index.html" if url.endswith("/") or "#" in url else path
+
+
+def test_the_substance_list_names_every_number_and_the_index_no_landing_on_one(
+    substances: Path,
+) -> None:
+    document = json.loads((substances / SUBSTANCES).read_text(encoding="utf-8"))
+    SubstanceIndex.model_validate(document)
+    assert document["substance_schema"] == "1.0"
+    assert document["disclaimer"] == DISCLAIMER
+    rows = {(row["scheme"], row["value"]): row for row in document["substances"]}
+    assert list(rows)[-1] == ("index", "toy-i1")
+    assert rows[("index", "toy-i1")]["page"] == rows[("cas", "toy-1")]["page"]
+    assert rows[("index", "toy-i1")]["file"] == rows[("cas", "toy-1")]["file"]
+    assert rows[("ec", "toy-e1")]["canonical"] == rows[("cas", "toy-1")]["page"]
+    assert rows[("ec", "toy-e2")]["canonical"] == rows[("ec", "toy-e2")]["page"]
+    for row in rows.values():
+        assert _local(substances, row["page"]).is_file(), row
+        assert _local(substances, row["file"]).is_file(), row
+
+
+def test_a_substance_file_holds_its_entries_and_history_with_addresses_that_resolve(
+    substances: Path,
+) -> None:
+    text = (substances / substance_file_path("cas", "toy-1")).read_text(encoding="utf-8")
+    document = json.loads(text)
+    SubstanceFile.model_validate(document)
+    assert document["disclaimer"] == DISCLAIMER
+    (entry,) = document["entries"]
+    assert entry["entry"]["key"] == "k1" and entry["header"]
+    (change,) = document["history"]
+    assert change["kind"] == "amended" and change["dated"] == "2026-06-01"
+    assert change["in_force"] is True
+    assert entry["last_changed"] == change["event"]
+    for url in (entry["act_page"], entry["provision_page"], change["event"]):
+        page = _local(substances, url)
+        assert page.is_file(), url
+        if "#" in url:
+            assert f'id="{url.split("#", 1)[1]}"' in page.read_text(encoding="utf-8")
+    assert change["file"].endswith("/api/v1/toy/house-rules/changes/v2.json")
+
+
+def test_the_committed_substance_schema_is_what_the_model_generates() -> None:
+    committed = (SCHEMA_DIR / f"substance{SUFFIX}").read_text(encoding="utf-8")
+    assert committed == schema_document("substance", SubstanceFile), (
+        f"docs/schema/substance{SUFFIX} differs from the model; if the change is intended, run "
+        f"`{_REGENERATE_SUBSTANCE}` from the repository root and read the diff"
+    )

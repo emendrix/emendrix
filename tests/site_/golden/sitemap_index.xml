@@ -4,4 +4,7 @@
 <loc>https://example.invalid/site/sitemap.xml</loc>
 <lastmod>2020-04-24</lastmod>
 </sitemap>
+<sitemap>
+<loc>https://example.invalid/site/sitemap-substances.xml</loc>
+</sitemap>
 </sitemapindex>

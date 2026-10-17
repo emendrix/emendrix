@@ -89,7 +89,7 @@ def test_every_address_in_the_layout_table_is_under_the_site_url(page: str) -> N
     table = _TABLE.search(page)
     assert table is not None
     links = re.findall(r'href="([^"]+)"', table.group(1))
-    assert len(links) == 3
+    assert len(links) == 4
     assert all(link.startswith(f"{SITE_URL}/api/") for link in links), links
 
 

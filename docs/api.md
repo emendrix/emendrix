@@ -33,7 +33,9 @@ in the event's payload, which the act index names by `path`.
 | `/api/v1/<act_dir>/changes/<version>.json` | one event's payload, with the verbatim texts and the explanations | the record, served as committed |
 | `/api/v1/<act_dir>/register.json` | for an act whose tables are read as entries, every entry of the newest version the record holds, cells verbatim | the record, as committed, where the deployment routes it |
 | `/api/v1/catalogue.json` | what the record cannot know: watchlist labels, aliases, sectors, page and feed addresses, and what the poller is waiting for | the site build |
-| `/api/v1/schema/<name>.schema.json` | the JSON Schema of each document: `index`, `act-index`, `entry`, `change`, `catalogue` | the site build |
+| `/api/v1/schema/<name>.schema.json` | the JSON Schema of each document: `index`, `act-index`, `entry`, `change`, `catalogue`, `substance` | the site build |
+| `/api/v1/substances.json` | every CAS and EC number an entry in the record prints, with its page and its file, and every Index No that lands on one | the site build |
+| `/api/v1/substances/<scheme>-<value>.json` | one CAS or EC number's page as data: the entries that print it now and every recorded change to them | the site build |
 
 `<act_dir>` is the act's corpus and key, `eu/32017R0745` for the Medical Devices Regulation, and
 `<version>` is the version the event produced, `02017R0745-20260101` for one of its events. Every
@@ -145,6 +147,37 @@ Together they tell a quiet act from one that is waiting: an act with no new even
 a reader of `1.0` that ignores unknown keys reads it unchanged, and a `1.0` file has neither
 field.
 
+## Substances
+
+`substances.json` and the files under `substances/` are written by the site build, like the
+catalogue, from the registers and the payloads; they are not part of the record. Every CAS and
+EC number that an entry of a register prints, or that either side of a recorded entry change
+carries, has a row, a page and a file, so an entry that was removed keeps its history. Only
+those two schemes are addressed. An Index No is a row key, and it gets a row of its own in the
+list pointing at the page and the file of the first CAS number, else EC number, its entry
+carries, the same page the site's search lands on; an Index No whose entry carries neither has
+no row.
+
+Each list row has `scheme`, `value`, `page`, `file` and `canonical`. `canonical` is the row's own
+page except for an EC number whose entries and changes are exactly those of one CAS number its
+rows also print: that EC page repeats the CAS page, and `canonical` names the CAS page. Every
+address is absolute when the site was built with a site URL and root-relative otherwise.
+
+A number's file (`substance_schema` `1.0`, schema `substance.schema.json`) carries `entries`, one
+per register entry that prints it, in the acts' order and then the act's own: the act, the
+version the register was read from, the table's `key_label` and `header` rows, the entry with
+its rows verbatim, the act page, the provision page where a recorded change touched the unit,
+and `last_changed`, the permalink of the newest recorded change to that entry or `null`. Its
+`history` lists every recorded change to an entry printing the number, newest first: the act,
+the version, `dated` with `in_force` saying which clock dated it, the `kind`, `typography_only`,
+the entry `before` and `after`, `amending_acts` (the acts the change names, which can be fewer
+than the consolidation lists), `event` (the change block's permalink on its version page) and
+`file` (the payload it was read from).
+
+These files say where a number **appears**, never what the law makes of a substance. A number
+the list does not hold is printed by no entry in the acts the record holds, which says nothing
+about the law: many entries name a group of substances and print no number at all.
+
 ## Corrections
 
 The record is corrected forward and its history is never rewritten. What a consumer sees, and the
@@ -205,7 +238,8 @@ and reads the same files any consumer reads.
 ## Serving it yourself
 
 The reference deployment in [`../deploy/`](../deploy/) serves the API from two places and copies
-neither. `emendrix site build` writes `/api/`, `catalogue.json` and the schemas into the site tree.
+neither. `emendrix site build` writes `/api/`, `catalogue.json`, `substances.json`, the files
+under `substances/` and the schemas into the site tree.
 The root index, the act indexes and the payloads are served by nginx straight from the changelogs
 volume, mounted read-only into the web container, through one `location` in
 [`../deploy/default.conf`](../deploy/default.conf) whose pattern admits those three kinds of file

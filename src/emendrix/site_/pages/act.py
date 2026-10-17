@@ -44,6 +44,7 @@ from emendrix.site_.pages.act_dates import dates_section
 from emendrix.site_.pages.act_index import ACT_DEPTH, event_link, sidebar
 from emendrix.site_.pages.version_card import version_card
 from emendrix.site_.seo import act_json_ld
+from emendrix.site_.substance_doors import act_door
 from emendrix.site_.tags import LIST_HELP_WORDS, tags_help
 from emendrix.site_.trail import act_trail
 from emendrix.site_.urls import act_href, domain_anchor, up
@@ -197,6 +198,8 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
     header.append(Html(f'<p class="facts">{join(facts, " · ")}</p>'))
     if links:
         header.append(Html(f'<p class="links">{join(links, " · ")}</p>'))
+    if site.substances.has_register(act):
+        header.append(act_door(up(_DEPTH), act.slug))
     header.extend(_related(site, act))
     return header
 
@@ -257,6 +260,7 @@ def render_act(site: SiteInputs, act: ActSite) -> Html:
         path=act_href(act.slug),
         chrome=site.chrome,
         section="acts/",
+        substances=site.substances.has_register(act),
         # The act's own feed leads, because a reader subscribing from this page is asking for
         # this act; the global one follows so the offer is never only the narrow one.
         feeds=((feed_path(act), feed_title(act)), (feed_path(None), feed_title(None))),

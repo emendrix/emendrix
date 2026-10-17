@@ -48,6 +48,7 @@ __all__ = [
     "amendment_json_ld",
     "event_json_ld",
     "provision_json_ld",
+    "substance_json_ld",
     "website_json_ld",
 ]
 
@@ -142,9 +143,7 @@ def _legislation(act: ActSite) -> dict[str, object]:
     return about
 
 
-def _webpage(
-    here: str, *, title: str, description: str, about: dict[str, object]
-) -> dict[str, object]:
+def _webpage(here: str, *, title: str, description: str, about: object) -> dict[str, object]:
     """The `WebPage` object every described page carries, its `@id` its canonical address."""
     return {
         "@context": _SCHEMA,
@@ -255,5 +254,40 @@ def provision_json_ld(
     payload: list[dict[str, object]] = [
         _breadcrumb(site.site_url, provision_trail(act, location)),
         _webpage(here, title=title, description=description, about=about),
+    ]
+    return _ld_block(payload)
+
+
+def substance_json_ld(
+    site: SiteInputs,
+    rungs: tuple[Rung, ...],
+    parts: tuple[tuple[ActSite, tuple[str, ...]], ...],
+    *,
+    title: str,
+    description: str,
+) -> Html:
+    """One substance page: its trail, and the page about the acts whose entries print it.
+
+    `about` is each act as the same `Legislation` its own page declares, with `hasPart` naming
+    the annexes the entries sit in, and nothing else. No type is claimed for the substance:
+    the page is about where a number appears in law, which is all the record can say, and a
+    `ChemicalSubstance` would claim an identity the record never checked. No date either: what
+    a crawler needs to know about freshness the sitemap says.
+    """
+    about: list[dict[str, object]] = []
+    for act, units in parts:
+        legislation = _legislation(act)
+        named = [{"@type": "Legislation", "name": unit} for unit in units]
+        legislation["hasPart"] = named[0] if len(named) == 1 else named
+        about.append(legislation)
+    here = canonical_url(site.site_url, rungs[-1].path)
+    payload: list[dict[str, object]] = [
+        _breadcrumb(site.site_url, rungs),
+        _webpage(
+            here,
+            title=title,
+            description=description,
+            about=about[0] if len(about) == 1 else about,
+        ),
     ]
     return _ld_block(payload)

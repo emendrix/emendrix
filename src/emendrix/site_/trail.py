@@ -35,16 +35,19 @@ from emendrix.site_.urls import (
     amendments_href,
     event_href,
     provision_href,
+    substances_href,
 )
 
 __all__ = [
     "ACTS_ROSTER",
     "AMENDING_ROSTER",
+    "SUBSTANCES_ROSTER",
     "Rung",
     "act_trail",
     "amending_trail",
     "page_trail",
     "provision_trail",
+    "substance_trail",
     "version_trail",
 ]
 
@@ -53,6 +56,9 @@ ACTS_ROSTER: Final = "All watched acts"
 
 AMENDING_ROSTER: Final = "Amending acts"
 """The amending-acts roster's rung, and that page's own heading and header-bar link."""
+
+SUBSTANCES_ROSTER: Final = "Substances"
+"""The substances index's rung, and that page's own heading."""
 
 _ACTS_PATH: Final = "acts/"
 """The roster's own path, which is also the directory `act_href` puts every act page under.
@@ -109,3 +115,8 @@ def amending_trail(instrument: AmendingAct) -> tuple[Rung, ...]:
         *page_trail(AMENDING_ROSTER, amendments_href()),
         Rung(name=instrument.short, path=amendment_href(instrument.key)),
     )
+
+
+def substance_trail(name: str, path: str) -> tuple[Rung, ...]:
+    """Home, the substances index, then one page under it: an identifier or an act's list."""
+    return (*page_trail(SUBSTANCES_ROSTER, substances_href()), Rung(name=name, path=path))

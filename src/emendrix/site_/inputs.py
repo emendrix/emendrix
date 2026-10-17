@@ -56,13 +56,14 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from emendrix.core import ActId
 from emendrix.eval_.report import DEFAULT_REPORT_DIR
 from emendrix.eval_.runner import EvalRun
-from emendrix.output import ChangelogEntry
+from emendrix.output import ChangelogEntry, Register
 from emendrix.site_.act_site import ActSite
 from emendrix.site_.amending import AmendingAct, collect_amending
 from emendrix.site_.chrome import PageChrome
 from emendrix.site_.clocks import VersionDates, sort_date
 from emendrix.site_.entries import CorpusCounts, corpus_counts, sorted_entries
 from emendrix.site_.polled import PolledState
+from emendrix.site_.substance_inputs import SubstanceInputs, collect_substances
 from emendrix.site_.urls import shared_path
 from emendrix.watch.config import Watchlist
 
@@ -119,6 +120,10 @@ class SiteInputs(BaseModel):
         default=False,
         description="Whether an account service answers under `/account/` on this host. Only "
         "set together with a site URL; without it nothing on the site links there.",
+    )
+    substances: SubstanceInputs = Field(
+        default_factory=SubstanceInputs,
+        description="Every CAS and EC number the shown acts' registers and entry changes carry.",
     )
 
     @model_validator(mode="after")
@@ -179,6 +184,7 @@ def collect_site(
     amending_numbers: Mapping[str, str] | None = None,
     amending_urls: Mapping[str, str] | None = None,
     version_dates: VersionDates | None = None,
+    registers: tuple[Register, ...] = (),
 ) -> SiteInputs:
     """Group the committed entries under their acts. Pure and total.
 
@@ -193,7 +199,8 @@ def collect_site(
     the composition root rendered from an identifier this module may not read; an act nothing
     names never appears in `amending`, declared label or not. `published_urls` is keyed by the
     act's own slug, like `eurlex_urls`, and `kinds` is stored exactly as it is given: this module
-    counts nothing and never learns what a kind is.
+    counts nothing and never learns what a kind is. `registers` are read for the shown acts
+    only, into `substances`.
     """
     urls = eurlex_urls or {}
     published = published_urls or {}
@@ -282,4 +289,5 @@ def collect_site(
         polled=polled,
         accounts=accounts,
         version_dates=dates,
+        substances=collect_substances(resolved, registers),
     )

@@ -22,7 +22,7 @@ from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
-from emendrix.site_.pages.act_event import render_event
+from emendrix.site_.pages.act_event import first_table, render_event
 from emendrix.site_.pages.context_bar import context_bar
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.pages.version_masthead import pager, version_masthead
@@ -77,7 +77,9 @@ def render_event_page(
             *_header(act, entry),
             *version_masthead(site, act, entry, acts, anchors=anchors),
             *context_bar(act, entry, _DEPTH),
-            *render_event(entry, anchors, texts, site.changelogs_url),
+            *render_event(
+                entry, anchors, texts, site.changelogs_url, site.substances.links(up(_DEPTH))
+            ),
             *pager(act, entry, top=False),
         ),
         "\n",
@@ -113,6 +115,7 @@ def render_event_page(
         path=event_href(act.slug, entry.key),
         chrome=site.chrome,
         section="acts/",
+        substances=first_table(entry) is not None,
         # The act's own feed leads, for the reason the act page gives: a reader subscribing
         # from an event of this act is asking for this act.
         feeds=((feed_path(act), feed_title(act)), (feed_path(None), feed_title(None))),

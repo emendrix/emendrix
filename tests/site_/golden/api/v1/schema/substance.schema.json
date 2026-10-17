@@ -1,0 +1,455 @@
+{
+  "$defs": {
+    "Identifier": {
+      "description": "One identifier a row carries, in the canonical form of its scheme.",
+      "properties": {
+        "scheme": {
+          "description": "The corpus-defined scheme name, lower case.",
+          "title": "Scheme",
+          "type": "string"
+        },
+        "value": {
+          "description": "The canonical spelling of the value under its scheme.",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scheme",
+        "value"
+      ],
+      "title": "Identifier",
+      "type": "object"
+    },
+    "ProvisionLocation": {
+      "type": "string"
+    },
+    "SubstanceChange": {
+      "description": "One recorded change to an entry printing the number.",
+      "properties": {
+        "act": {
+          "description": "The act's key within its corpus.",
+          "title": "Act",
+          "type": "string"
+        },
+        "after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TableEntry"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The entry after; null when removed."
+        },
+        "amending_acts": {
+          "description": "The amending acts the change names, which may be fewer than made it.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Amending Acts",
+          "type": "array"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TableEntry"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The entry before; null when added."
+        },
+        "corpus": {
+          "description": "The act's corpus namespace.",
+          "title": "Corpus",
+          "type": "string"
+        },
+        "dated": {
+          "description": "The version's in-force date, else the day it was seen.",
+          "format": "date",
+          "title": "Dated",
+          "type": "string"
+        },
+        "event": {
+          "description": "The permalink of the change block on its version page.",
+          "title": "Event",
+          "type": "string"
+        },
+        "file": {
+          "description": "The payload the change was read from.",
+          "title": "File",
+          "type": "string"
+        },
+        "header": {
+          "description": "The table's header rows.",
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "title": "Header",
+          "type": "array"
+        },
+        "in_force": {
+          "description": "True when `dated` is the in-force date.",
+          "title": "In Force",
+          "type": "boolean"
+        },
+        "key_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "How the act names the key; null for a name key.",
+          "title": "Key Label"
+        },
+        "kind": {
+          "description": "`added`, `amended` or `removed`.",
+          "enum": [
+            "added",
+            "removed",
+            "amended"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "description": "The act's short label on this site.",
+          "title": "Label",
+          "type": "string"
+        },
+        "typography_only": {
+          "description": "Amended only in spacing, dash forms or accents.",
+          "title": "Typography Only",
+          "type": "boolean"
+        },
+        "version": {
+          "description": "The version the change was recorded in.",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corpus",
+        "act",
+        "label",
+        "version",
+        "dated",
+        "in_force",
+        "kind",
+        "typography_only",
+        "key_label",
+        "header",
+        "before",
+        "after",
+        "amending_acts",
+        "event",
+        "file"
+      ],
+      "title": "SubstanceChange",
+      "type": "object"
+    },
+    "SubstanceEntry": {
+      "description": "One entry of an act's newest version that prints the number, as its register holds it.",
+      "properties": {
+        "act": {
+          "description": "The act's key within its corpus.",
+          "title": "Act",
+          "type": "string"
+        },
+        "act_page": {
+          "description": "The act's page.",
+          "title": "Act Page",
+          "type": "string"
+        },
+        "corpus": {
+          "description": "The act's corpus namespace.",
+          "title": "Corpus",
+          "type": "string"
+        },
+        "entry": {
+          "$ref": "#/$defs/TableEntry",
+          "description": "The entry, its rows verbatim."
+        },
+        "header": {
+          "description": "The table's header rows.",
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "title": "Header",
+          "type": "array"
+        },
+        "key_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "How the act names the key; null for a name key.",
+          "title": "Key Label"
+        },
+        "label": {
+          "description": "The act's short label on this site.",
+          "title": "Label",
+          "type": "string"
+        },
+        "last_changed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The permalink of the newest recorded change to this entry; null for none.",
+          "title": "Last Changed"
+        },
+        "provision_page": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The unit's page, where a recorded change touched it; else null.",
+          "title": "Provision Page"
+        },
+        "version": {
+          "description": "The version the register was read from.",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corpus",
+        "act",
+        "label",
+        "version",
+        "key_label",
+        "header",
+        "entry",
+        "act_page",
+        "provision_page",
+        "last_changed"
+      ],
+      "title": "SubstanceEntry",
+      "type": "object"
+    },
+    "TableEntry": {
+      "description": "A keyed group of rows, with its identifiers and its cells verbatim.",
+      "properties": {
+        "container": {
+          "$ref": "#/$defs/ProvisionLocation",
+          "description": "The deepest located node holding the table, as the tree places it."
+        },
+        "failed_check_digits": {
+          "default": 0,
+          "description": "Identifier-shaped values in identifier columns that fail.",
+          "minimum": 0,
+          "title": "Failed Check Digits",
+          "type": "integer"
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verbatim heading of the innermost block the rows sit in.",
+          "title": "Group"
+        },
+        "identifiers": {
+          "default": [],
+          "description": "Sorted, deduplicated, and valid under the scheme's check.",
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "title": "Identifiers",
+          "type": "array"
+        },
+        "key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The row key by the adapter's rule; `None` is an unkeyed row, kept and counted.",
+          "title": "Key"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "First line of the name cell; a leading entry number and its `.` dropped.",
+          "title": "Name"
+        },
+        "occurrence": {
+          "default": 1,
+          "description": "1-based among this table's entries sharing this key.",
+          "minimum": 1,
+          "title": "Occurrence",
+          "type": "integer"
+        },
+        "rows": {
+          "description": "Every row of the entry, cells verbatim; `None` where a span covers.",
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "table": {
+          "description": "1-based ordinal among every table in the container.",
+          "minimum": 1,
+          "title": "Table",
+          "type": "integer"
+        },
+        "unit": {
+          "$ref": "#/$defs/ProvisionLocation",
+          "description": "The top-level unit the table sits in."
+        }
+      },
+      "required": [
+        "unit",
+        "container",
+        "table",
+        "key",
+        "rows"
+      ],
+      "title": "TableEntry",
+      "type": "object"
+    }
+  },
+  "$id": "substance.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "One CAS or EC number: every entry that prints it now, and every change to such entries.",
+  "properties": {
+    "canonical": {
+      "description": "The page a search engine is pointed at for it.",
+      "title": "Canonical",
+      "type": "string"
+    },
+    "disclaimer": {
+      "default": "Not legal advice: this output is machine-computed from published texts, carries no lawyer's review, and is engineering assistance only.",
+      "description": "Not legal advice.",
+      "title": "Disclaimer",
+      "type": "string"
+    },
+    "entries": {
+      "description": "Act order, then document order.",
+      "items": {
+        "$ref": "#/$defs/SubstanceEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "history": {
+      "description": "Newest first.",
+      "items": {
+        "$ref": "#/$defs/SubstanceChange"
+      },
+      "title": "History",
+      "type": "array"
+    },
+    "identifiers": {
+      "description": "Every identifier the entries' rows carry, this one included.",
+      "items": {
+        "$ref": "#/$defs/Identifier"
+      },
+      "title": "Identifiers",
+      "type": "array"
+    },
+    "page": {
+      "description": "This number's page.",
+      "title": "Page",
+      "type": "string"
+    },
+    "provenance": {
+      "default": "Derived by the site build from the committed registers and changelogs; not part of the record.",
+      "description": "Where this file comes from.",
+      "title": "Provenance",
+      "type": "string"
+    },
+    "scheme": {
+      "description": "`cas` or `ec`.",
+      "title": "Scheme",
+      "type": "string"
+    },
+    "substance_schema": {
+      "default": "1.0",
+      "description": "This format's version.",
+      "title": "Substance Schema",
+      "type": "string"
+    },
+    "value": {
+      "description": "The canonical value.",
+      "title": "Value",
+      "type": "string"
+    }
+  },
+  "required": [
+    "scheme",
+    "value",
+    "page",
+    "canonical",
+    "identifiers",
+    "entries",
+    "history"
+  ],
+  "title": "substance",
+  "type": "object"
+}

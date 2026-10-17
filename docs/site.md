@@ -36,11 +36,18 @@ feeds/acts/<celex>/provisions.opml  every provision feed of one act, for a feed 
 api/                  the JSON API: three ways in, its layout, its fields, the MCP server, and a CI example
 api/v1/catalogue.json every watched act's names, and the address of each of its pages and its feed
 api/v1/schema/        the JSON Schema of each document the API serves, one file each
+api/v1/substances.json  every CAS and EC number with a page, and every Index No landing on one
+api/v1/substances/<scheme>-<value>.json  one number's entries and changes as data
+substances/           every act whose table entries print a CAS or EC number, counted, and the lookup
+substances/acts/<celex>/  one act's numbers, sorted, 2,000 to a page, continued under 2/, 3/ ...
+substances/<scheme>-<value>/  one number: where it appears now, and every change to those entries
 robots.txt            what crawlers may read, and where the sitemap index is
 llms.txt              what the site offers a model, and how to fetch the record instead of the pages
 sitemap.xml           every page, with the date its content last moved
-sitemap_index.xml     the one address a search engine is given, naming the sitemap
+sitemap-substances.xml  every canonical substance page and every act's list of numbers
+sitemap_index.xml     the one address a search engine is given, naming both sitemaps
 search-index.json     act and instrument names, aliases, CELEX numbers, touched provisions and their titles
+substance-index.json  every CAS, EC and Index number an entry prints, fetched only when a query can use it
 search.<digest>.js    the one script; style.<digest>.css is the one stylesheet
 sans-400.<digest>.woff2, sans-600.<digest>.woff2, serif-400.<digest>.woff2
                       the three self-hosted faces the stylesheet loads
@@ -56,9 +63,9 @@ the cache by hand. A name that moves with the content makes that unrepresentable
 changes the bytes writes a new URL and a build that does not leaves the URL alone, so an asset
 may be cached for as long as the edge likes and no deploy needs a purge.
 
-The other three keep fixed names on purpose. `search-index.json` changes on every build and is
-served with the short lifetime the pages carry, and the script fetches it by a path relative to
-the site root. `icon.svg` and `og.png` are identity rather than code: a link-preview image whose
+The other four keep fixed names on purpose. `search-index.json` and `substance-index.json`
+change on every build and are served with the short lifetime the pages carry, and the script
+fetches each by a path relative to the site root. `icon.svg` and `og.png` are identity rather than code: a link-preview image whose
 address moves breaks the card every social site has already cached for the pages that name it.
 **They are the one part of the tree that still needs a manual purge**, so an operator who
 changes either should purge that one path at the edge and expect previews to refresh slowly.
@@ -699,6 +706,103 @@ own, so no budget much under that growth could hold them all, and a title droppe
 provision a reader cannot find by the name they know it by. Fifty kilobytes is still fetched once,
 on the first keystroke, and never on a page that is not searched.
 
+## Substance pages: where a number appears
+
+Every CAS and EC number an entry of a profiled table prints has a page at
+`substances/<scheme>-<value>/`, `substances/cas-50-00-0/`, at the root and never under an act,
+because one number can sit in entries of several acts. A number gets a page when the register
+beside an act's changelog holds an entry printing it, or when either side of a recorded entry
+change carries it, so an entry that was removed keeps its page for its history. Only the acts the
+build shows are read, since a substance page links its act's page. An Index No is shown and
+searched but has no page of its own: it is a row key, and a search for it lands on the page of
+the first CAS number, else EC number, its entry carries.
+
+**What a page says, in order.** The number, with the name the shortest current entry prints in
+the heading; every other identifier the rows carry, each CAS and EC number linked to its own
+page; the standing note; **Where it appears now**, one block per entry of the newest version
+each act's register holds, naming the act, the annex and the key, the last recorded change to
+that entry linked to the change block on its version page, the provision page where one exists,
+and the row as the act prints it under the table's own header rows; the lookup; **Its history**,
+every recorded change to an entry printing the number, newest first, with its date, its kind,
+its rows before and after drawn as the event pages draw them, and the link to the change block;
+then the sources: the act page and the EUR-Lex consolidated version the register was read from.
+With `--accounts` a `Watch this substance` link follows, to
+`/account/watch?substance=<scheme>-<value>`.
+
+**The standing note**, on every page, the number filled in:
+
+> Where CAS 50-00-0 appears: every table entry that prints it among its identifiers, in the
+> newest version of each act this record holds, and every recorded change to those entries. Many
+> entries name a group of substances and print no number, so absence here is not absence from
+> the law. Not legal advice.
+
+**Why absence is never claimed.** A table entry can name a group of substances ("lead
+compounds") and print no number, so a number no entry prints may still be covered by one. The
+pages therefore say where a number *appears* and nothing about what the law makes of the
+substance, and absence has one wording: no entry in the record prints this number. A test reads
+every page of the surface with its verbatim rows taken out and refuses the words that would say
+more (restricted, banned, prohibited, permitted, allowed, approved, authorised, regulated,
+compliant, safe, hazardous, "listed as", "classified as", "not found in", "not covered by"). The
+rows themselves are the act's own words and may say any of them. An amendment is said to be by
+"the act that change names", never the act that made it, because a change records the amending
+acts its consolidation was read against and that list can be shorter than the consolidation's.
+
+**Canonical EC pages.** An EC page whose entries and changes are exactly those of one CAS page it
+links says nothing that page does not, so its `rel=canonical` names the CAS page and it is left
+out of the sitemap; it is still written, so a link to it never breaks. Every other page is its
+own canonical.
+
+**Where the dates come from.** A change is dated by the in-force date of the version it was
+recorded in, with its clock named as everywhere else on the site; an entry no recorded change
+touched reads "No change to this entry since the first version the record holds", dated the
+same way; a row the profile could not key is never compared and says so. Nothing on the page is
+dated by the build.
+
+**The index and the lists.** `substances/` carries the lead, the count of CAS and EC numbers per
+act, and the lookup; with no register in the build it says so, because doors on other pages lead
+to it. `substances/acts/<slug>/` lists one act's numbers, every one its register or its recorded
+changes carry, sorted by their digits as numbers, at most 2,000 to a page, continued under
+`2/`, `3/` and so on, so no list grows past a few hundred kilobytes.
+
+**The second search file.** `substance-index.json` has the rows of `search-index.json` in the
+same shape, kind `substance`: one label per canonical CAS, EC and Index number, its title the
+name and the acts. A CLP table alone prints thousands of numbers, so the main index does not
+carry them and does not move: the script fetches the second file only for a query that opens
+with a digit, on any page, or from the first keystroke on a page whose `#search` carries
+`data-substances` (the substance pages, the index and the lists, the act pages of acts with a
+register, and event pages holding an entry table). A number matches exactly, by any reading of
+it, or by its leading digits from four on, never in the middle; a name matches a title from three
+letters. A number typed without hyphens is read in the script through its check digit, as CAS
+by placing hyphens before the last digit and the two before it, and with exactly seven digits
+also as EC, and every reading that passes is matched; a leading zero of a CAS number is dropped,
+so `0050-00-0` finds `50-00-0`. The rules are the pipeline's own, and a test runs the script
+under Node over values cut from the committed fixtures and holds every reading equal.
+
+**Doors.** Home, after the stat strip and before the record's other doors, leads to
+`substances/`; the act page of every act with a register, decided from the inputs and never from
+a list, leads to that act's list beside its follow links; an event page says above its first
+entry table that each number in the tables links to its page, and the numbers do link wherever a
+page exists; the not-found page says a missing substance page is not a statement about the law;
+`/api/` and `/llms.txt` name the two substance files. Each sentence is worded once, in
+`site_/substance_doors.py`.
+
+**Crawlers.** `sitemap-substances.xml`, named in `sitemap_index.xml` beside `sitemap.xml`, lists
+every canonical substance page and every act's list page. A page's `<lastmod>` is the newest
+in-force date of a recorded change naming the number, held to dates the build can stand behind;
+a number only a register names carries none. `substances/` itself is in the main sitemap, and
+`robots.txt` keeps allowing it. The structured data is a `BreadcrumbList` and a `WebPage` whose
+`about` is each act as the same `Legislation` its own page declares, with `hasPart` naming the
+annex, and nothing else: no type is claimed for the substance and no date for the page.
+
+**As data.** `api/v1/substances.json` and `api/v1/substances/<scheme>-<value>.json` say the same
+things as files, with the disclaimer; [`./api.md`](./api.md) §"Substances" describes them. The
+second file's schema is `docs/schema/substance.schema.json`, generated from the model and served
+under `api/v1/schema/`; after a change to the model, regenerate it from the repository root with
+
+    uv run python -c 'from pathlib import Path; from emendrix.site_.substance_api import SubstanceFile; from emendrix.output.schemas import schema_document; Path("docs/schema/substance.schema.json").write_text(schema_document("substance", SubstanceFile), encoding="utf-8")'
+
+and read the diff.
+
 ## `/api/`: the record as files a program can fetch
 
 The site writes the derived half of the JSON API and none of the record. `api/` is a page that
@@ -800,7 +904,7 @@ planned.
 
 `--site-url` is the one fact the generator cannot infer, and everything absolute needs it: an Atom
 link, an entry ID, a canonical address, an `og:image` and a sitemap `<loc>` are all absolute by
-definition. Without it no feed file, no `sitemap.xml`, no `sitemap_index.xml` and no `llms.txt` is written, `/feeds/` says
+definition. Without it no feed file, no `sitemap.xml`, no `sitemap-substances.xml`, no `sitemap_index.xml` and no `llms.txt` is written, `/feeds/` says
 why, and no page carries a canonical, an Open Graph tag or a JSON-LD block at all. All of it or none of it,
 per page: a page carrying `og:title` with no `og:url` renders a preview that is wrong, which is
 worse than a page with no preview. Entry IDs are the address an event is published at, the

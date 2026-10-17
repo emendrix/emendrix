@@ -45,6 +45,7 @@ from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.take_away import take_away
 from emendrix.site_.seo import website_json_ld
+from emendrix.site_.substance_doors import home_door
 from emendrix.site_.tags import LIST_HELP_WORDS, tag, tags_help, tally
 from emendrix.site_.urls import act_href, depth_of, event_href, up
 
@@ -257,7 +258,7 @@ def render_home(site: SiteInputs, *, limit: int = 20) -> Html:
     """
     listed, rest = _versions(site, limit)
     doors = take_away(up(_DEPTH), heading="Take the record with you")
-    body = join((*_hero(site), *listed, _strip(site), doors, *rest), "\n")
+    body = join((*_hero(site), *listed, _strip(site), home_door(up(_DEPTH)), doors, *rest), "\n")
     description = _pitch(site)
     return page(
         title="emendrix — provision-level changelogs for EU regulations",

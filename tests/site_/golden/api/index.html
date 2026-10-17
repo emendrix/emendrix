@@ -19,7 +19,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../style.01dbaca0.css">
-<script defer src="../search.d80bbdfb.js"></script>
+<script defer src="../search.9ab649e2.js"></script>
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a><header class="bar"><a class="wordmark" href="../">emendrix</a><nav aria-label="Site"><a href="../acts/">All acts</a> <a href="../amendments/">Amending acts</a> <a href="../dates/">Dates ahead</a> <a href="../methodology/">Methodology</a> <a href="../about/">About</a> <a href="../feeds/">Feeds</a> <a href="../api/" aria-current="page">API</a></nav><div id="search" data-root="../"></div><a class="account" href="../account/">Account</a></header>
@@ -38,6 +38,7 @@
 <li><a href="#watch-in-ci">Watch from CI</a> <span>Open an issue when a provision you depend on changes.</span></li>
 </ul>
 </section>
+<p><code>/api/v1/substances.json</code> lists every CAS and EC number an entry in the record prints, and <code>/api/v1/substances/&lt;scheme&gt;-&lt;value&gt;.json</code> gives each one&#x27;s entries and changes as data.</p>
 <h2 id="layout">Layout</h2>
 <div class="scroll"><table role="table">
 <thead role="rowgroup"><tr role="row"><th role="columnheader">Path</th><th role="columnheader">What it is</th><th role="columnheader">From</th></tr></thead><tbody role="rowgroup">
@@ -47,8 +48,10 @@
 <tr role="row"><td role="cell"><code>/api/v1/&lt;act_dir&gt;/changes/&lt;version&gt;.json</code></td><td role="cell" data-label="What it is">one version&#x27;s payload, with the texts</td><td role="cell" data-label="From">the record</td></tr>
 <tr role="row"><td role="cell"><code><a href="https://example.invalid/site/api/v1/catalogue.json">/api/v1/catalogue.json</a></code></td><td role="cell" data-label="What it is">labels, aliases, sectors, page and feed addresses</td><td role="cell" data-label="From">the site build</td></tr>
 <tr role="row"><td role="cell"><code>/api/v1/schema/&lt;name&gt;.schema.json</code></td><td role="cell" data-label="What it is">the JSON Schema of each document</td><td role="cell" data-label="From">the site build</td></tr>
+<tr role="row"><td role="cell"><code><a href="https://example.invalid/site/api/v1/substances.json">/api/v1/substances.json</a></code></td><td role="cell" data-label="What it is">every CAS and EC number an entry prints</td><td role="cell" data-label="From">the site build</td></tr>
+<tr role="row"><td role="cell"><code>/api/v1/substances/&lt;scheme&gt;-&lt;value&gt;.json</code></td><td role="cell" data-label="What it is">one number&#x27;s entries and changes</td><td role="cell" data-label="From">the site build</td></tr>
 </tbody></table></div>
-<p><code>&lt;act_dir&gt;</code> is the act's corpus and key, and <code>&lt;version&gt;</code> the version it is the payload of. Every path an index names is relative to <code>/api/v1/</code>. The schemas: <a href="https://example.invalid/site/api/v1/schema/act-index.schema.json"><code>act-index</code></a>, <a href="https://example.invalid/site/api/v1/schema/change.schema.json"><code>change</code></a>, <a href="https://example.invalid/site/api/v1/schema/entry.schema.json"><code>entry</code></a>, <a href="https://example.invalid/site/api/v1/schema/index.schema.json"><code>index</code></a>, <a href="https://example.invalid/site/api/v1/schema/catalogue.schema.json"><code>catalogue</code></a>. Each carries its own file name as a relative <code>$id</code>.</p>
+<p><code>&lt;act_dir&gt;</code> is the act's corpus and key, and <code>&lt;version&gt;</code> the version it is the payload of. Every path an index names is relative to <code>/api/v1/</code>. The schemas: <a href="https://example.invalid/site/api/v1/schema/act-index.schema.json"><code>act-index</code></a>, <a href="https://example.invalid/site/api/v1/schema/change.schema.json"><code>change</code></a>, <a href="https://example.invalid/site/api/v1/schema/entry.schema.json"><code>entry</code></a>, <a href="https://example.invalid/site/api/v1/schema/index.schema.json"><code>index</code></a>, <a href="https://example.invalid/site/api/v1/schema/catalogue.schema.json"><code>catalogue</code></a>, <a href="https://example.invalid/site/api/v1/schema/substance.schema.json"><code>substance</code></a>. Each carries its own file name as a relative <code>$id</code>.</p>
 <h2 id="dates">The three dates</h2>
 <ul><li><code>detected_on</code> is the date the watcher saw the consolidated version: when this record learnt of the change, not when the law moved. A repair never changes it.</li><li><code>in_force</code> is the start of validity the publisher states for the consolidated version: on a version&#x27;s row the dates its changes report, on a change one date or null.</li><li><code>applies_from</code> is a date only when one is deterministically readable from a date change in the act&#x27;s own application provision; otherwise <code>unknown</code>, the common and honest answer, or <code>unchanged</code>. It is never a deadline and never says whether a provision applies to you.</li></ul>
 <p><code>updated_on</code> on a version&#x27;s row is the latest of <code>detected_on</code> and every repair&#x27;s date, the field to sort by to see what moved since you last looked.</p>

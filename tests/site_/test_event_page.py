@@ -1006,7 +1006,9 @@ def test_a_coded_date_that_is_not_the_in_force_date_is_explained_where_the_codes
 
 def test_a_change_with_table_entries_carries_its_entry_table_inside_its_own_block() -> None:
     """After the block's sentences and before its text, linking the change's own API file for
-    rows listed by key alone; and taking the table away gives back the page byte for byte."""
+    rows listed by key alone; and taking the table away gives back the page byte for byte, once
+    the sentence above the first table and the search mount's request for the substance index,
+    both of which only a page holding a table carries, are taken away with it."""
     from toy_table_entries import added, delta
 
     entry = diff_only_entry(_delta(), detected_on=OBSERVED)
@@ -1023,5 +1025,9 @@ def test_a_change_with_table_entries_carries_its_entry_table_inside_its_own_bloc
     assert blocks[0] < section < blocks[1]
     assert section < page.index("<details", blocks[0])
     assert "<span>Entry k1</span>" in page
+    assert page.index('<p class="lookup">Each CAS and EC number') < section
+    assert page.count('<p class="lookup">') == 1
+    assert '<div id="search" data-root="../../../" data-substances>' in page
     stripped = re.sub(r'\n<section class="entries".*?</section>', "", page, flags=re.DOTALL)
-    assert stripped == plain
+    stripped = re.sub(r'\n<p class="lookup">.*?</p>', "", stripped)
+    assert stripped.replace(" data-substances>", ">") == plain

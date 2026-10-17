@@ -13,6 +13,7 @@ The record this site renders, as files a program can fetch. There is no query en
 - [The JSON API](https://example.invalid/site/api/): Every change as JSON files: an index per act, one file per version, fetched with curl.
 - [Root index](https://example.invalid/site/api/v1/index.json): one row per act, naming its act index
 - [Catalogue](https://example.invalid/site/api/v1/catalogue.json): every watched act's names and page addresses
+- [Substances](https://example.invalid/site/api/v1/substances.json): every CAS and EC number an entry in the record prints, with its page and its file; a number missing here is printed by no entry, which says nothing about the law.
 - [JSON Schemas](https://example.invalid/site/api/#layout): one per document the API serves
 
 ## The MCP server
