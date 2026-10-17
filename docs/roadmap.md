@@ -20,3 +20,12 @@ what the current release does and does not do.
 5. **Impact filtering**: "here is my situation, tell me what changed *for me*". It is a filter over
    a verified delta rather than a standalone claim about the world, which is the only order in
    which it is worth having: it goes on top of a measured foundation, never underneath one.
+6. **Sector lenses.** The chemicals lens ships: the rows of the substance tables of eight acts are
+   read as keyed table entries, every change to them is diffed row by row, and each CAS and EC
+   number an entry prints has a page, an API file, an MCP answer and a watch item
+   ([`./limitations.md`](./limitations.md) §"Substance tables" is its scope). What remains is
+   entry-level corroboration as a signal that can mark a change disputed, which would read the
+   consolidation's own list of amending acts rather than the acts a change names; lookup by a
+   REACH Annex XVII entry number or a Cosmetics reference number; and lenses on other kinds of
+   table, since the survey of 2026-10-16 looked only for tables printing CAS, EC or CLP Index
+   numbers.

@@ -60,6 +60,7 @@ Not legal advice: this output is machine-computed from published texts, carries 
 | `emendrix backfill` | The same loop over every historical transition of every watched act; an output repository is required. Start with `--dry-run`, which lists what would run and spends nothing. `--since`, `--act`, `--limit`, `--polite-delay`, `--ledger`, `--retry-limit`. |
 | `emendrix repair corroboration` | Recompute the third signal on entries that are already committed and correct the ones it moves. Explicitly invoked and never reached from a resume: a backfill treats a settled entry as settled on purpose. The entry is replaced in place, every other entry in that act's changelog keeps its bytes, and every committed explanation is carried over rather than re-asked for. `--dry-run` prints what would move, including how many disputed flags would flip, and writes nothing at all. `--act`, `--limit`, `--fixture-dir`, `--summary`. |
 | `emendrix repair signals` | Bring every committed entry with a corroboration block under the signal rules in force since 2026-10-08: an instruction parse that claims nothing in its window is unavailable, a unit only the instruction parse names moves from the change list to the entry's report, and the metadata's location codes are read as the units they name. It rebuilds both second opinions from the claims the entry already carries, so it fetches nothing and calls no model, and every committed explanation is carried over byte-identical. An entry is rewritten only when a signal, a verdict or a row moves, and records a repair of kind `signals`. `--dry-run` prints the changes and the disputed changes before and after, per act and in total, and writes nothing at all. `--act`, `--limit`, `--repaired-on`, `--summary`. |
+| `emendrix repair tables` | Give every committed change to a profiled substance table its keyed diff of table entries, and write each profiled act's register from its newest published version. It re-parses both versions of each such entry through the cache, sets only `table_entries` and the schema version `1.3`, and carries every verbatim text, explanation, signal and date over byte-identical; no model is asked anything. A version the cache cannot produce leaves its entry as it is, counted and named. `--dry-run` prints per act what would move, with typography-only amendments and whitespace-only pairs apart, and writes nothing. `--act`, `--limit`, `--fixture-dir`, `--repaired-on`, `--summary`. |
 | `emendrix repair explanations` | Ask the model again for a change that shipped with no explanation because the answer was unusable, and splice the answer into the entry that already exists. Explicitly invoked, never reached from a resume, and it fetches nothing: the prompt is rebuilt from the entry's own stored texts, so the model is shown exactly what the page shows. Its citation check is narrower than the loop's, resolving against those texts rather than against two whole provision trees, and no coordinate check runs at all; the entry records both. A change that fails again keeps its stated reason and is counted. `--dry-run` names every change it would ask about and prices them at the published rate, builds no engine and spends nothing. `--act`, `--limit` (counting changes, which is what a call is paid for), `--cassettes`, `--summary`. |
 | `emendrix repair unexplained` | Restate a note that quoted the provider library's own error text, which entries written before the curated reasons existed carry, and stamp the counted kind that goes with it, so the note says what the code would say today and the change becomes selectable by `repair explanations`. It matches an exact set of measured strings rather than a prefix, because most of that field is the house register and a curated reason can carry no kind either. A note naming a provider that never answered is counted and left exactly as it is: neither kind is true of one, and the unfinished kind would send a later backfill to re-run whole transitions that are already correct. No model, no network, no key. `--dry-run`, `--act`, `--limit`, `--summary`. |
 | `emendrix eval <subcommand>` | `run`, `publish-readme`, `sample-digest`, `judge-benchmark`, and the pair `build-corpus` then `build-subset` **in that order**: the first writes `explain_subset: null` and only the second fills it in, so stopping after it leaves the model layer with no pinned subset to measure over. `build-corpus` also defaults to `--fetch` and stamps `built_on` from the clock, so reproducing the committed `corpus.json` byte for byte takes `--no-fetch --built-on 2026-08-06`, the date already in the file. |
@@ -124,9 +125,10 @@ change, and the file is already there.
 
 ### The optional account service
 
-[`packages/emendrix-service`](./packages/emendrix-service/) sends email alerts for watched acts
-and provisions: a reader follows "Watch this" on the site, confirms an address, and gets an
-instant, daily or weekly email listing exactly the watched provisions the record says changed,
+[`packages/emendrix-service`](./packages/emendrix-service/) sends email alerts for watched acts,
+provisions and CAS or EC numbers: a reader follows "Watch this" on the site, confirms an address,
+and gets an instant, daily or weekly email listing exactly the watched provisions and table
+entries the record says changed,
 or follows them in a personal feed, with one-click unsubscribe, export and delete. It reads only
 the published record and the catalogue, and the pipeline does not know it exists. It is optional:
 `deploy/compose.yaml` runs it, with its own Postgres, only under the compose profile `accounts`,
@@ -165,6 +167,26 @@ and where they disagree the change ships marked `disputed`.
 [`docs/architecture.md`](./docs/architecture.md) is the layering, the `CorpusAdapter` seam and the
 diff; [`docs/pipeline.md`](./docs/pipeline.md) walks the stages;
 [`docs/evaluation.md`](./docs/evaluation.md) is the measurement.
+
+## The chemicals lens
+
+Eight acts print tables of substances: REACH, CLP, Cosmetics, Biocides, PIC, POPs, plant
+protection products and Batteries. emendrix reads the rows of 28 of those tables out of the act's
+own markup, keys each row by the column the act numbers it by, and recognises the CAS, EC and CLP
+Index numbers its cells print by their check digits, never from a list outside the corpus. A
+change to one of those tables then says which **table entries** were added, removed or amended,
+each with its rows before and after as the act prints them, in the payload, the Markdown and on
+the event page; no model is involved, and the model never sees the rows.
+
+Every CAS and EC number an entry prints has a page, `substances/cas-50-00-0/`, saying in which
+entries of which acts it **appears** in the newest version the record holds, with every recorded
+change to those entries; the site search finds a number with or without hyphens. The same is
+data at `/api/v1/substances.json` and `/api/v1/substances/<scheme>-<value>.json`, the MCP tool
+`find_substance` answers it for a model, and the optional account service watches a number
+across every act. **Appearing is all it says.** Many entries name a group of substances and print
+no number, so a number no entry prints may still be covered by one, and no page, file or answer
+says what the law makes of a substance. The tables read and left out, and every gap of the
+lens, are in [`docs/limitations.md`](./docs/limitations.md) §"Substance tables".
 
 ## Measured results
 

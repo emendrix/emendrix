@@ -8,7 +8,11 @@ and how to install it; the layering behind these stages is in
 The `DELTA` stage is described with the rest of the deterministic core in
 [`./architecture.md`](./architecture.md), and `CORROBORATE` in
 [`./evaluation.md`](./evaluation.md), because both are best read beside the numbers measured over
-them.
+them. `DELTA` includes the keyed diff of table entries, for a change to a unit holding one of the
+substance tables the EU adapter profiles: it is computed there from the rows read beside the
+provision tree, carried through every later stage untouched, and emitted with the change; when
+the loop commits an act's newest entry it also writes that act's register, the newest version's
+whole reading ([`./output-format.md`](./output-format.md) §"The register").
 
 ## Watching: boring, stateful, resumable
 
@@ -78,7 +82,9 @@ model. `pydantic_ai` may be imported there and nowhere else, grep-enforced, like
 that list.
 
 What the model gets is deliberately narrow: two verbatim texts already known to differ, the change
-type as an established fact, the two clocks, and a list of citation keys. What it may return is a
+type as an established fact, the two clocks, and a list of citation keys. A change's table-entry
+diff is not among them, and like the dispute reason it never enters the prompt or a cassette key:
+a test builds the prompt with and without it and requires the same bytes. What it may return is a
 type:
 
 ```python

@@ -12,7 +12,9 @@ which provision, with the source of every fact, and it decides nothing.
 It is a reader. Every fact it returns was computed by the deterministic emendrix loop and is
 returned as stored: change type, location, `disputed` and its reason, the three signals'
 statuses, dates and citation URLs are copied off the committed files, never paraphrased, and
-every result carries the file it came from and that file's `sha256`.
+every result carries the file it came from and that file's `sha256`. `find_substance` says where
+a CAS or EC number appears in the record's table entries, never what the law makes of a
+substance.
 
 It is not a second pipeline. It has no model, no diff and no classifier, it never reads law
 text other than the verbatim sides a payload already stores, and it never works out a date,
@@ -37,7 +39,9 @@ Two locations it is given, both read-only, both read again on every call:
   per act, and the payloads under `<corpus>/<act>/changes/`, every path taken from the index and
   resolved under the root (one that leaves it is refused);
 - optionally, the `api/v1/catalogue.json` a site build wrote, for labels, aliases, domains and
-  page addresses. Without it every permalink is reported unavailable.
+  page addresses, and the substance files the same build wrote beside it, which `find_substance`
+  reads. Without the catalogue every permalink is reported unavailable, and so is every substance
+  lookup.
 
 A payload whose bytes differ from the `sha256` its index row states is still returned, marked
 as a mismatch: it means the repository is being rewritten while it is read.

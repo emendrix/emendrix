@@ -89,6 +89,17 @@ commit subject says the verbatim texts were re-derived rather than promising the
 A change the model fails on again keeps both its sentences and the stored text they were written
 about, which is one pair rather than two halves of two.
 
+**A change to a profiled table gains its entry diff and keeps everything else.** `emendrix repair
+tables` re-parses both versions of each published entry with a change to a unit holding a
+profiled table, sets `table_entries` on those changes exactly as the loop computes it today, and
+moves the document to `1.3`; every verbatim text, explanation, citation, signal and date is
+carried over byte-identical, and no model is asked anything. An entry with no such change is left
+at the version it was written under, where `null` already means what it says. A version the
+cache cannot produce leaves its entry as it is, counted and named. After the entries it writes
+each profiled act's register from the act's newest published version, one commit per act.
+`--dry-run` prints per act what would move, typography-only amendments and whitespace-only pairs
+apart, and writes nothing.
+
 **A note that quoted a library is restated, and one that names an unreachable provider is not.**
 `emendrix repair unexplained` replaces a reason written before the curated ones existed, which
 could be the provider library's own error text, with the sentence the code writes today, and
@@ -190,6 +201,13 @@ A unit inserted whole lists every keyed entry as `added`; one deleted whole list
 **The model never sees it.** The delta is not in the explain prompt and not in any cassette key,
 so no explanation changed when the field arrived, and the citation gate reads none of it. It is
 deterministic detail beside the verbatim texts, like `changed_within`.
+
+**In the Markdown it is one line** under the change, counting and naming the moved entries:
+`Table entries: 38 added, 4 amended (1 only in spacing, dash forms or accents), 0 removed: Index
+No 603-148-00-X, ...`, the first ten keys in the delta's own order, each with its table's key
+label or, where the key is the entry's name, the name in quotes, then `and N more`. The
+parenthesis appears only when it counts something; a delta with no changes reads
+`Table entries: none changed.`, and a change whose field is `null` has no line at all.
 
 **Size.** Measured on 2026-10-16 over every consecutive pair of cached versions of the eight
 profiled acts, the largest `table_entries` a single change carries is 4 700 505 bytes at the

@@ -1,9 +1,11 @@
 # emendrix-service
 
-The account service beside emendrix: email alerts for watched acts and provisions, over the
-published change record. A reader follows a "Watch this" link on the site, confirms an address,
-and receives an email listing exactly the watched provisions the record says changed, instant,
-daily or weekly, or follows them in a personal Atom feed. One click stops the email; one button
+The account service beside emendrix: email alerts for watched acts, provisions and CAS or EC
+numbers, over the published change record. A reader follows a "Watch this" link on the site, or
+"Watch this substance" on a substance page, confirms an address, and receives an email listing
+exactly the watched provisions the record says changed, and the table entries printing a watched
+number that a change added, removed or amended, instant, daily or weekly, or follows them in a
+personal Atom feed. One click stops the email; one button
 exports the reader's data and one deletes it. The account is three tabs: Watching (`/account/`,
 what is watched and its newest change), Delivery (`/account/delivery`, how the reader hears) and
 Account (`/account/settings`, the sign-in, the data and deleting it).
@@ -77,7 +79,7 @@ address, a token or a request body.
 | Command | What it does | Marker counts |
 |---|---|---|
 | `serve` | the web process: `/account/`, `/u/`, `/healthz`, `/readyz` | |
-| `migrate` | creates or upgrades the three schemas to the current revision | `head` |
+| `migrate` | creates or upgrades the three schemas to the current revision (`0002`) | `head` |
 | `load [--rebuild]` | reads the published record into `content`; `--rebuild` empties it first | `upserted`, `removed`, `skipped`, `unsettled` |
 | `notify` | judges each new event once and writes what it owes each watchlist; queues instant email | `announced`, `eligible`, `deferred`, `matches`, `deliveries`, `failed` |
 | `digest [--now ISO]` | queues the daily, weekly and monthly emails that are due | `daily`, `weekly`, `heartbeat`, `failed` |
@@ -86,6 +88,16 @@ address, a token or a request body.
 | `retention` | applies the retention table | `login_tokens`, `sessions`, `bodies`, `deliveries`, `outbox`, `matches`, `mail_events`, `audit_log`, `reminded`, `deleted`, `failed` |
 | `status [--email]` | prints one block of aggregate counts; `--email` also queues it to `OPERATOR_EMAIL` | `emailed` |
 | `backup ship <dump>` | encrypts a `pg_dump -Fc` file with `age`, uploads it over SFTP, prunes to 7 daily and 4 weekly copies | `bytes`, `kept`, `pruned` |
+
+**Migrations only move forward.** Revision `0002` adds the watch item kind `substance`, which
+names a CAS or EC number in `app.watch_items.identifier` and no act (its `corpus` and `act_key`
+are null, for that kind only, as a check constraint states), and `content.table_hits`, one row per
+number a moved table row carries in a stored change, which a substance item is matched on. It
+has no downgrade, because Postgres cannot drop a value from an enum type: going back means
+restoring a backup taken before it. The loader skips an event whose payload digest has not
+moved, so a change loaded before `0002` gains its table hits only when its payload is rewritten,
+as `emendrix repair tables` rewrites every payload it gives table entries. A record repaired
+before the service was upgraded needs one `load --rebuild` after `migrate`.
 
 `tick` needs `CHANGELOGS`, `CATALOGUE`, `LIVE_SINCE` and complete SMTP settings. `/healthz` says
 the process is up; `/readyz` says the database answers, the schema is current and the shell

@@ -197,3 +197,113 @@ not attempted.
 **Consolidation lags publication by roughly ten days**, and it is not a fixed number (10 days for
 the AI Act, 17 and counting for the MDR). "Amended, consolidation pending" is a persisted,
 exactly-once-resolving state; seeing it is normal, seeing it for a month is a finding.
+
+## Substance tables
+
+Eight acts print tables whose rows the record reads as **table entries**, each keyed by the column
+the act numbers its rows by and carrying the CAS, EC and CLP Index numbers its cells print: REACH
+`32006R1907`, CLP `32008R1272`, Cosmetics `32009R1223`, Biocides `32012R0528`, PIC `32012R0649`,
+POPs `32019R1021`, plant protection products `32009R1107` and Batteries `32023R1542`. The 28 tables,
+and which column keys each and which carry numbers, are the profiles in
+[`../src/emendrix/eu/substances/profiles.py`](../src/emendrix/eu/substances/profiles.py), read off
+the markup on 2026-10-16 over every English consolidated version the disk cache held. The lens says
+where a number **appears**, in the act's own row, and nothing about what the law makes of a
+substance; [`./site.md`](./site.md) §"Substance pages" and
+[`./output-format.md`](./output-format.md) §"The register" say what is published. These are its
+gaps.
+
+**Only the profiled tables are read, and some tables that print numbers are left out on purpose.**
+CLP Annex VIII, the cement and concrete standard formulas, prints EC numbers in 20 of its tables,
+but no column keys an entry: the numbers name the components of a formula, and the sub-header rows
+that name its columns are not marked as headers in the markup. REACH Annex XVII Appendices 9, 10, 11
+and 15 hold fewer than three cells with a valid number, below the threshold at which the survey of
+2026-10-16 calls a table a substance table, and were never measured as entries. POPs Annex I Part B
+and Annex II, and PIC Annexes III and VI, are header rows with no body. The tables an amending act
+prints are evidence and not the record: three amending acts the cache held (`32009R0790`,
+`32018R0172`, `32019R0330`) print such tables, and none is read. No other of the 130 acts the cache
+held has a table with three or more valid numbers in any cached version
+(`scripts/validation/results/substance-tables-survey-2026-10-16.txt`).
+
+**A profile fails closed, so a reshaped table is counted and not read.** A table is read only at
+its profiled position (act, unit, the container the parser places it in, its ordinal there) and
+only when its header cells hold the words the profile requires. A table at that position whose
+header fails to match is `unrecognised`: counted per side, listed in the register, and never
+read, because a renumbered or replaced table would otherwise be read under another table's keys.
+The measured case is PIC Annex V Part 2, unrecognised in its four versions before 2019-05-01,
+whose two-column table printed no "No" column (the profiles' docstring states it).
+
+**Three kinds of row are not diffed like the rest.** A row whose key cell is empty, a dash, or
+an Index number failing its check character is **unkeyed**: kept, with its numbers, so the
+register and the substance pages still list it, but never compared, and counted per side. A key
+a table prints more than once is **repeated**: REACH Annex XVII prints entry `68` twice in every
+version since 2022-03-01. Repeated keys pair first with first while both versions print the key
+equally often, and a key printed a different number of times on the two sides is listed in
+`unpaired` and none of its rows is diffed. And PIC, POPs, Biocides and REACH Annex XVII
+Appendix 12 number nothing, so their entries are keyed by **name**, the first line of the name
+cell with footnote markers removed and case folded. A renaming therefore reads as one entry
+removed and another added. Measured on 2026-10-16 over every cached version of each, every
+removal of a name key was a first line the act rewrote (a formula joined to the name, a synonym
+added): PIC 50 removals, POPs 3, Biocides 1, Appendix 12 none (the profiles' docstring holds the
+counts).
+
+**A number failing its check digit is never published as an identifier.** The row still prints it
+verbatim, so it is visible on the event and substance pages, but it has no page, no search label
+and no file, and each entry counts it in `failed_check_digits`. The survey of 2026-10-16 found,
+in the identifier columns of the eight acts' consolidations: in REACH, CAS `5455-55-1` (Annex XVII
+entry 8, four versions, then corrected), `27741-01-3`, `736665-18-6`, `6472-05-8`, `14110-84-6`
+and EC `270-760-3`, `274-544-0`, `247-684-6`; in CLP, EC `250-366-9`; in Cosmetics, CAS
+`542-56-2`, `148-24-2`, `2611-07-2`, `84930-17-4` and EC `202-499-6`, `415-480-1`, `604-708-8`;
+in PIC, CAS `92-92-3`, `115-32-3` and EC `278-636-6`, `200-273-9`, `210-172-5`, `401-210-1`,
+`205-239-0`. EC `239-793-2` is printed with the same digit in five tables of three acts (both CLP
+Annex VI tables, REACH Annex XVII Appendices 1 and 6, Cosmetics Annex II), so a reader looking
+that number up finds nothing. An EC number whose weighted sum leaves a remainder of 10 is read as
+written with check digit `1`: 223 of the 224 such values in the cache end in `1`, and the one
+that does not, `200-233-3` in REACH Annex IV, is counted as failing. The full list, with rows and
+versions, is in `scripts/validation/results/substance-tables-survey-2026-10-16.txt`.
+
+**Many entries print no number, which is why a substance page never claims absence.** An entry
+can name a group of substances ("lead compounds") and print no CAS or EC number at all. In the
+newest version the survey read, 20 of the 73 entries of REACH Annex XVII's main table print none,
+125 of the 4 444 entries of CLP Annex VI's first table, and 111 of the 154 entries of Cosmetics
+Annex IV, whose colours are identified by Colour Index number. A number no entry prints may still
+be covered by one of those. Absence therefore has one wording on every surface, "no entry in the
+record prints this number", and a test refuses the words that would say more.
+
+**Whitespace is not a change, and other typography is labelled rather than dropped.** Two paired
+entries equal once whitespace collapses are counted as `whitespace_only` and are not changes: a
+re-typesetting moves thousands of rows that way (CLP 2019-07-26 to 2019-12-01, 1 594 of them,
+[`./output-format.md`](./output-format.md) §"The JSON"). An entry that differs in anything else is
+`amended`, and `typography_only` marks one equal once spacing, dash forms and accents are set
+aside. The label never removes the change from a page, a payload or a register. It does decide
+one thing: a `substance` watch item in the account service is not notified of a typography-only
+amendment, by email or in its feed, while act and provision items are unaffected because they
+match on the structural diff ([`./accounts.md`](./accounts.md) §"Matching").
+
+**The entry diff is not held against the amending acts as a signal.** Measured on 2026-10-16 over
+the record at `6c4fcdc` (`scripts/validation/results/substance-crosscheck-2026-10-16.txt`): of 7500
+entry keys the row diff called added or amended in REACH, CLP, Cosmetics, Biocides, PIC and POPs,
+6977 (0.930) are printed or named by an amending act the change names; 267 of the rest changed only
+in spacing, dash forms or accents, 199 are printed by an act the consolidation lists but the change
+does not name, 41 carry their number under another key in the amending act, and 16 are a corrigendum
+or unclassified. Agreement is about keys, not row content, and the Cosmetics and REACH Annex XVII
+figures are upper bounds because entry numbers repeat across annexes. It is a measurement, not a
+signal: no entry is marked disputed by it. Plant protection products and Batteries were not
+cross-checked. The same reading found that the amending acts a change names miss one the
+consolidation's own list holds in 54 of the 211 changes checked, so a page calls the amending act
+"the act this change names", never the act that made the change.
+
+**Cosmetics numbers its new rows only in the consolidation.** The amending acts print a new row
+of a Cosmetics annex with the reference number `x`, and the consolidation assigns the number. A
+key-only comparison cannot pair the two: the cross-check counts 41 keys whose row it found under
+another key in the amending act, 26 of them in Cosmetics.
+
+**Table interiors still give the diff no coordinates.** Rows are read beside the provision tree,
+never as nodes of it, so a change inside a table still localises to the enclosing provision
+(`AN VI`, `AN XVII`) and `changed_within` gets no finer. The entry diff names the rows; the
+structural diff, corroboration, the eval figures and the flagship are computed exactly as without
+it.
+
+**Lookup is by CAS, EC and CLP Index number only.** A REACH Annex XVII entry number or a Cosmetics
+reference number is shown in its row but is not a search label, a name is searched only as the
+row prints it (no synonyms), and an Index number has no page of its own: it leads to the page of
+the first CAS, else EC, number its entry prints, and an Index entry printing neither leads nowhere.

@@ -1090,3 +1090,138 @@ Named rather than discovered later; the eval report's disagreement list is the l
   there is no password to guess, and the service's own per-address limits are unchanged. A
   crawler that ignores `robots.txt` is not stopped by it. **No published figure moved**: the
   payloads, the index, the feeds and the eval layer are byte-identical to before.
+
+- **A change to a substance table names the table entries it moved, since 2026-10-16.** Eight acts
+  print tables of substances (REACH, CLP, Cosmetics, Biocides, PIC, POPs, plant protection products
+  and Batteries), and the rows of 28 of them are read out of the act's own markup beside the
+  provision tree, each keyed by the column the act numbers its rows by, with the CAS, EC and CLP
+  Index numbers its identifier columns print, recognised by check digit and never from a list
+  outside the corpus. A change to a unit holding one of those tables carries `table_entries`, the
+  keyed diff of its rows: every entry added, removed or amended, with its rows before and after
+  verbatim and uncapped, `typography_only` on an amendment equal once spacing, dash forms and
+  accents are set aside, and the counted gaps (unkeyed rows, repeated keys, tables whose header no
+  longer matched their profile, numbers failing their check digit). Whitespace-only differences are
+  counted and are not changes. The payload moved to schema `1.3`, because `null` now means "not
+  read" rather than "no row moved", and the Markdown changelog entry gains one line, `Table entries:
+  38 added, 4 amended (1 only in spacing, dash forms or accents), 0 removed: ...`. The largest field
+  a single change carries, measured over every consecutive pair of cached versions, is 4 700 505
+  bytes (CLP Annex VI, the original text to 2010-12-01; `docs/output-format.md`). Rows ride beside
+  the tree and never as nodes, so a change inside a table still localises to its annex. The model
+  never sees the field: a test builds the prompt with and without it and requires the same bytes, so
+  no cassette key moved. Changelog entries published before this date read `null` until `emendrix
+  repair tables` runs over them. `docs/limitations.md` §"Substance tables" names every table left
+  out and every gap. **No published figure moved**: the structural diff, corroboration, the eval
+  figures and the flagship are computed from the tree's nodes and the three signals, which the rows
+  do not touch.
+
+- **The entry diff is measured once against the amending acts and is not a signal, since
+  2026-10-16.** Measured on 2026-10-16 over the record at `6c4fcdc`
+  (`scripts/validation/results/substance-crosscheck-2026-10-16.txt`): of 7500 entry keys the row
+  diff called added or amended in REACH, CLP, Cosmetics, Biocides, PIC and POPs, 6977 (0.930) are
+  printed or named by an amending act the change names; 267 of the rest changed only in spacing,
+  dash forms or accents, 199 are printed by an act the consolidation lists but the change does not
+  name, 41 carry their number under another key in the amending act, and 16 are a corrigendum or
+  unclassified. Agreement is about keys, not row content, and the Cosmetics and REACH Annex XVII
+  figures are upper bounds because entry numbers repeat across annexes. It is a measurement, not a
+  signal: no entry is marked disputed by it, and plant protection products and Batteries were not
+  cross-checked. The same reading found that the amending acts a change names miss one the
+  consolidation's own list holds in 54 of the 211 changes checked (the per-act lines of the same
+  file, summed), which is why every substance surface calls an amending act "the act this change
+  names". Cosmetics amending acts print a new row numbered `x` that only the consolidation numbers,
+  so key-only matching cannot pair them. **No published figure moved**: the cross-check is a
+  committed reading, and nothing in the pipeline reads it.
+
+- **Each profiled act keeps a register of its newest version's table entries, since 2026-10-16.** A
+  payload holds only what changed, so it cannot say where a number appears today.
+  `eu/<act>/register.json` in the changelogs repository is the newest version's whole reading, cells
+  verbatim, with its coverage counts (`register_schema` `1.0`, committed as
+  `docs/schema/register.schema.json`). The loop writes it in the same commit as the act's newest
+  entry and only then, so a backfill writing older entries leaves it where it is; `emendrix
+  backfill` writes none. Measured on 2026-10-16 over the newest version each profiled act had
+  published by 2026-10-08, the largest is CLP's at 8 196 241 bytes (8 642 entries), a size that says
+  how many rows an act prints and nothing about how much changed. A register says where a number
+  appears and nothing about what the law makes of a substance. **No published figure moved**: the
+  payloads, the index, the feeds and the eval layer are byte-identical to before.
+
+- **`emendrix repair tables` brings the published record up to the entry diff, since 2026-10-16.**
+  It re-parses both versions of every committed changelog entry holding a change to a unit with a
+  profiled table, sets `table_entries` on those changes exactly as the loop computes it today and
+  moves the document to `1.3`; every verbatim text, explanation, citation, signal and date is
+  carried over byte-identical, one commit per changelog entry rewritten, and no model is asked
+  anything. A changelog entry with no such change keeps the version it was written under. A version
+  the cache cannot produce leaves its changelog entry as it is, counted and named. After those it
+  writes each profiled act's register from the act's newest published version, one commit per act.
+  `--dry-run` prints per act the entries it would rewrite, the changes gaining table entries and
+  what those entries did, typography-only amendments and whitespace-only pairs apart, and writes
+  nothing. **No published figure moved**: the command changes only the record it is pointed at, and
+  the eval layer reads fixtures.
+
+- **An event page shows the table entries a change moved, since 2026-10-16.** A change block whose
+  change carries `table_entries` shows them after its sentences and before its text, as a table
+  under the table's own header rows: a count line ("38 entries added, 4 amended, 0 removed",
+  noting how many amendments are typography only and how many entries changed in whitespace
+  alone and are not listed), the first 50 entries of each kind open, the next 150 behind a
+  disclosure with their count, and past 200 the remaining keys only, each with its numbers and a
+  link to the change in the API file. Typography-only amendments sit in their own closed
+  disclosure, and a read table with no keyed entry moved says so in words. A provision page shows
+  the same table on its newest step. The rows are the act's own words and nothing on the page
+  says what a row means for a substance. **No published figure moved**: the payloads, the index,
+  the feeds and the eval layer are byte-identical to before, and the site golden, whose one act
+  reads no profiled table, moved only in its stylesheet.
+
+- **Every CAS and EC number an entry prints has its own page, since 2026-10-17.**
+  `substances/<scheme>-<value>/` says where the number appears now (one block per entry of the
+  newest version each act's register holds, with its act, annex, key, its last recorded change
+  and the row as printed), then every recorded change to an entry printing it, newest first, with
+  the rows before and after, under a standing note that many entries name a group of substances
+  and print no number, so absence there is not absence from the law. A number gets a page when a
+  register or either side of a recorded entry change carries it, so a removed entry keeps its
+  history. An EC page that repeats exactly one CAS page names it as canonical and is left out of
+  the sitemap; `substances/` counts each act's numbers, and `substances/acts/<celex>/` lists them,
+  2,000 to a page. `api/v1/substances.json` lists every number with its page and file (and every
+  CLP Index No whose entry lands on one), and `api/v1/substances/<scheme>-<value>.json` gives one
+  number's entries and changes as data (`docs/schema/substance.schema.json`). A second search
+  file, `substance-index.json`, is fetched only for a query that opens with a digit or on a page
+  that asks for it, and the script reads a number typed without hyphens through its check digit,
+  offering every reading that passes. `sitemap-substances.xml` is named beside `sitemap.xml` in a
+  new `sitemap_index.xml`. Home, the act page of every act with a register, event pages holding an
+  entry table, the not-found page, `/api/` and `/llms.txt` lead there. A test refuses, in every
+  page's own prose, the words that would say what the law makes of a substance. A number failing
+  its check digit has no page and no search label, though its row still prints it; an Index No is
+  searchable and has no page; a REACH Annex XVII entry number and a Cosmetics reference number are
+  not search labels. **No published figure moved**: the payloads, the index, the feeds and the
+  eval layer are byte-identical to before, and `search-index.json` did not change.
+
+- **The MCP server answers by CAS or EC number, since 2026-10-17.** Its eighth tool,
+  `find_substance`, takes a number with or without hyphens, reads it by the same check-digit rules
+  the pipeline recognises numbers by, and returns the entries that print it in the newest version of
+  each act the record holds and every recorded change to them, each with its date, the amending act
+  the change names and the file it was read from. A CLP Index No is answered with the CAS or EC
+  number whose page its entry lands on. It reads the site build's substance files beside the
+  catalogue, so a server given no catalogue reports every substance lookup unavailable. It reports
+  where a number appears and decides nothing about legal status; a number no file names is printed
+  by no entry in the record, which says nothing about the law. `emendrix-record` gained the reader's
+  copy of the check-digit rules, held to the pipeline's by a contract test over values cut from the
+  committed fixtures, and the models of the two substance files. **No published figure moved**: the
+  record, the feeds and the eval layer are byte-identical to before, and the other seven tools
+  answer as they did.
+
+- **A reader can watch a CAS or EC number across every act, since 2026-10-17.** The account
+  service gains the watch item kind `substance`, which names a number and no act and matches a
+  change of any act whose table entry added, removed or amended carries the number on either side,
+  with the reason "you watch CAS 50-00-0; Index No 605-001-00-5 in CLP Annex VI was amended". An
+  amendment that is typography only does not notify, by email or in the feed, though it stays
+  `amended` on every page. "Watch this substance" on a substance page opens
+  `/account/watch?substance=<scheme>-<value>`, and the Watching tab takes a paste of up to 500
+  numbers, naming every value it added, already held, read two ways and so added as neither, or
+  could not read. A CLP Index No cannot be watched; the landing names the numbers its row prints.
+  Migration `0002` adds the item kind, `watch_items.identifier` and `content.table_hits`, and has
+  no downgrade, because Postgres cannot drop a value from an enum type. The export gains
+  `items[].identifier`, and `corpus` and `act_key` are null for a number. Known gaps
+  (`docs/accounts.md`): a signed-out reader who signs up from a substance landing returns to it
+  signed in, with the number one button away, rather than having it added; the Watching tab links
+  no page for a number no stored change names, because the service holds no registers;
+  `emendrix-service status` does not count substance items; and the personal feed reads at most
+  500 changes before matching, so in an event with more than 500 a late match can be missing from
+  the feed, though not from email. **No published figure moved**: the payloads, the index, the
+  feeds and the eval layer are byte-identical to before.

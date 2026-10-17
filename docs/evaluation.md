@@ -135,6 +135,18 @@ adjusted for the other. The committed floors under localisation moved to the new
 reason in their comment. The flagship does not move: 45 changes, 0 disputed, 42 touched units,
 F1 1.000.
 
+**Table entries are in none of these figures.** The keyed diff of substance-table rows that rides
+on a change as `table_entries` has no labelled set to be scored against: the corpus metadata
+annotates an annex, never a row, so no reference exists for which rows an amendment moved. Every
+figure above is computed from the provision trees' nodes and the three signals, which the rows
+do not touch, so none of them moved when the rows began to be read on 2026-10-16. The one
+measurement of the entry diff is a cross-check against the tables the amending acts print,
+taken once on 2026-10-16 by `scripts/validation/substance_crosscheck.py` and committed as
+`scripts/validation/results/substance-crosscheck-2026-10-16.txt`: 6977 of 7500 keys (0.930)
+printed or named by an amending act the change names, about keys and not row content.
+[`./limitations.md`](./limitations.md) §"Substance tables" says what it does and does not mean;
+it is a dated measurement, not a signal, and marks no change disputed.
+
 ```bash
 uv run emendrix eval run --fixture-dir tests/fixtures/eu   # offline, what CI runs on every push
 uv run emendrix eval publish-readme                        # regenerate the published table

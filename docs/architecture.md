@@ -66,6 +66,20 @@ becomes `AR 4a` and a lettered point inside a paragraph becomes `AR 5 PA 1 ALN 1
 parser also recovers what amending prose leaves out: EU drafting writes *"the following Article is
 inserted:"* without the number, and the number is in the quoted `ARTICLE` element.
 
+**Table rows ride beside the tree, never in it.** A `TBL` contributes its prose to the enclosing
+provision's text and no coordinates of its own, so a change inside an annex table lands on the
+section or annex that holds it. For the eight acts whose substance tables are profiled, the
+parser walks those tables a second time with the same placement and reads their rows into
+`ProvisionTree.table_entries`: each **table entry** with its key, its rows cell by cell exactly as
+the markup holds them, and the CAS, EC and CLP Index numbers its identifier columns print. Which
+act, unit, container and table is read, which column keys a row and which carry numbers, is data
+in `emendrix.eu.substances` (`profiles.py`, `keys.py`, `numbers.py`); a number counts only when its
+check digit holds, and nothing is read from a list outside the corpus. `emendrix.core.entries` is
+the vocabulary and knows no act, annex or column. No node, text or location moves for any of it,
+which is why the structural diff, corroboration and every eval figure are computed exactly as
+they would be without it. [`./limitations.md`](./limitations.md) §"Substance tables" names the
+tables left out and why.
+
 Every element the parser's vocabulary does not know is walked through, counted into a
 `ParserCoverage` report, and its text still reaches the enclosing provision: a coverage gap is a
 number, never a crash and never a silent drop. Those numbers are asserted per document, so
@@ -107,6 +121,16 @@ which is what keeps the seam honest rather than merely declared. Three passes, a
   deferrals cleanly; on the AI Act's Article 113 it reports `unknown`, because four dates moved and
   the prose changed around them. **Many unknowns is the intended outcome**: what a date binds is
   natural language, and nothing here guesses at it.
+
+Beside the three passes, `emendrix.diff.entries` diffs the table entries of every changed unit
+that holds a profiled table, and the result rides on the change as `table_entries`. Entries pair
+by table and key (and by occurrence where a table prints a key twice); a paired entry equal
+verbatim is unchanged, one equal once whitespace collapses is counted and is not a change, and
+any other difference is `amended`, labelled `typography_only` when only spacing, dash forms or
+accents differ. It is generic like the rest of the diff and knows no corpus: the adapter chose the
+keys and stated its rule. **It is not a fourth signal**: it never decides whether a unit changed,
+the model never sees it, and the eval figures do not read it.
+[`./output-format.md`](./output-format.md) §"The JSON" is the field.
 
 Renumbering is detected between leftover insertions and deletions, and capped on purpose: a
 provision that both moved and was rewritten stays a deletion plus an insertion, and no attempt is

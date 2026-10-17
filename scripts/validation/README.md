@@ -12,7 +12,7 @@ assertions. It is **not** production code and nothing under `src/emendrix/` impo
 `trace.py` fetches with a 3-second delay and caches every response under `.cache/` (gitignored), so
 a second run of any command below is offline and free.
 
-Four scripts here do import the package, because what they measure *is* the package. All four
+Five scripts here do import the package, because what they measure *is* the package. All five
 read through the same client, the same composition root and the same disk cache the loop uses,
 write nothing, call no model and are offline unless `--fetch` is passed.
 
@@ -101,6 +101,28 @@ and version, and the row diff it drives is a naive keyed comparison of cell text
 change an amending act made. Register and diff sizes are of a hypothetical JSON shape, written
 to size a decision rather than to describe a file anything publishes.
 
+`substance_crosscheck.py` holds the keyed row diff of every published change to a substance
+table against the amending acts the change names: does the act print the entry the
+consolidation says it added or amended? It imports `substance_tables.py` for the row reader,
+keys each table by the profile read off the markup on 2026-10-16, reads every table of every
+named amending act through the project client, and gives each disagreement the first
+deterministic cause that applies (typography only, an identifier under another key, an act the
+consolidation lists but the change does not name, a corrigendum). It wants the same corpus
+clone as the scripts above; the reading of 2026-10-16 is
+`results/substance-crosscheck-2026-10-16.txt`.
+
+```bash
+uv run python scripts/validation/substance_crosscheck.py /tmp/changelogs
+uv run python scripts/validation/substance_crosscheck.py /tmp/changelogs --act 32008R1272 --verbose
+uv run python scripts/validation/substance_crosscheck.py /tmp/changelogs --fetch
+```
+
+What its figures do not mean. Agreement is about keys, not row content: a printed key whose row
+the consolidation transcribed differently still agrees. An entry or reference number printed for
+one annex matches the same number in another annex of the same act, so the Cosmetics and REACH
+Annex XVII figures are upper bounds. It is a measurement of the entry diff taken once, not a
+signal: nothing in the pipeline reads it and no change is marked disputed by it.
+
 ## Commands behind the committed reports
 
 Each command writes `results/<name>.txt`; those files are committed and are the measured record.
@@ -135,6 +157,8 @@ for act in 32006R1907 32008R1272 32009R1223 32012R0528 32012R0649 32019R1021 \
     --record /tmp/changelogs \
     > scripts/validation/results/substance-tables-transitions-$act-2026-10-16.txt
 done
+uv run python scripts/validation/substance_crosscheck.py /tmp/changelogs \
+  > scripts/validation/results/substance-crosscheck-2026-10-16.txt
 ```
 
 `versions` inventories an act's consolidated versions and their English manifestations.

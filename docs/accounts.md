@@ -1,10 +1,11 @@
 # The account service: email alerts for watched provisions
 
-An optional service that stands beside the static site. A reader follows a **"Watch this"** link
-on an act or provision page, confirms an address, and from then on receives an email listing
-exactly the watched provisions the published record says changed, instant, daily or weekly, or
-follows the same changes in a personal Atom feed. One click stops the email, one button exports
-everything held about the reader, and one button deletes it.
+An optional service that stands beside the static site. A reader follows a **"Watch this"** link on
+an act or provision page, or **"Watch this substance"** on a substance page, confirms an address,
+and from then on receives an email listing exactly the watched provisions the published record says
+changed, and the table entries printing a watched CAS or EC number that a change added, removed or
+amended, instant, daily or weekly, or follows the same changes in a personal Atom feed. One click
+stops the email, one button exports everything held about the reader, and one button deletes it.
 
 It lives in [`packages/emendrix-service`](../packages/emendrix-service/), a workspace member with
 its own image, and [its README](../packages/emendrix-service/README.md) is how to run it: every
@@ -19,12 +20,13 @@ versions of legal acts. Every page, email, feed and export it produces carries t
 
 ## What it is, and what it is not
 
-**It filters the record; it never re-derives it.** A watchlist is a set of natural keys: an act,
-or a provision of one by its canonical location. A match is a set intersection between those keys
-and the changes a published payload already states. An email line is a stored fact (the change's
-heading, its type, its dispute reason, the dates the text added and removed) with the link to the
-change on the site. Nothing in the service classifies, summarises, infers a date, reads law text
-or decides what changed, and it makes no model call of any kind.
+**It filters the record; it never re-derives it.** A watchlist is a set of natural keys: an act, a
+provision of one by its canonical location, or a CAS or EC number. A match is a set intersection
+between those keys and the changes a published payload already states, including the numbers its
+table entries carry. An email line is a stored fact (the change's heading, its type, its dispute
+reason, the dates the text added and removed) with the link to the change on the site. Nothing in
+the service classifies, summarises, infers a date, reads law text or decides what changed, and it
+makes no model call of any kind.
 
 It is not a monitoring product with opinions about your obligations, not a paid service, and not
 a second source of the record: what an email says is what the site and the JSON API
@@ -45,6 +47,13 @@ A signed-in reader's account is three tabs, each one job:
   their account. Creating a second list from the Watching tab brings in the switcher, each list's
   name, and renaming and deleting a list. Watching and Delivery then show one list at a time,
   chosen by `?list=<id>`; an id that is not the reader's own falls back to their oldest list.
+- **Watched numbers** form a group of their own, "Substances", after the acts, because a number
+  names no act. Each shows its newest recorded change to an entry printing it, linked to that
+  change and to the number's page on the site, or "No recorded change to an entry printing this
+  number yet". The same tab takes a pasted list of up to 500 CAS and EC numbers, separated by
+  line breaks, commas, semicolons or spaces (`POST /account/watchlists/{id}/substances`), and the
+  page that answers names every value: added, already watched, read two ways and so added as
+  neither, or not a number and why, with the values not added put back in the form.
 - **The first visit** (no list, or one list that watches nothing) shows three steps and every act
   the catalogue lists, in the catalogue's order, each with a button to the watch landing.
 - **An item's newest change** is the newest stored change the item would be emailed about, by the
@@ -79,8 +88,11 @@ serve: /account/ (session cookie), /u/ (token addresses) ◄── nginx ◄─�
   deliveries, the outbox, suppressions, provider events and the audit log. `notify` is the
   notifier's own ledger: one row per event it has judged, so reloading `content` never alerts
   anyone twice. No foreign key runs from `app` into `content`; a user's rows name changes by
-  natural key only (`corpus`, `act_key`, `event_key`, `location`, occurrence), so a reload never
-  cascades into anyone's watchlist.
+  natural key only (`corpus`, `act_key`, `event_key`, `location`, occurrence, or a number's
+  `identifier`), so a reload never cascades into anyone's watchlist. `content.table_hits` holds,
+  per stored change, one row for every CAS and EC number a table row the change added, removed or
+  amended carries on either side, with the row's key, kind, unit and name, so matching a number
+  reads no text. A CLP Index No is never loaded there.
 - **The loader** (`load`) reads only published artifacts: the changelogs repository's root index,
   act indexes and payloads, and the catalogue the site build writes at
   `api/v1/catalogue.json`. It skips every act whose index digest has not moved since the last
@@ -125,6 +137,26 @@ than one order and choosing one would be a guess; name its paragraph, or type th
 string. A location the record has never named is accepted and shown as "no change recorded yet".
 The canonical form of an annex is its Roman numeral: `Annex 4` is read as `AN IV`, but the
 canonical string `AN 4` typed as is stays `AN 4`, which matches nothing the record stores.
+
+A **substance** item names a CAS or EC number and no act, and matches a change of any act by the
+rule **entry**: a table row the change added, removed or amended carries the number on either side.
+An amendment labelled `typography_only`, a row equal to the other side once spacing, dash forms and
+accents are set aside, does not match, in email or in the feed; the row is still `amended` on every
+page and in the payload, and only what the service sends leaves it out. The why line names the row
+as the act numbers it, "you watch CAS 50-00-0; Index No 605-001-00-5 in CLP Annex VI was amended",
+or by its name where the act numbers nothing, "you watch CAS 116-06-3; the entry for Aldicarb in PIC
+Annex I was amended", the name cut at its first `;` and then at 60 characters on a word. A number is
+said to appear in an entry and nothing more: many entries name a group of substances and print no
+number, so a change to one of those reaches no number item.
+
+A number reaches an item from `/account/watch?substance=cas-50-00-0`, the address every substance
+page's "Watch this substance" link opens, or from a paste. It is read by the check-digit rules the
+pipeline recognises numbers by (`emendrix_record.identifiers`), with or without hyphens; a value
+that passes as both a CAS and an EC number is offered both ways on the landing and added as
+neither from a paste, and a value that passes neither is shown back with the reason. A CLP Index
+No cannot be watched: it keys one row of one table, so the landing names the CAS and EC numbers
+the record's stored changes give that row, to watch instead. A number no stored change names is
+accepted, as a location is.
 
 Matching happens once, when an event is announced. A watch item added later is not emailed older
 changes; the personal feed matches live and shows them.
@@ -180,7 +212,7 @@ the event's digest, `content` follows it, and the announcement stands.
 | Data | Purpose | Lawful basis |
 |---|---|---|
 | The email address | sending the alerts the reader configured; signing in | Art. 6(1)(b) GDPR, performing the service the reader asked for |
-| Watchlists and watch items | deciding which changes to send | Art. 6(1)(b) |
+| Watchlists and watch items (acts, provisions, and CAS or EC numbers) | deciding which changes to send | Art. 6(1)(b) |
 | Consents: the double opt-in and the version (a digest) of the privacy notice accepted | proving the address belongs to the reader and which notice they saw | Art. 6(1)(b) |
 | Sessions and login links, stored only as sha256 digests | keeping a reader signed in; signing in | Art. 6(1)(b) |
 | Matches, deliveries and sent emails | sending each change once and retrying a failed send exactly | Art. 6(1)(b) |
@@ -209,11 +241,12 @@ privacy notice state them:
 An account is "seen" by a sign-in, a page, a feed fetch or an unsubscribe click.
 
 **Export and delete.** `/account/export` is a JSON file of every row naming the reader: account,
-consents, sessions (without digests), watchlists, items, matches, deliveries, the emails sent
-(without bodies or headers, which carry the unsubscribe token) and the audit log. Deleting an
+consents, sessions (without digests), watchlists, items (each with `identifier`, the watched number
+as `scheme:value`, and `corpus` and `act_key` null for a number), matches, deliveries, the emails
+sent (without bodies or headers, which carry the unsubscribe token) and the audit log. Deleting an
 account removes every row that names it, by cascade or by address, at once. The one exception is a
-complaint: the address's sha256 stays in `suppressions`, so deleting an account never reopens
-mail to someone who said the mail was unwanted. Copies in the backups age out within 35 days.
+complaint: the address's sha256 stays in `suppressions`, so deleting an account never reopens mail
+to someone who said the mail was unwanted. Copies in the backups age out within 35 days.
 
 ## What the operator owes
 
@@ -378,5 +411,21 @@ behind a proxy that routes only `/account/` and `/u/` to it, and `tick`, `retent
   stores; `Annex 4` is.
 - **The loader trusts an act index's digest.** If an act index on disk is older than the one the
   root index names and its counts agree, the loader cannot tell.
-- **No presets, amending-act watch items, webhooks or bots.** A watch item is an act or a
-  provision.
+- **No presets, amending-act watch items, webhooks or bots.** A watch item is an act, a
+  provision, or a CAS or EC number.
+- **Signing up from a substance landing does not add the number.** A signed-out reader who signs
+  up there is returned to the landing once confirmed, signed in, with the number one button
+  away; the sign-up does not carry the number through and add it.
+- **The Watching tab cannot always link a watched number's page.** The service holds no
+  registers, only the changes the record states, so a number no stored change names gets no page
+  link and no newest change, although an entry that never changed may print it and the site may
+  have its page.
+- **`status` does not count substance items.** Its per-act counts group items by the act they
+  name, and a number names none.
+- **The personal feed reads at most 500 changes before it matches any.** It reads the events of
+  the watched acts and every event carrying a watched number, newest first, with all their
+  changes, so in an event with more than 500 changes a change carrying a watched number that sorts
+  late in the event can fall past the limit and be missing from the feed. Email matching has no
+  such limit and reads every change of an announced event.
+- **Migration `0002` has no downgrade**, because Postgres cannot drop a value from an enum type.
+  Going back means restoring a backup taken before it.
