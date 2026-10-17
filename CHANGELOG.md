@@ -1262,3 +1262,13 @@ Named rather than discovered later; the eval report's disagreement list is the l
   and `WatchItem.act_key` are now typed as the nullable columns migration `0002` made them, which
   changes no behaviour. **No published figure moved**: the payloads, the index, the feeds and the
   eval layer are byte-identical to before.
+
+- **The hosted instance watches a number from a substance sign-up, since 2026-10-17.** The
+  account service runs `emendrix-service@sha256:adba06cf`, built from application commit
+  `35b3eeb` and pinned in all five places; the main and MCP images keep their pins, their code
+  having not changed. No migration ran: `migrate` reported head `0002`, the account Deployment
+  rolled out and the next `emendrix-account-tick` Job completed on the new image. From the edge, a
+  signed-out request for `/account/watch?substance=cas-50-00-0` answered 200. The sign-up itself
+  was not checked from the edge, because it would create a real account: that the email names
+  the number and that confirming it leaves the number watched rests on the service's tests alone.
+  **No published figure moved**: no record was repaired and the site was not rebuilt.
