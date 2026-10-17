@@ -22,7 +22,7 @@ from emendrix_service.db.tables_app import (
     WatchItem,
     Watchlist,
 )
-from emendrix_service.db.tables_content import Act, Change, Event, Load, Provision
+from emendrix_service.db.tables_content import Act, Change, Event, Load, Provision, TableHit
 from emendrix_service.db.tables_notify import Announced
 
 __all__ = [
@@ -41,6 +41,7 @@ __all__ = [
     "Outbox",
     "Provision",
     "Suppression",
+    "TableHit",
     "User",
     "UserSession",
     "WatchItem",

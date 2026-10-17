@@ -138,7 +138,13 @@ async def test_svc_load_first_load_writes_every_act_event_and_change(
     record = copy_record(tmp_path)
     counts = await run(db, record)
     assert counts == LoadCounts(status="complete", upserted=3)
-    assert await table_sizes(db) == {"acts": 2, "events": 3, "changes": 14, "provisions": 10}
+    assert await table_sizes(db) == {
+        "acts": 2,
+        "events": 3,
+        "changes": 14,
+        "table_hits": 0,
+        "provisions": 10,
+    }
     async with db.transaction() as tx:
         events = (await tx.execute(select(Event.event_key, Event.url))).all()
         acts = (await tx.execute(select(Act.act_key, Act.title, Act.index_sha256))).all()
@@ -225,7 +231,13 @@ async def test_svc_load_an_event_the_index_drops_is_deleted_with_its_changes(
         root = record.root()
         assert not isinstance(root, Unavailable)
         assert act.index_sha256 == root.acts[1].index_sha256
-    assert await table_sizes(db) == {"acts": 2, "events": 2, "changes": 10, "provisions": 10}
+    assert await table_sizes(db) == {
+        "acts": 2,
+        "events": 2,
+        "changes": 10,
+        "table_hits": 0,
+        "provisions": 10,
+    }
 
 
 async def test_svc_load_a_payload_mid_write_is_skipped_then_loaded(db: Db, tmp_path: Path) -> None:
@@ -284,7 +296,13 @@ async def test_svc_load_an_act_the_catalogue_drops_is_deleted(db: Db, tmp_path: 
     assert isinstance(acts, list)
     write_json(record.catalogue_path, {**catalogue, "acts": acts[1:]})
     assert await run(db, record) == LoadCounts(status="complete", removed=1)
-    assert await table_sizes(db) == {"acts": 1, "events": 2, "changes": 9, "provisions": 5}
+    assert await table_sizes(db) == {
+        "acts": 1,
+        "events": 2,
+        "changes": 9,
+        "table_hits": 0,
+        "provisions": 5,
+    }
 
 
 async def test_svc_load_an_unreadable_root_writes_nothing(db: Db, tmp_path: Path) -> None:
@@ -295,7 +313,13 @@ async def test_svc_load_an_unreadable_root_writes_nothing(db: Db, tmp_path: Path
     assert counts.reason == "index.json is not a change index this server can read"
     async with db.transaction() as tx:
         assert (await tx.execute(select(Load))).first() is None
-    assert await table_sizes(db) == {"acts": 0, "events": 0, "changes": 0, "provisions": 0}
+    assert await table_sizes(db) == {
+        "acts": 0,
+        "events": 0,
+        "changes": 0,
+        "table_hits": 0,
+        "provisions": 0,
+    }
 
 
 async def test_svc_load_an_act_index_rewritten_under_the_read_is_read_again(

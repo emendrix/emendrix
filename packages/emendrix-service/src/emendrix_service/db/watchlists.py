@@ -219,12 +219,16 @@ async def add_item(
     user_id: UUID,
     watchlist_id: UUID,
     kind: ItemKind,
-    corpus: str,
-    act_key: str,
+    corpus: str | None,
+    act_key: str | None,
     location: str | None,
     now: datetime,
+    *,
+    identifier: str | None = None,
 ) -> bool | None:
-    """Add one item; False when the watchlist holds it already, None when it is not theirs."""
+    """Add one item; False when the watchlist holds it already, None when it is not theirs.
+
+    A substance item passes `identifier` (`cas:50-00-0`) and no act."""
     if not await tx.scalar(select(_owned(user_id, watchlist_id))):
         return None
     return await insert_once(
@@ -235,6 +239,7 @@ async def add_item(
             corpus=corpus,
             act_key=act_key,
             location=location,
+            identifier=identifier,
             created_at=now,
         ),
     )

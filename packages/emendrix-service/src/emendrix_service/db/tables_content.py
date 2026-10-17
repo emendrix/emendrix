@@ -4,20 +4,31 @@ Every row is derived from the changelogs repository and the site's catalogue, so
 may be truncated and reloaded at any time; a migration may change it freely. Hashes are stored as
 the hex text the record publishes, so a stored hash compares with a published one as written.
 Arrays of dates and keys are kept as arrays, in the record's order, rather than as child tables:
-nothing joins on them, and the loader writes each change in one row.
+nothing joins on them, and the loader writes each change in one row. Table hits are the one
+child table, because matching looks a number up across every act.
 """
 
 from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import ARRAY, BigInteger, Date, ForeignKey, Identity, Index, Text, text
+from sqlalchemy import (
+    ARRAY,
+    BigInteger,
+    Date,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Identity,
+    Index,
+    Text,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from emendrix_service.db.base import Base
 
-__all__ = ["Act", "Change", "Event", "Load", "Provision"]
+__all__ = ["Act", "Change", "Event", "Load", "Provision", "TableHit"]
 
 CONTENT = {"schema": "content"}
 
@@ -91,6 +102,42 @@ class Change(Base):
     unexplained: Mapped[str]
     sentences: Mapped[list[dict[str, object]]] = mapped_column(JSONB)
     anchor: Mapped[str]
+
+
+class TableHit(Base):
+    """One identifier one side of one moved table row carries, so matching never reads text.
+
+    A change's table-entry diff is flattened to one row per (row change, side, identifier):
+    `side` is `before` or `after`, `identifier` is `scheme:value` (`cas:50-00-0`), and only CAS
+    and EC numbers are kept, the two schemes a watch item may name. `row_key` and
+    `row_occurrence` are the table row's key and its repeat, never the changelog entry's key.
+    """
+
+    __tablename__ = "table_hits"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["event_key", "location", "occurrence"],
+            ["content.changes.event_key", "content.changes.location", "content.changes.occurrence"],
+            ondelete="CASCADE",
+        ),
+        Index(None, "identifier"),
+        CONTENT,
+    )
+
+    event_key: Mapped[str] = mapped_column(primary_key=True)
+    location: Mapped[str] = mapped_column(primary_key=True)
+    occurrence: Mapped[int] = mapped_column(primary_key=True)
+    container: Mapped[str] = mapped_column(primary_key=True)
+    table_ordinal: Mapped[int] = mapped_column(primary_key=True)
+    row_key: Mapped[str] = mapped_column(primary_key=True)
+    row_occurrence: Mapped[int] = mapped_column(primary_key=True)
+    side: Mapped[str] = mapped_column(primary_key=True)
+    identifier: Mapped[str] = mapped_column(primary_key=True)
+    kind: Mapped[str]
+    typography_only: Mapped[bool]
+    unit: Mapped[str]
+    key_label: Mapped[str | None]
+    name: Mapped[str | None]
 
 
 class Provision(Base):

@@ -212,15 +212,18 @@ async def population(tx: Tx) -> Population:
 
 
 async def items_per_act(tx: Tx) -> list[ActItems]:
-    """Watch items grouped by the act they name, ordered by corpus and key."""
+    """Watch items grouped by the act they name, ordered by corpus and key; a substance item
+    names no act and is not counted here."""
+    named = (ItemKind.ACT, ItemKind.PROVISION)
     rows = await tx.execute(
         select(WatchItem.corpus, WatchItem.act_key, WatchItem.kind, func.count())
+        .where(WatchItem.kind.in_(named))
         .group_by(WatchItem.corpus, WatchItem.act_key, WatchItem.kind)
         .order_by(WatchItem.corpus, WatchItem.act_key)
     )
     acts: dict[tuple[str, str], dict[ItemKind, int]] = {}
     for corpus, act_key, kind, count in rows:
-        acts.setdefault((corpus, act_key), {item: 0 for item in ItemKind})[kind] = int(count)
+        acts.setdefault((corpus, act_key), dict.fromkeys(named, 0))[kind] = int(count)
     return [
         ActItems(corpus=corpus, act_key=act_key, items=items)
         for (corpus, act_key), items in sorted(acts.items())

@@ -6,16 +6,19 @@ import pytest
 from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
 from sqlalchemy import Connection, text
+from sqlalchemy.exc import IntegrityError
 
 from emendrix_service.db import Db
 from emendrix_service.db.base import SCHEMAS
+from emendrix_service.db.enums import Cadence, ItemKind
 from emendrix_service.db.migrate import (
     VERSION_SCHEMA,
     current_matches_head,
     head_revisions,
     include_name,
 )
-from emendrix_service.db.tables import Base
+from emendrix_service.db.tables import Base, User, WatchItem, Watchlist
+from tests.conftest import NOW
 
 pytestmark = pytest.mark.anyio
 
@@ -76,14 +79,71 @@ async def test_svc_the_schemas_the_extension_and_every_enum_exist(db: Db) -> Non
     assert {(name, "app") for name in ENUMS} == {(name, schema) for name, schema in enums}
 
 
-async def test_svc_the_database_is_stamped_at_0001(db: Db) -> None:
+async def test_svc_the_database_is_stamped_at_0002(db: Db) -> None:
     async with db.transaction() as tx:
         versions = (await tx.execute(text("SELECT version_num FROM notify.alembic_version"))).all()
-    assert [tuple(row) for row in versions] == [("0001",)]
-    assert head_revisions() == {"0001"}
+    assert [tuple(row) for row in versions] == [("0002",)]
+    assert head_revisions() == {"0002"}
     assert await current_matches_head(db)
 
 
 async def test_svc_every_table_is_in_one_of_the_three_schemas() -> None:
     assert {table.schema for table in Base.metadata.sorted_tables} == set(SCHEMAS)
-    assert len(Base.metadata.sorted_tables) == 18
+    assert len(Base.metadata.sorted_tables) == 19
+
+
+async def watch_item(db: Db, **columns: str | None) -> None:
+    """Insert one watch item with `columns` on a fresh account's watchlist."""
+    async with db.transaction() as tx:
+        user = User(
+            email="shape@example.org",
+            created_at=NOW,
+            verified_at=NOW,
+            last_signin_at=NOW,
+            last_seen_at=NOW,
+        )
+        tx.add(user)
+        await tx.flush()
+        watchlist = Watchlist(
+            user_id=user.id, name="list", cadence=Cadence.WEEKLY, date_alerts=True, created_at=NOW
+        )
+        tx.add(watchlist)
+        await tx.flush()
+        tx.add(WatchItem(watchlist_id=watchlist.id, created_at=NOW, **columns))
+
+
+SUBSTANCE = {"kind": ItemKind.SUBSTANCE, "identifier": "cas:50-00-0"}
+ACT = {"kind": ItemKind.ACT, "corpus": "toy", "act_key": "house-rules"}
+
+
+@pytest.mark.parametrize(
+    "columns",
+    [
+        SUBSTANCE,
+        ACT,
+        {"kind": ItemKind.PROVISION, "corpus": "toy", "act_key": "house-rules", "location": "AR 2"},
+    ],
+)
+async def test_svc_the_item_shape_admits_a_substance_or_an_act(
+    db: Db, columns: dict[str, str]
+) -> None:
+    await watch_item(db, **columns)
+
+
+@pytest.mark.parametrize(
+    "columns",
+    [
+        {**SUBSTANCE, "act_key": "house-rules"},
+        {**SUBSTANCE, "corpus": "toy"},
+        {**SUBSTANCE, "location": "AR 2"},
+        {"kind": ItemKind.SUBSTANCE},
+        {**ACT, "identifier": "cas:50-00-0"},
+        {"kind": ItemKind.ACT, "corpus": "toy"},
+        {"kind": ItemKind.PROVISION, "location": "AR 2"},
+    ],
+)
+async def test_svc_the_item_shape_refuses_a_substance_naming_an_act_and_an_act_naming_none(
+    db: Db, columns: dict[str, str]
+) -> None:
+    with pytest.raises(IntegrityError, match="ck_watch_items_item_shape"):
+        await watch_item(db, **columns)

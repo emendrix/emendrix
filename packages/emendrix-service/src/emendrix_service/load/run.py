@@ -33,6 +33,7 @@ from emendrix_service.load.rows import (
     event_load,
     filed_rows,
     provision_loads,
+    table_hit_loads,
 )
 
 __all__ = ["LoadCounts", "load"]
@@ -104,7 +105,7 @@ async def _load_event(
         return False
     rows = filed_rows(index, event, read.payload)
     changes = change_loads(loaded.event_key, loaded.entry_key, read.payload, rows)
-    await store.replace_event(tx, loaded, changes)
+    await store.replace_event(tx, loaded, changes, table_hit_loads(read.payload, changes))
     return True
 
 

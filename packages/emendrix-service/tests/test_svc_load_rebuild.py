@@ -10,6 +10,7 @@ from emendrix_service.db import Db
 from emendrix_service.db.content import dump_content
 from emendrix_service.load.run import LoadCounts
 from tests.test_svc_load_run import copy_record, edit_payload, retitle, run
+from tests.test_svc_load_tables import TABLED, give_table_entries
 
 pytestmark = pytest.mark.anyio
 
@@ -44,3 +45,14 @@ async def test_svc_load_a_catalogue_that_moves_alone_is_followed_without_a_rebui
     await run(db, record, rebuild=True)
     assert await dump(db) == incremental
     assert "https://example.org/law/house-rules/v3/" in {row[-1] for row in incremental["events"]}
+
+
+async def test_svc_load_table_hits_rebuild_row_for_row(db: Db, tmp_path: Path) -> None:
+    record = copy_record(tmp_path)
+    await run(db, record)
+    edit_payload(record.changelogs, *TABLED, give_table_entries)
+    assert await run(db, record) == LoadCounts(status="complete", upserted=1)
+    incremental = await dump(db)
+    assert await run(db, record, rebuild=True) == LoadCounts(status="complete", upserted=3)
+    assert await dump(db) == incremental
+    assert len(incremental["table_hits"]) == 6

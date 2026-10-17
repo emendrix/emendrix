@@ -21,6 +21,7 @@ from emendrix_service.db import notify as store
 from emendrix_service.db.enums import Cadence, DeliveryKind, OutboxPurpose
 from emendrix_service.db.outbox import enqueue
 from emendrix_service.notify.facts import ItemFacts
+from emendrix_service.notify.matching import substance_label
 from emendrix_service.notify.model import DigestKind, Heartbeat
 from emendrix_service.notify.periods import (
     Period,
@@ -95,7 +96,9 @@ async def _digest_one(
 
 
 def _watched(item: ItemFacts, labels: dict[str, str]) -> str:
-    label = labels.get(f"{item.corpus}/{item.act_key}", item.act_key)
+    if item.identifier is not None:
+        return substance_label(item.identifier)
+    label = labels.get(f"{item.corpus}/{item.act_key}", item.act_key or "")
     return label if item.location is None else f"{label} {human(item.location)}"
 
 
@@ -111,7 +114,7 @@ async def _heartbeat_one(
     if watchlist is None:
         return False
     items = await store.watchlist_items(tx, watchlist_id)
-    labels = await store.act_labels(tx, ((item.corpus, item.act_key) for item in items))
+    labels = await store.act_labels(tx, store.acts_named(items))
     watched = tuple(_watched(item, labels) for item in items)
     if not watched:
         return False

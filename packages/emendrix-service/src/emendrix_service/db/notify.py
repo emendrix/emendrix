@@ -1,5 +1,6 @@
-"""The notifier's queries: announcements, the items an event is matched against, matches,
-deliveries, and the facts an email is composed from.
+"""The notifier's queries: announcements, matches, deliveries, and the facts an email is
+composed from. The items an event is matched against, and the changes with their table hits,
+are read in `notify_items.py` and named here too, so the notifier has one store to call.
 
 Exactly-once rests on three unique keys, each written in the caller's transaction beside what it
 guards: `notify.announced` (an event is judged once), the primary key of `matches` (a change is
@@ -19,8 +20,18 @@ from sqlalchemy import Row, delete, exists, func, select, tuple_, update
 from sqlalchemy.dialects.postgresql import insert
 
 from emendrix_service.db.engine import Tx
-from emendrix_service.db.enums import Cadence, DeliveryKind, UserStatus
+from emendrix_service.db.enums import Cadence, DeliveryKind
 from emendrix_service.db.guards import insert_once
+from emendrix_service.db.notify_items import (
+    MAILED,
+    active_items_for_act,
+    active_substance_items,
+    acts_named,
+    event_changes,
+    table_hits,
+    watchlist_items,
+    with_hits,
+)
 from emendrix_service.db.tables import (
     Act,
     Announced,
@@ -29,14 +40,12 @@ from emendrix_service.db.tables import (
     Event,
     Match,
     User,
-    WatchItem,
     Watchlist,
 )
 from emendrix_service.notify.facts import (
     ChangeFacts,
     DigestInputs,
     EventFacts,
-    ItemFacts,
     MatchKey,
     MatchRow,
     WatchlistFacts,
@@ -46,6 +55,8 @@ __all__ = [
     "act_labels",
     "active_in_month",
     "active_items_for_act",
+    "active_substance_items",
+    "acts_named",
     "announced_count",
     "assign",
     "attach_outbox",
@@ -57,6 +68,7 @@ __all__ = [
     "has_delivery",
     "insert_matches",
     "record_announcement",
+    "table_hits",
     "unannounced_events",
     "unassigned_matches",
     "watchlist_facts",
@@ -66,30 +78,9 @@ __all__ = [
 BATCH = 1000
 """Matches written per statement."""
 
-_MAILED = (Watchlist.paused.is_(False), User.status == UserStatus.ACTIVE)
-"""A watchlist that may receive email: not paused, and its owner not suspended."""
-
 
 def _event(row: Event) -> EventFacts:
     return EventFacts.model_validate(row, from_attributes=True)
-
-
-def _change(row: Change) -> ChangeFacts:
-    # The stored sentences are JSON objects, validated into `StoredSentence` values here.
-    return ChangeFacts.model_validate(row, from_attributes=True)
-
-
-def _item(item: WatchItem, watchlist: Watchlist) -> ItemFacts:
-    return ItemFacts(
-        item_id=item.id,
-        watchlist_id=item.watchlist_id,
-        kind=item.kind,
-        corpus=item.corpus,
-        act_key=item.act_key,
-        location=item.location,
-        cadence=watchlist.cadence,
-        date_alerts=watchlist.date_alerts,
-    )
 
 
 def _match(row: Row[UUID, str, str, int, bool]) -> MatchRow:
@@ -118,26 +109,6 @@ async def record_announcement(tx: Tx, key: str, eligible: bool, reason: str, now
     """Judge `key` once; `False` when another run has already judged it."""
     row = Announced(event_key=key, first_seen_at=now, eligible=eligible, reason=reason)
     return await insert_once(tx, row)
-
-
-async def event_changes(tx: Tx, event_key: str) -> list[ChangeFacts]:
-    """The stored changes of one event."""
-    query = select(Change).where(Change.event_key == event_key)
-    return [_change(row) for row in (await tx.scalars(query)).all()]
-
-
-async def active_items_for_act(tx: Tx, corpus: str, act_key: str) -> list[ItemFacts]:
-    """Every item on the act of a watchlist that is mailed: not paused, not `none`, not
-    suspended."""
-    query = (
-        select(WatchItem, Watchlist)
-        .join(Watchlist, Watchlist.id == WatchItem.watchlist_id)
-        .join(User, User.id == Watchlist.user_id)
-        .where(WatchItem.corpus == corpus, WatchItem.act_key == act_key)
-        .where(Watchlist.cadence != Cadence.NONE, *_MAILED)
-        .order_by(WatchItem.watchlist_id, WatchItem.id)
-    )
-    return [_item(item, watchlist) for item, watchlist in (await tx.execute(query)).all()]
 
 
 async def insert_matches(tx: Tx, rows: Sequence[MatchRow], now: datetime) -> list[MatchRow]:
@@ -170,7 +141,7 @@ async def due_watchlists(
 ) -> list[UUID]:
     """The mailed watchlists of one cadence; or, given `heartbeat_before`, those of any mailed
     cadence with the monthly note on that were made before it."""
-    query = select(Watchlist.id).join(User, User.id == Watchlist.user_id).where(*_MAILED)
+    query = select(Watchlist.id).join(User, User.id == Watchlist.user_id).where(*MAILED)
     if cadence is not None:
         query = query.where(Watchlist.cadence == cadence)
     if heartbeat_before is not None:
@@ -266,17 +237,6 @@ async def watchlist_facts(tx: Tx, watchlist_id: UUID) -> WatchlistFacts | None:
     )
 
 
-async def watchlist_items(tx: Tx, watchlist_id: UUID) -> list[ItemFacts]:
-    """Every item of one watchlist, as it stands now."""
-    query = (
-        select(WatchItem, Watchlist)
-        .join(Watchlist, Watchlist.id == WatchItem.watchlist_id)
-        .where(WatchItem.watchlist_id == watchlist_id)
-        .order_by(WatchItem.corpus, WatchItem.act_key, WatchItem.location, WatchItem.id)
-    )
-    return [_item(item, watchlist) for item, watchlist in (await tx.execute(query)).all()]
-
-
 async def act_labels(tx: Tx, acts: Iterable[tuple[str, str]]) -> dict[str, str]:
     """The catalogue's label of each act, keyed `corpus/act_key`."""
     wanted = list(set(acts))
@@ -299,7 +259,7 @@ async def digest_inputs(
         changed = select(Change).where(
             tuple_(Change.event_key, Change.location, Change.occurrence).in_(keys)
         )
-        changes = [_change(row) for row in (await tx.scalars(changed)).all()]
+        changes = await with_hits(tx, (await tx.scalars(changed)).all())
         named = select(Event).where(Event.event_key.in_({key for key, _, _ in keys}))
         events = [_event(row) for row in (await tx.scalars(named)).all()]
     return DigestInputs(

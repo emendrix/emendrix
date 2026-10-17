@@ -22,6 +22,7 @@ __all__ = [
     "ItemFacts",
     "MatchKey",
     "MatchRow",
+    "RowHit",
     "StoredSentence",
     "WatchlistFacts",
 ]
@@ -64,6 +65,25 @@ class StoredSentence(BaseModel):
     citations: tuple[Citation, ...] = Field(default=(), description="What it cites.")
 
 
+class RowHit(BaseModel):
+    """One CAS or EC number one side of one moved table row carries, as `content.table_hits`
+    stores it: what a substance item is matched against, never the row's cells."""
+
+    model_config = _FROZEN
+
+    container: str = Field(description="The located node holding the table.")
+    table_ordinal: int = Field(ge=1, description="1-based ordinal among the container's tables.")
+    row_key: str = Field(description="The table row's key.")
+    row_occurrence: int = Field(default=1, ge=1, description="Which repeat of the row key.")
+    side: str = Field(description="`before` or `after`.")
+    identifier: str = Field(description="`scheme:value`, a CAS or EC number.")
+    kind: str = Field(description="`added`, `removed` or `amended`.")
+    typography_only: bool = Field(default=False, description="Amended only in typography.")
+    unit: str = Field(description="The top-level unit the row sits in.")
+    key_label: str | None = Field(default=None, description="How the key is named; null: name.")
+    name: str | None = Field(default=None, description="The row's name, first line, if any.")
+
+
 class ChangeFacts(BaseModel):
     """One `content.changes` row: the stored facts of one change, never its provision text."""
 
@@ -86,6 +106,9 @@ class ChangeFacts(BaseModel):
     unexplained: str = Field(default="", description="Why there are no sentences, when none.")
     sentences: tuple[StoredSentence, ...] = Field(default=(), description="The stored prose.")
     anchor: str = Field(default="", description="The change's fragment on its event page.")
+    table_hits: tuple[RowHit, ...] = Field(
+        default=(), description="The numbers its moved table rows carry, in key order."
+    )
 
 
 class ItemFacts(BaseModel):
@@ -95,10 +118,13 @@ class ItemFacts(BaseModel):
 
     item_id: UUID = Field(description="The item's id.")
     watchlist_id: UUID = Field(description="The watchlist it belongs to.")
-    kind: ItemKind = Field(description="A whole act, or one provision of it.")
-    corpus: str = Field(description="The act's corpus namespace.")
-    act_key: str = Field(description="The act's key.")
+    kind: ItemKind = Field(description="A whole act, one provision of it, or a substance.")
+    corpus: str | None = Field(default=None, description="The act's corpus; null: a substance.")
+    act_key: str | None = Field(default=None, description="The act's key; null: a substance.")
     location: str | None = Field(default=None, description="The watched location; null for an act.")
+    identifier: str | None = Field(
+        default=None, description="`scheme:value` of a watched CAS or EC number; else null."
+    )
     cadence: Cadence = Field(default=Cadence.WEEKLY, description="The watchlist's cadence.")
     date_alerts: bool = Field(default=True, description="Whether date changes are flagged.")
 

@@ -56,7 +56,8 @@ class Cadence(StrEnum):
 
 
 class ItemKind(StrEnum):
-    """What a watch item names: a whole act, or one provision of it matched by containment.
+    """What a watch item names: a whole act, one provision of it matched by containment, or a
+    CAS or EC number matched wherever a moved table row carries it, in any act.
 
     `amending_act` (every change an amending act makes) and `preset` (a published group of
     provisions) are the planned additions; each needs a migration adding its value.
@@ -64,6 +65,7 @@ class ItemKind(StrEnum):
 
     ACT = "act"
     PROVISION = "provision"
+    SUBSTANCE = "substance"
 
 
 class DeliveryKind(StrEnum):

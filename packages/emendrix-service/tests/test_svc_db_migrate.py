@@ -1,4 +1,4 @@
-"""`emendrix-service migrate` brings an empty database to the newest migration."""
+"""`emendrix-service migrate` brings an empty or an older database to the newest migration."""
 
 from __future__ import annotations
 
@@ -6,12 +6,14 @@ import json
 from collections.abc import Iterator
 
 import anyio
+import psycopg
 import pytest
+from alembic import command
 from typer.testing import CliRunner
 
 from emendrix_service.cli import app
 from emendrix_service.db import Db
-from emendrix_service.db.migrate import current_matches_head
+from emendrix_service.db.migrate import alembic_config, current_matches_head
 from emendrix_service.settings import variable
 from tests.conftest import SECRET_KEY, SITE_URL, database_url, drop, execute, service_settings
 
@@ -49,7 +51,7 @@ def test_svc_migrate_upgrades_an_empty_database(
     result = runner.invoke(app, ["migrate"])
     assert result.exit_code == 0, result.output
     last = json.loads(result.stdout.strip().splitlines()[-1])
-    assert last == {"emendrix_service": "migrate", "status": "complete", "head": "0001"}
+    assert last == {"emendrix_service": "migrate", "status": "complete", "head": "0002"}
     assert anyio.run(at_head, empty_url)
     again = runner.invoke(app, ["migrate"])
     assert again.exit_code == 0, again.output
@@ -60,3 +62,35 @@ def test_svc_migrate_stops_without_its_settings() -> None:
     result = runner.invoke(app, ["migrate"])
     assert result.exit_code == 2
     assert result.stderr == "emendrix-service: EMENDRIX_SERVICE_DATABASE_URL is not set\n"
+
+
+def test_svc_migrate_brings_a_0001_database_with_items_to_0002(empty_url: str) -> None:
+    config = alembic_config(service_settings(empty_url))
+    command.upgrade(config, "0001")
+    execute(
+        empty_url,
+        "INSERT INTO app.users (id, email, status, created_at, verified_at, last_signin_at, "
+        "last_seen_at) VALUES ('00000000-0000-4000-8000-000000000001', 'old@example.org', "
+        "'active', now(), now(), now(), now())",
+        "INSERT INTO app.watchlists (id, user_id, name, cadence, date_alerts, created_at) VALUES "
+        "('00000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000001', "
+        "'list', 'weekly', true, now())",
+        "INSERT INTO app.watch_items (id, watchlist_id, kind, corpus, act_key, created_at) "
+        "VALUES ('00000000-0000-4000-8000-000000000003', "
+        "'00000000-0000-4000-8000-000000000002', 'act', 'toy', 'house-rules', now())",
+    )
+    command.upgrade(config, "head")
+    assert anyio.run(at_head, empty_url)
+    execute(
+        empty_url,
+        "INSERT INTO app.watch_items (id, watchlist_id, kind, identifier, created_at) VALUES "
+        "('00000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000002', "
+        "'substance', 'cas:50-00-0', now())",
+    )
+    with pytest.raises(psycopg.errors.UniqueViolation):
+        execute(
+            empty_url,
+            "INSERT INTO app.watch_items (id, watchlist_id, kind, identifier, created_at) VALUES "
+            "('00000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000002', "
+            "'substance', 'cas:50-00-0', now())",
+        )

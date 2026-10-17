@@ -144,7 +144,10 @@ async def _announce(
     if not verdict.eligible:
         return NotifyCounts(announced=1)
     changes = await store.event_changes(tx, event.event_key)
-    items = await store.active_items_for_act(tx, event.corpus, event.act_key)
+    items = [
+        *await store.active_items_for_act(tx, event.corpus, event.act_key),
+        *await store.active_substance_items(tx, event.event_key),
+    ]
     written = await store.insert_matches(tx, owed(changes, items), now)
     instant = {item.watchlist_id for item in items if item.cadence == Cadence.INSTANT}
     deliveries = 0

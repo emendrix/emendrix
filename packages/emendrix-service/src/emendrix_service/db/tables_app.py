@@ -18,7 +18,17 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, ForeignKey, Identity, Index, UniqueConstraint, false, text, true
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    ForeignKey,
+    Identity,
+    Index,
+    UniqueConstraint,
+    false,
+    text,
+    true,
+)
 from sqlalchemy.dialects.postgresql import CITEXT, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -132,8 +142,21 @@ class Watchlist(Base):
     created_at: Mapped[datetime]
 
 
+ITEM_SHAPE = (
+    "(kind = 'substance' AND identifier IS NOT NULL AND corpus IS NULL AND act_key IS NULL "
+    "AND location IS NULL) OR (kind <> 'substance' AND identifier IS NULL "
+    "AND corpus IS NOT NULL AND act_key IS NOT NULL)"
+)
+"""A substance item names an identifier and no act; every other item names an act."""
+
+
 class WatchItem(Base):
-    """One act, or one provision of it, that a watchlist follows. A NULL location is the act."""
+    """One act, one provision of it, or one CAS or EC number, that a watchlist follows.
+
+    A NULL location on an act's item is the whole act. A substance item's `identifier` is
+    `scheme:value` (`cas:50-00-0`, `ec:200-001-8`) and it names no act, because a number can
+    appear in a table of any act.
+    """
 
     __tablename__ = "watch_items"
     __table_args__ = (
@@ -143,17 +166,23 @@ class WatchItem(Base):
             "corpus",
             "act_key",
             "location",
+            "identifier",
+            name="uq_watch_items_item",
             postgresql_nulls_not_distinct=True,
         ),
+        CheckConstraint(ITEM_SHAPE, name="item_shape"),
         APP,
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     watchlist_id: Mapped[uuid.UUID] = mapped_column(ForeignKey(WATCHLISTS, ondelete="CASCADE"))
     kind: Mapped[ItemKind]
-    corpus: Mapped[str]
-    act_key: Mapped[str]
+    # Typed for the act and provision items the watch pages read; NULL only on a substance
+    # item, as `ITEM_SHAPE` states, and every reader of those reads `ItemFacts` instead.
+    corpus: Mapped[str] = mapped_column(nullable=True)
+    act_key: Mapped[str] = mapped_column(nullable=True)
     location: Mapped[str | None]
+    identifier: Mapped[str | None]
     created_at: Mapped[datetime]
 
 

@@ -20,6 +20,7 @@ __all__ = [
     "Json",
     "ProvisionLoad",
     "StoredUnitChange",
+    "TableHitLoad",
 ]
 
 Json = dict[str, object]
@@ -96,6 +97,27 @@ class ChangeLoad(BaseModel):
         description="Each stored sentence, then the applicability note marked `note: true`."
     )
     anchor: str = Field(description="The change's fragment on its event page.")
+
+
+class TableHitLoad(BaseModel):
+    """One `content.table_hits` row: one identifier one side of one moved table row carries."""
+
+    model_config = _FROZEN
+
+    event_key: str = Field(description="The change's event.")
+    location: str = Field(description="The change's own canonical location.")
+    occurrence: int = Field(ge=1, description="The change's occurrence.")
+    container: str = Field(description="The located node holding the table.")
+    table_ordinal: int = Field(ge=1, description="1-based ordinal among the container's tables.")
+    row_key: str = Field(description="The table row's key, as the row change carries it.")
+    row_occurrence: int = Field(ge=1, description="Which repeat of the row key in its table.")
+    side: str = Field(description="`before` or `after`: the side carrying the identifier.")
+    identifier: str = Field(description="`scheme:value`, a CAS or EC number.")
+    kind: str = Field(description="The row change's kind: `added`, `removed` or `amended`.")
+    typography_only: bool = Field(description="Amended only in spacing, dashes or accents.")
+    unit: str = Field(description="The top-level unit the side's row sits in.")
+    key_label: str | None = Field(description="How the table names its key; null: by name.")
+    name: str | None = Field(description="The side's row name, first line, if any.")
 
 
 class ProvisionLoad(BaseModel):

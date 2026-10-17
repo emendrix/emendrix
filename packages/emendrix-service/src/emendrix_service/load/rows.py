@@ -14,6 +14,7 @@ row always carries both.
 from __future__ import annotations
 
 from datetime import date
+from typing import Final
 
 from emendrix_record.links import entry_anchors
 from emendrix_record.models import ActIndex, ActRow, CatalogueAct, EventRow
@@ -27,6 +28,7 @@ from emendrix_service.load.models import (
     Json,
     ProvisionLoad,
     StoredUnitChange,
+    TableHitLoad,
 )
 
 __all__ = [
@@ -38,7 +40,11 @@ __all__ = [
     "filed_rows",
     "provision_loads",
     "sentences_json",
+    "table_hit_loads",
 ]
+
+WATCHED_SCHEMES: Final = ("cas", "ec")
+"""The schemes a watch item may name; a CLP Index No is shown on the site but never watched."""
 
 
 def event_key(corpus: str, act_key: str, to_version: str) -> str:
@@ -181,6 +187,49 @@ def change_loads(
             )
         )
     return tuple(loads)
+
+
+def table_hit_loads(payload: Payload, changes: tuple[ChangeLoad, ...]) -> tuple[TableHitLoad, ...]:
+    """Every CAS and EC number each side of each moved table row carries, change by change.
+
+    `changes` are the payload's own `change_loads`, paired by position, so a hit is keyed as its
+    change is. A change whose table entries were not read, or were read with no row moved,
+    carries none. The key label is the one the diff's tables give the row's table.
+    """
+    if len(changes) != len(payload.changes):
+        raise ValueError("one change row is needed per payload change")
+    hits: dict[tuple[object, ...], TableHitLoad] = {}
+    for record, change in zip(payload.changes, changes, strict=True):
+        delta = record.change.table_entries
+        if delta is None:
+            continue
+        labels = {(table.container, table.table): table.key_label for table in delta.tables}
+        for moved in delta.changes:
+            for side, entry in (("before", moved.before), ("after", moved.after)):
+                if entry is None:
+                    continue
+                for identifier in entry.identifiers:
+                    if identifier.scheme not in WATCHED_SCHEMES:
+                        continue
+                    hit = TableHitLoad(
+                        event_key=change.event_key,
+                        location=change.location,
+                        occurrence=change.occurrence,
+                        container=moved.container,
+                        table_ordinal=moved.table,
+                        row_key=moved.key,
+                        row_occurrence=moved.occurrence,
+                        side=side,
+                        identifier=f"{identifier.scheme}:{identifier.value}",
+                        kind=moved.kind,
+                        typography_only=moved.typography_only,
+                        unit=entry.unit,
+                        key_label=labels.get((moved.container, moved.table)),
+                        name=entry.name,
+                    )
+                    key = tuple(hit.model_dump().values())[:9]
+                    hits.setdefault(key, hit)
+    return tuple(hits.values())
 
 
 def provision_loads(

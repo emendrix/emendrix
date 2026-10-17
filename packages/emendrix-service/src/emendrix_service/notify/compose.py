@@ -15,6 +15,7 @@ from datetime import date
 
 from emendrix_record.locations import human
 from emendrix_record.reasons import REASON_SENTENCES
+from emendrix_service.db.enums import ItemKind
 from emendrix_service.notify.facts import (
     ChangeFacts,
     DigestInputs,
@@ -165,13 +166,22 @@ def _distinct(values: Iterable[str]) -> tuple[str, ...]:
 
 
 def build_digest(kind: DigestKind, inputs: DigestInputs) -> Digest:
-    """The email for `inputs`: events oldest first, each event's lines in location order."""
+    """The email for `inputs`: events oldest first, each event's lines in location order.
+
+    A change a substance item matched sits under the act of its own event, like any other; its
+    reason names the number and the table row that carried it.
+    """
     blocks: list[EventBlock] = []
     alerts = 0
     events = sorted(inputs.events, key=lambda e: (e.detected_on, e.corpus, e.act_key, e.event_key))
     for event in events:
         label = inputs.labels.get(f"{event.corpus}/{event.act_key}", event.act_key)
-        items = [i for i in inputs.items if (i.corpus, i.act_key) == (event.corpus, event.act_key)]
+        items = [
+            i
+            for i in inputs.items
+            if i.kind == ItemKind.SUBSTANCE
+            or (i.corpus, i.act_key) == (event.corpus, event.act_key)
+        ]
         changes = sorted(
             (c for c in inputs.changes if c.event_key == event.event_key),
             key=lambda c: (location_order(c.location), c.occurrence),

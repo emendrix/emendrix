@@ -79,14 +79,15 @@ async def touch_seen(tx: Tx, user_id: UUID, now: datetime) -> bool:
 
 
 async def recent_changes_for_acts(
-    tx: Tx, acts: Iterable[tuple[str, str]], limit: int = 500
+    tx: Tx, acts: Iterable[tuple[str | None, str | None]], limit: int = 500
 ) -> list[FeedChange]:
     """Up to `limit` changes of `acts`, newest event first; an event with no page is left out.
 
-    Ties are broken by detection date and then event key, both newest first, so the order is
-    the same on every read of the same rows.
+    A pair with a null half is the `(corpus, act_key)` of a substance item, which names no act,
+    and selects nothing. Ties are broken by detection date and then event key, both newest
+    first, so the order is the same on every read of the same rows.
     """
-    wanted = sorted(set(acts))
+    wanted = sorted({(c, k) for c, k in acts if c is not None and k is not None})
     if not wanted:
         return []
     rows = await tx.scalars(

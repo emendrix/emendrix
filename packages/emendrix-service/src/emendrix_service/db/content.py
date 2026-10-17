@@ -26,13 +26,14 @@ from sqlalchemy.dialects.postgresql import JSONB, insert
 
 from emendrix_service.db.base import Base
 from emendrix_service.db.engine import Tx
-from emendrix_service.db.tables_content import Act, Change, Event, Load, Provision
+from emendrix_service.db.tables_content import Act, Change, Event, Load, Provision, TableHit
 from emendrix_service.load.models import (
     ActLoad,
     ChangeLoad,
     EventLoad,
     ProvisionLoad,
     StoredUnitChange,
+    TableHitLoad,
 )
 
 __all__ = [
@@ -57,9 +58,13 @@ LOCK: Final = 0x656D656E6C6F6164
 """The advisory lock one load holds for its transaction, so two loads never interleave."""
 
 DUMPED: Final[tuple[Table, ...]] = tuple(
-    Base.metadata.tables[f"content.{name}"] for name in ("acts", "events", "changes", "provisions")
+    Base.metadata.tables[f"content.{name}"]
+    for name in ("acts", "events", "changes", "table_hits", "provisions")
 )
 """Every table the record is projected into; `loads` is the loader's own history."""
+
+HIT_BATCH: Final = 4000
+"""Table hits written per statement."""
 
 ActKey = tuple[str, str]
 
@@ -122,8 +127,10 @@ def _change_values(change: ChangeLoad) -> dict[str, object]:
     return values
 
 
-async def replace_event(tx: Tx, event: EventLoad, changes: Iterable[ChangeLoad]) -> None:
-    """Write the event, replacing a stored one, and replace all of its changes."""
+async def replace_event(
+    tx: Tx, event: EventLoad, changes: Iterable[ChangeLoad], hits: Iterable[TableHitLoad] = ()
+) -> None:
+    """Write the event, replacing a stored one, and replace all of its changes and their hits."""
     statement = insert(Event).values(_event_values(event))
     await tx.execute(
         statement.on_conflict_do_update(
@@ -139,6 +146,10 @@ async def replace_event(tx: Tx, event: EventLoad, changes: Iterable[ChangeLoad])
     values = [_change_values(change) for change in changes]
     if values:
         await tx.execute(insert(Change).values(values))
+    found = [hit.model_dump() for hit in hits]
+    # A statement carries at most 65 535 parameters; fourteen per hit, so hits go in batches.
+    for start in range(0, len(found), HIT_BATCH):
+        await tx.execute(insert(TableHit).values(found[start : start + HIT_BATCH]))
 
 
 async def delete_events(tx: Tx, keys: Iterable[str]) -> int:
