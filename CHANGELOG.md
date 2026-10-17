@@ -1250,3 +1250,15 @@ Named rather than discovered later; the eval report's disagreement list is the l
   notification were not checked from the edge and rest on the service's tests alone. **No
   published figure moved**: the eval layer is byte-identical to before; the 149 payloads moved to
   schema 1.3 by gaining `table_entries`, with every sentence carried over.
+
+- **A sign-up from a substance landing watches the number, since 2026-10-17.** The sign-up link
+  `/account/watch?substance=<scheme>-<value>` sends carries the number as its intent, as a link
+  from an act or provision landing carries its item, and no longer a `next` back to the landing.
+  Confirming it creates the account, the first watchlist holding that one substance item and the
+  session in one transaction, and opens the Watching tab; the email's subject names the number,
+  "Confirm your address to start watching CAS 50-00-0". An address that already has an account
+  still gets a sign-in link, which opens the landing and adds nothing until the button is pressed.
+  This closes the first known gap the 2026-10-17 substance-watch bullet named. `WatchItem.corpus`
+  and `WatchItem.act_key` are now typed as the nullable columns migration `0002` made them, which
+  changes no behaviour. **No published figure moved**: the payloads, the index, the feeds and the
+  eval layer are byte-identical to before.

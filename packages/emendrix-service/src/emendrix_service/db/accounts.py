@@ -252,10 +252,11 @@ async def create_first_watchlist(
     tx: Tx,
     user_id: UUID,
     *,
-    corpus: str,
-    act_key: str,
+    corpus: str | None,
+    act_key: str | None,
     location: str | None,
     now: datetime,
+    identifier: str | None = None,
 ) -> UUID:
     """The id of the watchlist a sign-up creates, with the defaults and the one item asked for."""
     watchlist = Watchlist(
@@ -272,10 +273,15 @@ async def create_first_watchlist(
     tx.add(
         WatchItem(
             watchlist_id=watchlist.id,
-            kind=ItemKind.ACT if location is None else ItemKind.PROVISION,
+            kind=ItemKind.SUBSTANCE
+            if identifier is not None
+            else ItemKind.ACT
+            if location is None
+            else ItemKind.PROVISION,
             corpus=corpus,
             act_key=act_key,
             location=location,
+            identifier=identifier,
             created_at=now,
         )
     )

@@ -223,6 +223,8 @@ async def items_per_act(tx: Tx) -> list[ActItems]:
     )
     acts: dict[tuple[str, str], dict[ItemKind, int]] = {}
     for corpus, act_key, kind, count in rows:
+        if corpus is None or act_key is None:
+            continue
         acts.setdefault((corpus, act_key), dict.fromkeys(named, 0))[kind] = int(count)
     return [
         ActItems(corpus=corpus, act_key=act_key, items=items)

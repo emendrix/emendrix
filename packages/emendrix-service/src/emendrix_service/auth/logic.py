@@ -14,7 +14,7 @@ from enum import StrEnum
 from typing import Final
 from urllib.parse import urlencode
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from emendrix_service.db.enums import TokenPurpose
 
@@ -95,20 +95,45 @@ class WatchIntent(BaseModel):
     """A watch item a sign-up link carries until the address is confirmed.
 
     Stored as the link's `intent` JSON. Confirming a sign-up turns it into the first watchlist's
-    one item; confirming a sign-in sends the reader to the watch landing for it instead.
+    one item; confirming a sign-in sends the reader to the watch landing for it instead. It is
+    either an act or provision item (`corpus` and `act_key` set) or a substance item
+    (`identifier` set, nothing else), the two shapes the `watch_items` table admits.
     """
 
     model_config = ConfigDict(frozen=True)
 
-    corpus: str = Field(min_length=1, description="The corpus the act belongs to, e.g. `eu`.")
-    act_key: str = Field(min_length=1, description="The act's key, e.g. `32017R0745`.")
+    corpus: str | None = Field(
+        default=None, min_length=1, description="The corpus the act belongs to, e.g. `eu`."
+    )
+    act_key: str | None = Field(
+        default=None, min_length=1, description="The act's key, e.g. `32017R0745`."
+    )
     location: str | None = Field(
         default=None, description="A canonical location within the act; None is the whole act."
     )
+    identifier: str | None = Field(
+        default=None,
+        min_length=1,
+        description="A watched number as `<scheme>:<value>`, e.g. `cas:50-00-0`; None for an "
+        "act or provision item.",
+    )
+
+    @model_validator(mode="after")
+    def _one_shape(self) -> WatchIntent:
+        if self.identifier is None:
+            if self.corpus is None or self.act_key is None:
+                raise ValueError("an act or provision intent names its corpus and act")
+        elif self.corpus is not None or self.act_key is not None or self.location is not None:
+            raise ValueError("a substance intent names its number and nothing else")
+        return self
 
     def landing(self) -> str:
         """The watch landing for this item, as a local path."""
-        query = {"act": self.act_key, **({"loc": self.location} if self.location else {})}
+        if self.identifier is not None:
+            # The same path as `watch.substances.landing_path`, which `auth` must not import.
+            query = {"substance": self.identifier.replace(":", "-", 1)}
+        else:
+            query = {"act": self.act_key or "", **({"loc": self.location} if self.location else {})}
         return f"/account/watch?{urlencode(query)}"
 
 

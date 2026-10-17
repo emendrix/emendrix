@@ -107,6 +107,7 @@ async def confirm(
                         corpus=intent.corpus,
                         act_key=intent.act_key,
                         location=intent.location,
+                        identifier=intent.identifier,
                         now=now,
                     )
             elif user is None or user.status is not UserStatus.ACTIVE:

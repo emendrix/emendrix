@@ -177,10 +177,8 @@ class WatchItem(Base):
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     watchlist_id: Mapped[uuid.UUID] = mapped_column(ForeignKey(WATCHLISTS, ondelete="CASCADE"))
     kind: Mapped[ItemKind]
-    # Typed for the act and provision items the watch pages read; NULL only on a substance
-    # item, as `ITEM_SHAPE` states, and every reader of those reads `ItemFacts` instead.
-    corpus: Mapped[str] = mapped_column(nullable=True)
-    act_key: Mapped[str] = mapped_column(nullable=True)
+    corpus: Mapped[str | None]
+    act_key: Mapped[str | None]
     location: Mapped[str | None]
     identifier: Mapped[str | None]
     created_at: Mapped[datetime]

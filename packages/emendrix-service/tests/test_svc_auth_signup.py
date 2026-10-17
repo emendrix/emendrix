@@ -111,6 +111,34 @@ async def test_svc_auth_sign_up_with_an_intent_makes_everything_once(
     assert await count(db, User) == 1
 
 
+async def test_svc_auth_sign_up_with_a_substance_intent_watches_the_number(
+    service_app: FastAPI, client: AsyncClient, mailer: RecordingMailer, db: Db
+) -> None:
+    intent = WatchIntent(identifier="cas:50-00-0")
+    outcome = await link_request(service_app, "chemist@example.org", TokenPurpose.SIGNUP, intent)
+    assert outcome is TokenPurpose.SIGNUP
+    (mail,) = mailer.sent
+    assert mail.subject == "Confirm your address to start watching CAS 50-00-0"
+    assert DISCLAIMER in mail.text
+    path = link_of(mail)
+    confirmed = await press(client, path)
+    assert (confirmed.status_code, confirmed.headers["location"]) == (303, "/account/")
+    assert await count(db, User) == 1
+    assert await count(db, Watchlist) == 1
+    async with db.transaction() as tx:
+        item = (await tx.scalars(select(WatchItem))).one()
+        assert (item.kind, item.identifier, item.corpus, item.act_key, item.location) == (
+            ItemKind.SUBSTANCE,
+            "cas:50-00-0",
+            None,
+            None,
+            None,
+        )
+    again = await client.post(path, data={"csrf": TOKEN.findall((await client.get(path)).text)[0]})
+    assert again.status_code == 410
+    assert await count(db, User) == 1
+
+
 async def test_svc_auth_a_known_address_asking_to_sign_up_gets_a_signin_link(
     service_app: FastAPI, client: AsyncClient, mailer: RecordingMailer, known: str
 ) -> None:

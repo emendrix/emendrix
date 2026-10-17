@@ -44,6 +44,7 @@ from emendrix_service.db.accounts import (
 from emendrix_service.db.enums import OutboxPurpose, TokenPurpose, UserStatus
 from emendrix_service.db.outbox import enqueue
 from emendrix_service.mail.port import Mailer, OutgoingMail, send_now
+from emendrix_service.notify.matching import substance_label
 from emendrix_service.settings import ServiceSettings, variable
 from emendrix_service.web.client import client_ip
 from emendrix_service.web.templating import render_mail
@@ -75,8 +76,12 @@ def notice_version(settings: ServiceSettings) -> str | None:
 
 
 async def _watch_label(tx: Tx, intent: WatchIntent | None) -> str:
-    """`Annex I of MDR`: what a sign-up link offers to watch, in the catalogue's own words."""
+    """`Annex I of MDR` or `CAS 50-00-0`: what a sign-up link offers to watch, in plain words."""
     if intent is None:
+        return ""
+    if intent.identifier is not None:
+        return substance_label(intent.identifier)
+    if intent.corpus is None or intent.act_key is None:
         return ""
     act = await act_label(tx, intent.corpus, intent.act_key) or intent.act_key
     return f"{human(intent.location)} of {act}" if intent.location else act

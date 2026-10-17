@@ -3,8 +3,8 @@
 The value is read by `watch.substances.read_substance` and never guessed: a value that is no
 number is shown back with the reason, one that reads both as a CAS and an EC number offers both,
 and a CLP Index No is refused with the numbers its row is recorded to print. A visitor who is
-signed out is sent a sign-up link that returns them to this landing once confirmed, signed in,
-so the number is one button away; a reader who is signed in adds it with that button.
+signed out is sent a sign-up link that carries the number, so confirming it makes the account
+with the number already watched; a reader who is signed in adds it with that button.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse, Response
 from starlette.datastructures import FormData
 
+from emendrix_service.auth.logic import WatchIntent
 from emendrix_service.auth.ratelimit import post_limit
 from emendrix_service.auth.service import request_link_from
 from emendrix_service.db import Db, Tx
@@ -147,7 +148,7 @@ async def substance_watch(
             request,
             email=signup.email,
             purpose=TokenPurpose.SIGNUP,
-            next_path=landing_path(identifier),
+            intent=WatchIntent(identifier=identifier),
         )
         response = render_page(request, "auth/check_inbox.html", title="Check your inbox")
         response.background = send

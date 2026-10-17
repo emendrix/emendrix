@@ -36,7 +36,7 @@ async def state(db: Db) -> list[tuple[object, ...]]:
         return rows
 
 
-async def item_locations(db: Db, watchlist: UUID) -> list[tuple[str, str | None]]:
+async def item_locations(db: Db, watchlist: UUID) -> list[tuple[str | None, str | None]]:
     async with db.transaction() as tx:
         found = await tx.scalars(
             select(WatchItem)

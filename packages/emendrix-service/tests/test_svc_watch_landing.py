@@ -14,6 +14,7 @@ from sqlalchemy import select
 from emendrix_service.app import create_app
 from emendrix_service.clock import FixedClock
 from emendrix_service.db import Db
+from emendrix_service.db.accounts import create_user_with_consents
 from emendrix_service.db.enums import ItemKind
 from emendrix_service.db.tables import WatchItem
 from emendrix_service.db.watchlists import add_item, create_watchlist
@@ -36,7 +37,7 @@ def words(text: str) -> str:
     return re.sub(r"<[^>]+>", " ", text.split("</header>", 1)[1].split("<footer", 1)[0])
 
 
-async def items(db: Db) -> list[tuple[ItemKind, str, str, str | None]]:
+async def items(db: Db) -> list[tuple[ItemKind, str | None, str | None, str | None]]:
     async with db.transaction() as tx:
         rows = await tx.scalars(select(WatchItem).order_by(WatchItem.created_at))
         return [(row.kind, row.corpus, row.act_key, row.location) for row in rows]
@@ -204,7 +205,7 @@ async def numbers(db: Db) -> list[str | None]:
         return list(await tx.scalars(query))
 
 
-async def test_svc_watch_landing_a_substance_signed_out_carries_it_through_sign_up(
+async def test_svc_watch_landing_a_substance_signed_out_is_watched_once_confirmed(
     client: AsyncClient, loaded: Db, mailer: RecordingMailer
 ) -> None:
     page = await client.get(FORMALDEHYDE)
@@ -222,26 +223,36 @@ async def test_svc_watch_landing_a_substance_signed_out_carries_it_through_sign_
     sent = await client.post("/account/watch", data=form)
     assert sent.status_code == 200 and "Check your inbox" in sent.text
     (mail,) = mailer.sent
-    assert mail.subject == "Confirm your address for Emendrix"
-    found = re.search(r"https://example\.org(/account/confirm/\S+)", mail.text)
-    assert found is not None and found.group(1).endswith(
-        "?next=/account/watch%3Fsubstance%3Dcas-50-00-0"
-    )
-    confirm = (await client.get(found.group(1))).text
-    carried = re.search(r'name="next" value="([^"]+)"', confirm)
-    assert carried is not None and carried.group(1) == FORMALDEHYDE.replace("&", "&amp;")
-    confirmed = await client.post(
-        found.group(1), data={"csrf": await csrf(client, found.group(1)), "next": FORMALDEHYDE}
-    )
-    assert (confirmed.status_code, confirmed.headers["location"]) == (303, FORMALDEHYDE)
-    landed = await client.get(FORMALDEHYDE)
-    assert "Start watching" in landed.text and "watchlist" not in words(landed.text).lower()
-    token = await csrf(client, FORMALDEHYDE)
-    added = await client.post(
-        "/account/watch", data={"csrf": token, "substance": "cas-50-00-0", "watchlist": "new"}
-    )
-    assert added.status_code == 303 and added.headers["location"].endswith("&notice=added")
+    assert mail.subject == "Confirm your address to start watching CAS 50-00-0"
+    path = link_of(mail)
+    assert "?" not in path, "the link carries the number as its intent, not a next"
+    assert await numbers(loaded) == []
+    confirmed = await press(client, path)
+    assert (confirmed.status_code, confirmed.headers["location"]) == (303, "/account/")
     assert await numbers(loaded) == ["cas:50-00-0"]
+    assert "CAS 50-00-0" in words((await client.get("/account/")).text)
+
+
+async def test_svc_watch_landing_a_substance_known_address_gets_a_signin_link(
+    client: AsyncClient, loaded: Db, mailer: RecordingMailer
+) -> None:
+    async with loaded.transaction() as tx:
+        await create_user_with_consents(tx, "known@example.org", "000000000000", NOW)
+    form = {
+        "csrf": await csrf(client, FORMALDEHYDE),
+        "substance": "cas-50-00-0",
+        "email": "known@example.org",
+        "consent": "yes",
+    }
+    sent = await client.post("/account/watch", data=form)
+    assert sent.status_code == 200 and "Check your inbox" in sent.text
+    (mail,) = mailer.sent
+    assert mail.subject == "Sign in to Emendrix"
+    confirmed = await press(client, link_of(mail))
+    assert (confirmed.status_code, confirmed.headers["location"]) == (303, FORMALDEHYDE)
+    assert await numbers(loaded) == []
+    landed = await client.get(FORMALDEHYDE)
+    assert "Start watching" in landed.text
 
 
 async def test_svc_watch_landing_a_substance_signed_in_adds_once(

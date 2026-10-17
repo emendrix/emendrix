@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 import pytest
+from pydantic import ValidationError
 
 from emendrix_service.auth.logic import (
     Silent,
@@ -22,6 +23,7 @@ from emendrix_service.auth.logic import (
 from emendrix_service.auth.ratelimit import SlidingWindow
 from emendrix_service.clock import FixedClock
 from emendrix_service.db.enums import TokenPurpose
+from emendrix_service.watch.substances import landing_path
 from tests.conftest import NOW
 
 
@@ -70,6 +72,35 @@ def test_svc_auth_intent_lands_on_the_watch_page() -> None:
     )
     with_location = WatchIntent(corpus="eu", act_key="32017R0745", location="AN I")
     assert with_location.landing() == "/account/watch?act=32017R0745&loc=AN+I"
+
+
+def test_svc_auth_a_substance_intent_lands_on_its_number() -> None:
+    intent = WatchIntent(identifier="cas:50-00-0")
+    assert intent.landing() == "/account/watch?substance=cas-50-00-0"
+    assert intent.landing() == landing_path("cas:50-00-0")
+
+
+def test_svc_auth_an_act_intent_stored_before_substances_still_validates() -> None:
+    stored = {"corpus": "eu", "act_key": "32017R0745", "location": "AN I"}
+    intent = WatchIntent.model_validate(stored)
+    assert (intent.location, intent.identifier) == ("AN I", None)
+    assert WatchIntent.model_validate(intent.model_dump()) == intent
+
+
+@pytest.mark.parametrize(
+    "stored",
+    [
+        {"corpus": "eu", "act_key": "32017R0745", "identifier": "cas:50-00-0"},
+        {"corpus": "eu", "identifier": "cas:50-00-0"},
+        {"identifier": "cas:50-00-0", "location": "AN I"},
+        {"corpus": "eu"},
+        {"location": "AN I"},
+        {},
+    ],
+)
+def test_svc_auth_an_intent_of_mixed_or_no_shape_is_refused(stored: dict[str, str]) -> None:
+    with pytest.raises(ValidationError):
+        WatchIntent.model_validate(stored)
 
 
 @pytest.mark.parametrize(

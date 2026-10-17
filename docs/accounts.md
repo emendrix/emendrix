@@ -156,7 +156,11 @@ that passes as both a CAS and an EC number is offered both ways on the landing a
 neither from a paste, and a value that passes neither is shown back with the reason. A CLP Index
 No cannot be watched: it keys one row of one table, so the landing names the CAS and EC numbers
 the record's stored changes give that row, to watch instead. A number no stored change names is
-accepted, as a location is.
+accepted, as a location is. A signed-out reader who signs up from the landing is sent a link that
+carries the number, as a link from an act or provision landing carries its item: the email asks
+them to confirm their address "to start watching CAS 50-00-0", and confirming it makes the
+account with the number already in its first watchlist and opens the Watching tab. An address
+that already has an account is sent a sign-in link instead, which opens the landing.
 
 Matching happens once, when an event is announced. A watch item added later is not emailed older
 changes; the personal feed matches live and shows them.
@@ -413,9 +417,6 @@ behind a proxy that routes only `/account/` and `/u/` to it, and `tick`, `retent
   root index names and its counts agree, the loader cannot tell.
 - **No presets, amending-act watch items, webhooks or bots.** A watch item is an act, a
   provision, or a CAS or EC number.
-- **Signing up from a substance landing does not add the number.** A signed-out reader who signs
-  up there is returned to the landing once confirmed, signed in, with the number one button
-  away; the sign-up does not carry the number through and add it.
 - **The Watching tab cannot always link a watched number's page.** The service holds no
   registers, only the changes the record states, so a number no stored change names gets no page
   link and no newest change, although an entry that never changed may print it and the site may
