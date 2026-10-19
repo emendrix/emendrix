@@ -27,8 +27,8 @@ without text.
 ## Which boundaries get one
 
 `BLOCK_ELEMENTS` and `DETACHED_ELEMENTS`, and only when the line has text on it already.
-Both sets are measured, not guessed. An element is in the first because across all 44
-committed Formex packages it never once appears inside a run of text. The eight tags that do
+Both sets are measured, not guessed. An element is in the first because in no committed Formex
+package does it appear inside a run of text, save a list opened by a colon. The eight tags that do
 (`HT`, `DATE`, `FT`, `LINK`, `REF.DOC`, `REF.DOC.OJ`, `QUOT.START`, `QUOT.END`) are left
 joined with nothing, because a separator around them damages a sentence: `<DATE>` sits
 mid-clause, and a blanket one turns `from 24 April 2020 to 25 May 2021,` into `from  24 April
@@ -133,10 +133,10 @@ BLOCK_ELEMENTS: Final = frozenset(
 )
 """Elements that open a block, so the verbatim form breaks the line before them.
 
-Measured over all 44 committed Formex packages on 2026-08-12: every tag here occurs inside a
-unit's subtree and not once, in any of them, does the source put text immediately before or
-after it. An element left out of the set is joined with nothing, which is what an inline one
-needs and what an unrecognised one gets, so a tag this project has never seen keeps the
+Measured over the 45 committed Formex packages on 2026-10-19: every tag here occurs inside a
+unit's subtree and text sits beside one only twice, before an IVDR `LIST` opened by a colon.
+An element left out of the set is joined with nothing, which an inline one needs and an
+unrecognised one gets, so a tag this project has never seen keeps the
 conservative behaviour rather than acquiring a break in the middle of a sentence.
 """
 

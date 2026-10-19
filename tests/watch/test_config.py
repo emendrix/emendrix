@@ -14,7 +14,7 @@ from emendrix.watch.config import (
     Watchlist,
     load_watchlist,
 )
-from eu_pins import AI_ACT, AI_ACT_V2, DSA, MDR, REACH
+from eu_pins import AI_ACT, AI_ACT_V2, DSA, IVDR, MDR, REACH
 
 EXAMPLE = Path(__file__).resolve().parents[2] / EXAMPLE_PATH
 
@@ -248,3 +248,41 @@ def test_a_misspelled_text_store_key_is_refused_rather_than_ignored(tmp_path: Pa
     path.write_text('[output]\ntext-store-path = "~/texts"\n', encoding="utf-8")
     with pytest.raises(ValueError, match="text-store-path"):
         load_watchlist(path)
+
+
+def _twins(tmp_path: Path, blocks: str) -> Path:
+    path = tmp_path / "watchlist.toml"
+    path.write_text(
+        f'[[acts]]\ncelex = "{MDR}"\n\n[[acts]]\ncelex = "{IVDR}"\n\n{blocks}', encoding="utf-8"
+    )
+    return path
+
+
+def test_a_twins_block_names_two_acts_and_its_key_ignores_their_order(tmp_path: Path) -> None:
+    loaded = load_watchlist(_twins(tmp_path, f'[[twins]]\nacts = ["{IVDR}", "{MDR}"]\n'))
+    assert [pair.acts for pair in loaded.twins] == [(IVDR, MDR)]
+    assert [pair.key for pair in loaded.twins] == [(MDR, IVDR)]
+    assert watchlist(MDR).twins == ()
+    assert load_watchlist(EXAMPLE).twins == ()
+
+
+@pytest.mark.parametrize("second", [f'["{MDR}", "{IVDR}"]', f'["{IVDR}", "{MDR}"]'])
+def test_the_same_pair_twice_is_refused_in_either_order(tmp_path: Path, second: str) -> None:
+    blocks = f'[[twins]]\nacts = ["{MDR}", "{IVDR}"]\n\n[[twins]]\nacts = {second}\n'
+    with pytest.raises(ValueError, match="same twin pair twice"):
+        load_watchlist(_twins(tmp_path, blocks))
+
+
+@pytest.mark.parametrize(
+    ("acts", "message"),
+    [
+        (f'["{MDR}", "{MDR}"]', "not 32017R0745 with itself"),
+        (f'["{MDR}"]', "acts"),
+        (f'["{MDR}", "not-a-celex"]', "not-a-celex"),
+    ],
+)
+def test_a_twins_block_that_is_not_two_distinct_acts_is_refused(
+    tmp_path: Path, acts: str, message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        load_watchlist(_twins(tmp_path, f"[[twins]]\nacts = {acts}\n"))

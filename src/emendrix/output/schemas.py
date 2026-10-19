@@ -24,6 +24,7 @@ from emendrix.graph.report import EmittedChange
 from emendrix.output.index_model import ActIndex, RootIndex
 from emendrix.output.json_out import ChangelogEntry
 from emendrix.output.register import Register
+from emendrix.twins.model import TwinMap
 
 __all__ = [
     "COMMITTED",
@@ -48,11 +49,16 @@ SCHEMAS: Final[dict[str, type[BaseModel]]] = {
 }
 """Each name the site serves a schema under, and the model whose serialised form it describes."""
 
-COMMITTED: Final[dict[str, type[BaseModel]]] = {**SCHEMAS, "register": Register}
-"""Every schema committed under `docs/schema/`: the served ones, and the register's.
+COMMITTED: Final[dict[str, type[BaseModel]]] = {
+    **SCHEMAS,
+    "register": Register,
+    "twins": TwinMap,
+}
+"""Every schema committed under `docs/schema/`: the served ones, the register's and the twin map's.
 
-The register is served from the record as committed, beside each act's index; its schema is
-committed here and is not among the files the site build writes.
+The register is served from the record as committed, beside each act's index, and the twin map
+from the record's root `twins/`; their schemas are committed here and are not among the files
+the site build writes.
 """
 
 

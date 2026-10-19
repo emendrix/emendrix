@@ -202,7 +202,7 @@ Reading = tuple[str | None, str | None, str | None]
 
 @pytest.fixture(scope="module")
 def readings() -> frozenset[Reading]:
-    """Every bare-headed top-level annex of the 44 packages, deduplicated across versions."""
+    """Every bare-headed top-level annex of the 45 packages, deduplicated across versions."""
     seen: set[Reading] = set()
     count = 0
     for package in _packages():
@@ -218,7 +218,7 @@ def readings() -> frozenset[Reading]:
                 continue
             fired = annex_subject(heading, human, node.text)
             seen.add((heading, reference, fired))
-    assert count == 44
+    assert count == 45
     return frozenset(seen)
 
 
@@ -227,14 +227,17 @@ def _agrees(fired: str, reference: str | None) -> bool:
 
 
 def test_the_rule_is_never_wrong_over_the_committed_packages(readings: frozenset[Reading]) -> None:
-    """The counts, measured 2026-09-19 over the 44 committed Formex packages.
+    """The counts, measured 2026-09-19 over 44 committed Formex packages and 2026-10-19 over 45.
 
-    25 distinct bare-headed annexes (by stored heading, reference and reading). The rule read
-    a subject from 18, and the structure's reading agrees on all 18. It read none where the
-    structure has no subject, and none that disagrees. The structure names a subject the rule
-    does not read in 2: MDR Annex V, whose subject holds the lower-case `(b)` of a coordinate,
-    and MDR Annex VI, whose subject runs past 200 characters. Both are the rule saying nothing
-    when a line is not the plain capitals of a title, which is the side it errs on.
+    25 distinct bare-headed annexes (by stored heading, reference and reading) over the 44. The
+    rule read a subject from 18, and the structure's reading agrees on all 18. It read none
+    where the structure has no subject, and none that disagrees. The structure names a subject
+    the rule does not read in 2: MDR Annex V, whose subject holds the lower-case `(b)` of a
+    coordinate, and MDR Annex VI, whose subject runs past 200 characters. The IVDR (32017R0746)
+    package pinned on 2026-10-19 adds 5 readings not already in the set: the rule reads 4 and
+    agrees on all 4, and the fifth is IVDR Annex VI, past 200 characters like its MDR twin.
+    Each miss is the rule saying nothing when a line is not the plain capitals of a title,
+    which is the side it errs on.
 
     The structure also names a subject for two annexes outside this set: REACH's unnumbered
     `Appendices 1 to 6`, whose one group is titled `FOREWORD`, and REACH `Appendix 10`, whose
@@ -251,7 +254,7 @@ def test_the_rule_is_never_wrong_over_the_committed_packages(readings: frozenset
     wrong = [item for item in fired if not _agrees(item[2], item[1])]
     reference_only = [item for item in readings if item[2] is None and item[1] is not None]
     assert wrong == []
-    assert len(readings) == 25
-    assert len(fired) == 18
-    assert sum(_agrees(got, ref) for _, ref, got in fired) == 18
-    assert len(reference_only) == 2
+    assert len(readings) == 30
+    assert len(fired) == 22
+    assert sum(_agrees(got, ref) for _, ref, got in fired) == 22
+    assert len(reference_only) == 3

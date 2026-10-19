@@ -13,6 +13,9 @@ aliases   = ["Artificial Intelligence Act"] # other names a search should find i
 celex = "32026R1744"                        # the instrument, not a watched act
 name  = "Digital Omnibus on AI"             # what the site calls it where an event names it
 
+[[twins]]
+acts = ["32017R0745", "32017R0746"]         # compare these two acts' provisions for twins
+
 [output]
 repo_path = "~/regulatory-changelog"        # where the committed changelog lives
 ```
@@ -67,6 +70,7 @@ __all__ = [
     "EXAMPLE_PATH",
     "AmendingLabel",
     "OutputConfig",
+    "TwinPairConfig",
     "WatchIndex",
     "WatchMatch",
     "WatchedAct",
@@ -155,6 +159,32 @@ class OutputConfig(BaseModel):
     )
 
 
+class TwinPairConfig(BaseModel):
+    """Two acts whose provisions `emendrix twins build` compares for textual twins.
+
+    Which provisions pair is computed, never configured; order inside `acts` does not matter.
+    Both acts must also be on `[[acts]]`, which the build checks and counts rather than this.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    acts: tuple[str, str] = Field(description="CELEX numbers of the two acts, in any order.")
+
+    @field_validator("acts")
+    @classmethod
+    def _two_distinct_acts(cls, value: tuple[str, str]) -> tuple[str, str]:
+        parsed = (Celex.parse(value[0]).value, Celex.parse(value[1]).value)
+        if parsed[0] == parsed[1]:
+            raise ValueError(f"a [[twins]] block compares two acts, not {parsed[0]} with itself")
+        return parsed
+
+    @property
+    def key(self) -> tuple[str, str]:
+        """The pair in sorted order: what makes `[a, b]` and `[b, a]` the same block."""
+        low, high = sorted(self.acts)
+        return (low, high)
+
+
 class Watchlist(BaseModel):
     """Every act being watched, in the order the file lists them."""
 
@@ -165,12 +195,16 @@ class Watchlist(BaseModel):
         default=(), description="Short names for the instruments that amend the watched acts."
     )
     output: OutputConfig = OutputConfig()
+    twins: tuple[TwinPairConfig, ...] = Field(
+        default=(), description="Pairs of acts compared for textual twins."
+    )
 
     @model_validator(mode="after")
     def _no_duplicates(self) -> Self:
         for what, seen in (
             ("act", [entry.celex for entry in self.acts]),
             ("amending act", [entry.celex for entry in self.amending_acts]),
+            ("twin pair", [" and ".join(pair.key) for pair in self.twins]),
         ):
             repeated = sorted({value for value in seen if seen.count(value) > 1})
             if repeated:

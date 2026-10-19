@@ -45,7 +45,7 @@ from emendrix.eu.xml_ import NOT_WELL_FORMED, fromstring
 from eu_pins import FIXTURE_DIR, MDR, MDR_V1, package
 
 PACKAGES: Final = sorted(FIXTURE_DIR.glob("*.fmx4.zip"))
-"""The 44 Formex packages this repository commits. The invariant is measured over all of them."""
+"""Every Formex package this repository commits. The invariant is measured over all of them."""
 
 
 def unit_texts() -> list[tuple[str, str]]:

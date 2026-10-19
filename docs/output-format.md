@@ -423,4 +423,72 @@ committed as [`./schema/register.schema.json`](./schema/register.schema.json).
 group entry names no identifier, so an identifier no entry carries is not thereby outside the
 act.
 
+## The twin map
+
+Some acts are written as variants of each other, and a provision of one often has a textually
+similar provision in the other. For each pair of acts named in a `[[twins]]` block of the
+watchlist, `emendrix twins build` computes which units are twins and commits one document at the
+repository's root, outside every act directory, so no index, register or page reader meets it:
+
+```
+<repo>/twins/eu-32017R0745--eu-32017R0746.json   the lower key first, whichever order the block names
+```
+
+```toml
+[[twins]]
+acts = ["32017R0745", "32017R0746"]   # which acts to compare; which provisions pair is computed
+```
+
+Both acts must be on `[[acts]]`; a pair naming an unwatched act, or an act with no stored text,
+is a counted refusal in the command's summary rather than an error. The map is built from each
+act's **newest stored version** in the text store ([`./text-store.md`](./text-store.md)), with no
+network, no model and no clock, and it is committed only when its bytes change, under the
+subject `twins: <keyA> and <keyB> at <versionA> and <versionB>`. The command never creates the
+changelog repository: the loop's first write does. `[[twins]]` needs this version of emendrix or
+later, because the watchlist refuses a key it does not know.
+
+**The method.** Every unit of one act is scored against every unit of the other of the same kind
+(article with article, annex with annex) by the word ratio,
+`difflib.SequenceMatcher(None, a_words, b_words, autojunk=False).ratio()` over the
+whitespace-split comparison texts. A pair is a twin when each unit is the other's best match and
+the ratio is at least the **floor, 0.90**. Ties go to the lower canonical location string.
+Numbers are never an input: MDR Article 4 pairs with IVDR Article 3 because their texts do.
+Below each pair, children are aligned the same way, level by level, only below parents that
+aligned, which is what lets a coordinate such as Article 10(9) be named on the other side.
+
+The floor was read off the corpus on 2026-10-19 by a stated rule: the lowest candidate floor from
+0.50 up at which at least 95% of the MDR/IVDR mutual-best pairs share a normalised heading, and
+0.90 if none does. None did: agreement was 0.882 over 85 pairs at 0.90, because the IVDR
+systematically words "performance study" where the MDR says "clinical investigation". **Heading
+agreement is a proxy for pair precision and nothing more**: two provisions can share a heading and
+differ in substance, and a provision whose heading was reworded can still be a twin. It is
+published per pair as `headings_equal` and plays no part in pairing.
+
+| Field | Meaning |
+|---|---|
+| `twins_schema` | the map's format version, `1.0` |
+| `disclaimer` | not legal advice |
+| `method` | `measure` (`word-ratio`), `floor`, and `verified_on`, the date the floor was measured |
+| `a`, `b` | each act's `corpus`, `key` and the `version` its texts were read from; `a` has the lower key |
+| `pairs[]` | in `a`'s document order: `a`, `b` (unit locations), `ratio` (3 places), `identical` (comparison texts equal), `children[]`, `passages[]`, `passages_omitted`, `passages_withheld`, `headings_equal` |
+| `pairs[].children[]` | aligned descendants at any depth, in pre-order: `a`, `b`, `ratio` |
+| `pairs[].passages[]` | `a`, `b`, `cut`: one differing span each, with context |
+| `unpaired_a[]`, `unpaired_b[]` | units with no twin, in location order: `unit`, and `best`, `ratio` when its best match reached the floor but preferred another unit, else `null` |
+
+**What a pair may show is capped**, because the map is published and the text store it is built
+from is not. Each differing word span is one passage, with up to 6 equal words of context either
+side; each side is cut at 400 characters with a visible `[…]` and `cut: true`. At most 12
+passages are kept, and `passages_omitted` counts the rest. If the passages' characters on either
+side, all of them counted, exceed 30% of that side's comparison text, none is kept and
+`passages_withheld` is true: past that share an excerpt would reproduce the provision by another
+route. Identical pairs carry no passages. **Passages are excerpts of comparison text**, whitespace
+collapsed and words joined by single spaces, for reading where two provisions differ; they are not
+the verbatim text, which the acts' own publications carry. Over MDR and IVDR 20250110 on
+2026-10-19 the map holds 85 pairs (80 articles, 5 annexes), 1 identical, 42 withheld and 1,019
+aligned children, with 56 MDR and 44 IVDR units unpaired. The map's schema is committed as
+[`./schema/twins.schema.json`](./schema/twins.schema.json).
+
+Twin means textually similar by this measure. It says nothing about what either provision
+requires, or whether one should change because the other did.
+
 A rendering of these artifacts as a browsable site is in [`./site.md`](./site.md).

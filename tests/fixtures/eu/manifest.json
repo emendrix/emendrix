@@ -286,6 +286,36 @@
       "url": "https://publications.europa.eu/resource/celex/32017R0745"
     },
     {
+      "accept": "application/xml;notice=branch",
+      "accept_language": "eng",
+      "content_type": "application/xml;notice=branch;charset=UTF-8",
+      "fetched_at": "2026-10-19T05:52:45.341986Z",
+      "file": "celex_32017R0746.branch.xml",
+      "key": "9530f713ae24042f2adaed69cf3540ee6a1ca425e411282a36b8e3fb29d14bd4",
+      "method": "GET",
+      "sha256": "df79b386d4c6f88d3276d5cb88f9973d5cad01627d64f9b2abf3b63e87386e4b",
+      "size": 19869,
+      "source_sha256": "7e864aced17af9f790fc79215b25a924642319a92134ced8bca42c9b8fa4a152",
+      "status_code": 200,
+      "trim": "notice-branch",
+      "url": "https://publications.europa.eu/resource/celex/32017R0746"
+    },
+    {
+      "accept": "application/xml;notice=tree",
+      "accept_language": "eng",
+      "content_type": "application/xml;notice=tree;charset=UTF-8",
+      "fetched_at": "2026-10-19T05:30:10.836292Z",
+      "file": "celex_32017R0746.tree.xml",
+      "key": "e818b31efca219eb876faa7a7ad497b606962fbedd0730919c9f185c811dad5c",
+      "method": "GET",
+      "sha256": "ac6a385955a0bf2a4dec605edfb080e4e75828f96e74987f96cd80ccef114c2c",
+      "size": 124461,
+      "source_sha256": "18e3df8d6d81e8abd7b07bb008197f8bf24ae35c7de06565270ff8c1403eaffa",
+      "status_code": 200,
+      "trim": "notice-tree",
+      "url": "https://publications.europa.eu/resource/celex/32017R0746"
+    },
+    {
       "accept": "application/xml;notice=tree",
       "accept_language": "eng",
       "content_type": "application/xml;notice=tree;charset=UTF-8",
@@ -764,6 +794,21 @@
       "status_code": 200,
       "trim": "formex-xml-only",
       "url": "https://publications.europa.eu/resource/consolidation/2017R0745%2F20260101.ENG.fmx4"
+    },
+    {
+      "accept": "application/zip",
+      "accept_language": "eng",
+      "content_type": "application/zip;charset=UTF-8",
+      "fetched_at": "2026-09-05T17:46:21.650520Z",
+      "file": "consolidation_2017R0746_20250110.ENG.fmx4.zip",
+      "key": "1dc90f4511eba3eb8d70f7e4b4d0a9dcee7f08771b0542d822c18da5f4afd31e",
+      "method": "GET",
+      "sha256": "4fb94f40a2ab6e678a0ae34260bc7a303600494358f82c8d8d0747b25e8bd69f",
+      "size": 139586,
+      "source_sha256": "837e77886c45ba8c6baa23ddb615175c3b7ef86c8efc7c06bc1eec925be4266d",
+      "status_code": 200,
+      "trim": "formex-xml-only",
+      "url": "https://publications.europa.eu/resource/consolidation/2017R0746%2F20250110.ENG.fmx4"
     },
     {
       "accept": "application/zip",

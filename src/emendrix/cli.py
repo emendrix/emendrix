@@ -1,11 +1,11 @@
 """`emendrix` on the command line: `diff`, `watch`, `explain`, `run`, `backfill`, `repair`,
-`index`, `texts`, `eval`, `site`.
+`index`, `texts`, `twins`, `eval`, `site`.
 
 This module is the composition root for `diff`, the one place allowed to know that the EU
 adapter, the disk cache and the diff engine exist at the same time. It reads the observation
 date once, at the boundary, and passes it down as a value; nothing below it ever asks what time
-it is. `watch`, `run`, `explain`, `backfill`, `repair`, `texts` and `eval` are each their own
-package's root, mounted here.
+it is. `watch`, `run`, `explain`, `backfill`, `repair`, `texts`, `twins` and `eval` are each
+their own package's root, mounted here.
 
 `emendrix repair <kind>` is the one command that reaches into entries already committed. It is
 always invoked explicitly, never reached from a resume, and it corrects one part of an entry
@@ -51,6 +51,7 @@ from emendrix.output.index_cli import app as index_app
 from emendrix.repair.cli import app as repair_app
 from emendrix.site_.cli import app as site_app
 from emendrix.texts.cli import app as texts_app
+from emendrix.twins.cli import app as twins_app
 from emendrix.watch.cli import watch
 
 __all__ = ["DISCLAIMER", "app", "render_text"]
@@ -67,6 +68,7 @@ app.add_typer(index_app, name="index")
 app.add_typer(repair_app, name="repair")
 app.add_typer(site_app, name="site")
 app.add_typer(texts_app, name="texts")
+app.add_typer(twins_app, name="twins")
 app.command("watch")(watch)
 app.command("run")(run_command)
 app.command("explain")(explain_command)
@@ -85,7 +87,7 @@ _MARKERS = {
 def main() -> None:
     """Keep `emendrix` a multi-command app whatever it happens to hold today.
 
-    `site` and `texts` sit beside `diff`, `watch`, `eval`, `run`, `explain`, `backfill` and
+    `site`, `texts` and `twins` sit beside `diff`, `watch`, `eval`, `run`, `explain`, `backfill` and
     `repair`; without this callback Typer would collapse a single command into the root and
     every one of those would change the invocation of the others.
     """

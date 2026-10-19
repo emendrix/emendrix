@@ -80,6 +80,12 @@ PINNED: Final[tuple[Pin, ...]] = (
     Pin(celex="32017R0745", reason="MDR: tree + branch notices"),
     Pin(celex="32017R0745", version="02017R0745-20170505", reason="MDR pair, before"),
     Pin(celex="32017R0745", version="02017R0745-20200424", reason="MDR pair, after"),
+    Pin(celex="32017R0746", reason="IVDR: tree notice, for the MDR/IVDR twin map"),
+    Pin(
+        celex="32017R0746",
+        version="02017R0746-20250110",
+        reason="IVDR twin of the committed MDR 20250110",
+    ),
     Pin(
         celex="32020R0561",
         version=ORIGINAL,

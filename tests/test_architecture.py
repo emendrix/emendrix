@@ -374,6 +374,24 @@ def test_the_text_store_reaches_the_corpus_only_from_its_own_command_line() -> N
     assert _CORPUS_NAMES.search("key = CELEX of the act")
 
 
+def test_the_twin_map_reaches_the_corpus_only_from_its_own_command_line() -> None:
+    """A twin map is computed from any two adapter trees, so `twins/` is held to the seam too.
+
+    `twins/cli.py` is the composition root: it reads the watchlist and decides which stored
+    version is newest, which takes reading the corpus's version identifiers. Every other module
+    sees core types only, and none reads the clock: the map is a function of two trees.
+    """
+    checked = 0
+    for name, source in modules():
+        if not name.startswith("twins/") or name == "twins/cli.py":
+            continue
+        checked += 1
+        assert "emendrix.eu" not in source, name
+        assert "today_utc" not in source, name
+        assert not _CORPUS_NAMES.search(source), name
+    assert checked >= 5
+
+
 def test_modules_stay_under_the_line_cap() -> None:
     """~300 lines, split at a real seam. Docstrings count: they are part of the reading."""
     too_long = {

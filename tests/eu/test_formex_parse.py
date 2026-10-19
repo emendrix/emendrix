@@ -189,11 +189,11 @@ def test_the_division_words_are_the_ones_the_site_reads_committed_text_with() ->
 
 
 _SUBJECTS_FIRED = {
-    ("ANNEX I", "GENERAL SAFETY AND PERFORMANCE REQUIREMENTS"): 8,
-    ("ANNEX II", "TECHNICAL DOCUMENTATION"): 8,
-    ("ANNEX III", "TECHNICAL DOCUMENTATION ON POST-MARKET SURVEILLANCE"): 8,
-    ("ANNEX IV", "EU DECLARATION OF CONFORMITY"): 8,
-    ("ANNEX V", "CE MARKING OF CONFORMITY"): 8,
+    ("ANNEX I", "GENERAL SAFETY AND PERFORMANCE REQUIREMENTS"): 9,
+    ("ANNEX II", "TECHNICAL DOCUMENTATION"): 9,
+    ("ANNEX III", "TECHNICAL DOCUMENTATION ON POST-MARKET SURVEILLANCE"): 9,
+    ("ANNEX IV", "EU DECLARATION OF CONFORMITY"): 9,
+    ("ANNEX V", "CE MARKING OF CONFORMITY"): 9,
     (
         "ANNEX VI",
         "INFORMATION TO BE SUBMITTED UPON THE REGISTRATION OF DEVICES AND ECONOMIC OPERATORS IN "
@@ -201,16 +201,16 @@ _SUBJECTS_FIRED = {
         "DATABASE TOGETHER WITH THE UDI-DI IN ACCORDANCE WITH ARTICLES 28 AND 29, AND THE UDI "
         "SYSTEM",
     ): 8,
-    ("ANNEX VII", "REQUIREMENTS TO BE MET BY NOTIFIED BODIES"): 8,
-    ("ANNEX VIII", "CLASSIFICATION RULES"): 8,
+    ("ANNEX VII", "REQUIREMENTS TO BE MET BY NOTIFIED BODIES"): 9,
+    ("ANNEX VIII", "CLASSIFICATION RULES"): 9,
     (
         "ANNEX IX",
         "CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF "
         "TECHNICAL DOCUMENTATION",
-    ): 8,
-    ("ANNEX X", "CONFORMITY ASSESSMENT BASED ON TYPE-EXAMINATION"): 8,
+    ): 9,
+    ("ANNEX X", "CONFORMITY ASSESSMENT BASED ON TYPE-EXAMINATION"): 9,
     ("ANNEX XI", "CONFORMITY ASSESSMENT BASED ON PRODUCT CONFORMITY VERIFICATION"): 8,
-    ("ANNEX XII", "CERTIFICATES ISSUED BY A NOTIFIED BODY"): 8,
+    ("ANNEX XII", "CERTIFICATES ISSUED BY A NOTIFIED BODY"): 9,
     ("ANNEX XIII", "PROCEDURE FOR CUSTOM-MADE DEVICES"): 8,
     ("ANNEX XIV", "CLINICAL EVALUATION AND POST-MARKET CLINICAL FOLLOW-UP"): 8,
     ("ANNEX XV", "CLINICAL INVESTIGATIONS"): 8,
@@ -220,6 +220,23 @@ _SUBJECTS_FIRED = {
         "ARTICLE 1(2)",
     ): 8,
     ("ANNEX XVII", "CORRELATION TABLE"): 8,
+    (
+        "ANNEX VI",
+        "INFORMATION TO BE SUBMITTED UPON THE REGISTRATION OF DEVICES AND ECONOMIC OPERATORS IN "
+        "ACCORDANCE WITH ARTICLES 26(3) AND 28, CORE DATA ELEMENTS TO BE PROVIDED TO THE UDI "
+        "DATABASE TOGETHER WITH THE UDI-DI IN ACCORDANCE WITH ARTICLES 25 AND 26 AND THE UDI "
+        "SYSTEM",
+    ): 1,
+    ("ANNEX XI", "CONFORMITY ASSESSMENT BASED ON PRODUCTION QUALITY ASSURANCE"): 1,
+    (
+        "ANNEX XIII",
+        "PERFORMANCE EVALUATION, PERFORMANCE STUDIES AND POST-MARKET PERFORMANCE FOLLOW-UP",
+    ): 1,
+    (
+        "ANNEX XIV",
+        "INTERVENTIONAL CLINICAL PERFORMANCE STUDIES AND CERTAIN OTHER PERFORMANCE STUDIES",
+    ): 1,
+    ("ANNEX XV", "CORRELATION TABLE"): 1,
     ("ANNEX II", "REQUIREMENTS FOR THE COMPILATION OF SAFETY DATA SHEETS"): 10,
     (
         "ANNEX V",
@@ -234,13 +251,16 @@ _SUBJECTS_FIRED = {
 
 
 def test_how_many_annex_headings_the_subject_rule_moves_is_a_measured_number() -> None:
-    """Every annex element of the 44 committed packages whose heading the rule decides.
+    """Every annex element of the 45 committed packages whose heading the rule decides.
 
-    Measured 2026-09-19. Of 838 annex elements, 515 carry an `STI` and are untouched. Of the
-    323 without one, 222 hold a sole titled `GR.SEQ`, and the rule reads a subject from 185:
-    all seventeen MDR (32017R0745) annexes, `AN I` to `AN XVII`, in each of its 8 packages,
-    and REACH (32006R1907) `AN V` in 21 packages, `AN XIII` in 18 and `AN II` in 10. Every one
-    is a top-level annex. It declines 37, both nested in REACH `AN XVII`: the unnumbered
+    Measured 2026-09-19 over 44 packages. Of 838 annex elements, 515 carry an `STI` and are
+    untouched. Of the 323 without one, 222 hold a sole titled `GR.SEQ`, and the rule reads a
+    subject from 185: all seventeen MDR (32017R0745) annexes, `AN I` to `AN XVII`, in each of
+    its 8 packages, and REACH (32006R1907) `AN V` in 21 packages, `AN XIII` in 18 and `AN II`
+    in 10. The IVDR (32017R0746) package pinned on 2026-10-19 adds 16 annex elements, none with
+    an `STI`, and the rule reads a subject from 15 of them, all fifteen of its annexes, so the
+    counts read 339 and 200. Ten of those subjects are word for word an MDR one. Every one is a
+    top-level annex. It declines 37, both nested in REACH `AN XVII`: the unnumbered
     `Appendices 1 to 6`, whose group is `FOREWORD` (21), and `APP 10`, whose group opens
     `Entry 43` (16). No location moves: the rule changes what a heading says and nothing else.
 
@@ -274,9 +294,9 @@ def test_how_many_annex_headings_the_subject_rule_moves_is_a_measured_number() -
                         fired[(bare, subject)] += 1
                     elif (sole := _sole_group_title(annex)) is not None:
                         declined[(bare, sole)] += 1
-    assert without_subtitle == 323
+    assert without_subtitle == 339
     assert fired == Counter(_SUBJECTS_FIRED)
-    assert sum(fired.values()) == 185
+    assert sum(fired.values()) == 200
     assert declined == Counter(
         {
             ("Appendices 1 to 6", "FOREWORD"): 21,
@@ -428,11 +448,16 @@ def test_no_block_separator_lands_inside_a_run_of_text() -> None:
 
     A separator is inserted only immediately before a `BLOCK_ELEMENTS` child, so the way it
     could damage a sentence is for such a child to sit inside its parent's flowing text. This
-    walks all 44 committed Formex packages, every member, every element, and asserts that no
-    tag in the set ever carries text immediately before or after it. That is the whole safety
-    argument for the set, and it is a measurement rather than a claim: 670867 such boundaries
-    on 2026-08-12, none of them inside a run of text.
+    walks all 45 committed Formex packages, every member, every element, and asserts that no
+    tag in the set ever carries text after it, and text before it only where that text ends in
+    the colon that introduces it. That is the whole safety argument for the set, and it is a
+    measurement rather than a claim: 670867 such boundaries over 44 packages on 2026-08-12,
+    none of them with text beside them; 679774 over 45 on 2026-10-19, two of them a `LIST`
+    opening inside an IVDR (32017R0746) `ALINEA` straight after "the following conditions is
+    fulfilled:" and "with the exception of:". A break there is where the list begins, which is
+    the line the source means, so the parser is right and the claim is the narrower one.
     """
+    introduced: list[str] = []
     boundaries = 0
     for path in sorted(FIXTURE_DIR.glob("*.fmx4.zip")):
         for member in read_package(path.read_bytes()):
@@ -442,12 +467,17 @@ def test_no_block_separator_lands_inside_a_run_of_text() -> None:
                 root = fromstring(member.data)
             except NOT_WELL_FORMED:  # a corrupt member is somebody else's test
                 continue
-            boundaries += _block_boundaries(root, path.name)
-    assert boundaries == 670867
+            boundaries += _block_boundaries(root, path.name, introduced)
+    assert boundaries == 679774
+    assert introduced == ["consolidation_2017R0746_20250110.ENG.fmx4.zip/ALINEA/LIST"] * 2
 
 
-def _block_boundaries(parent: Element, where: str) -> int:
-    """Every block boundary under `parent`, asserting each is free of adjacent text."""
+def _block_boundaries(parent: Element, where: str, introduced: list[str]) -> int:
+    """Every block boundary under `parent`, asserting each is free of adjacent text.
+
+    Text before a block is allowed only when it ends in a colon, and each such boundary is
+    recorded in `introduced` so the test can hold the count.
+    """
     found = 0
     children = list(parent)
     for index, child in enumerate(children):
@@ -455,11 +485,14 @@ def _block_boundaries(parent: Element, where: str) -> int:
             continue
         if child.tag in BLOCK_ELEMENTS:
             found += 1
-            lead = (parent.text if index == 0 else children[index - 1].tail) or ""
+            lead = ((parent.text if index == 0 else children[index - 1].tail) or "").strip()
             trail = child.tail or ""
-            assert not lead.strip(), f"{where}: {parent.tag}/{child.tag} follows {lead[-40:]!r}"
+            if lead.endswith(":"):
+                introduced.append(f"{where}/{parent.tag}/{child.tag}")
+            else:
+                assert not lead, f"{where}: {parent.tag}/{child.tag} follows {lead[-40:]!r}"
             assert not trail.strip(), f"{where}: {parent.tag}/{child.tag} precedes {trail[:40]!r}"
-        found += _block_boundaries(child, where)
+        found += _block_boundaries(child, where, introduced)
     return found
 
 
@@ -503,9 +536,10 @@ def test_the_detached_set_is_the_whole_class_and_not_two_instances_of_it() -> No
 
     The companion to the block-boundary measurement above, and the check that this is a fix at
     the seam rather than at the two articles that exposed it. A tag needs a break before its
-    content when it is *not* a block element and yet holds one, so this walks all 44 committed
+    content when it is *not* a block element and yet holds one, so this walks all 45 committed
     packages, every unit subtree `verbatim_text` is ever called on, and collects every such
-    tag. On 2026-09-01 the answer is `NOTE` and `QUOT.S`, and nothing else.
+    tag. On 2026-09-01 the answer is `NOTE` and `QUOT.S`, and nothing else; on 2026-10-19 the
+    IVDR (32017R0746) package adds nine `NOTE` holders and no new tag.
 
     **If a tag appears here that is not in the set, that is a finding to explain, not a test to
     update:** it is another shape of the same run-on, and it moves stored text.
@@ -522,7 +556,7 @@ def test_the_detached_set_is_the_whole_class_and_not_two_instances_of_it() -> No
             for unit, _ in unit_elements(root):
                 _collect_block_holders(unit, holders)
     assert set(holders) == set(DETACHED_ELEMENTS)
-    assert holders == Counter({"NOTE": 1904, "QUOT.S": 346})
+    assert holders == Counter({"NOTE": 1913, "QUOT.S": 346})
 
 
 def _collect_block_holders(parent: Element, found: Counter[str]) -> None:

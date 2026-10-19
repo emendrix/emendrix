@@ -41,6 +41,11 @@ CLP = "32008R1272"
 
 MDR_V1 = "02017R0745-20170505"
 MDR_V2 = "02017R0745-20200424"
+MDR_TWIN = "02017R0745-20250110"
+IVDR = "32017R0746"
+IVDR_TWIN = "02017R0746-20250110"
+"""The IVDR consolidation of the same date as `MDR_TWIN`: the pair the twin map is tested on.
+Pinned 2026-10-19; the IVDR's tree notice listed nothing newer that day."""
 REACH_2008 = "02006R1907-20081012"
 REACH_2009 = "02006R1907-20090120"
 """The pair that measures whitespace-correct extraction: a naive one reports all 143 units
