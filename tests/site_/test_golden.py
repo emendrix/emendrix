@@ -260,7 +260,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 50024)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 50122)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -457,7 +457,13 @@ length. Nothing in the page's own body moved, no anchor did and no id went.
 MDR/IVDR twin map and the one change whose unit has a twin, Article 113, gained the line naming
 it: IVDR Article 106(1), textually similar (0.958), linked to EUR-Lex, with the dates of the
 paired texts and the sentence that the record holds no IVDR version made by the same amending act.
-Nothing else in the page moved, no anchor did and no id went."""
+Nothing else in the page moved, no anchor did and no id went.
+
+98 bytes heavier on 2026-10-19, later the same day, when that line gained its last sentence, a
+link to the pair's own page, `See where the two texts differ`. The twin pages that joined the
+golden that day weigh 6 959 to 20 542 bytes each, well under this one, because a twin page shows
+only the capped passages where the two texts differ and never either provision whole. Nothing
+else in the page moved, no anchor did and no id went."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

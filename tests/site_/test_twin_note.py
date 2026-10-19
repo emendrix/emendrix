@@ -133,7 +133,22 @@ def test_without_a_sister_page_the_twin_links_eur_lex_and_without_an_address_not
     note = _notes(linked, attributed_entry(), "AR 2")
     assert f'<a class="ext" href="{url.replace("&", "&amp;")}">Art. 9' in note
     bare = _site(pair("AR 2", "AR 9"), sister=attributed_entry())
-    assert "<a " not in _notes(bare, attributed_entry(), "AR 2")
+    assert "<a " not in _notes(bare, attributed_entry(), "AR 2").replace(_COMPARE_LINK, "")
+
+
+_COMPARE_LINK = (
+    '<a href="../../../twins/toy-house-rules--toy-house-rules-sister/ar-2/">'
+    "See where the two texts differ</a>"
+)
+
+
+def test_a_pair_that_differs_links_its_twin_page_and_an_identical_one_does_not() -> None:
+    differs = _site(pair("AR 2", "AR 9"), sister=attributed_entry())
+    assert _COMPARE_LINK in _notes(differs, attributed_entry(), "AR 2")
+    act = next(item for item in differs.acts if item.act == HOUSE_RULES)
+    assert _COMPARE_LINK in twin_line(differs, act, "AR 2", ROOT)[0]
+    same = _site(pair("AR 2", "AR 2", identical=True), sister=attributed_entry())
+    assert "twins/" not in _notes(same, attributed_entry(), "AR 2")
 
 
 def test_a_unit_with_no_twin_gets_no_note() -> None:

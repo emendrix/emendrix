@@ -48,6 +48,10 @@ __all__ = [
     "substance_href",
     "substance_list_href",
     "substances_href",
+    "twin_api_href",
+    "twin_page_href",
+    "twin_pair_href",
+    "twins_href",
     "up",
 ]
 
@@ -231,6 +235,30 @@ def substance_list_href(act_slug: str, page: int = 1) -> str:
     """
     first = f"{substances_href()}acts/{act_slug}/"
     return first if page == 1 else f"{first}{page}/"
+
+
+def twins_href() -> str:
+    """The index of every pair of acts whose provisions are compared, relative to the site root."""
+    return "twins/"
+
+
+def twin_pair_href(pair: str) -> str:
+    """One pair of acts' index, by the twin map's file stem: `twins/eu-32017R0745--eu-32017R0746/`.
+
+    The stem is already canonical and filesystem-safe, both keys made so by `slug`, so the
+    published file and its page share one name and no second slug rule applies.
+    """
+    return f"{twins_href()}{pair}/"
+
+
+def twin_page_href(pair: str, canonical: str) -> str:
+    """One twin pair's page, under its pair of acts, by the slug of the first act's unit."""
+    return f"{twin_pair_href(pair)}{location_slug(canonical)}/"
+
+
+def twin_api_href(pair: str) -> str:
+    """The committed twin map as the API serves it, `api/v1/twins/<pair>.json`, unaltered."""
+    return f"api/v1/twins/{pair}.json"
 
 
 def depth_of(path: str) -> int:

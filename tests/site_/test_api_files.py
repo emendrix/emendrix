@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from helpers import REPO, REPORTS, SITE_URL, WATCHLIST, build, runner
+from helpers import REPO, REPORTS, SITE_URL, WATCHLIST, build, runner, twinned
 from toy_substances import SITE_URL as TOY_URL
 from toy_substances import substance_site
 
@@ -290,3 +290,13 @@ def test_the_committed_substance_schema_is_what_the_model_generates() -> None:
         f"docs/schema/substance{SUFFIX} differs from the model; if the change is intended, run "
         f"`{_REGENERATE_SUBSTANCE}` from the repository root and read the diff"
     )
+
+
+def test_a_twin_map_is_served_as_its_committed_bytes(tmp_path: Path, changelog_repo: Path) -> None:
+    """The site copies the map; a re-serialisation would be a second document with one name."""
+    repo = twinned(changelog_repo, tmp_path)
+    built = build(tmp_path / "site", repo)
+    name = "eu-32017R0745--eu-32017R0746.json"
+    served = built / "api" / "v1" / "twins" / name
+    assert served.read_bytes() == (repo / "twins" / name).read_bytes()
+    assert sorted(p.name for p in (built / "api" / "v1" / "twins").iterdir()) == [name]

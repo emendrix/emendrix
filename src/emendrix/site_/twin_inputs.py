@@ -5,6 +5,10 @@ and says which units of one act are textually similar to units of the other, at 
 it names. The site reads those files and nothing else about twins: it never computes a pair,
 and a pair it shows is one the committed file holds.
 
+Each map's committed bytes are kept beside the parsed map, keyed by its file stem, because the
+site serves the file as committed and a re-serialisation would be a second document under the
+record's name.
+
 Missing inputs are stated, not raised: a file that does not validate is named in `unreadable`,
 and a map naming an act the site does not show is named in `ignored`, so the build can say
 both and still write every page.
@@ -27,7 +31,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from emendrix.core import ActId, Change
 from emendrix.site_.act_site import ActSite
 from emendrix.site_.amending import amending_keys
-from emendrix.twins.model import TWINS_DIR, TwinMap, TwinPair, TwinSide
+from emendrix.site_.urls import twin_page_href
+from emendrix.twins.model import TWINS_DIR, TwinMap, TwinPair, TwinSide, twins_path
 
 __all__ = [
     "NO_TWIN_MAPS",
@@ -35,6 +40,7 @@ __all__ = [
     "TwinMaps",
     "TwinSpot",
     "TwinUnit",
+    "pair_slug",
     "read_twin_maps",
     "twin_index",
 ]
@@ -56,21 +62,36 @@ class TwinMaps(BaseModel):
         default_factory=dict,
         description="The public address of each paired coordinate, by version then canonical.",
     )
+    raw: Mapping[str, bytes] = Field(
+        default_factory=dict,
+        description="Each map's committed bytes, by `pair_slug`, so a copy is never re-serialised.",
+    )
 
 
 NO_TWIN_MAPS = TwinMaps()
+
+
+def pair_slug(document: TwinMap) -> str:
+    """The map's file stem, `eu-32017R0745--eu-32017R0746`: the pair's name in every address."""
+    path = twins_path(_act(document.a), _act(document.b))
+    return path.removeprefix(f"{TWINS_DIR}/").removesuffix(".json")
 
 
 def read_twin_maps(root: Path) -> TwinMaps:
     """Every `twins/*.json` under one changelog repository, in sorted path order."""
     maps: list[TwinMap] = []
     unreadable: list[str] = []
+    raw: dict[str, bytes] = {}
     for path in sorted(root.glob(f"{TWINS_DIR}/*.json")):
         try:
-            maps.append(TwinMap.model_validate_json(path.read_bytes()))
+            committed = path.read_bytes()
+            document = TwinMap.model_validate_json(committed)
         except (OSError, ValueError):
             unreadable.append(path.relative_to(root).as_posix())
-    return TwinMaps(maps=tuple(maps), unreadable=tuple(unreadable))
+            continue
+        maps.append(document)
+        raw.setdefault(pair_slug(document), committed)
+    return TwinMaps(maps=tuple(maps), unreadable=tuple(unreadable), raw=raw)
 
 
 class TwinSpot(BaseModel):
@@ -97,6 +118,9 @@ class TwinUnit(BaseModel):
     page: bool = Field(description="Whether the sister act has a provision page for the twin.")
     here: str = Field(description="The version of this act the pair was computed on.")
     there: str = Field(description="The version of the sister act the pair was computed on.")
+    compare: str = Field(
+        default="", description="The pair's own page, site-root-relative; '' when identical."
+    )
 
 
 class TwinIndex(BaseModel):
@@ -112,7 +136,14 @@ class TwinIndex(BaseModel):
         description="By `str(ActId)` of a sister act, then by instrument key: every change of "
         "every event of that act the instrument is attributed, newest event first.",
     )
+    maps: tuple[TwinMap, ...] = Field(
+        default=(), description="The maps whose two acts are both shown, in sorted path order."
+    )
     dates: Mapping[str, date] = Field(default_factory=dict, description="As `TwinMaps.dates`.")
+    urls: Mapping[str, Mapping[str, str]] = Field(
+        default_factory=dict, description="As `TwinMaps.urls`."
+    )
+    raw: Mapping[str, bytes] = Field(default_factory=dict, description="As `TwinMaps.raw`.")
     unreadable: tuple[str, ...] = Field(default=(), description="As `TwinMaps.unreadable`.")
     ignored: tuple[str, ...] = Field(
         default=(), description="Pairs of acts a map names where the site does not show both."
@@ -135,6 +166,7 @@ def _spot(location: str, ratio: float, identical: bool, version: str, maps: Twin
 def _unit(
     pair: TwinPair,
     *,
+    slug: str,
     flip: bool,
     sister: ActSite,
     pages: set[str],
@@ -157,6 +189,7 @@ def _unit(
         page=theirs in pages,
         here=here,
         there=there,
+        compare="" if pair.identical else twin_page_href(slug, pair.a),
     )
 
 
@@ -175,11 +208,14 @@ def twin_index(maps: TwinMaps, acts: tuple[ActSite, ...]) -> TwinIndex:
     units: dict[str, dict[str, tuple[TwinUnit, ...]]] = {}
     events: dict[str, Mapping[str, tuple[Change, ...]]] = {}
     ignored: list[str] = []
+    shown_maps: list[TwinMap] = []
     for document in maps.maps:
         a, b = shown.get(str(_act(document.a))), shown.get(str(_act(document.b)))
         if a is None or b is None:
             ignored.append(f"{_act(document.a)} and {_act(document.b)}")
             continue
+        shown_maps.append(document)
+        slug = pair_slug(document)
         sides = (
             (a, b, document.a.version, document.b.version, False),
             (b, a, document.b.version, document.a.version, True),
@@ -189,7 +225,14 @@ def twin_index(maps: TwinMaps, acts: tuple[ActSite, ...]) -> TwinIndex:
             into = units.setdefault(str(here.act), {})
             for pair in document.pairs:
                 unit, found = _unit(
-                    pair, flip=flip, sister=sister, pages=pages, here=mine, there=theirs, maps=maps
+                    pair,
+                    slug=slug,
+                    flip=flip,
+                    sister=sister,
+                    pages=pages,
+                    here=mine,
+                    there=theirs,
+                    maps=maps,
                 )
                 into[unit] = (*into.get(unit, ()), found)
             if str(sister.act) not in events:
@@ -197,7 +240,10 @@ def twin_index(maps: TwinMaps, acts: tuple[ActSite, ...]) -> TwinIndex:
     return TwinIndex(
         units=units,
         events=events,
+        maps=tuple(shown_maps),
         dates=maps.dates,
+        urls=maps.urls,
+        raw=maps.raw,
         unreadable=maps.unreadable,
         ignored=tuple(ignored),
     )

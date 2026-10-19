@@ -70,3 +70,11 @@ def test_passages_over_the_share_of_either_text_are_withheld_whole() -> None:
     assert (shown.passages, shown.omitted, shown.withheld) == ((), 0, True)
     kept = excerpt(text(100), text(100, change={10: "x", 50: "z"}))
     assert kept.withheld is False and len(kept.passages) == 2
+
+
+def test_only_the_shown_passages_count_towards_the_share() -> None:
+    changed = {offset: f"x{offset}" for offset in range(15, 600, 30)}
+    shown = excerpt(text(600), text(600, change=changed))
+    # Twenty passages of 13 words would be over 30% of 600 words; the twelve shown are not.
+    assert len(changed) == 20
+    assert (len(shown.passages), shown.omitted, shown.withheld) == (MAX_PASSAGES, 8, False)

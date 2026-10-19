@@ -16,7 +16,8 @@ search-index.json               what that script fetches, prebuilt
 substance-index.json            what it fetches for a number: every CAS, EC and Index No
 sitemap.xml                     every page, with the date its content last moved
 sitemap-substances.xml          every canonical substance page and every act's list of numbers
-sitemap_index.xml               the one address a search engine is given, naming both sitemaps
+sitemap-twins.xml               the twins index, every pair of acts' index and every twin page
+sitemap_index.xml               the one address a search engine is given, naming the sitemaps
 acts/index.html                 the roster
 acts/<slug>/index.html          one page per watched act: its timeline and index
 acts/<slug>/<key>/index.html    one page per event: the changes and the verbatim text
@@ -34,11 +35,15 @@ feeds/acts/<slug>/provisions.opml  every provision feed of one act, for a feed r
 substances/index.html           every act whose entries print a CAS or EC number, counted
 substances/acts/<slug>/index.html  one act's numbers, sorted, continued under `2/`, `3/` ...
 substances/<scheme>-<value>/index.html  one number: where it appears now, and its history
+twins/index.html                every pair of acts whose provisions are compared, if any is
+twins/<pair>/index.html         one pair of acts: every pair of units, and the units with none
+twins/<pair>/<prov>/index.html  one non-identical pair of units: only where the texts differ
 api/index.html                  the JSON API: its layout, its fields, and an example for CI
 api/v1/catalogue.json           every watched act's names and the addresses of its pages
 api/v1/schema/<name>.schema.json  the JSON Schema of each document the API serves
 api/v1/substances.json          every number with a page, and every Index No landing on one
 api/v1/substances/<scheme>-<value>.json  one number's page as data
+api/v1/twins/<pair>.json        one committed twin map, its bytes unaltered
 ```
 
 The stylesheet, the script and the icon live at the site root because `chrome.page` links them
@@ -90,9 +95,11 @@ from emendrix.site_.discovery import (
     SITEMAP,
     SITEMAP_INDEX,
     SITEMAP_SUBSTANCES,
+    SITEMAP_TWINS,
     robots_txt,
     sitemap_index_xml,
     sitemap_substances_xml,
+    sitemap_twins_xml,
     sitemap_xml,
 )
 from emendrix.site_.feeds import feed_path, render_feed
@@ -127,6 +134,7 @@ from emendrix.site_.provision_feeds import provision_feed_files
 from emendrix.site_.search_index import SUBSTANCE_INDEX, search_index_json, substance_index_json
 from emendrix.site_.style import STYLE
 from emendrix.site_.substance_api import substance_files
+from emendrix.site_.twin_pages import twin_pages
 from emendrix.site_.urls import (
     act_href,
     amendment_href,
@@ -224,6 +232,7 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
     }
     files.update(api_files(site))
     files.update(substance_pages(site))
+    files.update(twin_pages(site))
     for name, content in font_files():
         files[FONTS[name]] = content
     for act in site.acts:
@@ -237,6 +246,7 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
     if site.site_url:
         files[SITEMAP] = sitemap_xml(site)
         files[SITEMAP_SUBSTANCES] = sitemap_substances_xml(site)
+        files[SITEMAP_TWINS] = sitemap_twins_xml(site)
         files[SITEMAP_INDEX] = sitemap_index_xml(site)
         files[LLMS] = llms_txt(site)
         files[feed_path(None)] = render_feed(site, None)

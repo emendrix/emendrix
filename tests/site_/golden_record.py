@@ -1130,4 +1130,24 @@ description moved, and no `<title>` did. **No `id=` moved or went.** Every other
 other feed, the provision feeds, `llms.txt`, `robots.txt`, both other sitemaps, the substance
 files, the stylesheet, the script, the fonts, `icon.svg`, `og.png` and every schema are
 byte-identical.
+
+Read again on 2026-10-19, later the same day, when each textual twin of the MDR and the IVDR
+gained a page showing only where the two texts differ. New files: `twins/index.html` (3 764
+bytes), the one pair listed; `twins/eu-32017R0745--eu-32017R0746/index.html` (17 430), its 85
+pairs in the MDR's document order, Article 12 marked identical and unlinked, then the 56 MDR and
+44 IVDR provisions with no twin; 84 twin pages under it, one per non-identical pair, 6 959 to
+20 542 bytes and 764 223 together, of which 32 say the two differ too widely to excerpt and 52
+show at most 12 passages side by side; `sitemap-twins.xml` (10 829), 86 locations all dated
+2025-01-10, the paired versions' date; and `api/v1/twins/eu-32017R0745--eu-32017R0746.json`
+(219 416), the committed map's bytes. The map itself moved with the rule that withholds a pair:
+only the passages a page would show now count towards the 30% share, so 32 of the 84 are
+withheld where every passage counted withheld 42. Pages that moved: the MDR event page from
+50 024 to 50 122 and `acts/32017R0745/ar-113/` from 8 824 to 8 922, each by the sentence
+linking the pair's page after the twin line, which moved `_LARGEST_PAGE` by the same 98; the MDR
+act page from 13 339 to 13 438 and the IVDR's from 5 566 to 5 687, each by one line linking the
+pair index; and `sitemap_index.xml` from 309 to 418, naming the third sitemap. **No `id=` moved
+or went**, and no `<title>` or description of an existing page did. Every other page, every
+feed, both search files, `sitemap.xml`, `sitemap-substances.xml`, `llms.txt`, `robots.txt`, the
+catalogue, the substance files, the stylesheet, the script, the fonts, `icon.svg`, `og.png` and
+every schema are byte-identical.
 """

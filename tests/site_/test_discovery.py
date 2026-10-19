@@ -480,15 +480,17 @@ def test_a_page_is_dated_by_the_newest_event_the_build_can_vouch_for() -> None:
 # ------------------------------------------------------------------ the sitemap index
 
 
-def test_the_index_names_the_two_sitemaps_and_nothing_else() -> None:
+def test_the_index_names_the_three_sitemaps_and_nothing_else() -> None:
     """One entry point for a crawler, and the sitemaps it names are the ones the build writes:
-    the pages, then the substance pages, the second named even where it lists nothing."""
+    the pages, then the substance pages and the twin pages, named even where they list
+    nothing."""
     document = sitemap_index_xml(_empty_site())
     root = ElementTree.fromstring(document)
     assert root.tag == f"{SITEMAP_NS}sitemapindex"
     assert [loc for loc, _ in _blocks(document, "sitemap")] == [
         f"{SITE_URL}/sitemap.xml",
         f"{SITE_URL}/sitemap-substances.xml",
+        f"{SITE_URL}/sitemap-twins.xml",
     ]
 
 
@@ -503,6 +505,7 @@ def test_the_index_is_dated_by_the_newest_date_the_sitemap_publishes() -> None:
     assert dict(_blocks(sitemap_index_xml(inputs), "sitemap")) == {
         f"{SITE_URL}/sitemap.xml": newest.isoformat(),
         f"{SITE_URL}/sitemap-substances.xml": None,
+        f"{SITE_URL}/sitemap-twins.xml": None,
     }
 
 

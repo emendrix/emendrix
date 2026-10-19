@@ -42,6 +42,7 @@ from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.outbound import external
 from emendrix.site_.pages.act_dates import dates_section
 from emendrix.site_.pages.act_index import ACT_DEPTH, event_link, sidebar
+from emendrix.site_.pages.twins_index import twin_doors
 from emendrix.site_.pages.version_card import version_card
 from emendrix.site_.seo import act_json_ld
 from emendrix.site_.substance_doors import act_door
@@ -200,6 +201,7 @@ def _header(act: ActSite, site: SiteInputs) -> list[Html]:
         header.append(Html(f'<p class="links">{join(links, " · ")}</p>'))
     if site.substances.has_register(act):
         header.append(act_door(up(_DEPTH), act.slug))
+    header.extend(twin_doors(site, act, up(_DEPTH)))
     header.extend(_related(site, act))
     return header
 

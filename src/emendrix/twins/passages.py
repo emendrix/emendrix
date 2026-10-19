@@ -2,10 +2,10 @@
 
 Each non-equal word opcode of the two comparison texts is one passage, carrying up to
 `CONTEXT_WORDS` equal words either side, each side cut at `PASSAGE_CHARS` with a visible
-`CUT`. At most `MAX_PASSAGES` are kept; the rest are counted. When the passages' characters on
-either side, every passage counted, exceed `WITHHELD_SHARE` of that side's comparison text, none
-is kept and the pair says the passages were withheld: past that share an excerpt reproduces
-the provision by another route, and the provision's text is the publisher's to serve.
+`CUT`. At most `MAX_PASSAGES` are kept; the rest are counted. When the kept passages'
+characters on either side exceed `WITHHELD_SHARE` of that side's comparison text, none is kept
+and the pair says the passages were withheld: past that share an excerpt reproduces the
+provision by another route, and the provision's text is the publisher's to serve.
 
 Passages are excerpts of comparison text, words joined by single spaces, for reading where two
 provisions differ. They are not verbatim text and nothing calls them so.
@@ -69,12 +69,10 @@ def excerpt(a_text: str, b_text: str) -> Excerpt:
         left, left_cut = _span(a_words, i1, i2)
         right, right_cut = _span(b_words, j1, j2)
         found.append(Passage(a=left, b=right, cut=left_cut or right_cut))
-    shown_a = sum(len(passage.a) for passage in found)
-    shown_b = sum(len(passage.b) for passage in found)
+    kept = tuple(found[:MAX_PASSAGES])
+    # The share counts what a page would show: the kept passages, context and markers included.
+    shown_a = sum(len(passage.a) for passage in kept)
+    shown_b = sum(len(passage.b) for passage in kept)
     if shown_a > WITHHELD_SHARE * len(a_text) or shown_b > WITHHELD_SHARE * len(b_text):
         return Excerpt(passages=(), omitted=0, withheld=True)
-    return Excerpt(
-        passages=tuple(found[:MAX_PASSAGES]),
-        omitted=max(0, len(found) - MAX_PASSAGES),
-        withheld=False,
-    )
+    return Excerpt(passages=kept, omitted=max(0, len(found) - MAX_PASSAGES), withheld=False)

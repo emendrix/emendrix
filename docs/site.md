@@ -41,14 +41,19 @@ api/v1/catalogue.json every watched act's names, and the address of each of its 
 api/v1/schema/        the JSON Schema of each document the API serves, one file each
 api/v1/substances.json  every CAS and EC number with a page, and every Index No landing on one
 api/v1/substances/<scheme>-<value>.json  one number's entries and changes as data
+api/v1/twins/<pair>.json  one committed twin map, its bytes unaltered
 substances/           every act whose table entries print a CAS or EC number, counted, and the lookup
 substances/acts/<celex>/  one act's numbers, sorted, 2,000 to a page, continued under 2/, 3/ ...
 substances/<scheme>-<value>/  one number: where it appears now, and every change to those entries
+twins/                every pair of acts whose provisions are compared, when a twin map is committed
+twins/<pair>/         one pair of acts: every pair of provisions with its score, and those with none
+twins/<pair>/<prov>/  one non-identical pair of provisions: only where their texts differ
 robots.txt            what crawlers may read, and where the sitemap index is
 llms.txt              what the site offers a model, and how to fetch the record instead of the pages
 sitemap.xml           every page, with the date its content last moved
 sitemap-substances.xml  every canonical substance page and every act's list of numbers
-sitemap_index.xml     the one address a search engine is given, naming both sitemaps
+sitemap-twins.xml     the twins index, every pair of acts' index and every twin page
+sitemap_index.xml     the one address a search engine is given, naming the three sitemaps
 search-index.json     act and instrument names, aliases, CELEX numbers, touched provisions and their titles
 substance-index.json  every CAS, EC and Index number an entry prints, fetched only when a query can use it
 search.<digest>.js    the one script; style.<digest>.css is the one stylesheet
@@ -352,7 +357,9 @@ both through `pages/prose.py`) is read in this order:
   twin**, because the record may simply not hold that event: an unwatched window, a consolidation
   still pending or a transition never backfilled all look like silence. A change whose event
   names no instrument gets the line without the answer, since there is no amending act to ask
-  about. The line uses the sheet's muted secondary style and mints no `id`.
+  about. Where the two texts differ, the line ends `See where the two texts differ.`, linking the
+  pair's twin page (below); an identical pair has no page and no such link. The line uses the
+  sheet's muted secondary style and mints no `id`.
 - **Where the sources differ**, the shape's tag with a small `What this means` link beside it to
   `methodology/#sources-differ` (the tag itself is never a link), then the lead and the detail.
   Three shapes, each with its own tag, lead and weight:
@@ -416,7 +423,9 @@ the same table above its text; an older step's table is on its version page, one
 the facts lines: `Twin in IVDR: Art. 106, textually similar (0.946), paired on both acts' texts
 of 10 January 2025.` It names the unit's own twin with the unit pair's score, linked as the
 version page's note links it, and carries no answer about an amending act, because a provision
-page spans every event that touched the provision.
+page spans every event that touched the provision. Where the texts differ it ends with the same
+`See where the two texts differ.` link to the twin page; for an identical pair the coordinate's
+link, to the sister provision page or to EUR-Lex, is the only one.
 
 **The glossary** is the last section of the methodology page, `Words this site uses`, at
 `methodology/#glossary`, with an `id` on every term (`#sources-differ`, `#dates-only`,
@@ -833,6 +842,72 @@ under `api/v1/schema/`; after a change to the model, regenerate it from the repo
     uv run python -c 'from pathlib import Path; from emendrix.site_.substance_api import SubstanceFile; from emendrix.output.schemas import schema_document; Path("docs/schema/substance.schema.json").write_text(schema_document("substance", SubstanceFile), encoding="utf-8")'
 
 and read the diff.
+
+## Twin pages: where two acts' texts differ
+
+A twin map committed in the changelog repository (`twins/<pair>.json`,
+[`./output-format.md`](./output-format.md)) pairs the units of two watched acts whose texts are
+textually similar, each the other's closest match by word ratio at or above the map's floor. The
+site renders three kinds of page from it, and reads nothing else about twins: it never computes
+a pair, and it never reads the text store the map was built from.
+
+**A twin page per non-identical pair**, at `twins/<pair>/<prov>/`, where `<pair>` is the map's
+file stem (`eu-32017R0745--eu-32017R0746`) and `<prov>` the slug of the first act's unit, made
+as a provision page's is (`ar-10`). Its title names both acts and both coordinates, `Medical
+Devices Regulation Art. 10 and IVDR Art. 10: where the texts differ`, and the page says, in
+order: the score, `textually similar (0.931)`, the dates of the two texts it was paired on and
+whether the headings are the same; one sentence saying that textually similar means the words
+match at that ratio and says nothing about what either provision requires, or whether one should
+change because the other did; both units on EUR-Lex, at the article or annex anchor of the
+versions paired, and their provision pages where the site wrote them; **Where the texts differ**,
+the passages side by side, one row each, the first act on the left, stacked on a phone under
+each act's name; **Aligned sub-provisions**, every child the map aligned with its own ratio; and
+**Changes since the texts were paired**, every change the record holds to either unit in a
+version dated after the one its act was paired on, newest first, each linking the change on its
+version page, or a sentence saying the record holds none. A change at or before those versions is
+already in the texts compared; where a paired version carries no readable date, every recorded
+change to its unit is listed.
+
+**What a twin page never shows is either provision whole.** Full provision text is the
+publisher's to serve, and a page that quoted both sides whole would be a copy of the law under
+another address. So the passages are the map's, not the page's: each is one differing span with
+up to 6 unchanged words of context either side, from the comparison text with its spacing
+collapsed, each side cut at 400 characters and marked `[…]` where cut, at most 12 to a pair,
+the rest counted (`28 more passages not shown; read both on EUR-Lex.`). A pair whose shown
+passages, context and markers included, would exceed 30% of either unit's comparison text shows
+none, and the page says instead: `These two provisions differ too widely to excerpt here; read
+both on EUR-Lex.` Over the MDR and IVDR 20250110 texts on 2026-10-19 that is 32 of the 84 twin
+pages. The passages are set in the law's face, as the diffs are, and a note above them says they
+are excerpts of the text as compared, not the verbatim text. A test reads every twin page of the
+golden against both units' comparison text and refuses the whole text and any window of 1,000
+characters of it.
+
+**An identical pair has no page**, because it could only say that the two texts are the same.
+The pair index lists it as `identical text`, unlinked.
+
+**The pair index**, `twins/<pair>/`, lists every pair in the first act's document order with its
+score, linked to its page, a withheld one marked `differ too widely to excerpt`; then, per act,
+the provisions with no twin, each with its closest match only where that reached the floor but
+is the twin of another. It links the map itself as JSON. **The twins index**, `twins/`, lists the
+pairs of acts one line each; it is written only when a shown map exists, since nothing links it
+otherwise. The act page of each act in a pair links its pair index in one line, `Textual twins
+in IVDR`; an act in no pair carries nothing.
+
+**The twin gloss.** Every twin page, pair index and twins index says `textually similar` in its
+visible text, and no sentence says a provision should change, is equivalent to another or has the
+same effect. The trail is home, `Textual twins`, the pair of acts, and on a twin page the pair of
+units.
+
+**Crawlers.** `sitemap-twins.xml`, named in `sitemap_index.xml` beside the other two, lists
+`twins/`, each pair index and each twin page; it is written on every build with a site URL, empty
+where no map is shown. A twin page's `<lastmod>` is the newest of the two paired versions' dates
+and the dates of the changes it lists, a pair index's the newest over its pages, held to dates
+the build can stand behind like every other. The pages are indexed and canonical to themselves;
+the twin page's structured data is a `BreadcrumbList` and a `WebPage` about both acts, each with
+`hasPart` naming its unit.
+
+**As data.** `api/v1/twins/<pair>.json` is the committed map's bytes, copied unaltered, at the
+path it has under the API root of a clone; [`./api.md`](./api.md) §"Twins" describes it.
 
 ## `/api/`: the record as files a program can fetch
 

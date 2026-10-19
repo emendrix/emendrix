@@ -478,13 +478,13 @@ published per pair as `headings_equal` and plays no part in pairing.
 **What a pair may show is capped**, because the map is published and the text store it is built
 from is not. Each differing word span is one passage, with up to 6 equal words of context either
 side; each side is cut at 400 characters with a visible `[…]` and `cut: true`. At most 12
-passages are kept, and `passages_omitted` counts the rest. If the passages' characters on either
-side, all of them counted, exceed 30% of that side's comparison text, none is kept and
-`passages_withheld` is true: past that share an excerpt would reproduce the provision by another
-route. Identical pairs carry no passages. **Passages are excerpts of comparison text**, whitespace
+passages are kept, and `passages_omitted` counts the rest. If the kept passages' characters on
+either side, context and `[…]` included, exceed 30% of that side's comparison text, none is kept
+and `passages_withheld` is true: past that share an excerpt would reproduce the provision by
+another route. Identical pairs carry no passages. **Passages are excerpts of comparison text**, whitespace
 collapsed and words joined by single spaces, for reading where two provisions differ; they are not
 the verbatim text, which the acts' own publications carry. Over MDR and IVDR 20250110 on
-2026-10-19 the map holds 85 pairs (80 articles, 5 annexes), 1 identical, 42 withheld and 1,019
+2026-10-19 the map holds 85 pairs (80 articles, 5 annexes), 1 identical, 32 withheld and 1,019
 aligned children, with 56 MDR and 44 IVDR units unpaired. The map's schema is committed as
 [`./schema/twins.schema.json`](./schema/twins.schema.json).
 

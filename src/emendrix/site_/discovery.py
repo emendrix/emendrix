@@ -2,9 +2,9 @@
 
 `robots.txt` states the crawl policy and points at `sitemap_index.xml`, which names
 `sitemap.xml`, which lists every page the site publishes with the date each one's content last
-moved, and `sitemap-substances.xml`, which lists the substance pages the same way
-(`substance_sitemap` says which). None of them is a page: no shell, no navigation, no
-disclaimer.
+moved, then `sitemap-substances.xml` and `sitemap-twins.xml`, which list the substance and twin
+pages the same way (`substance_sitemap` and `twin_sitemap` say which). None of them is a page:
+no shell, no navigation, no disclaimer.
 
 Both are assembled as strings rather than through an XML library, for the reason the feeds give:
 two builds of one repository state have to produce identical bytes, and a serialiser free to
@@ -54,6 +54,7 @@ from emendrix.site_.inputs import SiteInputs
 from emendrix.site_.instruments import amended_by
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.substance_sitemap import substance_entries
+from emendrix.site_.twin_sitemap import twin_entries
 from emendrix.site_.urls import (
     act_href,
     amendment_href,
@@ -63,34 +64,38 @@ from emendrix.site_.urls import (
     provision_href,
     substances_href,
 )
+from emendrix.site_.urlset import NAMESPACE, urlset
 
 __all__ = [
     "ROBOTS",
     "SITEMAP",
     "SITEMAP_INDEX",
     "SITEMAP_SUBSTANCES",
+    "SITEMAP_TWINS",
     "robots_txt",
     "sitemap_index_xml",
     "sitemap_substances_xml",
+    "sitemap_twins_xml",
     "sitemap_xml",
 ]
 
 ROBOTS = "robots.txt"
 SITEMAP = "sitemap.xml"
 SITEMAP_SUBSTANCES = "sitemap-substances.xml"
+SITEMAP_TWINS = "sitemap-twins.xml"
 SITEMAP_INDEX = "sitemap_index.xml"
 """Where the builder writes each file. All three sit at the site root, which is where a crawler
 looks, and `robots.txt` names the index rather than the sitemap: one address a search engine
 holds, behind which the sitemap may be split or renamed without that address ever moving."""
-
-_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
-"""The sitemap namespace name. `http://`, and see the module docstring for why it stays."""
 
 _UNCONFIGURED = (
     "a sitemap's locations are absolute, so writing one needs a site URL; "
     "check `site.site_url` before asking for a sitemap"
 )
 
+
+_Found = tuple[tuple[str, tuple[date, ...]], ...]
+"""A further sitemap's pages, each with every date its content moved on."""
 
 _SERVICE_PREFIXES = ("/account/", "/u/")
 """The account service's paths, kept out of the crawl whether or not the build links them."""
@@ -202,33 +207,8 @@ def _entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
     return tuple(fixed)
 
 
-def _substance_entries(site: SiteInputs) -> tuple[tuple[str, date | None], ...]:
-    """The second sitemap's pages, each date held to what this build can stand behind."""
-    built = site.generated_on
-    return tuple((path, _moved(dated, built)) for path, dated in substance_entries(site))
-
-
-def _url(site_url: str, path: str, dated: date | None) -> Html:
-    """One `<url>` block. No date means no `<lastmod>` element, never an empty one."""
-    lines = [
-        Html("<url>"),
-        Html(f"<loc>{escape(canonical_url(site_url, path))}</loc>"),
-    ]
-    if dated is not None:
-        lines.append(Html(f"<lastmod>{escape(dated.isoformat())}</lastmod>"))
-    lines.append(Html("</url>"))
-    return join(lines, "\n")
-
-
-def _urlset(site_url: str, entries: Iterable[tuple[str, date | None]]) -> str:
-    lines = [
-        Html('<?xml version="1.0" encoding="utf-8"?>'),
-        Html(f'<urlset xmlns="{_NAMESPACE}">'),
-        *(_url(site_url, path, dated) for path, dated in entries),
-        Html("</urlset>"),
-        Html(""),
-    ]
-    return join(lines, "\n")
+def _held(site: SiteInputs, found: _Found) -> tuple[tuple[str, date | None], ...]:
+    return tuple((path, _moved(dated, site.generated_on)) for path, dated in found)
 
 
 def sitemap_xml(site: SiteInputs) -> str:
@@ -239,7 +219,7 @@ def sitemap_xml(site: SiteInputs) -> str:
     """
     if not site.site_url:
         raise ValueError(_UNCONFIGURED)
-    return _urlset(site.site_url, _entries(site))
+    return urlset(site.site_url, _entries(site))
 
 
 def sitemap_substances_xml(site: SiteInputs) -> str:
@@ -249,17 +229,27 @@ def sitemap_substances_xml(site: SiteInputs) -> str:
     index names one file whatever the build holds. Thousands of numbers would otherwise crowd
     the main sitemap, and a crawler reads the two at its own pace.
     """
+    return _further(site, substance_entries(site))
+
+
+def sitemap_twins_xml(site: SiteInputs) -> str:
+    """The third sitemap, the twin pages, written and empty on the second one's terms."""
+    return _further(site, twin_entries(site))
+
+
+def _further(site: SiteInputs, found: _Found) -> str:
+    """A further sitemap, each of its pages' dates held to what this build can stand behind."""
     if not site.site_url:
         raise ValueError(_UNCONFIGURED)
-    return _urlset(site.site_url, _substance_entries(site))
+    return urlset(site.site_url, _held(site, found))
 
 
 def sitemap_index_xml(site: SiteInputs) -> str:
     """The index, newline-terminated: one entry per sitemap written beside it.
 
     An index is what a search engine is given to remember, and the files behind it can grow,
-    split or be renamed without the submitted address moving. The substance pages are the
-    second sitemap that joined it here rather than anywhere a crawler has to be told about.
+    split or be renamed without the submitted address moving. The substance and twin pages are
+    the sitemaps that joined it here rather than anywhere a crawler has to be told about.
 
     Each `<lastmod>` is the newest date the sitemap it names publishes, which is when that
     file's contents last moved under the same rule every entry in it is dated by. A sitemap
@@ -269,9 +259,13 @@ def sitemap_index_xml(site: SiteInputs) -> str:
         raise ValueError(_UNCONFIGURED)
     lines = [
         Html('<?xml version="1.0" encoding="utf-8"?>'),
-        Html(f'<sitemapindex xmlns="{_NAMESPACE}">'),
+        Html(f'<sitemapindex xmlns="{NAMESPACE}">'),
     ]
-    sitemaps = ((SITEMAP, _entries(site)), (SITEMAP_SUBSTANCES, _substance_entries(site)))
+    sitemaps = (
+        (SITEMAP, _entries(site)),
+        (SITEMAP_SUBSTANCES, _held(site, substance_entries(site))),
+        (SITEMAP_TWINS, _held(site, twin_entries(site))),
+    )
     for name, entries in sitemaps:
         lines += [
             Html("<sitemap>"),

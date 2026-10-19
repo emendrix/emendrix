@@ -36,6 +36,7 @@ in the event's payload, which the act index names by `path`.
 | `/api/v1/schema/<name>.schema.json` | the JSON Schema of each document: `index`, `act-index`, `entry`, `change`, `catalogue`, `substance` | the site build |
 | `/api/v1/substances.json` | every CAS and EC number an entry in the record prints, with its page and its file, and every Index No that lands on one | the site build |
 | `/api/v1/substances/<scheme>-<value>.json` | one CAS or EC number's page as data: the entries that print it now and every recorded change to them | the site build |
+| `/api/v1/twins/<pair>.json` | one committed twin map: which provisions of two watched acts are textually similar, with the differing passages | the record's `twins/<pair>.json`, copied unaltered by the site build |
 
 `<act_dir>` is the act's corpus and key, `eu/32017R0745` for the Medical Devices Regulation, and
 `<version>` is the version the event produced, `02017R0745-20260101` for one of its events. Every
@@ -177,6 +178,35 @@ than the consolidation lists), `event` (the change block's permalink on its vers
 These files say where a number **appears**, never what the law makes of a substance. A number
 the list does not hold is printed by no entry in the acts the record holds, which says nothing
 about the law: many entries name a group of substances and print no number at all.
+
+## Twins
+
+`twins/<pair>.json` is a twin map, one per pair of acts the deployment compares, named by both
+acts' corpus and key with the lower key first: `twins/eu-32017R0745--eu-32017R0746.json` for the
+MDR and the IVDR. It is committed in the record at `twins/<pair>.json` and the site build copies
+those bytes unaltered, so the file under `/api/v1/` and the one in a clone are the same document
+at the same relative path. Its schema is `twins.schema.json` (`twins_schema` `1.0`), committed
+under [`./schema/`](./schema/) like the register's and, like it, not served under
+`/api/v1/schema/`; the fields are described in [`./output-format.md`](./output-format.md). The
+catalogue does not list the file; this page does.
+
+**A pair** is two units, an article with an article or an annex with an annex, each the other's
+best match by word ratio over their comparison texts and at or above the map's `method.floor`,
+read off the corpus on `method.verified_on`. It carries the ratio, whether the texts are
+identical, the descendants aligned below it the same way, and the passages where the two differ.
+The map is computed on each act's newest stored version, named in `a.version` and `b.version`,
+which need not be the versions any one event names.
+
+**The passages are capped**, because the map is published and the full texts are the acts'
+publishers' to serve: each is one differing span with up to 6 words of context either side, each
+side cut at 400 characters and marked `[…]`, at most 12 to a pair with `passages_omitted`
+counting the rest. A pair whose kept passages would exceed 30% of either text carries none and
+`passages_withheld: true`; a reader goes to EUR-Lex for both. Over MDR and IVDR 20250110 the map
+holds 85 pairs, 1 identical and 32 withheld.
+
+Twin means **textually similar** by this measure, and nothing more: a pair says nothing about
+what either provision requires, or whether one should change because the other did. The file
+carries the disclaimer, like every other.
 
 ## Corrections
 

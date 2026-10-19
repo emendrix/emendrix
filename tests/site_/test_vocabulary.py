@@ -23,7 +23,9 @@ that transition is a version, decided on 2026-09-18, so no page's visible text o
 says "event". The one place a page prints it is the law's own text, where the Medical Devices
 Regulation says "in the event that" and "adverse events": the verbatim blocks are taken out
 before the check and what they say is counted per page, so a stored text that stopped saying
-it, or a page that started, fails here rather than passing quietly.
+it, or a page that started, fails here rather than passing quietly. The same blocks are taken
+out of the check for `disputed` and its kin, and counted the same way: a twin page quotes the
+passages where two acts differ, and the law's words about conflicts of interest are the law's.
 
 **No link's words carry an arrow.** A drawn arrow beside a link is the sheet's, with empty
 alternative text, so a screen reader names the link by its words alone. The `→` between two
@@ -61,10 +63,18 @@ _LAW_SAYS: Final = {
     "acts/32017R0745/02017R0745-20200424/index.html": 2,
     "acts/32017R0745/ar-17/index.html": 1,
     "acts/32017R0745/ar-120/index.html": 1,
+    "twins/eu-32017R0745--eu-32017R0746/ar-46/index.html": 2,
+    "twins/eu-32017R0745--eu-32017R0746/ar-80/index.html": 10,
 }
 """How often the verbatim text on a golden page says "event", read 2026-09-19: Article 17's "In
 the event that" and Article 120's "serious adverse events", both on the version page and each
-on its own article's history."""
+on its own article's history. Read again 2026-10-19, when the twin pages joined the golden: the
+passages of MDR Articles 46 and 80 where they differ from the IVDR say it 2 and 10 times."""
+
+_LAW_SAYS_BANNED: Final = {"twins/eu-32017R0745--eu-32017R0746/an-vii/index.html": 2}
+"""How often the law's own words on a golden page say a banned word, read 2026-10-19: the MDR
+and IVDR Annex VII passages on conflicts of interest, which a twin page quotes where they
+differ. The law's words are the law's; the check is about what the site says."""
 
 _ARROWS: Final = re.compile("[\u2190\u2191\u2192\u2197]")
 _LINK: Final = re.compile(r"<a\b[^>]*>(.*?)</a>", re.DOTALL)
@@ -98,14 +108,20 @@ def _said(path: str, page: str) -> list[str]:
         start = page.index(exception)
         page = page[:start] + page[page.index("</tr>", start) :]
     title = " ".join(_TITLE.findall(page))
-    body = text_of(_SCRIPT.sub("", _HEAD.sub("", page)))
+    body = text_of(_SCRIPT.sub("", _HEAD.sub("", _VERBATIM.sub("", page))))
     return _BANNED.findall(f"{title}\n{body}")
 
 
-def _check(pages: dict[str, str]) -> None:
+def _check(pages: dict[str, str], law_says: dict[str, int] | None = None) -> None:
     assert pages
+    counted: dict[str, int] = {}
     for path, page in pages.items():
         assert _said(path, page) == [], path
+        law = sum(len(_BANNED.findall(text_of(block))) for block in _VERBATIM.findall(page))
+        if law:
+            counted[path] = law
+    if law_says is not None:
+        assert counted == law_says
         for classes in _CLASS.findall(page):
             assert not any(
                 name.startswith("disp-") or name == "disp" for name in classes.split()
@@ -115,7 +131,7 @@ def _check(pages: dict[str, str]) -> None:
 def test_no_golden_page_says_the_stored_word_but_the_one_measured_row() -> None:
     pages = _golden()
     assert _EXCEPTION[0] in pages
-    _check(pages)
+    _check(pages, _LAW_SAYS_BANNED)
 
 
 def test_no_page_of_the_scale_tree_says_it_either() -> None:

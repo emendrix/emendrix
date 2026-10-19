@@ -2,8 +2,9 @@
 
 The counts are measured facts of the two fixtures at the floor of 0.90. They agree with the
 all-pairs survey in `scripts/validation/results/twin-floor-2026-10-19.txt`: 85 pairs and 75
-equal headings for these two versions, and 1 identical pair, 42 withheld and 1,019 aligned
-children for MDR 20260101 against the same IVDR text. A count that moves is a finding to
+equal headings for these two versions, and 1 identical pair and 1,019 aligned children for MDR
+20260101 against the same IVDR text. 32 pairs are withheld when only the passages a page shows
+count towards the share, measured 2026-10-19. A count that moves is a finding to
 explain, not a number to update.
 """
 
@@ -74,7 +75,7 @@ def test_the_counts_are_the_measured_ones(
         "AN XII",
     ]
     assert [(pair.a, pair.b) for pair in built.pairs if pair.identical] == [("AR 12", "AR 12")]
-    assert sum(pair.passages_withheld for pair in built.pairs) == 42
+    assert sum(pair.passages_withheld for pair in built.pairs) == 32
     assert sum(pair.headings_equal for pair in built.pairs) == 75
     assert sum(len(pair.children) for pair in built.pairs) == 1019
     assert (len(built.unpaired_a), len(built.unpaired_b)) == (56, 44)

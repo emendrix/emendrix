@@ -17,6 +17,9 @@ committed file:
   event touches other units only, and, when the record holds no such event, a sentence saying
   exactly that. It never says the act did not amend the twin: the record may simply not hold
   the event. An event no instrument is named for asks nothing, so it gets no answer.
+
+Where the two texts differ, the note and the line link the pair's own page, which shows only
+the differing passages. An identical pair has no such page, and nothing to compare.
 """
 
 from __future__ import annotations
@@ -32,10 +35,13 @@ from emendrix.site_.outbound import external
 from emendrix.site_.twin_inputs import TwinIndex, TwinSpot, TwinUnit
 from emendrix.site_.urls import provision_href
 
-__all__ = ["SIMILAR", "twin_line", "twin_note"]
+__all__ = ["COMPARE", "SIMILAR", "twin_line", "twin_note"]
 
 SIMILAR = "textually similar"
 """The gloss every mention of a twin carries, so the word never reads as a legal claim."""
+
+COMPARE = "See where the two texts differ"
+"""The words of every link to a twin page."""
 
 
 def _parents(location: ProvisionLocation) -> list[ProvisionLocation]:
@@ -109,6 +115,12 @@ def _lead(twins: TwinIndex, unit: TwinUnit, spot: TwinSpot, root: str) -> Html:
     )
 
 
+def _compare(unit: TwinUnit, root: str) -> Html:
+    if not unit.compare:
+        return Html("")
+    return Html(f' <a href="{escape(root + unit.compare)}">{escape(COMPARE)}</a>.')
+
+
 def twin_note(
     site: SiteInputs, act: ActSite, entry: ChangelogEntry, emitted: EmittedChange, root: str
 ) -> list[Html]:
@@ -119,13 +131,16 @@ def twin_note(
         spot = _spot(change, unit)
         answer = _answer(site.twins, entry, unit, spot)
         lead = _lead(site.twins, unit, spot, root)
-        lines.append(Html(f'<p class="small muted">{lead}{escape(answer)}</p>'))
+        compare = _compare(unit, root)
+        lines.append(Html(f'<p class="small muted">{lead}{escape(answer)}{compare}</p>'))
     return lines
 
 
 def twin_line(site: SiteInputs, act: ActSite, canonical: str, root: str) -> list[Html]:
     """A provision page's header line per sister act naming the unit's twin; empty for none."""
     return [
-        Html(f'<p class="facts">{_lead(site.twins, unit, unit.twin, root)}</p>')
+        Html(
+            f'<p class="facts">{_lead(site.twins, unit, unit.twin, root)}{_compare(unit, root)}</p>'
+        )
         for unit in site.twins.twins(act.act, canonical)
     ]
