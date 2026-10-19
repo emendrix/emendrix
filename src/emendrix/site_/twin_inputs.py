@@ -40,6 +40,7 @@ __all__ = [
     "TwinMaps",
     "TwinSpot",
     "TwinUnit",
+    "pageless",
     "pair_slug",
     "read_twin_maps",
     "twin_index",
@@ -69,6 +70,11 @@ class TwinMaps(BaseModel):
 
 
 NO_TWIN_MAPS = TwinMaps()
+
+
+def pageless(pair: TwinPair) -> bool:
+    """Whether a pair has no page: identical texts, or texts that differ in numbering alone."""
+    return pair.identical or pair.numbering_only
 
 
 def pair_slug(document: TwinMap) -> str:
@@ -102,6 +108,9 @@ class TwinSpot(BaseModel):
     location: str = Field(description="Canonical location in the sister act.")
     ratio: float = Field(description="The map's word ratio, as committed.")
     identical: bool = Field(description="True when the two units' comparison texts are equal.")
+    numbering_only: bool = Field(
+        default=False, description="True when the two units' texts differ in numbering alone."
+    )
     url: str = Field(default="", description="Its public address in the paired version, or ''.")
 
 
@@ -119,7 +128,7 @@ class TwinUnit(BaseModel):
     here: str = Field(description="The version of this act the pair was computed on.")
     there: str = Field(description="The version of the sister act the pair was computed on.")
     compare: str = Field(
-        default="", description="The pair's own page, site-root-relative; '' when identical."
+        default="", description="The pair's own page, site-root-relative; '' when it has none."
     )
 
 
@@ -158,9 +167,15 @@ def _act(side: TwinSide) -> ActId:
     return ActId(corpus=side.corpus, key=side.key)
 
 
-def _spot(location: str, ratio: float, identical: bool, version: str, maps: TwinMaps) -> TwinSpot:
+def _spot(location: str, ratio: float, pair: TwinPair, version: str, maps: TwinMaps) -> TwinSpot:
     url = maps.urls.get(version, {}).get(location, "")
-    return TwinSpot(location=location, ratio=ratio, identical=identical, url=url)
+    return TwinSpot(
+        location=location,
+        ratio=ratio,
+        identical=pair.identical,
+        numbering_only=pair.numbering_only,
+        url=url,
+    )
 
 
 def _unit(
@@ -178,18 +193,18 @@ def _unit(
     mine, theirs = (pair.b, pair.a) if flip else (pair.a, pair.b)
     children = {
         (child.b if flip else child.a): _spot(
-            child.a if flip else child.b, child.ratio, pair.identical, there, maps
+            child.a if flip else child.b, child.ratio, pair, there, maps
         )
         for child in pair.children
     }
     return mine, TwinUnit(
         sister=sister,
-        twin=_spot(theirs, pair.ratio, pair.identical, there, maps),
+        twin=_spot(theirs, pair.ratio, pair, there, maps),
         children=children,
         page=theirs in pages,
         here=here,
         there=there,
-        compare="" if pair.identical else twin_page_href(slug, pair.a),
+        compare="" if pageless(pair) else twin_page_href(slug, pair.a),
     )
 
 

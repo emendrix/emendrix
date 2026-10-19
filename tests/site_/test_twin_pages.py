@@ -21,7 +21,7 @@ from emendrix.core import ActId, ProvisionTree, VersionId
 from emendrix.session import adapter_for
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.twin import WITHHELD, render_twin_page
-from emendrix.site_.twin_inputs import TwinMaps
+from emendrix.site_.twin_inputs import TwinMaps, pageless
 from emendrix.site_.twin_model import twin_views
 from emendrix.site_.twin_note import SIMILAR
 from emendrix.twins.model import Passage, TwinMap, TwinPair
@@ -69,17 +69,29 @@ def _slug(canonical: str) -> str:
     return canonical.lower().replace(" ", "-")
 
 
-def test_a_page_per_non_identical_pair_and_none_for_the_identical_one(
+def test_a_page_per_pair_differing_beyond_numbering_and_none_for_the_rest(
     site: Path, document: TwinMap
 ) -> None:
+    """84 non-identical pairs, of which 19 differ in numbering alone: 65 pages (2026-10-19)."""
     pages = _pages(site)
-    expected = {_slug(one.a) for one in document.pairs if not one.identical}
+    expected = {_slug(one.a) for one in document.pairs if not pageless(one)}
     assert set(pages) == expected
-    assert len(pages) == 84
+    assert len(pages) == 65
     assert [one.a for one in document.pairs if one.identical] == ["AR 12"]
+    assert sum(one.numbering_only for one in document.pairs) == 19
     index = (site / "twins" / PAIR / "index.html").read_text(encoding="utf-8")
-    assert "Medical Devices Regulation Art. 12 and IVDR Art. 12 · identical text" in text_of(index)
+    words = text_of(index)
+    assert "Medical Devices Regulation Art. 12 and IVDR Art. 12 · identical text" in words
+    assert "IVDR Art. 12 · identical text apart" not in words
+    assert (
+        "Medical Devices Regulation Art. 23 and IVDR Art. 20 · identical text apart from numbering"
+        in words
+    )
+    assert (
+        "85 pairs of provisions, 1 with identical text, 19 with identical text apart from" in words
+    )
     assert "ar-12/" not in index
+    assert 'ar-23/"' not in index
 
 
 def test_the_title_and_description_name_both_acts_and_both_coordinates(site: Path) -> None:
@@ -106,7 +118,7 @@ def _rows(page: str) -> list[list[str]]:
 def test_the_passage_table_obeys_the_caps(site: Path, document: TwinMap) -> None:
     pages = _pages(site)
     for one in document.pairs:
-        if one.identical:
+        if pageless(one):
             continue
         page = pages[_slug(one.a)]
         rows = _rows(page)
@@ -126,7 +138,9 @@ def test_the_passage_table_obeys_the_caps(site: Path, document: TwinMap) -> None
 def test_a_withheld_pair_says_so_and_shows_no_passage(site: Path, document: TwinMap) -> None:
     withheld = [one for one in document.pairs if one.passages_withheld]
     assert len(withheld) == 32
-    for one in withheld:
+    shown = [one for one in withheld if not pageless(one)]
+    assert len(shown) == 29
+    for one in shown:
         page = _pages(site)[_slug(one.a)]
         assert escape(WITHHELD) in page
         assert '<p class="diff">' not in page
@@ -139,7 +153,7 @@ def test_no_twin_page_carries_either_units_full_text(
     pages = _pages(site)
     checked = 0
     for one in document.pairs:
-        if one.identical:
+        if pageless(one):
             continue
         page = text_of(pages[_slug(one.a)])
         for tree, unit in ((mdr, one.a), (ivdr, one.b)):
@@ -174,7 +188,7 @@ def test_the_pair_index_lists_every_pair_in_order_and_the_unpaired_units(
     site: Path, document: TwinMap
 ) -> None:
     index = (site / "twins" / PAIR / "index.html").read_text(encoding="utf-8")
-    positions = [index.index(f"{_slug(one.a)}/") for one in document.pairs if not one.identical]
+    positions = [index.index(f"{_slug(one.a)}/") for one in document.pairs if not pageless(one)]
     assert positions == sorted(positions)
     words = text_of(index)
     assert "56 provisions of Medical Devices Regulation with no twin in IVDR" in words

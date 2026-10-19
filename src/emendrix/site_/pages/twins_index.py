@@ -2,13 +2,15 @@
 
 `twins/` lists every pair of acts whose provisions are compared, one line each. `twins/<pair>/`
 lists every pair of units in the first act's document order with its score, linked to its page
-or marked identical, then the units of either act with no twin. Both say what "twin" means
-before anything else, because the word must never read as a claim about the law: it means the
-two texts are textually similar by a stated measure, and nothing more.
+or marked identical, or identical apart from numbering, then the units of either act with no
+twin. Both say what "twin" means before anything else, because the word must never read as a
+claim about the law: it means the two texts are textually similar by a stated measure, and
+nothing more.
 
 An identical pair is listed and has no page, because there is nothing to show but that the
-texts are the same. A unit with no twin is named with its closest match only when that match
-reached the floor and preferred another unit; otherwise no unit of the other act reached it.
+texts are the same; so is a pair whose texts differ in numbering alone. A unit with no twin is
+named with its closest match only when that match reached the floor and preferred another
+unit; otherwise no unit of the other act reached it.
 """
 
 from __future__ import annotations
@@ -26,7 +28,7 @@ from emendrix.site_.titles import SUFFIX
 from emendrix.site_.trail import TWINS_ROSTER, Rung, twin_trail
 from emendrix.site_.twin_inputs import pair_slug
 from emendrix.site_.twin_model import TwinPairView
-from emendrix.site_.twin_note import SIMILAR
+from emendrix.site_.twin_note import IDENTICAL, RENUMBERED, SIMILAR
 from emendrix.site_.urls import depth_of, twin_api_href, twin_pair_href, twins_href, up
 from emendrix.twins.model import Unpaired
 
@@ -44,7 +46,11 @@ _NONE: Final = "No pair of acts is compared in this build, so no provision has a
 def _counts(view: TwinPairView) -> str:
     pairs = view.document.pairs
     identical = sum(pair.identical for pair in pairs)
-    return f"{count(len(pairs), 'pair')} of provisions, {identical} with identical text"
+    renumbered = sum(pair.numbering_only for pair in pairs)
+    return (
+        f"{count(len(pairs), 'pair')} of provisions, {identical} with {IDENTICAL}, "
+        f"{renumbered} with {RENUMBERED}"
+    )
 
 
 def _sides(view: TwinPairView) -> str:
@@ -130,7 +136,8 @@ def render_twin_pair(site: SiteInputs, view: TwinPairView) -> Html:
                 f"{view.a.label} {ProvisionLocation.parse(pair.a).human} and "
                 f"{view.b.label} {ProvisionLocation.parse(pair.b).human}"
             )
-            items.append(Html(f"<li>{escape(words)} · identical text</li>"))
+            said = IDENTICAL if pair.identical else RENUMBERED
+            items.append(Html(f"<li>{escape(words)} · {escape(said)}</li>"))
             continue
         href = escape(root + shown.path)
         words = f"{named(shown.a)} and {named(shown.b)}"

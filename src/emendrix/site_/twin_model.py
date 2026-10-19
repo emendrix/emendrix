@@ -22,7 +22,7 @@ from emendrix.core import ActId
 from emendrix.site_.clocks import sort_date
 from emendrix.site_.history import ProvisionStep, histories
 from emendrix.site_.inputs import ActSite, SiteInputs
-from emendrix.site_.twin_inputs import pair_slug
+from emendrix.site_.twin_inputs import pageless, pair_slug
 from emendrix.site_.urls import twin_page_href, twin_pair_href
 from emendrix.twins.model import TwinMap, TwinPair, TwinSide
 
@@ -53,7 +53,7 @@ class TwinChange(BaseModel):
 
 
 class TwinPageView(BaseModel):
-    """One non-identical pair: everything its page shows."""
+    """One pair whose texts differ in more than numbering: everything its page shows."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -65,7 +65,7 @@ class TwinPageView(BaseModel):
 
 
 class TwinPairView(BaseModel):
-    """One pair of acts: the committed map, both acts and a page view per non-identical pair."""
+    """One pair of acts: the committed map, both acts and a page view per pair that has one."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -77,7 +77,7 @@ class TwinPairView(BaseModel):
     pages: tuple[TwinPageView, ...] = Field(description="In A's document order.")
 
     def page_of(self, pair: TwinPair) -> TwinPageView | None:
-        """The page of a pair, or None for an identical one."""
+        """The page of a pair, or None for one with no page (see `pageless`)."""
         return next((view for view in self.pages if view.pair == pair), None)
 
 
@@ -125,7 +125,7 @@ def twin_views(site: SiteInputs) -> tuple[TwinPairView, ...]:
         slug = pair_slug(document)
         pages: list[TwinPageView] = []
         for pair in document.pairs:
-            if pair.identical:
+            if pageless(pair):
                 continue
             left = _side(site, a, document.a, pair.a, set(stepped[str(a.act)]))
             right = _side(site, b, document.b, pair.b, set(stepped[str(b.act)]))

@@ -124,3 +124,18 @@ def test_a_rebuild_is_the_same_bytes_whichever_act_comes_first(
     assert text.endswith("}\n")
     assert render(twin_map(ivdr, mdr)) == text
     assert TwinMap.model_validate_json(text) == built
+
+
+def test_the_numbering_only_pairs_are_the_measured_ones(built: TwinMap) -> None:
+    """19 of the 84 non-identical pairs differ in numbering alone, measured 2026-10-19.
+
+    Each differs in its own article number and in the numbers of the articles it refers to and
+    in nothing else; three of them are withheld. MDR Article 113 and IVDR Article 106 differ in
+    a year besides their numbers, which is why a number outside a numbering position is text.
+    """
+    renumbered = [(pair.a, pair.b) for pair in built.pairs if pair.numbering_only]
+    assert len(renumbered) == 19
+    assert renumbered[:3] == [("AR 23", "AR 20"), ("AR 24", "AR 21"), ("AR 25", "AR 22")]
+    assert not any(pair.identical for pair in built.pairs if pair.numbering_only)
+    assert sum(pair.passages_withheld for pair in built.pairs if pair.numbering_only) == 3
+    assert not next(pair for pair in built.pairs if pair.a == "AR 113").numbering_only

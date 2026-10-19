@@ -9,7 +9,8 @@ committed file:
   else the unit's own twin, linked to the sister act's provision page where the site wrote one,
   else to its public address in the version the pair was computed on.
 - **How similar**: the committed ratio, or `identical text` where the comparison texts are
-  equal, always under the words `textually similar`, in the visible text.
+  equal, or `identical text apart from numbering` where they differ in numbering alone, always
+  under the words `textually similar`, in the visible text.
 - **Which texts were paired**: the map pairs the two acts' newest stored versions, which need
   not be the event's own, so the note names their dates.
 - **Whether the same amending act changed it**: `yes` when an event of the sister act
@@ -19,7 +20,8 @@ committed file:
   the event. An event no instrument is named for asks nothing, so it gets no answer.
 
 Where the two texts differ, the note and the line link the pair's own page, which shows only
-the differing passages. An identical pair has no such page, and nothing to compare.
+the differing passages. An identical pair has no such page, and nothing to compare; nor has a
+pair whose texts differ in numbering alone, where there is nothing to compare but numbers.
 """
 
 from __future__ import annotations
@@ -35,13 +37,24 @@ from emendrix.site_.outbound import external
 from emendrix.site_.twin_inputs import TwinIndex, TwinSpot, TwinUnit
 from emendrix.site_.urls import provision_href
 
-__all__ = ["COMPARE", "SIMILAR", "twin_line", "twin_note"]
+__all__ = ["COMPARE", "IDENTICAL", "RENUMBERED", "SIMILAR", "twin_line", "twin_note"]
 
 SIMILAR = "textually similar"
 """The gloss every mention of a twin carries, so the word never reads as a legal claim."""
 
 COMPARE = "See where the two texts differ"
 """The words of every link to a twin page."""
+
+IDENTICAL = "identical text"
+RENUMBERED = "identical text apart from numbering"
+"""What a pair with no page says in place of its ratio, so the reader learns why it has none."""
+
+
+def _score(spot: TwinSpot) -> str:
+    """`identical text`, `identical text apart from numbering`, or the ratio to 3 places."""
+    if spot.identical:
+        return IDENTICAL
+    return RENUMBERED if spot.numbering_only else f"{spot.ratio:.3f}"
 
 
 def _parents(location: ProvisionLocation) -> list[ProvisionLocation]:
@@ -108,10 +121,9 @@ def _lead(twins: TwinIndex, unit: TwinUnit, spot: TwinSpot, root: str) -> Html:
         where = external(spot.url, named)
     else:
         where = escape(named)
-    score = "identical text" if spot.identical else f"{spot.ratio:.3f}"
     return Html(
         f"<strong>Twin in {escape(sister.label)}:</strong> {where}, "
-        f"{escape(SIMILAR)} ({escape(score)}), {escape(_paired(twins, unit))}."
+        f"{escape(SIMILAR)} ({escape(_score(spot))}), {escape(_paired(twins, unit))}."
     )
 
 

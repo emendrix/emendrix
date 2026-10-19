@@ -43,6 +43,7 @@ def pair(
     ratio: float = 0.95,
     *,
     identical: bool = False,
+    numbering_only: bool = False,
     children: tuple[tuple[str, str, float], ...] = (),
 ) -> TwinPair:
     return TwinPair(
@@ -50,6 +51,7 @@ def pair(
         b=b,
         ratio=ratio,
         identical=identical,
+        numbering_only=numbering_only,
         children=tuple(AlignedChild(a=x, b=y, ratio=r) for x, y, r in children),
         passages=(),
         passages_omitted=0,

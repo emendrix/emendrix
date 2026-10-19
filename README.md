@@ -215,15 +215,18 @@ off the corpus (0.90, measured 2026-10-19). Sub-provisions below a pair are alig
 
 A reader gets, under every change to a provision with a twin, one line naming it, with its score,
 the dates of the texts it was paired on and whether the record holds a change to it by the same
-amending act: `Twin in IVDR: Art. 106(1), textually similar (0.958)`. The provision page names
-its twin in its header. Each non-identical pair has a twin page showing **only the passages where
-the two texts differ**, a few words of context around each, never either provision whole, with
-both on EUR-Lex; a pair index lists every pair and every provision with no twin
-([MDR and IVDR](https://emendrix.eu/twins/eu-32017R0745--eu-32017R0746/)), and the map is data
-at `/api/v1/twins/<pair>.json`. **Twin means textually similar and nothing more**: no page says
-a provision is equivalent to its twin, has the same effect, or should change because the other
-did. The MDR and the IVDR are the one pair configured; the figures and the gaps are in
-[`docs/limitations.md`](./docs/limitations.md) §"Twin provisions".
+amending act: `Twin in IVDR: Art. 106(1), textually similar (0.958)`. The provision page names its
+twin in its header. Each pair whose texts differ beyond their numbering has a twin page showing
+**only the passages where the two texts differ**, a few words of context around each, never either
+provision whole, with both on EUR-Lex; a pair whose texts are identical, or identical apart from
+numbering, is said to be so and has no page. A pair index lists every pair and every provision with
+no twin ([MDR and IVDR](https://emendrix.eu/twins/eu-32017R0745--eu-32017R0746/)), and the map is
+data at `/api/v1/twins/<pair>.json`. **Twin means textually similar and nothing more**: no page says
+a provision is equivalent to its twin, has the same effect, or should change because the other did.
+The example watchlist pairs the MDR and the IVDR; the hosted instance also pairs the three European
+Supervisory Authorities regulations with each other and the anti-dumping and anti-subsidy
+regulations. The figures and the gaps are in [`docs/limitations.md`](./docs/limitations.md)
+§"Twin provisions".
 
 ## Measured results
 

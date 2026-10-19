@@ -37,7 +37,7 @@ substances/acts/<slug>/index.html  one act's numbers, sorted, continued under `2
 substances/<scheme>-<value>/index.html  one number: where it appears now, and its history
 twins/index.html                every pair of acts whose provisions are compared, if any is
 twins/<pair>/index.html         one pair of acts: every pair of units, and the units with none
-twins/<pair>/<prov>/index.html  one non-identical pair of units: only where the texts differ
+twins/<pair>/<prov>/index.html  one pair of units differing beyond numbering: where they differ
 api/index.html                  the JSON API: its layout, its fields, and an example for CI
 api/v1/catalogue.json           every watched act's names and the addresses of its pages
 api/v1/schema/<name>.schema.json  the JSON Schema of each document the API serves

@@ -32,7 +32,7 @@ def test_the_twins_sitemap_lists_exactly_the_twin_pages_built(site: Path) -> Non
         for page in (site / "twins").rglob("index.html")
     }
     assert set(listed) == built
-    assert len(built) == 1 + 1 + 84
+    assert len(built) == 1 + 1 + 65
     assert set(listed.values()) == {"2025-01-10"}
 
 

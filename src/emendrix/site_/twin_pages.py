@@ -1,9 +1,10 @@
 """The twin surface, path -> contents: the twins index, each pair of acts' index, a page per
-non-identical pair, and each committed map served under the API.
+pair whose texts differ in more than numbering, and each committed map served under the API.
 
 The index is written only where a shown map exists, since nothing links it otherwise. An
 identical pair gets no page, because its page could only say that the texts are the same,
-which its line on the pair index already says. The API file is the map's committed bytes,
+which its line on the pair index already says; nor does a pair whose texts differ in numbering
+alone, whose page could only show renumbering. The API file is the map's committed bytes,
 never a re-serialisation, so its digest is the record's.
 """
 

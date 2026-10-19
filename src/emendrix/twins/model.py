@@ -95,6 +95,12 @@ class TwinPair(BaseModel):
     b: str = Field(description="Canonical unit location in act B.")
     ratio: float = Field(description="The word ratio, rounded to 3 places.")
     identical: bool = Field(description="True when the two comparison texts are equal.")
+    numbering_only: bool = Field(
+        default=False,
+        description="True when the comparison texts are not identical and are equal once every "
+        "number in a numbering position is masked: the units' own number, the provisions they "
+        "refer to, and lone point labels. False in a map written before the field existed.",
+    )
     children: tuple[AlignedChild, ...] = Field(
         description="Descendants aligned level by level, below aligned parents only, in A's order."
     )

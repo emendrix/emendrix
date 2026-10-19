@@ -19,6 +19,7 @@ from emendrix.twins.model import (
     Unpaired,
     ordered,
 )
+from emendrix.twins.numbering import numbering_only
 from emendrix.twins.pair import (
     TWIN_FLOOR,
     TWIN_FLOOR_VERIFIED_ON,
@@ -53,6 +54,7 @@ def _pair(pair: Aligned, *, floor: float) -> TwinPair:
         b=pair.b.location.canonical,
         ratio=_rounded(pair.ratio),
         identical=a_text == b_text,
+        numbering_only=numbering_only(a_text, b_text),
         children=tuple(
             AlignedChild(
                 a=child.a.location.canonical,

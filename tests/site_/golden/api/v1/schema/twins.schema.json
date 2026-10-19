@@ -1,0 +1,296 @@
+{
+  "$defs": {
+    "AlignedChild": {
+      "description": "Two provisions below a twin pair, aligned by the same measure and floor.",
+      "properties": {
+        "a": {
+          "description": "Canonical location in act A.",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "description": "Canonical location in act B.",
+          "title": "B",
+          "type": "string"
+        },
+        "ratio": {
+          "description": "The word ratio, rounded to 3 places.",
+          "title": "Ratio",
+          "type": "number"
+        }
+      },
+      "required": [
+        "a",
+        "b",
+        "ratio"
+      ],
+      "title": "AlignedChild",
+      "type": "object"
+    },
+    "Passage": {
+      "description": "One differing span, with a few equal words of context either side.\n\nAn excerpt of the comparison texts (whitespace collapsed), for reading the difference;\nit is not the verbatim text, which the two acts' own publications carry.",
+      "properties": {
+        "a": {
+          "description": "The span in A with its context; context alone where B adds words.",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "description": "The span in B with its context; context alone where B drops words.",
+          "title": "B",
+          "type": "string"
+        },
+        "cut": {
+          "description": "True when either side was cut short, marked with `[…]`.",
+          "title": "Cut",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "a",
+        "b",
+        "cut"
+      ],
+      "title": "Passage",
+      "type": "object"
+    },
+    "TwinMethod": {
+      "description": "How the ratios were computed, and the floor a pair must reach to be a twin.",
+      "properties": {
+        "floor": {
+          "description": "The least ratio a twin pair reaches.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Floor",
+          "type": "number"
+        },
+        "measure": {
+          "const": "word-ratio",
+          "description": "difflib.SequenceMatcher(None, a_words, b_words, autojunk=False).ratio() over the whitespace-split comparison texts of the two provisions.",
+          "title": "Measure",
+          "type": "string"
+        },
+        "verified_on": {
+          "description": "The date the floor was read off the corpus, ISO.",
+          "title": "Verified On",
+          "type": "string"
+        }
+      },
+      "required": [
+        "measure",
+        "floor",
+        "verified_on"
+      ],
+      "title": "TwinMethod",
+      "type": "object"
+    },
+    "TwinPair": {
+      "description": "Two units, each the other's best match at or above the floor.",
+      "properties": {
+        "a": {
+          "description": "Canonical unit location in act A.",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "description": "Canonical unit location in act B.",
+          "title": "B",
+          "type": "string"
+        },
+        "children": {
+          "description": "Descendants aligned level by level, below aligned parents only, in A's order.",
+          "items": {
+            "$ref": "#/$defs/AlignedChild"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "headings_equal": {
+          "description": "Whether the normalised headings are equal: published, no part of the pairing.",
+          "title": "Headings Equal",
+          "type": "boolean"
+        },
+        "identical": {
+          "description": "True when the two comparison texts are equal.",
+          "title": "Identical",
+          "type": "boolean"
+        },
+        "numbering_only": {
+          "default": false,
+          "description": "True when the comparison texts are not identical and are equal once every number in a numbering position is masked: the units' own number, the provisions they refer to, and lone point labels. False in a map written before the field existed.",
+          "title": "Numbering Only",
+          "type": "boolean"
+        },
+        "passages": {
+          "description": "The first differing spans, up to the cap; empty when identical or withheld.",
+          "items": {
+            "$ref": "#/$defs/Passage"
+          },
+          "title": "Passages",
+          "type": "array"
+        },
+        "passages_omitted": {
+          "description": "Differing spans beyond the cap, counted and not shown; 0 when withheld.",
+          "minimum": 0,
+          "title": "Passages Omitted",
+          "type": "integer"
+        },
+        "passages_withheld": {
+          "description": "True when the spans would show too large a share of either text to excerpt.",
+          "title": "Passages Withheld",
+          "type": "boolean"
+        },
+        "ratio": {
+          "description": "The word ratio, rounded to 3 places.",
+          "title": "Ratio",
+          "type": "number"
+        }
+      },
+      "required": [
+        "a",
+        "b",
+        "ratio",
+        "identical",
+        "children",
+        "passages",
+        "passages_omitted",
+        "passages_withheld",
+        "headings_equal"
+      ],
+      "title": "TwinPair",
+      "type": "object"
+    },
+    "TwinSide": {
+      "description": "One of the two acts, and the version of it the map was computed on.",
+      "properties": {
+        "corpus": {
+          "description": "The adapter namespace the act belongs to.",
+          "title": "Corpus",
+          "type": "string"
+        },
+        "key": {
+          "description": "The act's opaque key within its corpus.",
+          "title": "Key",
+          "type": "string"
+        },
+        "version": {
+          "description": "The version whose texts were compared.",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "corpus",
+        "key",
+        "version"
+      ],
+      "title": "TwinSide",
+      "type": "object"
+    },
+    "Unpaired": {
+      "description": "A unit with no twin, and the unit it matched best if that reached the floor.",
+      "properties": {
+        "best": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Its best match at or above the floor, which preferred another unit; null when no unit of the other act reaches the floor.",
+          "title": "Best"
+        },
+        "ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The ratio to `best`, rounded to 3 places.",
+          "title": "Ratio"
+        },
+        "unit": {
+          "description": "Canonical unit location in this act.",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unit",
+        "best",
+        "ratio"
+      ],
+      "title": "Unpaired",
+      "type": "object"
+    }
+  },
+  "$id": "twins.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Every twin pair of two acts' units, with the units left unpaired on either side.",
+  "properties": {
+    "a": {
+      "$ref": "#/$defs/TwinSide",
+      "description": "The act with the lower key."
+    },
+    "b": {
+      "$ref": "#/$defs/TwinSide",
+      "description": "The act with the higher key."
+    },
+    "disclaimer": {
+      "description": "The not-legal-advice disclaimer, verbatim.",
+      "title": "Disclaimer",
+      "type": "string"
+    },
+    "method": {
+      "$ref": "#/$defs/TwinMethod",
+      "description": "How the pairs were computed."
+    },
+    "pairs": {
+      "description": "In A's document order.",
+      "items": {
+        "$ref": "#/$defs/TwinPair"
+      },
+      "title": "Pairs",
+      "type": "array"
+    },
+    "twins_schema": {
+      "const": "1.0",
+      "description": "The layout this document was written in.",
+      "title": "Twins Schema",
+      "type": "string"
+    },
+    "unpaired_a": {
+      "description": "A's units with no twin, location order.",
+      "items": {
+        "$ref": "#/$defs/Unpaired"
+      },
+      "title": "Unpaired A",
+      "type": "array"
+    },
+    "unpaired_b": {
+      "description": "B's units with no twin, location order.",
+      "items": {
+        "$ref": "#/$defs/Unpaired"
+      },
+      "title": "Unpaired B",
+      "type": "array"
+    }
+  },
+  "required": [
+    "twins_schema",
+    "disclaimer",
+    "method",
+    "a",
+    "b",
+    "pairs",
+    "unpaired_a",
+    "unpaired_b"
+  ],
+  "title": "twins",
+  "type": "object"
+}

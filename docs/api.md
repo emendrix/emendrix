@@ -49,9 +49,9 @@ answers it only once [`deploy/default.conf`](../deploy/default.conf) names it am
 change, and a path not in this table is not part of the API.
 
 The schemas are generated from the models that write the documents, and the ones for the record
-are committed in this repository under [`./schema/`](./schema/), the register's
-(`register.schema.json`) among them, though the site does not serve that one. Each declares JSON Schema
-2020-12 and carries its own file name as a relative `$id`, so the same bytes resolve correctly
+are committed in this repository under [`./schema/`](./schema/) and served under
+`/api/v1/schema/`, the register's (`register.schema.json`) and the twin map's
+(`twins.schema.json`) among them. Each declares JSON Schema 2020-12 and carries its own file name as a relative `$id`, so the same bytes resolve correctly
 wherever they are served. A schema describes a document as the current model writes it. A
 payload committed earlier can lack a field added since with a default, which a schema treats as
 optional, and one field the schemas mark as always present, the read-only `dispute_reason` (see
@@ -186,14 +186,15 @@ acts' corpus and key with the lower key first: `twins/eu-32017R0745--eu-32017R07
 MDR and the IVDR. It is committed in the record at `twins/<pair>.json` and the site build copies
 those bytes unaltered, so the file under `/api/v1/` and the one in a clone are the same document
 at the same relative path. Its schema is `twins.schema.json` (`twins_schema` `1.0`), committed
-under [`./schema/`](./schema/) like the register's and, like it, not served under
-`/api/v1/schema/`; the fields are described in [`./output-format.md`](./output-format.md). The
+under [`./schema/`](./schema/) and served under `/api/v1/schema/`, as the register's is; the fields are described in [`./output-format.md`](./output-format.md). The
 catalogue does not list the file; this page does.
 
 **A pair** is two units, an article with an article or an annex with an annex, each the other's
 best match by word ratio over their comparison texts and at or above the map's `method.floor`,
 read off the corpus on `method.verified_on`. It carries the ratio, whether the texts are
-identical, the descendants aligned below it the same way, and the passages where the two differ.
+identical, whether they differ in numbering alone (`numbering_only`: their own numbers and the
+numbers of the provisions they refer to), the descendants aligned below it the same way, and the
+passages where the two differ.
 The map is computed on each act's newest stored version, named in `a.version` and `b.version`,
 which need not be the versions any one event names.
 
@@ -202,7 +203,7 @@ publishers' to serve: each is one differing span with up to 6 words of context e
 side cut at 400 characters and marked `[…]`, at most 12 to a pair with `passages_omitted`
 counting the rest. A pair whose kept passages would exceed 30% of either text carries none and
 `passages_withheld: true`; a reader goes to EUR-Lex for both. Over MDR and IVDR 20250110 the map
-holds 85 pairs, 1 identical and 32 withheld.
+holds 85 pairs, 1 identical, 19 numbering-only and 32 withheld.
 
 Twin means **textually similar** by this measure, and nothing more: a pair says nothing about
 what either provision requires, or whether one should change because the other did. The file

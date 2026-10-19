@@ -115,6 +115,12 @@
           "title": "Identical",
           "type": "boolean"
         },
+        "numbering_only": {
+          "default": false,
+          "description": "True when the comparison texts are not identical and are equal once every number in a numbering position is masked: the units' own number, the provisions they refer to, and lone point labels. False in a map written before the field existed.",
+          "title": "Numbering Only",
+          "type": "boolean"
+        },
         "passages": {
           "description": "The first differing spans, up to the cap; empty when identical or withheld.",
           "items": {

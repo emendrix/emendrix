@@ -125,9 +125,9 @@ def test_the_register_sits_beside_the_act_index() -> None:
 
 
 def test_the_committed_register_schema_is_what_the_model_generates() -> None:
-    """The register's schema is committed with the others, and the site serves only those."""
+    """The register's schema is committed with the others and served with them."""
     assert "register" in COMMITTED
-    assert "register" not in SCHEMAS
+    assert "register" in SCHEMAS
     committed = (REPO / "docs" / "schema" / "register.schema.json").read_text(encoding="utf-8")
     assert committed == schema_documents(COMMITTED)["register.schema.json"]
     properties = json.loads(committed)["properties"]

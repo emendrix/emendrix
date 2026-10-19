@@ -350,11 +350,23 @@ of them sharing a heading, as the reading over 20250110 for both.
 than the verbatim text, each side cut at 400 characters and marked `[…]`, at most 12 to a pair
 with the rest counted. A pair whose shown passages, context and markers included, exceed 30% of
 either unit's comparison text shows none and says the two differ too widely to excerpt: over the
-MDR and IVDR 20250110 texts on 2026-10-19, 32 of the 84 twin pages. **Withheld does not mean more
+MDR and IVDR 20250110 texts on 2026-10-19, 32 of the 84 non-identical pairs, 29 of the 65 twin
+pages. **Withheld does not mean more
 different.** The share is mostly context: counting every passage rather than the 12 shown would
 withhold 42, and counting the differing words alone, without context, would withhold none. So a
 pair at 0.966 with one short passage on a short article (MDR Article 116, IVDR Article 109) is
-withheld, while longer pairs at lower scores show their passages.
+withheld, while longer pairs at lower scores show their passages. That pair also differs in
+numbering alone, so the site writes no page for it.
+
+**"Identical apart from numbering" does not check what a number points at.** A pair is
+`numbering_only` when its texts are equal once every number after `Article`, `Annex` and the
+other division words, and every lone point label, is masked, and a pair so marked has no twin
+page. The test does not check that a renumbered cross-reference points at the provision's own
+twin: `Article 26` against `Article 25` is masked whether or not those two articles are twins
+themselves, so a reference that was redirected to a different provision, rather than renumbered,
+reads as numbering. A number outside a numbering position is never masked, so a changed date,
+amount or act number always keeps a pair's page. Over the MDR and IVDR 20250110 texts on
+2026-10-19, 19 of the 84 non-identical pairs are numbering-only, leaving 65 twin pages.
 
 **"The same amending act changed it: no" reads the record.** The note's answer is read off the
 committed record through the attribution an amending act's own page uses: `yes` when an event of
@@ -379,22 +391,22 @@ every MDR change since has nothing on the other side to compare with; the count 
 `scripts/validation/twin_provisions.py divergence --fetch` before a feed is reconsidered
 (`scripts/validation/results/twin-divergence-fetch-2026-10-19.txt`).
 
-**One pair is configured: the MDR and the IVDR.** A screen on 2026-10-19 of every pair of the
-72 acts the disk cache held, newest version each (8-word shingles, then the word ratio at 0.90),
-found eleven other pairs of acts with at least ten mutual-best article pairs: the three European
+**One pair is configured in the example watchlist: the MDR and the IVDR.** A screen on
+2026-10-19 of every pair of the 72 acts the disk cache held, newest version each (8-word
+shingles, then the word ratio at 0.90), found eleven other pairs of acts with at least ten mutual-best article pairs: the three European
 Supervisory Authorities regulations (`32010R1093`, `32010R1094`, `32010R1095`) with each other,
 the cableway, personal protective equipment and gas appliance regulations (`32016R0424`,
 `32016R0425`, `32016R0426`) with each other, the anti-dumping and anti-subsidy regulations
 (`32016R1036`, `32016R1037`), the fertilising products regulation `32019R1009` with each of the
 three 2016 product regulations, and `32016R0425` with the Machinery Regulation `32023R1230`
 (`scripts/validation/results/twin-screen-2026-10-19.txt`). The screen finds 78 of the 85 MDR/IVDR
-pairs the full run finds, so it undercounts by about 8%. None of the eleven is configured. Adding
-one is a `[[twins]]` block naming two watched acts, and it would be paired at the MDR/IVDR floor,
-which was not read off its own headings.
-
-**The map's schema is committed but not served.** `docs/schema/twins.schema.json` is in the
-repository; the API serves the map at `/api/v1/twins/<pair>.json` but not its schema under
-`/api/v1/schema/`, which the register's schema shares ([`./api.md`](./api.md) §"Twins").
+pairs the full run finds, so it undercounts by about 8%. None of the eleven is configured in
+`watchlist.example.toml`. The hosted instance pairs four of them since 2026-10-19, the three
+European Supervisory Authorities regulations with each other and the anti-dumping and
+anti-subsidy regulations, at the MDR/IVDR floor, which was not read off their own headings; the
+seven among the 2016 product regulations, the fertilising products regulation and the Machinery
+Regulation are left out, because 32 of the 77 pages that would show passages differed in article
+numbers alone (CHANGELOG.md). Adding a pair is a `[[twins]]` block naming two watched acts.
 
 ## The text store
 

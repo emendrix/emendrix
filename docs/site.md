@@ -47,7 +47,7 @@ substances/acts/<celex>/  one act's numbers, sorted, 2,000 to a page, continued 
 substances/<scheme>-<value>/  one number: where it appears now, and every change to those entries
 twins/                every pair of acts whose provisions are compared, when a twin map is committed
 twins/<pair>/         one pair of acts: every pair of provisions with its score, and those with none
-twins/<pair>/<prov>/  one non-identical pair of provisions: only where their texts differ
+twins/<pair>/<prov>/  one pair of provisions differing beyond numbering: only where their texts differ
 robots.txt            what crawlers may read, and where the sitemap index is
 llms.txt              what the site offers a model, and how to fetch the record instead of the pages
 sitemap.xml           every page, with the date its content last moved
@@ -345,7 +345,8 @@ both through `pages/prose.py`) is read in this order:
   the change touched that the map aligned a child for, else the unit's own twin; it links to the
   sister act's provision page where the site wrote one, else to that coordinate's article or
   annex on EUR-Lex in the version the pair was computed on. The score is the map's ratio as
-  committed, or `identical text`, always under the words `textually similar`, which is all the
+  committed, `identical text`, or `identical text apart from numbering` for a pair the map marks
+  `numbering_only`, always under the words `textually similar`, which is all the
   word twin means here: no note says a provision should change, is equivalent to another or has
   the same effect. **The pairing dates are said because they are not the event's**: the map is
   computed on each act's newest stored version, so a change from 2020 may carry a pair read off
@@ -358,7 +359,8 @@ both through `pages/prose.py`) is read in this order:
   still pending or a transition never backfilled all look like silence. A change whose event
   names no instrument gets the line without the answer, since there is no amending act to ask
   about. Where the two texts differ, the line ends `See where the two texts differ.`, linking the
-  pair's twin page (below); an identical pair has no page and no such link. The line uses the
+  pair's twin page (below); an identical or numbering-only pair has no page and no such link.
+  The line uses the
   sheet's muted secondary style and mints no `id`.
 - **Where the sources differ**, the shape's tag with a small `What this means` link beside it to
   `methodology/#sources-differ` (the tag itself is never a link), then the lead and the detail.
@@ -424,8 +426,8 @@ the facts lines: `Twin in IVDR: Art. 106, textually similar (0.946), paired on b
 of 10 January 2025.` It names the unit's own twin with the unit pair's score, linked as the
 version page's note links it, and carries no answer about an amending act, because a provision
 page spans every event that touched the provision. Where the texts differ it ends with the same
-`See where the two texts differ.` link to the twin page; for an identical pair the coordinate's
-link, to the sister provision page or to EUR-Lex, is the only one.
+`See where the two texts differ.` link to the twin page; for an identical or numbering-only pair
+the coordinate's link, to the sister provision page or to EUR-Lex, is the only one.
 
 **The glossary** is the last section of the methodology page, `Words this site uses`, at
 `methodology/#glossary`, with an `id` on every term (`#sources-differ`, `#dates-only`,
@@ -851,7 +853,8 @@ textually similar, each the other's closest match by word ratio at or above the 
 site renders three kinds of page from it, and reads nothing else about twins: it never computes
 a pair, and it never reads the text store the map was built from.
 
-**A twin page per non-identical pair**, at `twins/<pair>/<prov>/`, where `<pair>` is the map's
+**A twin page per pair whose texts differ beyond numbering**, at `twins/<pair>/<prov>/`, where
+`<pair>` is the map's
 file stem (`eu-32017R0745--eu-32017R0746`) and `<prov>` the slug of the first act's unit, made
 as a provision page's is (`ar-10`). Its title names both acts and both coordinates, `Medical
 Devices Regulation Art. 10 and IVDR Art. 10: where the texts differ`, and the page says, in
@@ -876,22 +879,28 @@ collapsed, each side cut at 400 characters and marked `[…]` where cut, at most
 the rest counted (`28 more passages not shown; read both on EUR-Lex.`). A pair whose shown
 passages, context and markers included, would exceed 30% of either unit's comparison text shows
 none, and the page says instead: `These two provisions differ too widely to excerpt here; read
-both on EUR-Lex.` Over the MDR and IVDR 20250110 texts on 2026-10-19 that is 32 of the 84 twin
+both on EUR-Lex.` Over the MDR and IVDR 20250110 texts on 2026-10-19 that is 29 of the 65 twin
 pages. The passages are set in the law's face, as the diffs are, and a note above them says they
 are excerpts of the text as compared, not the verbatim text. A test reads every twin page of the
 golden against both units' comparison text and refuses the whole text and any window of 1,000
 characters of it.
 
 **An identical pair has no page**, because it could only say that the two texts are the same.
-The pair index lists it as `identical text`, unlinked.
+The pair index lists it as `identical text`, unlinked. **Nor has a numbering-only pair**, one the
+map marks `numbering_only` because the texts differ in their own numbers and the numbers they
+refer to and in nothing else ([`./output-format.md`](./output-format.md) §"The twin map"): its
+page could only show renumbering. The pair index lists it as `identical text apart from
+numbering`, unlinked, and the count on the pair index and on `twins/` names both kinds. Over the
+MDR and IVDR 20250110 texts on 2026-10-19, 19 of the 84 non-identical pairs are numbering-only,
+so 65 twin pages are written.
 
 **The pair index**, `twins/<pair>/`, lists every pair in the first act's document order with its
-score, linked to its page, a withheld one marked `differ too widely to excerpt`; then, per act,
-the provisions with no twin, each with its closest match only where that reached the floor but
-is the twin of another. It links the map itself as JSON. **The twins index**, `twins/`, lists the
-pairs of acts one line each; it is written only when a shown map exists, since nothing links it
-otherwise. The act page of each act in a pair links its pair index in one line, `Textual twins
-in IVDR`; an act in no pair carries nothing.
+score, linked to its page where it has one, a withheld one marked `differ too widely to excerpt`;
+then, per act, the provisions with no twin, each with its closest match only where that reached the
+floor but is the twin of another. It links the map itself as JSON. **The twins index**, `twins/`,
+lists the pairs of acts one line each; it is written only when a shown map exists, since nothing
+links it otherwise. The act page of each act in a pair links its pair index in one line, `Textual
+twins in IVDR`; an act in no pair carries nothing.
 
 **The twin gloss.** Every twin page, pair index and twins index says `textually similar` in its
 visible text, and no sentence says a provision should change, is equivalent to another or has the
@@ -899,7 +908,8 @@ same effect. The trail is home, `Textual twins`, the pair of acts, and on a twin
 units.
 
 **Crawlers.** `sitemap-twins.xml`, named in `sitemap_index.xml` beside the other two, lists
-`twins/`, each pair index and each twin page; it is written on every build with a site URL, empty
+`twins/`, each pair index and each twin page, so no identical or numbering-only pair; it is
+written on every build with a site URL, empty
 where no map is shown. A twin page's `<lastmod>` is the newest of the two paired versions' dates
 and the dates of the changes it lists, a pair index's the newest over its pages, held to dates
 the build can stand behind like every other. The pages are indexed and canonical to themselves;

@@ -1370,3 +1370,50 @@ Named rather than discovered later; the eval report's disagreement list is the l
   paths and at the divergence feed's, which was not built. The map's schema is not served under
   `api/v1/schema/`, as the twin pages bullet above says. **No published figure moved**: no record was
   repaired and the eval layer is as it was.
+
+- **A twin pair whose texts differ in numbering alone has no page, since 2026-10-19.** Each pair
+  of the twin map carries `numbering_only`: true when the two units' comparison texts are not
+  identical and are equal once every number in a numbering position is masked, the number after
+  `Article`, `Annex`, `Chapter`, `Section`, `Title`, `Part`, `point` or `paragraph`, the numbers
+  joined to it by a comma, `and`, `or` or `to`, and a point label such as `(a)` or `(iv)` standing
+  alone. A number anywhere else is text, so a pair differing in a date, an amount or an act number
+  is never one: MDR Article 113 and IVDR Article 106 differ in a year besides their numbers and
+  keep their page. The test reads the full comparison texts, not the capped passages, and the
+  pair keeps its passages and every other field. The site treats such a pair as it treats an
+  identical one: no twin page, no line in `sitemap-twins.xml`, an unlinked line on the pair index
+  reading `identical text apart from numbering`, and the note and the provision line saying
+  `textually similar (identical text apart from numbering)` with no link to compare. Over the MDR
+  and IVDR 20250110 fixtures 19 of the 84 non-identical pairs are numbering-only, three of them
+  withheld, so the twin pages go from 84 to 65 and those showing passages from 52 to 36; the
+  hosted figure is read on the first deploy and poll after this one, since a map committed before
+  the field existed omits it, reads `false` and keeps every page until `twins build` rewrites it.
+  Its one limitation: the test does not check that a renumbered cross-reference points at the
+  provision's own twin, so a reference redirected to another provision reads as renumbering.
+  **No published figure moved**: the eval layer and the changelog payloads are untouched; the map
+  gains one field per pair and its `twins_schema` stays `1.0`.
+
+- **The hosted instance pairs four more pairs of acts for twins, since 2026-10-19.** The
+  deployment's watchlist gained four `[[twins]]` blocks and no code changed. The next poll
+  committed the maps as changelogs commits `b24473b`, `5c1d4d3`, `03bd331` and `8e3bd96`: EBA and
+  EIOPA (`32010R1093`, `32010R1094`), 77 pairs, 32 identical, 11 withheld, paired on
+  `02010R1093-20251231` and `02010R1094-20251110`; EBA and ESMA (`32010R1093`, `32010R1095`), 77
+  pairs, 27 identical, 11 withheld, on `02010R1093-20251231` and `02010R1095-20251110`; EIOPA and
+  ESMA (`32010R1094`, `32010R1095`), 84 pairs, 29 identical, 9 withheld, both on 20251110; and the
+  Anti-Dumping and Anti-Subsidy Regulations (`32016R1036`, `32016R1037`), 15 pairs, 0 identical,
+  6 withheld, both on 20200811. The site went from 14,728 to 14,897 pages, 165 twin pages and 4
+  pair indexes, and `sitemap-twins.xml` lists 255 addresses. Verified from the edge the same day:
+  `twins/` lists five pairs; the EIOPA/ESMA page of Article 7 shows "Frankfurt am Main" against
+  "Paris" with the disclaimer and the gloss; the Anti-Dumping/Anti-Subsidy pair index and its API
+  file answer 200. The seven pairs among the common-template product regulations (cableways
+  2016/424, personal protective equipment 2016/425, gas appliances 2016/426, fertilising products
+  2019/1009, machinery 2023/1230) reached the same screen and were left out: built locally that
+  day, 32 of the 77 pages that would show passages differed in article numbers alone. These counts
+  were read before the numbering-only rule above, and the hosted pages, identical pairs aside,
+  still include every numbering-only pair until the maps are rewritten. **No published figure
+  moved**: no record was repaired and the eval layer is as it was.
+
+- **The register's and the twin map's schemas are served, since 2026-10-19.** Both were committed
+  under `docs/schema/` and missing from `/api/v1/schema/`, where every other published document's
+  schema is; the site build now writes `register.schema.json` and `twins.schema.json` there,
+  byte-identical to the committed files, and the API page links them. This retires the limitation
+  the twin pages bullet above names. **No published figure moved**: no document changed shape.

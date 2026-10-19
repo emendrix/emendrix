@@ -470,7 +470,7 @@ published per pair as `headings_equal` and plays no part in pairing.
 | `disclaimer` | not legal advice |
 | `method` | `measure` (`word-ratio`), `floor`, and `verified_on`, the date the floor was measured |
 | `a`, `b` | each act's `corpus`, `key` and the `version` its texts were read from; `a` has the lower key |
-| `pairs[]` | in `a`'s document order: `a`, `b` (unit locations), `ratio` (3 places), `identical` (comparison texts equal), `children[]`, `passages[]`, `passages_omitted`, `passages_withheld`, `headings_equal` |
+| `pairs[]` | in `a`'s document order: `a`, `b` (unit locations), `ratio` (3 places), `identical` (comparison texts equal), `numbering_only` (texts equal apart from numbering, below), `children[]`, `passages[]`, `passages_omitted`, `passages_withheld`, `headings_equal` |
 | `pairs[].children[]` | aligned descendants at any depth, in pre-order: `a`, `b`, `ratio` |
 | `pairs[].passages[]` | `a`, `b`, `cut`: one differing span each, with context |
 | `unpaired_a[]`, `unpaired_b[]` | units with no twin, in location order: `unit`, and `best`, `ratio` when its best match reached the floor but preferred another unit, else `null` |
@@ -487,6 +487,23 @@ the verbatim text, which the acts' own publications carry. Over MDR and IVDR 202
 2026-10-19 the map holds 85 pairs (80 articles, 5 annexes), 1 identical, 32 withheld and 1,019
 aligned children, with 56 MDR and 44 IVDR units unpaired. The map's schema is committed as
 [`./schema/twins.schema.json`](./schema/twins.schema.json).
+
+**`numbering_only` marks a pair that differs in numbering alone**: the two comparison texts are not
+identical, and they are equal once every number in a numbering position is replaced by one mark. A
+numbering position is the number after `Article`, `Annex`, `Chapter`, `Section`, `Title`, `Part`,
+`point` or `paragraph`, in either case and either number, with the further numbers joined to it by a
+comma, `and`, `or` or `to` (`Articles 38 and 39`); and a point label in parentheses standing as a
+word of its own, `(a)`, `(iv)`, `(30)`, of at most three digits. A number is arabic with an optional
+letter suffix or dotted parts (`20`, `4a`, `2.2`), an upper-case Roman numeral or a single capital
+(`IV`, `A`), with any parenthesised sub-labels (`10(8)`). **A number anywhere else is text**, so a
+pair whose dates, amounts or act numbers differ is never numbering-only: MDR Article 113 and IVDR
+Article 106 differ in a year besides their own numbers and stay `false`. Any other difference, a
+word, a comma, a connective (`38 and 39` against `34 to 35`), keeps the flag `false` too. The test
+reads the units' full comparison texts, not the capped passages, so it is the same whatever the cut
+or the withholding left; such a pair keeps its passages and every other field as any pair does. Over
+MDR and IVDR 20250110 on 2026-10-19, 19 of the 84 non-identical pairs are numbering-only, three of
+them withheld. A map written before the field existed omits it, and it reads `false` there until
+`twins build` rewrites the map.
 
 Twin means textually similar by this measure. It says nothing about what either provision
 requires, or whether one should change because the other did.

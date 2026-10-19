@@ -46,20 +46,13 @@ SCHEMAS: Final[dict[str, type[BaseModel]]] = {
     "change": EmittedChange,
     "entry": ChangelogEntry,
     "index": RootIndex,
-}
-"""Each name the site serves a schema under, and the model whose serialised form it describes."""
-
-COMMITTED: Final[dict[str, type[BaseModel]]] = {
-    **SCHEMAS,
     "register": Register,
     "twins": TwinMap,
 }
-"""Every schema committed under `docs/schema/`: the served ones, the register's and the twin map's.
+"""Each name the site serves a schema under, and the model whose serialised form it describes."""
 
-The register is served from the record as committed, beside each act's index, and the twin map
-from the record's root `twins/`; their schemas are committed here and are not among the files
-the site build writes.
-"""
+COMMITTED: Final[dict[str, type[BaseModel]]] = SCHEMAS
+"""Every schema committed under `docs/schema/`, which are the ones the site serves."""
 
 
 def schema_document(name: str, model: type[BaseModel]) -> str:

@@ -1150,4 +1150,31 @@ or went**, and no `<title>` or description of an existing page did. Every other 
 feed, both search files, `sitemap.xml`, `sitemap-substances.xml`, `llms.txt`, `robots.txt`, the
 catalogue, the substance files, the stylesheet, the script, the fonts, `icon.svg`, `og.png` and
 every schema are byte-identical.
+
+Read again on 2026-10-19, later again, when a pair whose texts differ in numbering alone began to
+be treated as an identical pair is: the map marks it `numbering_only`, and the site writes no
+page for it. 19 of the 84 non-identical MDR/IVDR pairs are such pairs, so 19 twin pages went,
+`ar-23`, `ar-24`, `ar-25`, `ar-37`, `ar-38`, `ar-41`, `ar-50`, `ar-53`, `ar-58`, `ar-90`,
+`ar-91`, `ar-93`, `ar-96`, `ar-99`, `ar-101`, `ar-110`, `ar-111`, `ar-112` and `ar-116`, 154 528
+bytes together, three of them pages that said the two differ too widely to excerpt; 65 remain,
+6 959 to 20 542 bytes and 609 695 together. The pair index fell from 17 430 to 16 856 bytes:
+those 19 lines lost their links and say `identical text apart from numbering`, and its facts
+line and description now read `85 pairs of provisions, 1 with identical text, 19 with identical
+text apart from numbering`, the count `twins/index.html` also gained (3 764 to 3 809).
+`sitemap-twins.xml` fell from 10 829 to 8 449 bytes, 67 locations where it listed 86, and
+`api/v1/twins/eu-32017R0745--eu-32017R0746.json` grew from 219 416 to 222 032, the committed
+map's bytes with the new field on each of its 85 pairs. The MDR event page and
+`acts/32017R0745/ar-113/` did not move, because Article 113 and IVDR Article 106 differ in a
+year besides their numbers, and `_LARGEST_PAGE` did not move. **No `id=` moved or went**, and
+the one description that moved is the pair index's; no `<title>` did. Every other page, every
+feed, both search files, `sitemap.xml`, `sitemap-substances.xml`, `sitemap_index.xml`,
+`llms.txt`, `robots.txt`, the catalogue, the substance files, the stylesheet, the script, the
+fonts, `icon.svg`, `og.png` and every served schema are byte-identical.
+
+Read again on 2026-10-19, last, when the register's and the twin map's schemas joined the ones
+the site serves: `api/v1/schema/register.schema.json` (9 925 bytes) and
+`api/v1/schema/twins.schema.json` (8 628) are new, byte-identical to the files committed under
+`docs/schema/`, and `api/index.html` moved only in the sentence listing the schemas, which now
+links both. **No `id=` moved or went**, and no `<title>` or description did. Every other file is
+byte-identical.
 """
