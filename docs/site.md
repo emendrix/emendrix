@@ -1013,7 +1013,8 @@ most, how often `feeds/*.xml` was fetched. The two search consoles, which are th
 queries that surfaced a page and whether the act pages were indexed at all can be read, verify by
 a DNS record and need no markup either; and if a verification file is used instead of a DNS record,
 `write_site` never reads, moves or deletes anything it did not write, so a file dropped into the
-deployed directory survives every rebuild. No code was needed for either console, and none is
+deployed directory survives every rebuild, and `--prune` keeps both consoles' verification files
+by name (below). No code was needed for either console, and none is
 planned.
 
 ## `--site-url`, `--repo-url` and `--changelogs-url`
@@ -1153,6 +1154,42 @@ on stderr and the build finishes with the site it would have written anyway. Wit
 summary gains a second line, `comparisons: N reused, N computed, N rejected`, where `rejected`
 counts entries that were there and could not be used, unreadable or not fitting, each of which
 was computed again and is counted among the computed too.
+
+## `--prune`: deleting what a build did not write
+
+`write_site` only ever writes, so a page the build stops producing is served for as long as the
+directory lives. On 2026-10-19 the hosted volume held 28,934 files of which 202 the latest build
+had not written: about 180 provision pages under an earlier numbering or unit scheme (`an-17`
+where the build now writes `an-xvii`, and `tit-xi/` or `cha-va/` pages from before division codes
+stopped being units), one amending act's page, and 21 earlier stylesheets and scripts.
+
+`--prune` deletes, after the build has written, every regular file under `--out` it did not
+write, then every directory that held one and is left empty; `--out` itself is never removed, and
+an empty directory a person made is left alone. `--prune-dry-run` writes the site the same way
+and lists on stderr, sorted, what `--prune` would delete, deleting nothing. The two are refused
+together. Without either, nothing is deleted, which is the default because `--out` belongs to the
+operator and a self-hoster's directory may hold files this tool never wrote. The summary goes to
+stderr as `pruned: N files, N empty directories`, or `prune (dry run): N files would be deleted`
+followed by the list.
+
+**Kept whatever the build wrote:**
+
+- anything whose name, or any of whose directories' names, starts with a dot (`.well-known/`,
+  `.htaccess`);
+- `google<token>.html` and `BingSiteAuth.xml` at the root, the two consoles' verification files;
+- at the root, any file named as the stylesheet, the script or a font would be under another
+  digest, or under its plain name from before names carried one (`style.css`,
+  `style.<8 hex>.css`, `search.<8 hex>.js`, `sans-400.<8 hex>.woff2`). A page the edge still holds
+  for up to its 600-second lifetime links the previous build's asset by its old digest, and a
+  stylesheet held for its day names the previous fonts, so deleting them would break a page
+  between a deploy and the edge's next fetch. These are a few kilobytes each and accumulate one
+  per build that changes them;
+- symbolic links, and anything that is not a regular file. Links are never followed, so a link to
+  a directory outside `--out` is neither listed nor entered, and every path is checked to resolve
+  inside `--out` before it is deleted.
+
+The decision is `site_.prune.stale`, a function of the paths present and the paths written that
+touches no disk, and the tests drive it on paths alone as well as through the command.
 
 ## The honesty rule, made structural
 

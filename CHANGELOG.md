@@ -1417,3 +1417,21 @@ Named rather than discovered later; the eval report's disagreement list is the l
   schema is; the site build now writes `register.schema.json` and `twins.schema.json` there,
   byte-identical to the committed files, and the API page links them. This retires the limitation
   the twin pages bullet above names. **No published figure moved**: no document changed shape.
+
+- **The site build can prune what it no longer writes, since 2026-10-19.** `write_site` only
+  writes, so a page the build stopped producing stayed served: of 28,934 files on the hosted
+  volume that day, 202 were not rewritten by the latest build, about 180 provision pages under an
+  earlier numbering or unit scheme (`acts/32006R1907/an-17/` where the build writes `an-xvii`, and
+  `tit-xi/` and `cha-va/` pages from before division codes stopped being units on 2026-10-08), one
+  `amendments/32014R0182/` page, and 21 superseded assets (`style.<hash>.css` and
+  `search.<hash>.js`, with a plain `style.css` and `search.js` from before names carried a
+  digest). `emendrix site build --prune` deletes, after writing, every regular file under `--out`
+  the build did not write and the directories that leaves empty, never `--out` itself;
+  `--prune-dry-run` lists the same on stderr and deletes nothing. Kept regardless: dotfiles and
+  dot-directories, `google<token>.html` and `BingSiteAuth.xml` at the root, and at the root every
+  stylesheet, script and font named as this build's would be under another digest, because a
+  page still held at the edge for up to 600 seconds links the previous build's asset. Links are
+  never followed and every path is checked to resolve inside `--out`. Without either flag nothing
+  is deleted, so a self-hoster's directory is untouched. The hosted page step adopts it after a
+  dry run; that deploy follows separately. **No published figure moved**: no page, feed or
+  document a build writes changed, and the golden tree is byte-identical.

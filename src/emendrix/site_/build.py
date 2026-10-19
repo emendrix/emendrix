@@ -268,8 +268,9 @@ def write_site(
     """Write the site into `out` and return the relative paths written, sorted.
 
     Directories are created as needed and nothing else in `out` is touched: the operator owns
-    that directory. Two calls with one `SiteInputs` write byte-identical files, whatever table
-    of `comparisons` either is handed.
+    that directory. Deleting the files a build did not write is the opt-in `site build --prune`,
+    done after this returns by `site_.prune`. Two calls with one `SiteInputs` write
+    byte-identical files, whatever table of `comparisons` either is handed.
 
     Bytes and text take separate branches because `write_bytes` accepts no newline argument and
     the card and the fonts must reach the tree exactly as committed, neither decoded nor

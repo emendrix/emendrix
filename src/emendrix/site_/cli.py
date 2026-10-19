@@ -58,6 +58,7 @@ from emendrix.site_.entries import read_entries
 from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.markup import count
 from emendrix.site_.polled import read_polled
+from emendrix.site_.prune import PRUNE, PRUNE_DRY_RUN, prune, say_pruned
 from emendrix.site_.substance_inputs import read_registers
 from emendrix.site_.twin_inputs import NO_TWIN_MAPS, read_twin_maps
 from emendrix.watch.config import Watchlist, load_watchlist
@@ -175,6 +176,8 @@ def build(
     ] = False,
     watch_state: Annotated[Path | None, _WATCH_STATE] = None,
     comparison_cache: Annotated[Path | None, _COMPARISON_CACHE] = None,
+    prune_stale: Annotated[bool, PRUNE] = False,
+    prune_dry_run: Annotated[bool, PRUNE_DRY_RUN] = False,
     generated_on: Annotated[
         datetime | None,
         typer.Option(
@@ -209,6 +212,9 @@ def build(
     entry is used only once it is shown to fit the texts it claims to describe, and whatever is
     missing or does not fit is computed and written back. Like `--watch-state` it can never fail
     a build: an unreadable entry is computed again and an unwritable directory is reported once.
+
+    `--prune` and `--prune-dry-run` are the one way a build deletes; `site_.prune` says what
+    they never touch. Both at once is refused, since one would contradict the other.
     """
     for name, value in (
         ("--repo-url", repo_url),
@@ -219,6 +225,9 @@ def build(
         if value and not value.startswith("https://"):
             typer.echo(f"{name} must be an https:// URL; got {value!r}", err=True)
             raise typer.Exit(code=2)
+    if prune_stale and prune_dry_run:
+        typer.echo("--prune and --prune-dry-run are exclusive", err=True)
+        raise typer.Exit(code=2)
     if accounts and not site_url:
         # The service's pages are addressed from the site's own root, which only a site URL names.
         typer.echo("--accounts needs --site-url", err=True)
@@ -288,6 +297,8 @@ def build(
     )
     if reuse:
         typer.echo(reuse)
+    if prune_stale or prune_dry_run:
+        say_pruned(prune(out, written, dry_run=prune_dry_run), dry_run=prune_dry_run)
     for path in site.twins.unreadable:
         typer.echo(f"twin map {path} did not validate; its notes are left out", err=True)
     for pair in site.twins.ignored:
