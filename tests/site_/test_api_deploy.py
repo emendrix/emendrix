@@ -1,4 +1,9 @@
-"""The reference deployment's routes for the API and for `/mcp`, and its compose file, as text.
+"""The reference deployment's routes and its compose file, as text.
+
+The routes are the API (the recorded and derived halves, and the bare `/api/v1/` rewritten to
+the root index), `/mcp` and its server card at `/mcp/server-card`, the two well-known catalogs
+(`/.well-known/api-catalog` and `/.well-known/ai-catalog.json`) and the home page's
+`api-catalog` `Link` header.
 
 nginx is not run here: CI has no web server and needs none to check what the location admits.
 The pattern is compiled with Python's `re`, whose syntax agrees with nginx's PCRE for every
@@ -129,3 +134,65 @@ def test_one_variable_names_the_deployments_host() -> None:
     assert 'EMENDRIX_MCP_ALLOWED_HOSTS: "${EMENDRIX_PUBLIC_HOST:?' in _service(compose, "mcp")
     example = (REPO / "deploy" / ".env.example").read_text(encoding="utf-8")
     assert re.search(r"^EMENDRIX_PUBLIC_HOST=\S+$", example, re.MULTILINE)
+
+
+def _exact(path: str) -> str:
+    """The body of the exact-match location for `path`."""
+    found = re.search(
+        rf"location = {re.escape(path)} \{{(.*?)\n    \}}",
+        CONF.read_text(encoding="utf-8"),
+        re.DOTALL,
+    )
+    assert found is not None, path
+    return found.group(1)
+
+
+def test_the_server_card_is_proxied_and_left_its_own_caching_and_cors() -> None:
+    """`expires off` would override the server's caching; a second CORS header breaks browsers."""
+    block = _exact("/mcp/server-card")
+    for directive in (
+        "proxy_pass http://mcp:8000/mcp/server-card;",
+        "proxy_set_header Host $http_host;",
+        'add_header X-Content-Type-Options "nosniff" always;',
+        "add_header Strict-Transport-Security",
+    ):
+        assert directive in block, directive
+    assert "expires" not in block
+    assert "Access-Control-Allow-Origin" not in block
+
+
+@pytest.mark.parametrize(
+    ("path", "media_type"),
+    [
+        ("/.well-known/api-catalog", "application/linkset+json"),
+        ("/.well-known/ai-catalog.json", "application/ai-catalog+json"),
+    ],
+)
+def test_each_well_known_catalog_is_served_under_its_media_type(path: str, media_type: str) -> None:
+    block = _exact(path)
+    assert f"default_type {media_type};" in block
+    assert f"charset_types {media_type};" in block
+    assert 'add_header Access-Control-Allow-Origin "*" always;' in block
+    assert 'add_header X-Content-Type-Options "nosniff" always;' in block
+
+
+def test_the_ai_catalog_extension_does_not_override_its_media_type() -> None:
+    """`default_type` applies only when no extension maps, and `.json` maps to plain JSON."""
+    assert "types { }" in _exact("/.well-known/ai-catalog.json")
+
+
+def test_the_bare_api_directory_answers_with_the_root_index_from_the_volume() -> None:
+    assert _exact("/api/v1/").strip() == "rewrite ^ /api/v1/index.json last;"
+    pattern, _ = _recorded()
+    assert pattern.fullmatch("/api/v1/index.json")
+
+
+def test_the_home_page_names_the_api_catalog() -> None:
+    block = _exact("/index.html")
+    assert "add_header Link '</.well-known/api-catalog>; rel=\"api-catalog\"' always;" in block
+    assert 'add_header X-Content-Type-Options "nosniff" always;' in block
+    every_page = re.search(
+        r"location / \{(.*?)\n    \}", CONF.read_text(encoding="utf-8"), re.DOTALL
+    )
+    assert every_page is not None
+    assert "add_header" not in every_page.group(1)
