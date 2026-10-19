@@ -1435,3 +1435,33 @@ Named rather than discovered later; the eval report's disagreement list is the l
   is deleted, so a self-hoster's directory is untouched. The hosted page step adopts it after a
   dry run; that deploy follows separately. **No published figure moved**: no page, feed or
   document a build writes changed, and the golden tree is byte-identical.
+
+- **A machine finds the MCP server from documents that follow moving drafts, since 2026-10-19.**
+  The server answers its own card at `/mcp/server-card` (`application/mcp-server-card+json`), in
+  the shape of the MCP Server Card extension (SEP-2127, final as a proposal, with its schema in an
+  experimental repository): `$schema`, `name`, `description`, `version` and one streamable-HTTP
+  remote, the required fields as read on 2026-10-19. A `GET` on `/mcp` still answers `405` with
+  `Allow: POST`, and its body now names the card and `/llms.txt`. With a site URL the build writes
+  `/.well-known/api-catalog`, an RFC 9727 linkset naming the endpoint and the JSON API, and
+  `/.well-known/ai-catalog.json`, an AI Catalog 1.0 document listing the card, its fields read on
+  2026-10-19 against the specification at commit `9316f00`; the home page alone links the first,
+  and `llms.txt` links all three. Left out on purpose: tools, resources and capabilities in the
+  card, which the extension omits because they vary at run time; the withdrawn
+  `/.well-known/mcp/server-card.json` and `/.well-known/mcp.json`; a `Link` header or head link on
+  every page; and the `profile` media-type parameter RFC 9727 §4.2 says the catalog response
+  should carry, which the reference web server does not add, the document carrying the profile as
+  a link instead. The card extension and the AI Catalog have moved before and will again; the
+  card and the catalogs are what to adjust when they do. In a build without a site URL, the `/api/`
+  page's MCP section still names `/.well-known/api-catalog`, which that build does not write.
+  `docs/mcp-discovery.md` lists every surface, the test holding each, and the dated readings, and
+  `tests/output/test_discovery_surfaces.py` fails when they disagree about the card path, the
+  version, the registry name or the endpoint. **No published figure moved**: no record, payload
+  or eval figure changed.
+
+- **The registry listing and the hosted routes are human steps and may lag a release, since
+  2026-10-19.** `packages/emendrix-mcp/server.json` is published to the MCP Registry by a person
+  with `mcp-publisher`, after proving the `eu.emendrix` namespace by DNS or by a file under
+  `/.well-known/`; nothing publishes it on a release, so the listed version can trail the served
+  one. The hosted web server serves its own copy of `deploy/default.conf`, which a change here
+  does not reach until it is applied and read back from the edge. A `.well-known` document the
+  build stops writing stays served, because `--prune` never deletes a dot-directory.

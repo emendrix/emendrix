@@ -295,6 +295,11 @@ those traces measured. They were produced by [`scripts/validation/`](./scripts/v
 only so the published numbers are reproducible artifacts, with the reports committed beside it; it
 is the only code here that hits the network outside the opt-in `live` tests, and CI never runs it.
 
+A program finds the record and the MCP server from `/llms.txt`, `/.well-known/api-catalog` and
+`/.well-known/ai-catalog.json`, which the site build writes, and the card the server answers at
+`/mcp/server-card`; [`docs/mcp-discovery.md`](./docs/mcp-discovery.md) lists every such surface
+and what must change with a tool.
+
 ## License
 
 [MIT](./LICENSE) © 2026 Martins Erts

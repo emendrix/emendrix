@@ -50,6 +50,8 @@ twins/<pair>/         one pair of acts: every pair of provisions with its score,
 twins/<pair>/<prov>/  one pair of provisions differing beyond numbering: only where their texts differ
 robots.txt            what crawlers may read, and where the sitemap index is
 llms.txt              what the site offers a model, and how to fetch the record instead of the pages
+.well-known/api-catalog       the RFC 9727 catalog naming the MCP endpoint and the JSON API
+.well-known/ai-catalog.json   the AI Catalog listing the MCP server's card
 sitemap.xml           every page, with the date its content last moved
 sitemap-substances.xml  every canonical substance page and every act's list of numbers
 sitemap-twins.xml     the twins index, every pair of acts' index and every twin page
@@ -982,6 +984,20 @@ the deployment serves from the record. Its bytes are ASCII because a static host
 as `text/plain` with no charset, and ASCII decodes the same under every guess a client makes. It
 is not a page: the sitemap does not list it, no page's head links it and `robots.txt` does not
 name it.
+
+**Two documents under `/.well-known/` say where the machine-readable doors are, since
+2026-10-19.** With `--site-url`, the build writes `.well-known/api-catalog`, an RFC 9727 linkset
+naming the MCP endpoint, whose description is the server card at `/mcp/server-card`, and the JSON
+API at `api/v1/`, each with `/api/` as its documentation; and `.well-known/ai-catalog.json`, an AI
+Catalog whose one entry is that card. The card itself is not a file the build writes: the MCP
+server answers it. `llms.txt` links the card and both catalogs, and the `/api/` page's MCP section
+names the card and the API catalog. The home page alone carries `<link rel="api-catalog">` in its
+head, and under the ways to take the record away one sentence names `llms.txt` and the MCP
+endpoint for a program that reads the page as text; a link on every page would move every golden
+file for no route an agent lacks. Both documents are pure functions of the inputs, written only
+with a site URL, and `--prune` never deletes them, so one the build stops writing must be removed
+from the host by hand. Every surface that describes the server, and what to amend when it
+changes, is listed in [`./mcp-discovery.md`](./mcp-discovery.md).
 
 ## No backend, and that is the more interesting decision
 

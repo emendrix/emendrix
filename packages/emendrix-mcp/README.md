@@ -48,6 +48,18 @@ as a mismatch: it means the repository is being rewritten while it is read.
 
 There is no HTTP client, no cache and no clock: the server reads files, so it needs none.
 
+## Describing the server to clients
+
+The server serves its own card at `/mcp/server-card` (`application/mcp-server-card+json`): its
+name, version, description and endpoint, built per request from the `Host` it was reached by, and
+no tool list, because a client asks the endpoint for that. `server.json` beside this README is the
+MCP Registry descriptor for the hosted instance, held to the card by `tests/test_mcp_registry.py`.
+Those two, the site's `/llms.txt` and `/.well-known/` catalogs, the `/api/` page and the reference
+web server all state some of the same facts, and
+[`../../docs/mcp-discovery.md`](../../docs/mcp-discovery.md) lists every one of them, who writes
+it, which test holds it and what to amend for each kind of change. Read it before adding or
+renaming a tool.
+
 ## Where it answers
 
 At `<site URL>/mcp`: MCP over streamable HTTP, stateless, one JSON response per request, with no

@@ -3,6 +3,9 @@
 Building it opens nothing: no transport and no socket. Every tool is a thin wrapper that hands
 its arguments to the function in `tools_*.py` that answers it, so the descriptions here are the
 only thing a calling model reads that the functions do not already say.
+
+The tools registered here are described to clients by `INSTRUCTIONS`, the site's API page and
+`llms.txt`; `docs/mcp-discovery.md` lists everything else that must change with them.
 """
 
 from __future__ import annotations

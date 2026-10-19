@@ -392,6 +392,14 @@ A client configured by a JSON file takes the same address, in the shape most of 
 A connector form that asks only for a URL, with no key and no header, needs nothing else: give it
 `https://emendrix.eu/mcp`.
 
+A client that configures itself can read the server card at `https://emendrix.eu/mcp/server-card`
+(`application/mcp-server-card+json`), which names the endpoint, the version and the transport and
+no tools; the API catalog at `https://emendrix.eu/.well-known/api-catalog` (RFC 9727) names the
+endpoint and the JSON API, and `/.well-known/ai-catalog.json` lists the card. A `GET` on the
+endpoint itself answers `405` with a body pointing at the card and `/llms.txt`. Every place the
+server is described to a program, and what must change with a tool, is in
+[`./mcp-discovery.md`](./mcp-discovery.md).
+
 Eight tools, every one read-only:
 
 | Tool | Answers |
