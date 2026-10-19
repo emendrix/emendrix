@@ -156,10 +156,30 @@ curl -si -X OPTIONS -H 'Origin: https://example.org' -H 'Access-Control-Request-
 curl -s  https://emendrix.eu/api/v1/ | head -c 300
 curl -si https://emendrix.eu/mcp | head -12
 curl -s  -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
-     -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' https://emendrix.eu/mcp | python3 -m json.tool | grep '"name"' | wc -l
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' https://emendrix.eu/mcp \
+     | python3 -c 'import json,sys; print(len(json.load(sys.stdin)["result"]["tools"]))'
 ```
 
-The last line counts the registered tools; it should print the length of `TOOLS`.
+The last line counts the registered tools; it should print the length of `TOOLS`. Counting
+`"name"` lines instead overcounts, because a tool's input schema may have a property of that name.
+
+**Verified live on 2026-10-19**, after main image `103aed05` and MCP image `d6402121` (both built
+from `b2f0976`), the web pod's configuration of that day and one site rebuild:
+
+- All ten checks above passed. The home page carries `rel="api-catalog"`; both catalogs answer
+  200 with their own media types and `access-control-allow-origin: *`; the card answers 200 as
+  `application/mcp-server-card+json` with one CORS header, an `ETag`, `vary: Host`, HSTS and
+  `nosniff`, a conditional request is 304 and a preflight 204; `/api/v1/` returns the root index;
+  a bare `GET /mcp` is 405 with `allow: POST` and the pointer; `tools/list` returns eight tools.
+- `/llms.txt` links the card and both catalogs, and the home page has its `<link>` and sentence.
+- **Cloudflare rewrites the card's lifetime.** The origin sends `public, max-age=3600` and the
+  edge answers `max-age=14400`, the zone's browser cache setting overriding the origin. The same
+  configuration run locally against the same MCP image passed 3600 through unchanged.
+- The MCP Registry lists `eu.emendrix/emendrix` version `0.1.0`, status active, published
+  2026-10-19, with the remote `https://emendrix.eu/mcp` and the card's description. The
+  namespace is proved by a DNS TXT record on the `emendrix.eu` apex.
+- A protocol-level client (`initialize`, then `tools/call` of `list_acts`) negotiated
+  `2025-11-25` and listed the acts. A full client session through `claude mcp add` was not run.
 
 ## Not done on purpose
 
