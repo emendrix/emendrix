@@ -170,7 +170,7 @@ def _counted(
 @app.command("build")
 def build(
     watchlist_path: Annotated[
-        Path, typer.Option("--watchlist", help="The acts, the [[twins]] pairs and [output].")
+        Path, typer.Option("--watchlist", help="The acts, the \\[\\[twins]] pairs and \\[output].")
     ] = Path("watchlist.toml"),
     text_store: Annotated[
         Path | None,

@@ -44,7 +44,7 @@ _NO_STORE = (
     "[output] text_store_path in the watchlist."
 )
 _STORE = typer.Option("--text-store", help=f"The store directory. Else {TEXT_STORE_ENV}.")
-_LIST = typer.Option("--watchlist", help="The acts to store, and [output] text_store_path.")
+_LIST = typer.Option("--watchlist", help="The acts to store, and \\[output] text_store_path.")
 
 
 @app.callback()
