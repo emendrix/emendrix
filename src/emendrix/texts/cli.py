@@ -114,7 +114,7 @@ def build(
         typer.Option(
             "--observed-on",
             formats=["%Y-%m-%d"],
-            help="Date the states are observed on. Defaults to today (UTC).",
+            help="Date the first-class states are stamped with. Defaults to today (UTC).",
         ),
     ] = None,
     summary: Annotated[
