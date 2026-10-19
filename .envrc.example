@@ -16,3 +16,8 @@ export OPENROUTER_API_KEY="sk-or-v1-..."
 # and from a different vendor, which is the whole of the independence claim. Judgement cassettes
 # are keyed on it the same way.
 # export EMENDRIX_JUDGE_MODEL="openrouter:openai/gpt-5.6-sol"
+
+# The Ed25519 private key, 64 hex characters, whose public half is the `v=MCPv1` TXT record that
+# proves the MCP Registry namespace. Only `mcp-publisher login dns` reads it, run by hand when the
+# MCP server's version moves; nothing in the pipeline or CI needs it. See docs/mcp-discovery.md.
+# export EMENDRIX_MCP_KEY="..."

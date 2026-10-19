@@ -148,11 +148,16 @@ def _exact(path: str) -> str:
 
 
 def test_the_server_card_is_proxied_and_left_its_own_caching_and_cors() -> None:
-    """`expires off` would override the server's caching; a second CORS header breaks browsers."""
+    """A fixed lifetime would rewrite the server's `max-age`; a second CORS header breaks browsers.
+
+    The server sends `nosniff` too, so the upstream copy is hidden and exactly one reaches the
+    reader.
+    """
     block = _exact("/mcp/server-card")
     for directive in (
         "proxy_pass http://mcp:8000/mcp/server-card;",
         "proxy_set_header Host $http_host;",
+        "proxy_hide_header X-Content-Type-Options;",
         'add_header X-Content-Type-Options "nosniff" always;',
         "add_header Strict-Transport-Security",
     ):

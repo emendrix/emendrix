@@ -88,7 +88,32 @@ address in [`./api.md`](./api.md).
 **Releasing a new version.** `__version__` in `packages/emendrix-mcp/src/emendrix_mcp/__init__.py`,
 `version` in `packages/emendrix-mcp/pyproject.toml` and `version` in
 `packages/emendrix-mcp/server.json`, together. Then publish the registry entry again, which is a
-person's step (`mcp-publisher publish` from the member's directory, after `mcp-publisher login`).
+person's step, described next. A published version number is never reused, so publish only after
+the new image serves the card with the same version.
+
+**Publishing to the MCP Registry.** The namespace `eu.emendrix` is proved by a DNS TXT record on
+the `emendrix.eu` apex, `v=MCPv1; k=ed25519; p=<base64 public key>`, set on 2026-10-19. The
+matching Ed25519 private key, as 64 hex characters, is the operator's and is never committed: it
+goes in the gitignored `.envrc.local` as `EMENDRIX_MCP_KEY` (see `.envrc.example`), and every later
+publish needs the same key, because a new key means a new TXT record. The publisher is
+`mcp-publisher` (`brew install mcp-publisher`, or the `mcp-publisher_<os>_<arch>.tar.gz` asset of
+the latest release at https://github.com/modelcontextprotocol/registry/releases); 1.8.1 published
+version `0.1.0`. From the repository root:
+
+```bash
+cd packages/emendrix-mcp
+mcp-publisher validate                                   # checks server.json, publishes nothing
+mcp-publisher login dns --domain emendrix.eu --private-key "$EMENDRIX_MCP_KEY"
+mcp-publisher publish                                    # public and permanent
+```
+
+Then read the entry back from the registry's public API, `/v0/servers?search=eu.emendrix` on the
+host `mcp-publisher publish` names in its first line; its `name`, `version` and remote URL must
+equal the live card's. `login` and `publish` act on a third party's public registry, so a person runs them, never
+a build or an unattended agent. A lost key is replaced by generating a new one
+(`openssl genpkey -algorithm Ed25519`, which needs OpenSSL 3, not LibreSSL), replacing the TXT
+record and storing the new key in its place; the registry's `authentication.mdx` gives the
+commands that derive the record and the hex key from the PEM file.
 
 **Changing the host or the namespace.** The card derives its `name` from the `Host` the request
 named (`emendrix.eu` gives `eu.emendrix/emendrix`), so a new host changes the card by itself.
