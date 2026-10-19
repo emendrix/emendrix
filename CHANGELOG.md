@@ -1346,3 +1346,27 @@ Named rather than discovered later; the eval report's disagreement list is the l
   twin, by `32023R0503`, and the IVDR has no consolidation after 20250110 in the record, so the
   count is re-run (`scripts/validation/twin_provisions.py divergence --fetch`) as IVDR
   consolidations land.
+
+- **The hosted instance keeps the text store and serves textual twins, since 2026-10-19.** Image
+  `emendrix@sha256:36f5f204`, built from `893e67d` and pinned in eleven places, the new
+  `texts-build` Job included; the MCP and service images keep their pins. A 2Gi volume,
+  `emendrix-texts`, is mounted by the poll pod's new `texts` and `twins` steps and by the build
+  Job, and by no serving pod. With the poller suspended, a dry run listed 598 versions of 86 acts;
+  the build wrote 588 in 5 min 34 s, answered 10 with a state (8 REACH versions
+  `structured_text_unavailable`, `32008R0765` and `32018R0848` one `english_unavailable` each) and
+  failed no fetch, leaving 234.6 MiB in the store; the cache's sidecars went from 1,498 to 1,575,
+  so 77 responses were fetched, notices included, and a second run wrote nothing. The `[[twins]]`
+  block went into the cluster's watchlist only once that image was live, and the next poll
+  committed the MDR/IVDR map as `61387e4` on both mirrors, with no store file on either. It pairs
+  MDR `02017R0745-20260719` with IVDR `02017R0746-20250110`: 85 pairs, 1 identical, 32 withheld,
+  56 and 44 units unpaired, the counts the fixtures read over both acts' 20250110 texts. That poll
+  built 14,728 pages, 86 more than before. Verified from the edge the same day: the note under MDR
+  Article 44 on its 2023-03-11 page, naming IVDR Article 40(10)(1) at 0.985 with its gloss, its
+  pairing dates, its answer and its compare link; the twin line on the `ar-44` provision page; the
+  act page's link to the pair; `twins/`, the pair index, and the twin pages of Article 6 (passages
+  shown), Article 4 (withheld) and Annex VII (aligned sub-provisions), each with the disclaimer and
+  the gloss and none holding 300 consecutive characters of either unit; `sitemap_index.xml` naming
+  `sitemap-twins.xml` with 86 addresses; `api/v1/twins/<pair>.json`; and 404 at two guessed store
+  paths and at the divergence feed's, which was not built. The map's schema is not served under
+  `api/v1/schema/`, as the twin pages bullet above says. **No published figure moved**: no record was
+  repaired and the eval layer is as it was.
