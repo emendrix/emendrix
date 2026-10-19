@@ -224,3 +224,27 @@ def test_a_misspelled_output_key_is_refused_rather_than_ignored(tmp_path: Path) 
     path.write_text('[output]\nrepo-path = "~/changelog"\n', encoding="utf-8")
     with pytest.raises(ValueError, match="repo-path"):
         load_watchlist(path)
+
+
+def test_the_text_store_path_is_read_off_the_output_table(tmp_path: Path) -> None:
+    """Beside the repository path, in the same table, and with no default of its own."""
+    path = tmp_path / "watchlist.toml"
+    path.write_text(
+        '[[acts]]\ncelex = "32024R1689"\n\n[output]\nrepo_path = "~/changelog"\n'
+        'text_store_path = "~/emendrix-texts"\n',
+        encoding="utf-8",
+    )
+    output = load_watchlist(path).output
+    assert (output.repo_path, output.text_store_path) == (
+        Path("~/changelog"),
+        Path("~/emendrix-texts"),
+    )
+    assert watchlist(AI_ACT).output.text_store_path is None
+    assert load_watchlist(EXAMPLE).output.text_store_path is None
+
+
+def test_a_misspelled_text_store_key_is_refused_rather_than_ignored(tmp_path: Path) -> None:
+    path = tmp_path / "watchlist.toml"
+    path.write_text('[output]\ntext-store-path = "~/texts"\n', encoding="utf-8")
+    with pytest.raises(ValueError, match="text-store-path"):
+        load_watchlist(path)

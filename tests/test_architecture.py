@@ -350,6 +350,30 @@ def test_the_generic_engine_knows_nothing_about_any_particular_corpus(package: s
         assert not re.search(r"\bCELEX\b|\bFormex\b|\bCELLAR\b", source), name
 
 
+_CORPUS_NAMES = re.compile(r"\bCELEX\b|\bFormex\b|\bCELLAR\b")
+
+
+def test_the_text_store_reaches_the_corpus_only_from_its_own_command_line() -> None:
+    """The store keeps whatever trees an adapter serves, so it is held to the generic seam.
+
+    `texts/cli.py` is the composition root, like `repair/cli.py`: it reads the watchlist, builds
+    the adapter through `emendrix.session` and names the one sanctioned clock read. Every other
+    module in the package sees core types only, which is what lets `build_store` fill a store
+    from the toy corpus exactly as it does from law. The last assertion is the rule checking
+    itself: a module that named the corpus would be caught.
+    """
+    checked = 0
+    for name, source in modules():
+        if not name.startswith("texts/") or name == "texts/cli.py":
+            continue
+        checked += 1
+        assert "emendrix.eu" not in source, name
+        assert "today_utc" not in source, name
+        assert not _CORPUS_NAMES.search(source), name
+    assert checked >= 5
+    assert _CORPUS_NAMES.search("key = CELEX of the act")
+
+
 def test_modules_stay_under_the_line_cap() -> None:
     """~300 lines, split at a real seam. Docstrings count: they are part of the reading."""
     too_long = {

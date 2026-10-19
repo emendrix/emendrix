@@ -140,13 +140,18 @@ class OutputConfig(BaseModel):
     second config file for one path would be a worse answer than a second table in this one.
     The precedence between this value, `EMENDRIX_OUTPUT_REPO` and `--output-repo` is
     `output/config.py`'s to state; this is only the file end of it. `None` means no output
-    repository is configured, and nothing is written.
+    repository is configured, and nothing is written. `text_store_path` is the file end of the
+    text store's location in the same way, and `texts/config.py` states its precedence.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     repo_path: Path | None = Field(
         default=None, description="Path to the changelog git repository; created if absent."
+    )
+    text_store_path: Path | None = Field(
+        default=None,
+        description="Where the text store lives: beside the changelog repository, never inside it.",
     )
 
 

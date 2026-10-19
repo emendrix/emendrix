@@ -66,10 +66,11 @@ ENV PATH="/app/.venv/bin:$PATH" \
 # Every path a volume will be mounted at is created here, owned by the runtime user. Docker
 # seeds a named volume from whatever is *already* at that path in the image, and when nothing
 # is, it fabricates an empty directory owned by `root:root` whatever `USER` says. A non-root
-# image with volumes and no such directories therefore fails on its very first run, on all four
-# of them at once: the output git repository, the response cache, the watch cursor and the
-# generated site. The paths are `deploy/compose.yaml`'s; the two must stay in step.
-RUN mkdir -p /work/changelogs /work/site /home/emendrix/.cache /home/emendrix/.local/share \
+# image with volumes and no such directories therefore fails on its very first run, on all five
+# of them at once: the output git repository, the text store, the response cache, the watch
+# cursor and the generated site. The paths are `deploy/compose.yaml`'s; the two must stay in step.
+RUN mkdir -p /work/changelogs /work/texts /work/site /home/emendrix/.cache \
+        /home/emendrix/.local/share \
     && chown -R emendrix:emendrix /work /home/emendrix
 
 USER emendrix

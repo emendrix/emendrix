@@ -7,7 +7,7 @@
 # endpoint changes. Host cron writes to syslog, is already monitored on any machine that has a
 # machine's worth of monitoring, and is the tool the operator already knows.
 #
-#   17 * * * * cd /srv/emendrix && docker compose run --rm poller && docker compose run --rm page
+#   17 * * * * cd /srv/emendrix && docker compose run --rm poller && docker compose run --rm texts && docker compose run --rm page
 #
 # The README's "Running it on a server" section is the runbook: what runs when, which volumes
 # hold what, what breaks when the notification endpoint moves, and how to re-run a missed window.
@@ -16,6 +16,7 @@
 #   docker compose build
 #   docker compose up -d web mcp              # the site, the record at /api/v1/, MCP at /mcp
 #   docker compose run --rm poller            # one poll → diff → explain → gate → commit
+#   docker compose run --rm texts             # store the text of every new version, unpublished
 #   docker compose run --rm page              # regenerate the static site
 #
 # The optional account service (email alerts for watched provisions, `docs/accounts.md`) runs
@@ -134,6 +135,21 @@ services:
       - state:/home/emendrix/.local/share
       - ./watchlist.toml:/work/watchlist.toml:ro
     command: ["run", "--once"]
+
+  # The text store: the verbatim text of every version of every watched act, kept for
+  # computation beside the changelogs, on a volume of its own. Run after the poller, from the
+  # same image. It writes nothing outside the store, commits nothing and calls no model; the
+  # cache it reads is the poller's, so a version the poller just fetched costs no second fetch.
+  # The `texts` volume is mounted here and nowhere else: no web-facing service may serve it.
+  texts:
+    image: ghcr.io/emendrix/emendrix:0.1.0
+    environment:
+      EMENDRIX_TEXT_STORE: /work/texts
+    volumes:
+      - texts:/work/texts
+      - cache:/home/emendrix/.cache
+      - ./watchlist.toml:/work/watchlist.toml:ro
+    command: ["texts", "build", "--summary", "json"]
 
   # The public site, rebuilt from what the poller committed plus the reports baked into the
   # image. Reads only; it fetches nothing and needs no key.
@@ -285,6 +301,7 @@ services:
 
 volumes:
   changelogs:  # the output git repository: yours, never pushed by emendrix
+  texts:       # the text store: every stored version's text, never published; rebuilt from CELLAR
   site:        # the generated site: pages, feeds, the search index and its script
   cache:       # the HTTP response cache and the site's comparisons; disposable, rebuilt on demand
   state:       # the watcher's seen-state cursor; NOT disposable
