@@ -1,0 +1,856 @@
+command   uv run python scripts/validation/twin_provisions.py screen
+run on    2026-10-19
+cache     ~/Library/Caches/emendrix/cellar, 1594 entries
+record    none read
+offline   yes: network refused, EMENDRIX_NOTICE_MAX_AGE_S=31536000
+
+acts read            72 (newest cached version each)
+units                6490
+distinct shingles    2461537 (8 words)
+  set aside by the document-frequency cap of 200 units: 31
+cross-act same-kind unit pairs sharing a shingle  235601
+  of them with Jaccard >= 0.5                  1228
+screen seconds       4.3
+floor                0.90
+
+word-ratio seconds over the screened pairs: 0.8
+calibration on 32017R0745 and 32017R0746: the screen finds 78 of the 85 pairs the all-pairs run finds at the floor, and 0 it does not
+
+act A      act B      screened mutual >= floor articles  verdict (>= 10 article pairs enters the twins list)
+32006R1907 32009R1223        1               1        1  below the rule
+32008R0765 32011R0305        1               1        1  below the rule
+32008R1272 32011R1169        1               1        1  below the rule
+32008R1272 32012R0528        2               1        1  below the rule
+32008R1272 32012R0649        1               0        0  below the rule
+32008R1272 32012R0978        1               1        1  below the rule
+32008R1272 32016R0426        1               0        0  below the rule
+32008R1272 32016R0429        1               1        1  below the rule
+32008R1272 32016R1036        1               0        0  below the rule
+32008R1272 32016R1037        1               0        0  below the rule
+32008R1272 32016R2031        2               1        1  below the rule
+32008R1272 32017R0625        1               0        0  below the rule
+32008R1272 32017R0745        1               0        0  below the rule
+32008R1272 32017R0746        1               0        0  below the rule
+32008R1272 32017R0821        1               1        1  below the rule
+32008R1272 32017R0852        1               1        1  below the rule
+32008R1272 32018R0848        1               0        0  below the rule
+32008R1272 32019R1009        1               1        1  below the rule
+32008R1272 32019R1021        1               1        1  below the rule
+32008R1272 32019R1238        1               0        0  below the rule
+32008R1272 32019R2033        1               0        0  below the rule
+32008R1272 32021R0821        2               2        2  below the rule
+32008R1272 32022R1925        1               1        1  below the rule
+32008R1272 32022R2560        1               0        0  below the rule
+32008R1272 32023R1114        1               0        0  below the rule
+32008R1272 32023R1115        1               1        1  below the rule
+32008R1272 32023R1230        1               0        0  below the rule
+32008R1272 32023R2675        1               1        1  below the rule
+32008R1272 32024R1157        1               0        0  below the rule
+32008R1272 32024R1781        1               1        1  below the rule
+32008R1272 32024R2847        1               0        0  below the rule
+32009R1060 32010R1093        1               1        1  below the rule
+32009R1060 32010R1094        1               1        1  below the rule
+32009R1060 32010R1095        1               1        1  below the rule
+32009R1060 32011R0305        2               2        2  below the rule
+32009R1060 32012R0648        1               1        1  below the rule
+32010R1093 32010R1094       84              76       76  enters
+32010R1093 32010R1095       81              74       74  enters
+32010R1093 32011R0305        1               1        1  below the rule
+32010R1093 32014R0806        1               0        0  below the rule
+32010R1093 32024R1620        6               5        5  below the rule
+32010R1094 32010R1095       88              84       84  enters
+32010R1094 32011R0305        1               1        1  below the rule
+32010R1094 32014R0806        1               0        0  below the rule
+32010R1094 32024R1620        6               5        5  below the rule
+32010R1095 32011R0305        1               1        1  below the rule
+32010R1095 32014R0806        1               0        0  below the rule
+32010R1095 32024R1620        6               5        5  below the rule
+32011R0305 32019R1009        1               0        0  below the rule
+32011R0305 32023R1230        1               0        0  below the rule
+32011R0305 32024R1781        1               0        0  below the rule
+32011R1169 32012R0528        1               1        1  below the rule
+32011R1169 32012R0649        1               0        0  below the rule
+32011R1169 32012R0978        1               1        1  below the rule
+32011R1169 32013R1308        1               1        1  below the rule
+32011R1169 32016R0429        1               1        1  below the rule
+32011R1169 32016R2031        1               1        1  below the rule
+32011R1169 32021R0821        1               1        1  below the rule
+32012R0236 32012R0648        1               0        0  below the rule
+32012R0236 32013R0575        1               1        1  below the rule
+32012R0236 32016R1011        1               0        0  below the rule
+32012R0236 32019R2033        1               1        1  below the rule
+32012R0528 32012R0648        1               0        0  below the rule
+32012R0528 32012R0649        2               1        1  below the rule
+32012R0528 32012R0978        1               1        1  below the rule
+32012R0528 32013R0952        2               0        0  below the rule
+32012R0528 32013R1308        2               1        1  below the rule
+32012R0528 32014R0596        1               0        0  below the rule
+32012R0528 32014R0654        1               0        0  below the rule
+32012R0528 32014R0910        1               0        0  below the rule
+32012R0528 32014R1286        2               0        0  below the rule
+32012R0528 32015R2365        1               0        0  below the rule
+32012R0528 32016R0425        1               0        0  below the rule
+32012R0528 32016R0426        1               0        0  below the rule
+32012R0528 32016R0429        1               1        1  below the rule
+32012R0528 32016R1036        1               0        0  below the rule
+32012R0528 32016R1037        1               0        0  below the rule
+32012R0528 32016R2031        1               1        1  below the rule
+32012R0528 32017R0625        1               0        0  below the rule
+32012R0528 32017R0745        1               0        0  below the rule
+32012R0528 32017R0746        2               0        0  below the rule
+32012R0528 32017R0821        1               0        0  below the rule
+32012R0528 32017R0852        1               0        0  below the rule
+32012R0528 32017R2402        1               1        1  below the rule
+32012R0528 32019R1009        1               0        0  below the rule
+32012R0528 32019R1021        2               0        0  below the rule
+32012R0528 32021R0821        2               1        1  below the rule
+32012R0528 32023R1115        1               0        0  below the rule
+32012R0528 32023R1542        1               0        0  below the rule
+32012R0528 32023R2675        1               0        0  below the rule
+32012R0528 32024R1157        1               0        0  below the rule
+32012R0528 32024R1781        2               0        0  below the rule
+32012R0528 32024R2847        1               0        0  below the rule
+32012R0648 32012R0649        1               0        0  below the rule
+32012R0648 32013R0575        1               0        0  below the rule
+32012R0648 32013R0952        1               1        1  below the rule
+32012R0648 32014R0600        7               3        3  below the rule
+32012R0648 32014R0654        1               1        1  below the rule
+32012R0648 32014R0909        1               0        0  below the rule
+32012R0648 32015R2365        1               1        1  below the rule
+32012R0648 32016R0679        1               0        0  below the rule
+32012R0648 32016R1011        4               2        2  below the rule
+32012R0648 32016R1036        1               1        1  below the rule
+32012R0648 32016R1037        1               1        1  below the rule
+32012R0648 32017R2402        1               0        0  below the rule
+32012R0648 32019R1021        1               1        1  below the rule
+32012R0648 32023R0988        1               0        0  below the rule
+32012R0648 32023R2631        3               2        2  below the rule
+32012R0648 32023R2675        1               1        1  below the rule
+32012R0648 32024R1620        1               0        0  below the rule
+32012R0648 32024R1781        1               1        1  below the rule
+32012R0649 32013R0952        2               0        0  below the rule
+32012R0649 32013R1308        1               1        1  below the rule
+32012R0649 32014R0596        1               0        0  below the rule
+32012R0649 32014R0654        1               0        0  below the rule
+32012R0649 32014R0910        1               0        0  below the rule
+32012R0649 32014R1286        2               1        1  below the rule
+32012R0649 32015R2283        1               1        1  below the rule
+32012R0649 32015R2365        1               0        0  below the rule
+32012R0649 32016R0425        1               1        1  below the rule
+32012R0649 32016R0426        1               1        1  below the rule
+32012R0649 32016R1036        1               0        0  below the rule
+32012R0649 32016R1037        1               0        0  below the rule
+32012R0649 32017R0625        1               0        0  below the rule
+32012R0649 32017R0746        1               0        0  below the rule
+32012R0649 32017R0821        1               0        0  below the rule
+32012R0649 32017R0852        1               1        1  below the rule
+32012R0649 32017R2402        1               1        1  below the rule
+32012R0649 32019R1009        1               1        1  below the rule
+32012R0649 32019R1021        2               1        1  below the rule
+32012R0649 32021R0821        1               1        1  below the rule
+32012R0649 32023R1115        1               1        1  below the rule
+32012R0649 32023R1230        1               0        0  below the rule
+32012R0649 32023R2675        2               1        1  below the rule
+32012R0649 32024R1157        1               0        0  below the rule
+32012R0649 32024R1781        2               0        0  below the rule
+32012R0649 32024R2847        1               0        0  below the rule
+32012R0978 32013R1308        1               1        1  below the rule
+32012R0978 32014R0910        1               0        0  below the rule
+32012R0978 32015R2365        1               0        0  below the rule
+32012R0978 32016R0429        1               1        1  below the rule
+32012R0978 32016R2031        1               1        1  below the rule
+32012R0978 32021R0821        1               1        1  below the rule
+32013R0575 32017R1129        1               0        0  below the rule
+32013R0575 32017R2402        1               0        0  below the rule
+32013R0575 32019R1009        1               0        0  below the rule
+32013R0575 32019R2033        2               1        1  below the rule
+32013R0575 32023R0988        1               1        1  below the rule
+32013R0575 32023R2631        1               1        1  below the rule
+32013R0575 32024R1620        1               0        0  below the rule
+32013R0952 32013R1308        1               0        0  below the rule
+32013R0952 32014R0654        1               1        1  below the rule
+32013R0952 32014R1286        1               0        0  below the rule
+32013R0952 32016R0425        1               0        0  below the rule
+32013R0952 32016R0426        1               0        0  below the rule
+32013R0952 32016R1036        1               1        1  below the rule
+32013R0952 32016R1037        1               1        1  below the rule
+32013R0952 32017R0852        1               0        0  below the rule
+32013R0952 32017R2402        1               0        0  below the rule
+32013R0952 32019R1009        1               0        0  below the rule
+32013R0952 32019R1021        2               1        1  below the rule
+32013R0952 32021R0821        1               0        0  below the rule
+32013R0952 32023R2675        1               1        1  below the rule
+32013R0952 32024R1781        1               1        1  below the rule
+32013R1308 32014R0910        1               0        0  below the rule
+32013R1308 32014R1286        1               1        1  below the rule
+32013R1308 32015R2365        1               0        0  below the rule
+32013R1308 32016R0425        1               1        1  below the rule
+32013R1308 32016R0426        1               1        1  below the rule
+32013R1308 32016R0429        1               1        1  below the rule
+32013R1308 32017R0852        1               0        0  below the rule
+32013R1308 32019R1009        1               1        1  below the rule
+32013R1308 32019R1021        1               0        0  below the rule
+32013R1308 32021R0821        1               0        0  below the rule
+32013R1308 32023R1115        1               0        0  below the rule
+32013R1308 32024R1157        1               0        0  below the rule
+32014R0596 32014R0600        1               1        1  below the rule
+32014R0596 32014R0909        1               0        0  below the rule
+32014R0596 32014R1286        1               0        0  below the rule
+32014R0596 32015R2365        1               0        0  below the rule
+32014R0596 32016R1011        1               0        0  below the rule
+32014R0596 32017R0745        1               0        0  below the rule
+32014R0596 32017R0746        1               0        0  below the rule
+32014R0596 32017R1129        2               2        2  below the rule
+32014R0596 32019R1009        1               0        0  below the rule
+32014R0596 32019R1238        1               0        0  below the rule
+32014R0600 32014R0909        1               0        0  below the rule
+32014R0600 32016R1011        7               6        6  below the rule
+32014R0600 32017R1129        1               1        1  below the rule
+32014R0600 32023R2631        1               1        1  below the rule
+32014R0654 32016R1036        1               1        1  below the rule
+32014R0654 32016R1037        1               1        1  below the rule
+32014R0654 32017R2402        1               0        0  below the rule
+32014R0654 32019R1021        1               1        1  below the rule
+32014R0654 32023R2675        1               1        1  below the rule
+32014R0654 32024R1781        1               1        1  below the rule
+32014R0909 32014R0910        1               0        0  below the rule
+32014R0909 32017R1129        1               0        0  below the rule
+32014R0910 32015R2365        1               1        1  below the rule
+32014R0910 32016R0425        1               0        0  below the rule
+32014R0910 32016R0426        1               0        0  below the rule
+32014R0910 32016R0679        1               0        0  below the rule
+32014R0910 32017R2402        1               0        0  below the rule
+32014R0910 32019R0881        1               1        1  below the rule
+32014R0910 32019R2033        1               0        0  below the rule
+32014R0910 32022R2560        1               1        1  below the rule
+32014R0910 32023R0956        1               1        1  below the rule
+32014R0910 32024R0573        1               1        1  below the rule
+32014R0910 32024R1689        1               1        1  below the rule
+32014R1286 32016R0425        1               0        0  below the rule
+32014R1286 32016R0426        1               0        0  below the rule
+32014R1286 32017R0745        1               0        0  below the rule
+32014R1286 32017R0746        1               0        0  below the rule
+32014R1286 32017R0852        1               0        0  below the rule
+32014R1286 32017R2402        1               1        1  below the rule
+32014R1286 32019R1009        1               0        0  below the rule
+32014R1286 32019R1238        1               1        1  below the rule
+32014R1286 32019R2088        1               0        0  below the rule
+32014R1286 32023R0988        1               0        0  below the rule
+32015R0760 32017R1131        1               1        1  below the rule
+32015R2283 32016R0425        1               0        0  below the rule
+32015R2283 32016R0426        1               0        0  below the rule
+32015R2283 32017R0852        1               0        0  below the rule
+32015R2365 32016R0426        1               0        0  below the rule
+32015R2365 32016R1011        1               1        1  below the rule
+32015R2365 32017R2402        3               2        2  below the rule
+32015R2365 32019R1238        1               0        0  below the rule
+32015R2365 32019R2033        1               0        0  below the rule
+32016R0424 32016R0425       27              26       26  enters
+32016R0424 32016R0426       25              25       25  enters
+32016R0424 32019R1009       12              11       11  enters
+32016R0424 32023R1230       10               8        8  below the rule
+32016R0424 32023R1542        3               3        3  below the rule
+32016R0424 32024R1689        1               1        1  below the rule
+32016R0424 32024R1781        6               6        6  below the rule
+32016R0424 32024R2847        6               6        6  below the rule
+32016R0425 32016R0426       26              26       26  enters
+32016R0425 32017R0852        1               0        0  below the rule
+32016R0425 32019R1009       14              13       13  enters
+32016R0425 32019R1021        1               0        0  below the rule
+32016R0425 32021R0821        1               0        0  below the rule
+32016R0425 32023R0988        1               0        0  below the rule
+32016R0425 32023R1115        1               0        0  below the rule
+32016R0425 32023R1230       12              10       10  enters
+32016R0425 32023R1542        4               4        4  below the rule
+32016R0425 32024R1157        1               0        0  below the rule
+32016R0425 32024R1781        8               7        7  below the rule
+32016R0425 32024R2847        7               7        7  below the rule
+32016R0426 32017R0821        1               0        0  below the rule
+32016R0426 32017R0852        1               0        0  below the rule
+32016R0426 32019R1009       13              12       12  enters
+32016R0426 32019R1021        1               0        0  below the rule
+32016R0426 32019R2033        1               0        0  below the rule
+32016R0426 32021R0821        1               0        0  below the rule
+32016R0426 32023R1115        1               0        0  below the rule
+32016R0426 32023R1230       11               9        9  below the rule
+32016R0426 32023R1542        3               3        3  below the rule
+32016R0426 32024R1157        1               0        0  below the rule
+32016R0426 32024R1781        7               6        6  below the rule
+32016R0426 32024R2847        7               7        7  below the rule
+32016R0429 32016R2031        1               1        1  below the rule
+32016R0429 32021R0821        1               1        1  below the rule
+32016R0679 32019R1009        1               0        0  below the rule
+32016R0679 32023R0988        1               0        0  below the rule
+32016R0679 32024R1689        1               0        0  below the rule
+32016R1011 32019R1238        1               1        1  below the rule
+32016R1011 32023R1114        1               0        0  below the rule
+32016R1011 32023R2631        1               1        1  below the rule
+32016R1036 32016R1037       18              15       15  enters
+32016R1036 32017R0625        1               0        0  below the rule
+32016R1036 32017R0745        1               0        0  below the rule
+32016R1036 32017R0746        1               0        0  below the rule
+32016R1036 32017R0821        1               0        0  below the rule
+32016R1036 32017R0852        1               1        1  below the rule
+32016R1036 32017R2402        1               0        0  below the rule
+32016R1036 32019R1009        1               0        0  below the rule
+32016R1036 32019R1021        3               2        2  below the rule
+32016R1036 32019R1238        1               0        0  below the rule
+32016R1036 32021R0821        1               0        0  below the rule
+32016R1036 32023R0956        1               0        0  below the rule
+32016R1036 32023R1114        1               0        0  below the rule
+32016R1036 32023R1115        1               0        0  below the rule
+32016R1036 32023R1230        1               0        0  below the rule
+32016R1036 32023R2675        2               1        1  below the rule
+32016R1036 32024R1157        1               0        0  below the rule
+32016R1036 32024R1781        1               1        1  below the rule
+32016R1036 32024R2847        1               0        0  below the rule
+32016R1037 32017R0821        1               0        0  below the rule
+32016R1037 32017R1131        1               0        0  below the rule
+32016R1037 32017R2402        2               1        1  below the rule
+32016R1037 32019R1021        3               2        2  below the rule
+32016R1037 32019R2033        1               1        1  below the rule
+32016R1037 32021R0821        1               0        0  below the rule
+32016R1037 32023R0988        1               1        1  below the rule
+32016R1037 32023R1115        1               0        0  below the rule
+32016R1037 32023R2675        2               1        1  below the rule
+32016R1037 32024R0573        1               0        0  below the rule
+32016R1037 32024R1620        1               0        0  below the rule
+32016R1037 32024R1781        1               1        1  below the rule
+32016R2031 32017R0625        1               0        0  below the rule
+32016R2031 32017R0745        1               0        0  below the rule
+32016R2031 32017R0746        1               0        0  below the rule
+32016R2031 32017R0821        1               0        0  below the rule
+32016R2031 32017R0852        1               0        0  below the rule
+32016R2031 32018R0848        1               0        0  below the rule
+32016R2031 32019R1009        1               0        0  below the rule
+32016R2031 32019R1021        1               0        0  below the rule
+32016R2031 32021R0821        2               1        1  below the rule
+32016R2031 32023R1115        1               0        0  below the rule
+32016R2031 32023R1230        1               0        0  below the rule
+32016R2031 32023R1542        1               0        0  below the rule
+32016R2031 32023R2675        1               0        0  below the rule
+32016R2031 32024R1157        1               0        0  below the rule
+32016R2031 32024R1781        1               0        0  below the rule
+32016R2031 32024R2847        1               0        0  below the rule
+32017R0625 32017R0745        2               1        1  below the rule
+32017R0625 32017R0746        2               1        1  below the rule
+32017R0625 32017R0821        1               0        0  below the rule
+32017R0625 32017R0852        1               0        0  below the rule
+32017R0625 32018R0848        1               0        0  below the rule
+32017R0625 32019R1009        1               0        0  below the rule
+32017R0625 32019R1021        1               0        0  below the rule
+32017R0625 32019R1238        1               0        0  below the rule
+32017R0625 32019R2033        1               0        0  below the rule
+32017R0625 32021R0821        1               0        0  below the rule
+32017R0625 32022R1925        1               0        0  below the rule
+32017R0625 32023R1114        1               0        0  below the rule
+32017R0625 32023R1115        1               0        0  below the rule
+32017R0625 32023R1230        1               0        0  below the rule
+32017R0625 32023R1542        1               0        0  below the rule
+32017R0625 32023R2675        1               0        0  below the rule
+32017R0625 32024R1157        1               0        0  below the rule
+32017R0625 32024R1781        1               0        0  below the rule
+32017R0625 32024R2847        1               0        0  below the rule
+32017R0745 32017R0746       80              78       73  enters
+32017R0745 32017R0821        1               0        0  below the rule
+32017R0745 32017R0852        1               1        1  below the rule
+32017R0745 32017R1129        1               0        0  below the rule
+32017R0745 32018R0848        1               0        0  below the rule
+32017R0745 32019R1009        1               1        1  below the rule
+32017R0745 32019R1021        1               1        1  below the rule
+32017R0745 32019R1238        1               1        1  below the rule
+32017R0745 32021R0821        1               1        1  below the rule
+32017R0745 32022R1925        1               0        0  below the rule
+32017R0745 32022R2560        2               1        1  below the rule
+32017R0745 32023R0988        1               0        0  below the rule
+32017R0745 32023R1114        1               0        0  below the rule
+32017R0745 32023R1115        1               1        1  below the rule
+32017R0745 32023R1230        1               0        0  below the rule
+32017R0745 32023R1542        2               0        0  below the rule
+32017R0745 32023R2675        1               1        1  below the rule
+32017R0745 32024R1157        1               0        0  below the rule
+32017R0745 32024R1781        1               0        0  below the rule
+32017R0745 32024R2847        1               0        0  below the rule
+32017R0746 32017R0821        1               1        1  below the rule
+32017R0746 32017R0852        1               1        1  below the rule
+32017R0746 32017R1129        1               0        0  below the rule
+32017R0746 32018R0848        1               0        0  below the rule
+32017R0746 32019R1009        1               1        1  below the rule
+32017R0746 32019R1021        1               1        1  below the rule
+32017R0746 32019R1238        1               1        1  below the rule
+32017R0746 32021R0821        1               1        1  below the rule
+32017R0746 32022R1925        1               1        1  below the rule
+32017R0746 32022R2560        2               1        1  below the rule
+32017R0746 32023R0988        1               0        0  below the rule
+32017R0746 32023R1114        1               1        1  below the rule
+32017R0746 32023R1115        1               1        1  below the rule
+32017R0746 32023R1230        1               0        0  below the rule
+32017R0746 32023R1542        1               0        0  below the rule
+32017R0746 32023R2675        1               1        1  below the rule
+32017R0746 32024R1157        1               0        0  below the rule
+32017R0746 32024R1620        1               0        0  below the rule
+32017R0746 32024R1781        1               0        0  below the rule
+32017R0746 32024R2847        1               0        0  below the rule
+32017R0821 32017R0852        1               1        1  below the rule
+32017R0821 32017R2402        1               0        0  below the rule
+32017R0821 32018R0848        1               0        0  below the rule
+32017R0821 32019R1009        1               1        1  below the rule
+32017R0821 32019R1021        1               1        1  below the rule
+32017R0821 32019R1238        1               1        1  below the rule
+32017R0821 32019R2033        1               0        0  below the rule
+32017R0821 32021R0821        1               1        1  below the rule
+32017R0821 32022R1925        1               1        1  below the rule
+32017R0821 32022R2560        1               1        1  below the rule
+32017R0821 32023R1114        1               1        1  below the rule
+32017R0821 32023R1115        1               1        1  below the rule
+32017R0821 32023R1230        1               0        0  below the rule
+32017R0821 32023R1542        1               0        0  below the rule
+32017R0821 32023R2675        1               1        1  below the rule
+32017R0821 32024R1157        1               0        0  below the rule
+32017R0821 32024R1781        1               1        1  below the rule
+32017R0821 32024R2847        2               1        1  below the rule
+32017R0852 32017R2402        1               0        0  below the rule
+32017R0852 32018R0848        1               0        0  below the rule
+32017R0852 32019R1009        1               1        1  below the rule
+32017R0852 32019R1021        1               1        1  below the rule
+32017R0852 32019R1238        1               1        1  below the rule
+32017R0852 32019R2033        1               0        0  below the rule
+32017R0852 32021R0821        1               1        1  below the rule
+32017R0852 32022R1925        1               1        1  below the rule
+32017R0852 32022R2560        1               1        1  below the rule
+32017R0852 32023R0988        1               0        0  below the rule
+32017R0852 32023R1114        1               1        1  below the rule
+32017R0852 32023R1115        1               1        1  below the rule
+32017R0852 32023R1230        1               1        1  below the rule
+32017R0852 32023R1542        2               0        0  below the rule
+32017R0852 32023R2675        1               1        1  below the rule
+32017R0852 32024R0573        1               0        0  below the rule
+32017R0852 32024R1157        1               1        1  below the rule
+32017R0852 32024R1620        1               0        0  below the rule
+32017R0852 32024R1781        1               1        1  below the rule
+32017R0852 32024R2847        1               0        0  below the rule
+32017R1129 32017R1131        1               0        0  below the rule
+32017R1129 32017R2402        1               0        0  below the rule
+32017R1129 32019R1009        1               0        0  below the rule
+32017R1129 32019R1238        1               0        0  below the rule
+32017R1129 32019R2033        1               0        0  below the rule
+32017R1129 32023R0988        1               0        0  below the rule
+32017R1129 32023R2631        1               0        0  below the rule
+32017R1129 32024R0573        1               0        0  below the rule
+32017R1129 32024R1620        1               0        0  below the rule
+32017R1131 32017R2402        1               1        1  below the rule
+32017R1131 32022R1925        1               0        0  below the rule
+32017R1131 32023R0988        1               1        1  below the rule
+32017R1131 32024R0573        1               0        0  below the rule
+32017R2402 32019R1009        1               0        0  below the rule
+32017R2402 32019R1021        2               0        0  below the rule
+32017R2402 32019R2033        1               1        1  below the rule
+32017R2402 32021R0821        1               0        0  below the rule
+32017R2402 32023R0988        1               1        1  below the rule
+32017R2402 32023R1115        1               0        0  below the rule
+32017R2402 32023R2631        1               1        1  below the rule
+32017R2402 32023R2675        2               0        0  below the rule
+32017R2402 32024R0573        1               0        0  below the rule
+32017R2402 32024R1157        1               0        0  below the rule
+32017R2402 32024R1620        1               0        0  below the rule
+32017R2402 32024R1781        1               0        0  below the rule
+32018R0848 32019R1009        1               0        0  below the rule
+32018R0848 32019R1021        1               0        0  below the rule
+32018R0848 32021R0821        1               0        0  below the rule
+32018R0848 32022R2560        1               0        0  below the rule
+32018R0848 32023R1115        1               0        0  below the rule
+32018R0848 32023R1230        1               0        0  below the rule
+32018R0848 32023R1542        1               0        0  below the rule
+32018R0848 32023R2675        1               0        0  below the rule
+32018R0848 32024R1157        1               0        0  below the rule
+32018R0848 32024R1781        1               0        0  below the rule
+32018R0848 32024R2847        1               0        0  below the rule
+32019R0881 32022R2560        1               1        1  below the rule
+32019R0881 32024R1689        1               1        1  below the rule
+32019R1009 32019R1021        1               1        1  below the rule
+32019R1009 32019R1238        1               1        1  below the rule
+32019R1009 32019R2033        1               0        0  below the rule
+32019R1009 32021R0821        1               1        1  below the rule
+32019R1009 32022R1925        1               1        1  below the rule
+32019R1009 32022R2560        1               1        1  below the rule
+32019R1009 32023R0988        2               1        1  below the rule
+32019R1009 32023R1114        1               1        1  below the rule
+32019R1009 32023R1115        1               1        1  below the rule
+32019R1009 32023R1230       10               9        9  below the rule
+32019R1009 32023R1542        7               5        5  below the rule
+32019R1009 32023R2675        1               1        1  below the rule
+32019R1009 32024R1157        1               1        1  below the rule
+32019R1009 32024R1620        1               0        0  below the rule
+32019R1009 32024R1781        7               7        7  below the rule
+32019R1009 32024R2847        9               8        8  below the rule
+32019R1020 32023R0988        1               0        0  below the rule
+32019R1021 32019R1238        1               1        1  below the rule
+32019R1021 32019R2033        1               0        0  below the rule
+32019R1021 32021R0821        1               1        1  below the rule
+32019R1021 32022R1925        1               1        1  below the rule
+32019R1021 32022R2560        1               1        1  below the rule
+32019R1021 32023R0956        1               1        1  below the rule
+32019R1021 32023R0988        1               0        0  below the rule
+32019R1021 32023R1114        1               1        1  below the rule
+32019R1021 32023R1115        1               1        1  below the rule
+32019R1021 32023R1230        1               1        1  below the rule
+32019R1021 32023R1542        1               0        0  below the rule
+32019R1021 32023R2675        2               2        2  below the rule
+32019R1021 32024R0573        1               0        0  below the rule
+32019R1021 32024R1157        1               1        1  below the rule
+32019R1021 32024R1781        2               2        2  below the rule
+32019R1021 32024R2847        1               0        0  below the rule
+32019R1238 32021R0821        1               1        1  below the rule
+32019R1238 32022R1925        1               1        1  below the rule
+32019R1238 32023R0988        1               0        0  below the rule
+32019R1238 32023R1114        1               1        1  below the rule
+32019R1238 32023R1115        1               1        1  below the rule
+32019R1238 32023R1230        1               0        0  below the rule
+32019R1238 32023R2675        1               1        1  below the rule
+32019R1238 32024R1157        1               0        0  below the rule
+32019R1238 32024R1781        1               0        0  below the rule
+32019R1238 32024R2847        1               0        0  below the rule
+32019R2033 32021R0821        1               0        0  below the rule
+32019R2033 32023R0988        1               1        1  below the rule
+32019R2033 32023R1115        1               0        0  below the rule
+32019R2033 32023R1230        1               0        0  below the rule
+32019R2033 32023R2675        1               0        0  below the rule
+32019R2033 32024R0573        1               0        0  below the rule
+32019R2033 32024R1157        1               0        0  below the rule
+32019R2033 32024R1620        1               0        0  below the rule
+32019R2033 32024R1781        1               0        0  below the rule
+32021R0821 32022R1925        1               1        1  below the rule
+32021R0821 32022R2560        1               1        1  below the rule
+32021R0821 32023R0956        1               1        1  below the rule
+32021R0821 32023R0988        1               0        0  below the rule
+32021R0821 32023R1114        1               1        1  below the rule
+32021R0821 32023R1115        1               1        1  below the rule
+32021R0821 32023R1230        1               1        1  below the rule
+32021R0821 32023R1542        1               0        0  below the rule
+32021R0821 32023R2675        1               1        1  below the rule
+32021R0821 32024R0573        1               0        0  below the rule
+32021R0821 32024R1157        1               1        1  below the rule
+32021R0821 32024R1620        1               0        0  below the rule
+32021R0821 32024R1781        1               1        1  below the rule
+32021R0821 32024R2847        1               0        0  below the rule
+32022R1925 32022R2560        1               1        1  below the rule
+32022R1925 32023R1114        1               0        0  below the rule
+32022R1925 32023R1115        1               1        1  below the rule
+32022R1925 32023R1230        1               0        0  below the rule
+32022R1925 32023R2675        1               1        1  below the rule
+32022R1925 32024R1157        1               0        0  below the rule
+32022R1925 32024R2847        1               0        0  below the rule
+32022R2560 32023R0956        1               0        0  below the rule
+32022R2560 32023R1115        1               1        1  below the rule
+32022R2560 32023R1230        1               1        1  below the rule
+32022R2560 32023R2675        1               1        1  below the rule
+32022R2560 32024R1157        1               0        0  below the rule
+32022R2560 32024R1689        1               1        1  below the rule
+32022R2560 32024R1781        1               0        0  below the rule
+32023R0956 32024R1689        1               1        1  below the rule
+32023R0988 32023R1114        1               0        0  below the rule
+32023R0988 32023R1115        1               0        0  below the rule
+32023R0988 32023R1230        1               0        0  below the rule
+32023R0988 32023R1542        1               0        0  below the rule
+32023R0988 32023R2631        1               1        1  below the rule
+32023R0988 32023R2675        1               0        0  below the rule
+32023R0988 32024R0573        1               0        0  below the rule
+32023R0988 32024R1620        1               0        0  below the rule
+32023R0988 32024R1781        1               0        0  below the rule
+32023R1114 32023R1115        1               1        1  below the rule
+32023R1114 32023R1230        1               0        0  below the rule
+32023R1114 32023R2675        1               1        1  below the rule
+32023R1114 32024R1157        1               0        0  below the rule
+32023R1114 32024R1689        1               1        1  below the rule
+32023R1114 32024R2847        1               0        0  below the rule
+32023R1115 32023R1230        1               0        0  below the rule
+32023R1115 32023R1542        1               0        0  below the rule
+32023R1115 32023R2675        1               1        1  below the rule
+32023R1115 32024R0573        1               0        0  below the rule
+32023R1115 32024R1157        1               1        1  below the rule
+32023R1115 32024R1620        1               0        0  below the rule
+32023R1115 32024R1781        1               1        1  below the rule
+32023R1115 32024R2847        1               0        0  below the rule
+32023R1230 32023R1542        5               4        4  below the rule
+32023R1230 32023R2675        1               0        0  below the rule
+32023R1230 32024R0573        1               0        0  below the rule
+32023R1230 32024R1157        1               0        0  below the rule
+32023R1230 32024R1781        4               3        3  below the rule
+32023R1230 32024R2847        5               4        4  below the rule
+32023R1542 32023R2675        1               0        0  below the rule
+32023R1542 32024R1157        1               0        0  below the rule
+32023R1542 32024R1781        3               2        2  below the rule
+32023R1542 32024R2847        2               2        2  below the rule
+32023R2631 32024R0573        1               0        0  below the rule
+32023R2631 32024R1620        1               0        0  below the rule
+32023R2675 32024R0573        1               0        0  below the rule
+32023R2675 32024R1157        1               1        1  below the rule
+32023R2675 32024R1620        1               0        0  below the rule
+32023R2675 32024R1781        2               2        2  below the rule
+32023R2675 32024R2847        1               0        0  below the rule
+32024R0573 32024R1620        1               0        0  below the rule
+32024R0573 32024R1689        1               1        1  below the rule
+32024R1157 32024R1781        1               0        0  below the rule
+32024R1157 32024R2847        1               0        0  below the rule
+32024R1781 32024R2847        6               4        4  below the rule
+
+mutual-best pairs at the floor, per act pair (unit A, unit B, ratio):
+  32006R1907 32009R1223: AR 126/AR 37 0.90
+  32008R0765 32011R0305: AR 37/AR 35 0.95
+  32008R1272 32011R1169: AR 53b/AR 52 0.97
+  32008R1272 32012R0528: AR 53b/AR 84 0.97
+  32008R1272 32012R0978: AR 53b/AR 37 0.94
+  32008R1272 32016R0429: AR 53b/AR 265 0.97
+  32008R1272 32016R2031: AR 53b/AR 106 0.98
+  32008R1272 32017R0821: AR 53a/AR 19 0.90
+  32008R1272 32017R0852: AR 53a/AR 21 0.92
+  32008R1272 32019R1009: AR 53a/AR 44 0.91
+  32008R1272 32019R1021: AR 53a/AR 18 0.92
+  32008R1272 32021R0821: AR 53a/AR 18 0.91, AR 53b/AR 19 0.97
+  32008R1272 32022R1925: AR 53a/AR 49 0.90
+  32008R1272 32023R1115: AR 53a/AR 35 0.91
+  32008R1272 32023R2675: AR 53a/AR 17 0.91
+  32008R1272 32024R1781: AR 53a/AR 72 0.90
+  32009R1060 32010R1093: AR 38b/AR 12 0.92
+  32009R1060 32010R1094: AR 38b/AR 12 0.92
+  32009R1060 32010R1095: AR 38b/AR 12 0.92
+  32009R1060 32011R0305: AR 38b/AR 62 0.93, AR 38c/AR 63 0.93
+  32009R1060 32012R0648: AR 23c/AR 62 0.93
+  32010R1093 32010R1094: AR 2/AR 2 0.95, AR 3/AR 3 0.95, AR 5/AR 5 1.00, AR 6/AR 6 1.00, AR 9/AR 9 0.98, AR 9c/AR 9a 0.99, AR 10/AR 10 0.99, AR 11/AR 11 0.99, AR 12/AR 12 1.00, AR 13/AR 13 0.92, AR 14/AR 14 1.00, AR 15/AR 15 1.00, AR 16/AR 16 0.97, AR 16a/AR 16a 0.91, AR 16b/AR 16b 1.00, AR 17/AR 17 0.99, AR 17a/AR 17a 1.00, AR 18/AR 18 0.99, AR 19/AR 19 0.99, AR 21/AR 21 0.99, AR 23/AR 23 0.92, AR 24/AR 24 0.99, AR 28/AR 28 1.00, AR 29/AR 29 0.92, AR 29a/AR 29a 0.98, AR 30/AR 30 1.00, AR 31/AR 31 0.93, AR 31a/AR 31a 0.97, AR 33/AR 33 0.96, AR 34/AR 34 0.90, AR 35b/AR 35b 0.99, AR 36/AR 36 1.00, AR 38/AR 38 0.98, AR 39/AR 39 1.00, AR 41/AR 41 0.95, AR 42/AR 42 1.00, AR 43/AR 43 1.00, AR 43a/AR 43a 0.99, AR 45/AR 45 0.96, AR 45a/AR 45a 1.00, AR 45b/AR 45b 1.00, AR 46/AR 46 1.00, AR 48/AR 48 1.00, AR 49/AR 49 0.99, AR 49a/AR 49a 1.00, AR 50/AR 50 0.99, AR 51/AR 51 1.00, AR 52/AR 52 0.99, AR 53/AR 53 1.00, AR 54/AR 54 0.98, AR 55/AR 55 0.99, AR 56/AR 56 0.95, AR 57/AR 57 0.98, AR 58/AR 58 0.98, AR 59/AR 59 1.00, AR 60/AR 60 1.00, AR 60a/AR 60a 1.00, AR 61/AR 61 1.00, AR 62/AR 62 1.00, AR 63/AR 63 1.00, AR 64/AR 64 1.00, AR 65/AR 65 1.00, AR 66/AR 66 1.00, AR 67/AR 67 1.00, AR 68/AR 68 1.00, AR 69/AR 69 1.00, AR 70/AR 70 0.99, AR 71/AR 71 1.00, AR 72/AR 72 1.00, AR 73/AR 73 1.00, AR 74/AR 74 1.00, AR 75/AR 75 0.99, AR 77/AR 77 0.99, AR 78/AR 78 1.00, AR 79/AR 79 0.97, AR 82/AR 82 1.00
+  32010R1093 32010R1095: AR 3/AR 3 0.95, AR 5/AR 5 1.00, AR 6/AR 6 1.00, AR 9/AR 9 0.98, AR 9c/AR 9a 1.00, AR 10/AR 10 0.99, AR 11/AR 11 0.99, AR 12/AR 12 1.00, AR 13/AR 13 0.93, AR 14/AR 14 1.00, AR 15/AR 15 1.00, AR 16/AR 16 0.97, AR 16a/AR 16a 0.90, AR 16b/AR 16b 1.00, AR 17/AR 17 0.98, AR 17a/AR 17a 1.00, AR 18/AR 18 0.98, AR 19/AR 19 0.99, AR 21/AR 21 0.97, AR 23/AR 23 0.97, AR 24/AR 24 0.99, AR 28/AR 28 0.99, AR 29/AR 29 0.91, AR 29a/AR 29a 0.98, AR 30/AR 30 0.99, AR 31/AR 31 0.96, AR 33/AR 33 0.97, AR 34/AR 34 0.98, AR 35b/AR 35b 0.98, AR 36/AR 36 1.00, AR 38/AR 38 0.99, AR 39/AR 39 0.99, AR 41/AR 41 0.94, AR 42/AR 42 1.00, AR 43/AR 43 1.00, AR 43a/AR 43a 0.97, AR 45/AR 45 0.96, AR 45a/AR 45a 1.00, AR 45b/AR 45b 1.00, AR 46/AR 46 1.00, AR 48/AR 48 0.99, AR 49/AR 49 1.00, AR 49a/AR 49a 1.00, AR 50/AR 50 0.99, AR 51/AR 51 0.99, AR 52/AR 52 1.00, AR 53/AR 53 1.00, AR 54/AR 54 0.96, AR 55/AR 55 0.99, AR 56/AR 56 0.91, AR 57/AR 57 0.99, AR 58/AR 58 1.00, AR 59/AR 59 1.00, AR 60/AR 60 1.00, AR 60a/AR 60a 1.00, AR 61/AR 61 1.00, AR 62/AR 62 0.99, AR 63/AR 63 1.00, AR 64/AR 64 1.00, AR 65/AR 65 1.00, AR 66/AR 66 1.00, AR 67/AR 67 1.00, AR 68/AR 68 1.00, AR 69/AR 69 1.00, AR 70/AR 70 0.99, AR 71/AR 71 1.00, AR 72/AR 72 1.00, AR 73/AR 73 1.00, AR 74/AR 74 1.00, AR 75/AR 75 0.99, AR 77/AR 77 0.99, AR 78/AR 78 1.00, AR 79/AR 79 0.97, AR 82/AR 82 1.00
+  32010R1093 32011R0305: AR 12/AR 62 0.94
+  32010R1093 32024R1620: AR 5/AR 3 0.97, AR 10/AR 49 0.95, AR 14/AR 52 0.96, AR 15/AR 53 0.96, AR 69/AR 99 0.97
+  32010R1094 32010R1095: AR 2/AR 2 0.96, AR 3/AR 3 1.00, AR 5/AR 5 1.00, AR 6/AR 6 1.00, AR 7/AR 7 0.97, AR 8/AR 8 0.95, AR 9/AR 9 1.00, AR 9a/AR 9a 0.99, AR 10/AR 10 0.99, AR 11/AR 11 0.99, AR 12/AR 12 1.00, AR 13/AR 13 1.00, AR 14/AR 14 1.00, AR 15/AR 15 0.99, AR 16/AR 16 0.95, AR 16a/AR 16a 0.97, AR 16b/AR 16b 1.00, AR 17/AR 17 0.99, AR 17a/AR 17a 1.00, AR 18/AR 18 0.99, AR 19/AR 19 0.99, AR 20/AR 20 0.98, AR 21/AR 21 0.96, AR 22/AR 22 0.96, AR 23/AR 23 0.93, AR 24/AR 24 1.00, AR 28/AR 28 0.99, AR 29/AR 29 0.96, AR 29a/AR 29a 1.00, AR 30/AR 30 1.00, AR 31/AR 31 0.97, AR 31a/AR 31a 0.95, AR 32/AR 32 0.92, AR 33/AR 33 0.98, AR 35/AR 35 0.99, AR 35a/AR 35a 0.99, AR 35b/AR 35b 1.00, AR 36/AR 36 1.00, AR 38/AR 38 0.99, AR 39/AR 39 0.99, AR 41/AR 41 0.99, AR 42/AR 42 1.00, AR 43/AR 43 1.00, AR 43a/AR 43a 0.98, AR 44/AR 44 0.98, AR 45/AR 45 0.98, AR 45a/AR 45a 1.00, AR 45b/AR 45b 1.00, AR 46/AR 46 1.00, AR 47/AR 47 0.95, AR 48/AR 48 0.99, AR 49/AR 49 0.99, AR 49a/AR 49a 1.00, AR 50/AR 50 0.98, AR 51/AR 51 0.99, AR 52/AR 52 0.99, AR 53/AR 53 1.00, AR 54/AR 54 0.97, AR 55/AR 55 1.00, AR 56/AR 56 0.93, AR 57/AR 57 0.98, AR 58/AR 58 0.98, AR 59/AR 59 1.00, AR 60/AR 60 1.00, AR 60a/AR 60a 1.00, AR 61/AR 61 1.00, AR 62/AR 62 0.99, AR 63/AR 63 1.00, AR 64/AR 64 1.00, AR 65/AR 65 1.00, AR 66/AR 66 1.00, AR 67/AR 67 1.00, AR 68/AR 68 1.00, AR 69/AR 69 1.00, AR 70/AR 70 0.99, AR 71/AR 71 1.00, AR 72/AR 72 1.00, AR 73/AR 73 1.00, AR 74/AR 74 1.00, AR 75/AR 75 0.99, AR 77/AR 77 0.99, AR 78/AR 78 1.00, AR 79/AR 79 0.97, AR 82/AR 82 1.00
+  32010R1094 32011R0305: AR 12/AR 62 0.94
+  32010R1094 32024R1620: AR 5/AR 3 0.97, AR 10/AR 49 0.94, AR 14/AR 52 0.96, AR 15/AR 53 0.96, AR 69/AR 99 0.97
+  32010R1095 32011R0305: AR 12/AR 62 0.94
+  32010R1095 32024R1620: AR 5/AR 3 0.97, AR 10/AR 49 0.94, AR 14/AR 52 0.96, AR 15/AR 53 0.96, AR 69/AR 99 0.97
+  32011R1169 32012R0528: AR 52/AR 84 0.98
+  32011R1169 32012R0978: AR 52/AR 37 0.95
+  32011R1169 32013R1308: AR 52/AR 228 0.95
+  32011R1169 32016R0429: AR 52/AR 265 0.98
+  32011R1169 32016R2031: AR 52/AR 106 0.97
+  32011R1169 32021R0821: AR 52/AR 19 0.96
+  32012R0236 32013R0575: AR 11a/AR 434b 0.95
+  32012R0236 32019R2033: AR 11a/AR 46a 0.94
+  32012R0528 32012R0649: AR 97/AR 31 0.92
+  32012R0528 32012R0978: AR 84/AR 37 0.95
+  32012R0528 32013R1308: AR 84/AR 228 0.95
+  32012R0528 32016R0429: AR 84/AR 265 0.98
+  32012R0528 32016R2031: AR 84/AR 106 0.97
+  32012R0528 32017R2402: AR 97/AR 48 0.92
+  32012R0528 32021R0821: AR 84/AR 19 0.96
+  32012R0648 32013R0952: AR 91/AR 287 0.97
+  32012R0648 32014R0600: AR 25l/AR 38l 0.92, AR 25n/AR 38m 0.98, AR 66/AR 38i 0.96
+  32012R0648 32014R0654: AR 91/AR 12 0.97
+  32012R0648 32015R2365: AR 71/AR 10 0.92
+  32012R0648 32016R1011: AR 25n/AR 48k 0.98, AR 66/AR 48g 0.95
+  32012R0648 32016R1036: AR 91/AR 25 0.97
+  32012R0648 32016R1037: AR 91/AR 36 0.97
+  32012R0648 32019R1021: AR 91/AR 22 0.97
+  32012R0648 32023R2631: AR 25n/AR 65 0.91, AR 62/AR 55 0.93
+  32012R0648 32023R2675: AR 91/AR 20 0.97
+  32012R0648 32024R1781: AR 91/AR 80 0.97
+  32012R0649 32013R1308: AR 26/AR 227 0.96
+  32012R0649 32014R1286: AR 26/AR 30 0.94
+  32012R0649 32015R2283: AR 26/AR 32 0.92
+  32012R0649 32016R0425: AR 26/AR 43 0.93
+  32012R0649 32016R0426: AR 26/AR 41 0.93
+  32012R0649 32017R0852: AR 26/AR 21 0.91
+  32012R0649 32017R2402: AR 31/AR 48 0.92
+  32012R0649 32019R1009: AR 26/AR 44 0.91
+  32012R0649 32019R1021: AR 26/AR 18 0.90
+  32012R0649 32021R0821: AR 26/AR 18 0.91
+  32012R0649 32023R1115: AR 26/AR 35 0.91
+  32012R0649 32023R2675: AR 26/AR 17 0.91
+  32012R0978 32013R1308: AR 37/AR 228 0.95
+  32012R0978 32016R0429: AR 37/AR 265 0.95
+  32012R0978 32016R2031: AR 37/AR 106 0.94
+  32012R0978 32021R0821: AR 37/AR 19 0.94
+  32013R0575 32019R2033: AR 434b/AR 46a 0.97
+  32013R0575 32023R0988: AR 462/AR 45 0.90
+  32013R0575 32023R2631: AR 462/AR 68 0.90
+  32013R0952 32014R0654: AR 287/AR 12 0.97
+  32013R0952 32016R1036: AR 287/AR 25 0.97
+  32013R0952 32016R1037: AR 287/AR 36 0.97
+  32013R0952 32019R1021: AR 287/AR 22 0.97
+  32013R0952 32023R2675: AR 287/AR 20 0.97
+  32013R0952 32024R1781: AR 287/AR 80 0.97
+  32013R1308 32014R1286: AR 227/AR 30 0.93
+  32013R1308 32016R0425: AR 227/AR 43 0.92
+  32013R1308 32016R0426: AR 227/AR 41 0.92
+  32013R1308 32016R0429: AR 228/AR 265 0.95
+  32013R1308 32019R1009: AR 227/AR 44 0.90
+  32014R0596 32014R0600: AR 36/AR 51 0.99
+  32014R0596 32017R1129: AR 24/AR 34 0.90, AR 36/AR 45 0.99
+  32014R0600 32016R1011: AR 38c/AR 48c 0.96, AR 38d/AR 48d 0.95, AR 38g/AR 48e 0.94, AR 38i/AR 48g 0.96, AR 38l/AR 48j 0.94, AR 38m/AR 48k 0.98
+  32014R0600 32017R1129: AR 51/AR 45 0.99
+  32014R0600 32023R2631: AR 38m/AR 65 0.91
+  32014R0654 32016R1036: AR 12/AR 25 0.97
+  32014R0654 32016R1037: AR 12/AR 36 0.97
+  32014R0654 32019R1021: AR 12/AR 22 0.97
+  32014R0654 32023R2675: AR 12/AR 20 0.97
+  32014R0654 32024R1781: AR 12/AR 80 0.97
+  32014R0910 32015R2365: AR 47/AR 30 0.94
+  32014R0910 32019R0881: AR 48/AR 66 0.92
+  32014R0910 32022R2560: AR 48/AR 48 0.98
+  32014R0910 32023R0956: AR 48/AR 29 0.92
+  32014R0910 32024R0573: AR 48/AR 34 0.91
+  32014R0910 32024R1689: AR 48/AR 98 0.98
+  32014R1286 32017R2402: AR 34/AR 48 0.90
+  32014R1286 32019R1238: AR 18/AR 64 0.94
+  32015R0760 32017R1131: AR 25a/AR 37a 0.94
+  32015R2365 32016R1011: AR 32a/AR 28a 0.93
+  32015R2365 32017R2402: AR 7/AR 12 0.95, AR 9/AR 14 0.92
+  32016R0424 32016R0425: AR 20/AR 16 0.96, AR 22/AR 20 0.96, AR 23/AR 21 0.97, AR 24/AR 22 0.99, AR 25/AR 23 0.98, AR 26/AR 24 0.95, AR 27/AR 25 0.96, AR 28/AR 26 0.96, AR 29/AR 27 0.95, AR 30/AR 28 0.96, AR 31/AR 29 0.99, AR 32/AR 30 0.99, AR 33/AR 31 0.99, AR 34/AR 32 0.93, AR 36/AR 34 0.96, AR 37/AR 35 0.96, AR 38/AR 36 0.90, AR 40/AR 38 0.92, AR 41/AR 39 0.96, AR 42/AR 40 0.93, AR 43c/AR 41c 0.94, AR 43d/AR 41d 0.95, AR 43e/AR 41e 0.94, AR 44/AR 44 0.98, AR 47/AR 46 0.95, AR 48/AR 48 0.97
+  32016R0424 32016R0426: AR 12/AR 8 0.94, AR 20/AR 16 0.96, AR 22/AR 19 0.96, AR 23/AR 20 0.98, AR 24/AR 21 0.99, AR 25/AR 22 0.98, AR 26/AR 23 0.96, AR 28/AR 25 0.96, AR 29/AR 26 0.96, AR 30/AR 27 0.97, AR 31/AR 28 0.99, AR 32/AR 29 0.99, AR 33/AR 30 0.99, AR 34/AR 31 0.94, AR 35/AR 32 0.95, AR 36/AR 33 0.97, AR 37/AR 34 0.96, AR 40/AR 37 0.93, AR 41/AR 38 0.96, AR 42/AR 39 0.93, AR 43c/AR 40c 0.93, AR 43d/AR 40d 0.96, AR 43e/AR 40e 0.94, AR 44/AR 42 0.98, AR 47/AR 45 0.93
+  32016R0424 32019R1009: AR 20/AR 17 0.95, AR 22/AR 20 0.96, AR 23/AR 21 0.96, AR 24/AR 22 0.99, AR 25/AR 23 0.98, AR 28/AR 26 0.96, AR 31/AR 29 0.99, AR 32/AR 30 0.97, AR 33/AR 31 0.98, AR 36/AR 34 0.95, AR 38/AR 36 0.90
+  32016R0424 32023R1230: AR 20/AR 23 0.96, AR 24/AR 28 0.97, AR 25/AR 29 0.95, AR 31/AR 35 0.96, AR 32/AR 36 0.95, AR 33/AR 37 0.98, AR 43d/AR 25d 0.94, AR 43e/AR 25e 0.93
+  32016R0424 32023R1542: AR 20/AR 19 0.96, AR 25/AR 24 0.97, AR 32/AR 31 0.95
+  32016R0424 32024R1689: AR 27/AR 32 0.94
+  32016R0424 32024R1781: AR 20/AR 45 0.96, AR 23/AR 49 0.97, AR 25/AR 51 0.98, AR 28/AR 54 0.93, AR 31/AR 57 0.98, AR 32/AR 58 0.95
+  32016R0424 32024R2847: AR 20/AR 29 0.96, AR 24/AR 37 0.98, AR 28/AR 41 0.94, AR 31/AR 44 0.96, AR 32/AR 45 0.97, AR 36/AR 49 0.92
+  32016R0425 32016R0426: AR 16/AR 16 1.00, AR 20/AR 19 0.96, AR 21/AR 20 0.97, AR 22/AR 21 0.99, AR 23/AR 22 0.98, AR 24/AR 23 0.95, AR 25/AR 24 0.96, AR 26/AR 25 0.96, AR 27/AR 26 0.96, AR 28/AR 27 0.97, AR 29/AR 28 0.99, AR 30/AR 29 0.99, AR 31/AR 30 0.98, AR 32/AR 31 0.93, AR 34/AR 33 0.96, AR 35/AR 34 0.96, AR 38/AR 37 0.93, AR 39/AR 38 0.97, AR 40/AR 39 0.93, AR 41c/AR 40c 0.93, AR 41d/AR 40d 0.95, AR 41e/AR 40e 0.95, AR 43/AR 41 0.99, AR 44/AR 42 0.97, AR 45/AR 43 0.98, AR 46/AR 45 0.93
+  32016R0425 32019R1009: AR 16/AR 17 0.95, AR 20/AR 20 1.00, AR 21/AR 21 0.99, AR 22/AR 22 1.00, AR 23/AR 23 1.00, AR 24/AR 24 0.92, AR 25/AR 25 0.99, AR 26/AR 26 0.97, AR 29/AR 29 1.00, AR 30/AR 30 0.98, AR 31/AR 31 0.98, AR 34/AR 34 0.97, AR 36/AR 36 1.00
+  32016R0425 32023R1230: AR 16/AR 23 0.96, AR 22/AR 28 0.97, AR 23/AR 29 0.95, AR 25/AR 31 0.94, AR 29/AR 35 0.96, AR 30/AR 36 0.95, AR 31/AR 37 0.99, AR 41d/AR 25d 0.96, AR 41e/AR 25e 0.93, AR 44/AR 48 0.90
+  32016R0425 32023R1542: AR 16/AR 19 0.96, AR 23/AR 24 0.97, AR 30/AR 31 0.95, AR 31/AR 32 0.91
+  32016R0425 32024R1781: AR 16/AR 45 0.96, AR 21/AR 49 0.96, AR 23/AR 51 0.98, AR 25/AR 53 0.92, AR 26/AR 54 0.92, AR 29/AR 57 0.98, AR 30/AR 58 0.95
+  32016R0425 32024R2847: AR 16/AR 29 0.96, AR 22/AR 37 0.98, AR 25/AR 40 0.96, AR 26/AR 41 0.94, AR 29/AR 44 0.96, AR 30/AR 45 0.97, AR 34/AR 49 0.93
+  32016R0426 32019R1009: AR 16/AR 17 0.95, AR 19/AR 20 0.96, AR 20/AR 21 0.96, AR 21/AR 22 0.99, AR 22/AR 23 0.98, AR 23/AR 24 0.91, AR 24/AR 25 0.97, AR 25/AR 26 0.98, AR 28/AR 29 0.99, AR 29/AR 30 0.97, AR 30/AR 31 0.98, AR 33/AR 34 0.95
+  32016R0426 32023R1230: AR 16/AR 23 0.96, AR 21/AR 28 0.97, AR 22/AR 29 0.95, AR 24/AR 31 0.93, AR 28/AR 35 0.96, AR 29/AR 36 0.95, AR 30/AR 37 0.98, AR 40d/AR 25d 0.94, AR 40e/AR 25e 0.93
+  32016R0426 32023R1542: AR 16/AR 19 0.96, AR 22/AR 24 0.97, AR 29/AR 31 0.95
+  32016R0426 32024R1781: AR 16/AR 45 0.96, AR 20/AR 49 0.97, AR 22/AR 51 0.98, AR 25/AR 54 0.93, AR 28/AR 57 0.98, AR 29/AR 58 0.95
+  32016R0426 32024R2847: AR 16/AR 29 0.96, AR 21/AR 37 0.98, AR 24/AR 40 0.97, AR 25/AR 41 0.95, AR 28/AR 44 0.96, AR 29/AR 45 0.97, AR 33/AR 49 0.92
+  32016R0429 32016R2031: AR 265/AR 106 0.97
+  32016R0429 32021R0821: AR 265/AR 19 0.96
+  32016R1011 32019R1238: AR 28a/AR 70a 0.92
+  32016R1011 32023R2631: AR 48k/AR 65 0.91
+  32016R1036 32016R1037: AR 4/AR 9 0.98, AR 6/AR 11 0.91, AR 14/AR 24 0.97, AR 14a/AR 24a 0.96, AR 15/AR 25 0.91, AR 16/AR 26 0.95, AR 17/AR 27 0.97, AR 18/AR 28 0.98, AR 19/AR 29 0.98, AR 19a/AR 29a 0.94, AR 20/AR 30 0.97, AR 21/AR 31 0.97, AR 22/AR 33 0.97, AR 24/AR 35 0.91, AR 25/AR 36 0.97
+  32016R1036 32017R0852: AR 23a/AR 21 0.90
+  32016R1036 32019R1021: AR 24/AR 21 0.91, AR 25/AR 22 0.97
+  32016R1036 32023R2675: AR 25/AR 20 0.97
+  32016R1036 32024R1781: AR 25/AR 80 0.97
+  32016R1037 32017R2402: AR 32b/AR 47 0.93
+  32016R1037 32019R1021: AR 35/AR 21 0.91, AR 36/AR 22 0.97
+  32016R1037 32019R2033: AR 32b/AR 56 0.94
+  32016R1037 32023R0988: AR 32b/AR 45 0.92
+  32016R1037 32023R2675: AR 36/AR 20 0.97
+  32016R1037 32024R1781: AR 36/AR 80 0.97
+  32016R2031 32021R0821: AR 106/AR 19 0.97
+  32017R0625 32017R0745: AR 143/AR 110 0.98
+  32017R0625 32017R0746: AR 143/AR 103 0.98
+  32017R0745 32017R0746: AR 5/AR 5 0.91, AR 6/AR 6 0.99, AR 7/AR 7 0.99, AR 8/AR 8 0.92, AR 10/AR 10 0.93, AR 10a/AR 10a 0.98, AR 11/AR 11 0.98, AR 12/AR 12 1.00, AR 13/AR 13 0.99, AR 14/AR 14 0.99, AR 15/AR 15 0.91, AR 16/AR 16 0.99, AR 19/AR 17 0.97, AR 20/AR 18 0.97, AR 23/AR 20 0.99, AR 24/AR 21 0.98, AR 25/AR 22 0.98, AR 26/AR 23 0.92, AR 27/AR 24 0.94, AR 30/AR 27 0.97, AR 31/AR 28 0.97, AR 35/AR 31 0.98, AR 36/AR 32 0.99, AR 37/AR 33 0.99, AR 38/AR 34 0.99, AR 39/AR 35 0.98, AR 40/AR 36 0.94, AR 41/AR 37 0.94, AR 42/AR 38 0.98, AR 43/AR 39 0.95, AR 44/AR 40 0.99, AR 45/AR 41 0.95, AR 46/AR 42 0.98, AR 47/AR 43 0.98, AR 48/AR 44 0.97, AR 50/AR 46 0.97, AR 51/AR 47 0.98, AR 53/AR 49 0.99, AR 56/AR 51 0.98, AR 58/AR 53 0.99, AR 60/AR 55 0.97, AR 63/AR 59 0.95, AR 67/AR 63 0.93, AR 68/AR 64 0.93, AR 69/AR 65 0.95, AR 72/AR 68 0.93, AR 73/AR 69 0.93, AR 78/AR 74 0.93, AR 83/AR 78 0.98, AR 87/AR 82 0.97, AR 89/AR 84 0.90, AR 90/AR 85 0.98, AR 91/AR 86 0.95, AR 92/AR 87 0.97, AR 93/AR 88 0.99, AR 94/AR 89 0.98, AR 95/AR 90 0.99, AR 96/AR 91 0.98, AR 97/AR 92 0.97, AR 98/AR 93 0.98, AR 99/AR 94 0.98, AR 100/AR 95 0.96, AR 101/AR 96 0.99, AR 102/AR 97 0.96, AR 105/AR 99 0.93, AR 109/AR 102 0.98, AR 110/AR 103 0.98, AR 111/AR 104 0.99, AR 112/AR 105 0.97, AR 113/AR 106 0.95, AR 114/AR 107 0.93, AR 115/AR 108 0.94, AR 116/AR 109 0.97, AN III/AN III 0.95, AN IV/AN IV 0.99, AN V/AN V 0.99, AN VII/AN VII 0.95, AN XII/AN XII 0.94
+  32017R0745 32017R0852: AR 115/AR 21 0.92
+  32017R0745 32019R1009: AR 115/AR 44 0.92
+  32017R0745 32019R1021: AR 115/AR 18 0.90
+  32017R0745 32019R1238: AR 115/AR 72 0.91
+  32017R0745 32021R0821: AR 115/AR 18 0.91
+  32017R0745 32022R2560: AR 116/AR 51 0.97
+  32017R0745 32023R1115: AR 115/AR 35 0.91
+  32017R0745 32023R2675: AR 115/AR 17 0.91
+  32017R0746 32017R0821: AR 108/AR 19 0.92
+  32017R0746 32017R0852: AR 108/AR 21 0.94
+  32017R0746 32019R1009: AR 108/AR 44 0.95
+  32017R0746 32019R1021: AR 108/AR 18 0.93
+  32017R0746 32019R1238: AR 108/AR 72 0.94
+  32017R0746 32021R0821: AR 108/AR 18 0.94
+  32017R0746 32022R1925: AR 108/AR 49 0.91
+  32017R0746 32022R2560: AR 109/AR 51 0.97
+  32017R0746 32023R1114: AR 108/AR 139 0.92
+  32017R0746 32023R1115: AR 108/AR 35 0.93
+  32017R0746 32023R2675: AR 108/AR 17 0.93
+  32017R0821 32017R0852: AR 19/AR 21 0.96
+  32017R0821 32019R1009: AR 19/AR 44 0.94
+  32017R0821 32019R1021: AR 19/AR 18 0.94
+  32017R0821 32019R1238: AR 19/AR 72 0.92
+  32017R0821 32021R0821: AR 19/AR 18 0.94
+  32017R0821 32022R1925: AR 19/AR 49 0.93
+  32017R0821 32022R2560: AR 19/AR 50 0.90
+  32017R0821 32023R1114: AR 19/AR 139 0.90
+  32017R0821 32023R1115: AR 19/AR 35 0.94
+  32017R0821 32023R2675: AR 19/AR 17 0.93
+  32017R0821 32024R1781: AR 19/AR 72 0.90
+  32017R0821 32024R2847: AR 15/AR 62 0.93
+  32017R0852 32019R1009: AR 21/AR 44 0.96
+  32017R0852 32019R1021: AR 21/AR 18 0.96
+  32017R0852 32019R1238: AR 21/AR 72 0.94
+  32017R0852 32021R0821: AR 21/AR 18 0.96
+  32017R0852 32022R1925: AR 21/AR 49 0.94
+  32017R0852 32022R2560: AR 21/AR 50 0.91
+  32017R0852 32023R1114: AR 21/AR 139 0.92
+  32017R0852 32023R1115: AR 21/AR 35 0.96
+  32017R0852 32023R1230: AR 21/AR 47 0.91
+  32017R0852 32023R2675: AR 21/AR 17 0.95
+  32017R0852 32024R1157: AR 21/AR 80 0.91
+  32017R0852 32024R1781: AR 21/AR 72 0.92
+  32017R1131 32017R2402: AR 45/AR 47 0.91
+  32017R1131 32023R0988: AR 45/AR 45 0.92
+  32017R2402 32019R2033: AR 47/AR 56 0.95
+  32017R2402 32023R0988: AR 47/AR 45 0.95
+  32017R2402 32023R2631: AR 47/AR 68 0.92
+  32019R0881 32022R2560: AR 66/AR 48 0.92
+  32019R0881 32024R1689: AR 66/AR 98 0.92
+  32019R1009 32019R1021: AR 44/AR 18 0.95
+  32019R1009 32019R1238: AR 44/AR 72 0.95
+  32019R1009 32021R0821: AR 44/AR 18 0.97
+  32019R1009 32022R1925: AR 44/AR 49 0.93
+  32019R1009 32022R2560: AR 44/AR 50 0.91
+  32019R1009 32023R0988: AR 45/AR 46 0.95
+  32019R1009 32023R1114: AR 44/AR 139 0.93
+  32019R1009 32023R1115: AR 44/AR 35 0.96
+  32019R1009 32023R1230: AR 17/AR 23 0.95, AR 22/AR 28 0.97, AR 23/AR 29 0.95, AR 25/AR 31 0.93, AR 29/AR 35 0.96, AR 30/AR 36 0.93, AR 31/AR 37 0.98, AR 35/AR 41 0.96, AR 44/AR 47 0.90
+  32019R1009 32023R1542: AR 17/AR 19 0.95, AR 23/AR 24 0.97, AR 30/AR 31 0.93, AR 31/AR 32 0.91, AR 48/AR 93 0.95
+  32019R1009 32023R2675: AR 44/AR 17 0.96
+  32019R1009 32024R1157: AR 44/AR 80 0.91
+  32019R1009 32024R1781: AR 17/AR 45 0.95, AR 21/AR 49 0.95, AR 23/AR 51 0.98, AR 26/AR 54 0.93, AR 29/AR 57 0.98, AR 30/AR 58 0.95, AR 44/AR 72 0.91
+  32019R1009 32024R2847: AR 17/AR 29 0.95, AR 22/AR 37 0.98, AR 25/AR 40 0.97, AR 26/AR 41 0.95, AR 29/AR 44 0.96, AR 30/AR 45 0.99, AR 33/AR 48 0.96, AR 34/AR 49 0.93
+  32019R1021 32019R1238: AR 18/AR 72 0.93
+  32019R1021 32021R0821: AR 18/AR 18 0.96
+  32019R1021 32022R1925: AR 18/AR 49 0.93
+  32019R1021 32022R2560: AR 18/AR 50 0.90
+  32019R1021 32023R0956: AR 18/AR 28 0.92
+  32019R1021 32023R1114: AR 18/AR 139 0.91
+  32019R1021 32023R1115: AR 18/AR 35 0.95
+  32019R1021 32023R1230: AR 18/AR 47 0.91
+  32019R1021 32023R2675: AR 18/AR 17 0.95, AR 22/AR 20 0.97
+  32019R1021 32024R1157: AR 18/AR 80 0.91
+  32019R1021 32024R1781: AR 18/AR 72 0.92, AR 22/AR 80 0.97
+  32019R1238 32021R0821: AR 72/AR 18 0.94
+  32019R1238 32022R1925: AR 72/AR 49 0.92
+  32019R1238 32023R1114: AR 72/AR 139 0.93
+  32019R1238 32023R1115: AR 72/AR 35 0.93
+  32019R1238 32023R2675: AR 72/AR 17 0.94
+  32019R2033 32023R0988: AR 56/AR 45 0.94
+  32021R0821 32022R1925: AR 18/AR 49 0.93
+  32021R0821 32022R2560: AR 18/AR 50 0.91
+  32021R0821 32023R0956: AR 18/AR 28 0.90
+  32021R0821 32023R1114: AR 18/AR 139 0.92
+  32021R0821 32023R1115: AR 18/AR 35 0.96
+  32021R0821 32023R1230: AR 18/AR 47 0.90
+  32021R0821 32023R2675: AR 18/AR 17 0.96
+  32021R0821 32024R1157: AR 18/AR 80 0.91
+  32021R0821 32024R1781: AR 18/AR 72 0.91
+  32022R1925 32022R2560: AR 45/AR 45 0.93
+  32022R1925 32023R1115: AR 49/AR 35 0.92
+  32022R1925 32023R2675: AR 49/AR 17 0.94
+  32022R2560 32023R1115: AR 50/AR 35 0.90
+  32022R2560 32023R1230: AR 50/AR 47 0.92
+  32022R2560 32023R2675: AR 50/AR 17 0.90
+  32022R2560 32024R1689: AR 48/AR 98 0.95
+  32023R0956 32024R1689: AR 29/AR 98 0.92
+  32023R0988 32023R2631: AR 45/AR 68 0.93
+  32023R1114 32023R1115: AR 139/AR 35 0.92
+  32023R1114 32023R2675: AR 139/AR 17 0.92
+  32023R1114 32024R1689: AR 116/AR 87 0.97
+  32023R1115 32023R2675: AR 35/AR 17 0.96
+  32023R1115 32024R1157: AR 35/AR 80 0.91
+  32023R1115 32024R1781: AR 35/AR 72 0.91
+  32023R1230 32023R1542: AR 23/AR 19 0.96, AR 29/AR 24 0.94, AR 36/AR 31 0.93, AR 37/AR 32 0.91
+  32023R1230 32024R1781: AR 23/AR 45 0.96, AR 29/AR 51 0.95, AR 31/AR 53 0.95
+  32023R1230 32024R2847: AR 23/AR 29 0.96, AR 28/AR 37 0.96, AR 31/AR 40 0.93, AR 36/AR 45 0.93
+  32023R1542 32024R1781: AR 19/AR 45 0.96, AR 24/AR 51 0.97
+  32023R1542 32024R2847: AR 19/AR 29 0.96, AR 31/AR 45 0.93
+  32023R2675 32024R1157: AR 17/AR 80 0.91
+  32023R2675 32024R1781: AR 17/AR 72 0.91, AR 20/AR 80 0.97
+  32024R0573 32024R1689: AR 34/AR 98 0.91
+  32024R1781 32024R2847: AR 45/AR 29 0.96, AR 54/AR 41 0.92, AR 57/AR 44 0.97, AR 58/AR 45 0.95

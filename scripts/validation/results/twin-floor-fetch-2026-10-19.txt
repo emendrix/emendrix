@@ -1,0 +1,245 @@
+command   uv run python scripts/validation/twin_provisions.py floor --fetch --record <changelogs clone>
+run on    2026-10-19
+cache     ~/Library/Caches/emendrix/cellar, 1595 entries
+record    a fresh clone of https://github.com/emendrix/changelogs at 1db1143 2026-10-17
+offline   no: notices older than 6 h refetched; an uncached package read is fetched
+
+cross-check on the newest version date both acts have:
+== 32017R0745 02017R0745-20250110 against 32017R0746 02017R0746-20250110
+    f pairs >= f  headings equal  agreement
+ 0.30        122              98      0.803
+ 0.35        120              98      0.817
+ 0.40        117              96      0.821
+ 0.45        116              95      0.819
+ 0.50        115              94      0.817
+ 0.55        114              93      0.816
+ 0.60        113              93      0.823
+ 0.65        108              89      0.824
+ 0.70        104              87      0.837
+ 0.75        102              85      0.833
+ 0.80         99              84      0.848
+ 0.85         91              79      0.868
+ 0.90         85              75      0.882
+
+no candidate floor from 0.50 reaches 0.95; the rule gives 0.90
+== 32017R0745 02017R0745-20260719 against 32017R0746 02017R0746-20250110
+    f pairs >= f  headings equal  agreement
+ 0.30        122              98      0.803
+ 0.35        120              98      0.817
+ 0.40        117              96      0.821
+ 0.45        115              94      0.817
+ 0.50        115              94      0.817
+ 0.55        114              93      0.816
+ 0.60        113              93      0.823
+ 0.65        108              89      0.824
+ 0.70        104              87      0.837
+ 0.75        102              85      0.833
+ 0.80         99              84      0.848
+ 0.85         91              79      0.868
+ 0.90         85              75      0.882
+
+no candidate floor from 0.50 reaches 0.95; the rule gives 0.90
+FLOOR: 0.90 (heading agreement 0.882 over 85 pairs, measured 2026-10-19)
+  over 32017R0745 02017R0745-20260719 and 32017R0746 02017R0746-20250110
+
+children aligned below the 85 pairs at the floor: 1019
+  AR 4       AR 3          6 of 8
+  AR 5       AR 5          8 of 25
+  AR 6       AR 6          8 of 8
+  AR 7       AR 7          5 of 5
+  AR 8       AR 8          3 of 6
+  AR 10      AR 10        38 of 55
+  AR 10a     AR 10a        7 of 7
+  AR 11      AR 11        20 of 23
+  AR 12      AR 12         5 of 5
+  AR 13      AR 13        25 of 25
+  AR 14      AR 14        19 of 19
+  AR 15      AR 15        10 of 22
+  AR 16      AR 16        15 of 15
+  AR 19      AR 17         8 of 8
+  AR 20      AR 18        10 of 12
+  AR 23      AR 20         4 of 4
+  AR 24      AR 21         1 of 1
+  AR 25      AR 22         7 of 7
+  AR 26      AR 23         1 of 1
+  AR 27      AR 24        46 of 53
+  AR 30      AR 27         6 of 7
+  AR 31      AR 28        16 of 16
+  AR 32      AR 29        12 of 16
+  AR 35      AR 31        17 of 17
+  AR 36      AR 32         8 of 8
+  AR 37      AR 33        10 of 10
+  AR 38      AR 34         7 of 7
+  AR 39      AR 35        28 of 28
+  AR 40      AR 36         4 of 4
+  AR 41      AR 37         3 of 3
+  AR 42      AR 38        26 of 26
+  AR 43      AR 39         4 of 4
+  AR 44      AR 40        29 of 29
+  AR 45      AR 41        10 of 12
+  AR 46      AR 42        32 of 32
+  AR 47      AR 43        11 of 11
+  AR 48      AR 44        17 of 17
+  AR 50      AR 46         1 of 1
+  AR 51      AR 47        13 of 15
+  AR 53      AR 49        10 of 10
+  AR 56      AR 51        12 of 12
+  AR 58      AR 53         9 of 9
+  AR 60      AR 55         4 of 4
+  AR 63      AR 59        17 of 23
+  AR 67      AR 63         1 of 1
+  AR 68      AR 64        15 of 15
+  AR 69      AR 65         4 of 4
+  AR 72      AR 68         9 of 14
+  AR 73      AR 69        10 of 18
+  AR 75      AR 71         7 of 10
+  AR 76      AR 72         6 of 11
+  AR 78      AR 74        30 of 40
+  AR 80      AR 76        17 of 23
+  AR 81      AR 77         7 of 9
+  AR 83      AR 78        15 of 17
+  AR 85      AR 80         1 of 1
+  AR 87      AR 82        28 of 28
+  AR 89      AR 84        29 of 32
+  AR 90      AR 85         2 of 2
+  AR 91      AR 86         7 of 8
+  AR 92      AR 87        27 of 29
+  AR 93      AR 88        25 of 25
+  AR 94      AR 89         4 of 4
+  AR 95      AR 90        15 of 17
+  AR 96      AR 91         7 of 7
+  AR 97      AR 92         6 of 6
+  AR 98      AR 93         8 of 8
+  AR 99      AR 94         9 of 9
+  AR 100     AR 95        11 of 12
+  AR 101     AR 96         1 of 1
+  AR 102     AR 97         4 of 4
+  AR 105     AR 99         8 of 9
+  AR 109     AR 102       10 of 11
+  AR 110     AR 103        4 of 4
+  AR 111     AR 104        4 of 4
+  AR 112     AR 105        1 of 1
+  AR 113     AR 106        1 of 1
+  AR 114     AR 107        7 of 9
+  AR 115     AR 108       12 of 12
+  AR 116     AR 109        1 of 1
+  AN III     AN III        2 of 4
+  AN IV      AN IV        10 of 10
+  AN V       AN V          3 of 3
+  AN VII     AN VII       86 of 109
+  AN XII     AN XII       13 of 17
+
+32017R0745: changed coordinates of the record against the aligned children
+  changes whose unit has no twin at the floor        29
+  changes whose unit has a twin                      9
+    unit-level, no coordinate below the unit         1
+    coordinate maps to an aligned child              12
+    coordinate maps to the unit only                 3
+
+32017R0746: changed coordinates of the record against the aligned children
+  changes whose unit has no twin at the floor        16
+  changes whose unit has a twin                      8
+    unit-level, no coordinate below the unit         1
+    coordinate maps to an aligned child              10
+    coordinate maps to the unit only                 0
+
+pages at the floor 0.90 (passages: 6 context words, 
+  400-char cut, at most 12 shown, withheld above 
+  30% of either side's comparison text over every passage)
+  pairs at the floor               85
+  identical, no page               1
+  pages                            84
+    withheld (differ too widely)   42
+    with passages shown            42
+    with more than 12 passages     22
+  withheld under two other readings of the share, for comparison:
+    the 12 shown passages only        32
+    the differing words alone, no context  0
+  largest shown excerpt            1951 chars (AR 42 / AR 38)
+
+  AR 4       AR 3       0.921  passages   12  share 0.624 / 0.630  bare 0.080 / 0.066  withheld
+  AR 5       AR 5       0.907  passages   17  share 0.406 / 0.470  bare 0.033 / 0.139  withheld
+  AR 6       AR 6       0.991  passages    2  share 0.120 / 0.122  bare 0.013 / 0.015  excerpt    310 chars
+  AR 7       AR 7       0.989  passages    1  share 0.103 / 0.102  bare 0.015 / 0.013  excerpt    169 chars
+  AR 8       AR 8       0.923  passages    5  share 0.487 / 0.424  bare 0.138 / 0.035  withheld
+  AR 10      AR 10      0.931  passages   40  share 0.393 / 0.390  bare 0.059 / 0.055  withheld
+  AR 10a     AR 10a     0.981  passages    2  share 0.123 / 0.104  bare 0.028 / 0.007  excerpt    377 chars
+  AR 11      AR 11      0.982  passages    9  share 0.180 / 0.178  bare 0.014 / 0.012  excerpt   1378 chars
+  AR 12      AR 12      1.000  identical, no page
+  AR 13      AR 13      0.988  passages    8  share 0.154 / 0.154  bare 0.006 / 0.006  excerpt   1297 chars
+  AR 14      AR 14      0.994  passages    4  share 0.088 / 0.087  bare 0.008 / 0.007  excerpt    693 chars
+  AR 15      AR 15      0.909  passages   14  share 0.388 / 0.374  bare 0.098 / 0.085  withheld
+  AR 16      AR 16      0.994  passages    5  share 0.083 / 0.084  bare 0.003 / 0.005  excerpt    732 chars
+  AR 19      AR 17      0.968  passages    3  share 0.184 / 0.160  bare 0.040 / 0.011  excerpt    488 chars
+  AR 20      AR 18      0.974  passages    3  share 0.174 / 0.170  bare 0.032 / 0.027  excerpt    479 chars
+  AR 23      AR 20      0.993  passages    1  share 0.054 / 0.054  bare 0.002 / 0.002  excerpt     92 chars
+  AR 24      AR 21      0.977  passages    1  share 0.199 / 0.199  bare 0.007 / 0.007  excerpt    112 chars
+  AR 25      AR 22      0.977  passages    2  share 0.215 / 0.215  bare 0.014 / 0.014  excerpt    252 chars
+  AR 26      AR 23      0.924  passages    3  share 0.388 / 0.429  bare 0.030 / 0.075  withheld
+  AR 27      AR 24      0.939  passages   24  share 0.369 / 0.339  bare 0.084 / 0.042  withheld
+  AR 30      AR 27      0.969  passages    3  share 0.210 / 0.187  bare 0.039 / 0.011  excerpt    470 chars
+  AR 31      AR 28      0.968  passages    9  share 0.309 / 0.299  bare 0.027 / 0.012  withheld
+  AR 32      AR 29      0.917  passages   18  share 0.720 / 0.680  bare 0.115 / 0.076  withheld
+  AR 35      AR 31      0.981  passages    6  share 0.191 / 0.204  bare 0.004 / 0.020  excerpt    939 chars
+  AR 36      AR 32      0.987  passages    3  share 0.120 / 0.120  bare 0.007 / 0.008  excerpt    391 chars
+  AR 37      AR 33      0.994  passages    1  share 0.049 / 0.049  bare 0.002 / 0.002  excerpt    106 chars
+  AR 38      AR 34      0.990  passages    2  share 0.114 / 0.114  bare 0.004 / 0.004  excerpt    296 chars
+  AR 39      AR 35      0.984  passages   15  share 0.205 / 0.208  bare 0.010 / 0.013  excerpt   1920 chars
+  AR 40      AR 36      0.944  passages    5  share 0.497 / 0.512  bare 0.016 / 0.045  withheld
+  AR 41      AR 37      0.942  passages    6  share 0.604 / 0.604  bare 0.026 / 0.026  withheld
+  AR 42      AR 38      0.981  passages   13  share 0.233 / 0.232  bare 0.013 / 0.012  excerpt   1951 chars
+  AR 43      AR 39      0.949  passages    5  share 0.431 / 0.420  bare 0.063 / 0.045  withheld
+  AR 44      AR 40      0.988  passages   12  share 0.142 / 0.144  bare 0.010 / 0.012  excerpt   1913 chars
+  AR 45      AR 41      0.953  passages   13  share 0.442 / 0.435  bare 0.051 / 0.035  withheld
+  AR 46      AR 42      0.983  passages   17  share 0.195 / 0.207  bare 0.006 / 0.019  excerpt   1912 chars
+  AR 47      AR 43      0.976  passages    9  share 0.278 / 0.280  bare 0.013 / 0.016  excerpt   1444 chars
+  AR 48      AR 44      0.971  passages    9  share 0.324 / 0.329  bare 0.022 / 0.027  withheld
+  AR 50      AR 46      0.968  passages    1  share 0.239 / 0.239  bare 0.010 / 0.010  excerpt     96 chars
+  AR 51      AR 47      0.981  passages    6  share 0.155 / 0.152  bare 0.012 / 0.011  excerpt    798 chars
+  AR 53      AR 49      0.992  passages    2  share 0.077 / 0.077  bare 0.003 / 0.003  excerpt    270 chars
+  AR 56      AR 51      0.981  passages    6  share 0.227 / 0.231  bare 0.007 / 0.012  excerpt    936 chars
+  AR 58      AR 53      0.995  passages    1  share 0.038 / 0.038  bare 0.002 / 0.002  excerpt     94 chars
+  AR 60      AR 55      0.972  passages    5  share 0.266 / 0.266  bare 0.021 / 0.021  excerpt    648 chars
+  AR 63      AR 59      0.949  passages   20  share 0.449 / 0.436  bare 0.074 / 0.062  withheld
+  AR 67      AR 63      0.925  passages    2  share 0.545 / 0.538  bare 0.086 / 0.074  withheld
+  AR 68      AR 64      0.933  passages   22  share 0.513 / 0.500  bare 0.103 / 0.087  withheld
+  AR 69      AR 65      0.948  passages    3  share 0.374 / 0.363  bare 0.078 / 0.062  withheld
+  AR 72      AR 68      0.926  passages   12  share 0.524 / 0.506  bare 0.115 / 0.093  withheld
+  AR 73      AR 69      0.928  passages   20  share 0.629 / 0.608  bare 0.096 / 0.074  withheld
+  AR 75      AR 71      0.915  passages   18  share 0.821 / 0.815  bare 0.118 / 0.089  withheld
+  AR 76      AR 72      0.928  passages   11  share 0.599 / 0.591  bare 0.103 / 0.099  withheld
+  AR 78      AR 74      0.935  passages   53  share 0.499 / 0.501  bare 0.066 / 0.074  withheld
+  AR 80      AR 76      0.923  passages   30  share 0.679 / 0.667  bare 0.113 / 0.091  withheld
+  AR 81      AR 77      0.920  passages   14  share 0.817 / 0.810  bare 0.072 / 0.063  withheld
+  AR 83      AR 78      0.975  passages    8  share 0.310 / 0.305  bare 0.020 / 0.017  withheld
+  AR 85      AR 80      0.920  passages    4  share 0.657 / 0.676  bare 0.010 / 0.061  withheld
+  AR 87      AR 82      0.965  passages   25  share 0.370 / 0.370  bare 0.028 / 0.034  withheld
+  AR 89      AR 84      0.903  passages   23  share 0.311 / 0.296  bare 0.128 / 0.046  withheld
+  AR 90      AR 85      0.981  passages    2  share 0.189 / 0.189  bare 0.007 / 0.007  excerpt    268 chars
+  AR 91      AR 86      0.951  passages    9  share 0.386 / 0.389  bare 0.023 / 0.023  withheld
+  AR 92      AR 87      0.968  passages   19  share 0.413 / 0.414  bare 0.023 / 0.022  withheld
+  AR 93      AR 88      0.992  passages    5  share 0.097 / 0.096  bare 0.004 / 0.003  excerpt    758 chars
+  AR 94      AR 89      0.984  passages    2  share 0.156 / 0.155  bare 0.011 / 0.010  excerpt    251 chars
+  AR 95      AR 90      0.987  passages    8  share 0.162 / 0.161  bare 0.008 / 0.006  excerpt   1241 chars
+  AR 96      AR 91      0.980  passages    6  share 0.234 / 0.234  bare 0.017 / 0.017  excerpt    910 chars
+  AR 97      AR 92      0.966  passages    8  share 0.405 / 0.401  bare 0.028 / 0.024  withheld
+  AR 98      AR 93      0.979  passages    7  share 0.250 / 0.250  bare 0.020 / 0.020  excerpt   1060 chars
+  AR 99      AR 94      0.980  passages    6  share 0.222 / 0.222  bare 0.007 / 0.007  excerpt    819 chars
+  AR 100     AR 95      0.957  passages    9  share 0.504 / 0.498  bare 0.030 / 0.037  withheld
+  AR 101     AR 96      0.986  passages    1  share 0.115 / 0.113  bare 0.006 / 0.004  excerpt    113 chars
+  AR 102     AR 97      0.959  passages    3  share 0.461 / 0.454  bare 0.039 / 0.034  withheld
+  AR 105     AR 99      0.932  passages    9  share 0.446 / 0.383  bare 0.115 / 0.030  withheld
+  AR 109     AR 102     0.981  passages    4  share 0.225 / 0.223  bare 0.013 / 0.012  excerpt    655 chars
+  AR 110     AR 103     0.980  passages    1  share 0.162 / 0.162  bare 0.010 / 0.010  excerpt    100 chars
+  AR 111     AR 104     0.989  passages    1  share 0.090 / 0.090  bare 0.006 / 0.006  excerpt     92 chars
+  AR 112     AR 105     0.969  passages    2  share 0.243 / 0.243  bare 0.023 / 0.023  excerpt    216 chars
+  AR 113     AR 106     0.946  passages    4  share 0.598 / 0.588  bare 0.033 / 0.029  withheld
+  AR 114     AR 107     0.927  passages    5  share 0.499 / 0.537  bare 0.041 / 0.109  withheld
+  AR 115     AR 108     0.937  passages   10  share 0.408 / 0.366  bare 0.096 / 0.037  withheld
+  AR 116     AR 109     0.966  passages    1  share 0.314 / 0.314  bare 0.016 / 0.016  withheld
+  AN III     AN III     0.950  passages   19  share 0.579 / 0.582  bare 0.043 / 0.043  withheld
+  AN IV      AN IV      0.992  passages    3  share 0.127 / 0.125  bare 0.005 / 0.001  excerpt    461 chars
+  AN V       AN V       0.986  passages    1  share 0.173 / 0.171  bare 0.021 / 0.019  excerpt    145 chars
+  AN VII     AN VII     0.954  passages  250  share 0.396 / 0.392  bare 0.057 / 0.035  withheld
+  AN XII     AN XII     0.938  passages   17  share 0.449 / 0.434  bare 0.080 / 0.053  withheld
+

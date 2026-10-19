@@ -1,0 +1,336 @@
+command   uv run python scripts/validation/twin_provisions.py pairs
+run on    2026-10-19
+cache     ~/Library/Caches/emendrix/cellar, 1594 entries
+record    none read
+offline   yes: network refused, EMENDRIX_NOTICE_MAX_AGE_S=31536000
+
+== 32017R0745 02017R0745-20260101 against 32017R0746 02017R0746-20250110
+units                 141 against 129
+same-kind pairs       14391
+  skipped by real_quick_ratio < 0.30  3038
+  skipped by quick_ratio < 0.30       6478
+  ratio() computed                   4875
+  at or above 0.30                   134
+mutual-best pairs     122 (108 article, the rest annex)
+word-ratio seconds    9.3 (all pairs, this machine, one process)
+character form (2000-char prefix) chooses a different best match: for 3 of 122 A units, 3 of 122 B units (189.3s)
+
+mutual-best pairs, A order: A, B, word ratio, char ratio, headings_equal, headings
+  AR 1       AR 1       word 0.397  char 0.284  headings_equal True   Subject matter and scope | Subject matter and scope  char-best differs: A->AR 48 B->AR 98
+  AR 2       AR 2       word 0.623  char 0.463  headings_equal True   Definitions | Definitions
+  AR 4       AR 3       word 0.921  char 0.944  headings_equal True   Regulatory status of products | Regulatory status of products
+  AR 5       AR 5       word 0.907  char 0.873  headings_equal True   Placing on the market and putting into service | Placing on the market and putting into service
+  AR 6       AR 6       word 0.991  char 0.999  headings_equal True   Distance sales | Distance sales
+  AR 7       AR 7       word 0.989  char 0.999  headings_equal True   Claims | Claims
+  AR 8       AR 8       word 0.923  char 0.922  headings_equal True   Use of harmonised standards | Use of harmonised standards
+  AR 9       AR 9       word 0.868  char 0.871  headings_equal True   Common specifications | Common specifications
+  AR 10      AR 10      word 0.931  char 0.864  headings_equal True   General obligations of manufacturers | General obligations of manufacturers
+  AR 10a     AR 10a     word 0.981  char 0.989  headings_equal True   Obligations in case of interruption or discontinuation of supply of certain devices | Obligations in case of interruption or discontinuation of supply of certain devices
+  AR 11      AR 11      word 0.982  char 0.994  headings_equal True   Authorised representative | Authorised representative
+  AR 12      AR 12      word 1.000  char 1.000  headings_equal True   Change of authorised representative | Change of authorised representative
+  AR 13      AR 13      word 0.988  char 0.998  headings_equal True   General obligations of importers | General obligations of importers
+  AR 14      AR 14      word 0.994  char 0.997  headings_equal True   General obligations of distributors | General obligations of distributors
+  AR 15      AR 15      word 0.909  char 0.848  headings_equal True   Person responsible for regulatory compliance | Person responsible for regulatory compliance
+  AR 16      AR 16      word 0.994  char 0.997  headings_equal True   Cases in which obligations of manufacturers apply to importers, distributors or other persons | Cases in which obligations of manufacturers apply to importers, distributors or other persons
+  AR 19      AR 17      word 0.968  char 0.983  headings_equal True   EU declaration of conformity | EU declaration of conformity
+  AR 20      AR 18      word 0.974  char 0.977  headings_equal True   CE marking of conformity | CE marking of conformity
+  AR 21      AR 19      word 0.637  char 0.695  headings_equal True   Devices for special purposes | Devices for special purposes
+  AR 23      AR 20      word 0.993  char 0.999  headings_equal True   Parts and components | Parts and components
+  AR 24      AR 21      word 0.977  char 0.996  headings_equal True   Free movement | Free movement
+  AR 25      AR 22      word 0.977  char 0.997  headings_equal True   Identification within the supply chain | Identification within the supply chain
+  AR 26      AR 23      word 0.924  char 0.971  headings_equal True   Medical devices nomenclature | Medical devices nomenclature
+  AR 27      AR 24      word 0.939  char 0.974  headings_equal True   Unique Device Identification system | Unique Device Identification system
+  AR 29      AR 26      word 0.806  char 0.811  headings_equal True   Registration of devices | Registration of devices
+  AR 30      AR 27      word 0.969  char 0.982  headings_equal True   Electronic system for registration of economic operators | Electronic system for registration of economic operators
+  AR 31      AR 28      word 0.968  char 0.978  headings_equal True   Registration of manufacturers, authorised representatives and importers | Registration of manufacturers, authorised representatives and importers
+  AR 32      AR 29      word 0.917  char 0.905  headings_equal False  Summary of safety and clinical performance | Summary of safety and performance
+  AR 35      AR 31      word 0.981  char 0.978  headings_equal True   Authorities responsible for notified bodies | Authorities responsible for notified bodies
+  AR 36      AR 32      word 0.987  char 0.998  headings_equal True   Requirements relating to notified bodies | Requirements relating to notified bodies
+  AR 37      AR 33      word 0.994  char 0.999  headings_equal True   Subsidiaries and subcontracting | Subsidiaries and subcontracting
+  AR 38      AR 34      word 0.990  char 0.998  headings_equal True   Application by conformity assessment bodies for designation | Application by conformity assessment bodies for designation
+  AR 39      AR 35      word 0.984  char 0.988  headings_equal True   Assessment of the application | Assessment of the application
+  AR 40      AR 36      word 0.944  char 0.976  headings_equal True   Nomination of experts for joint assessment of applications for notification | Nomination of experts for joint assessment of applications for notification
+  AR 41      AR 37      word 0.942  char 0.989  headings_equal True   Language requirements | Language requirements
+  AR 42      AR 38      word 0.981  char 0.997  headings_equal True   Designation and notification procedure | Designation and notification procedure
+  AR 43      AR 39      word 0.949  char 0.982  headings_equal True   Identification number and list of notified bodies | Identification number and list of notified bodies
+  AR 44      AR 40      word 0.988  char 1.000  headings_equal True   Monitoring and re-assessment of notified bodies | Monitoring and re-assessment of notified bodies
+  AR 45      AR 41      word 0.953  char 0.956  headings_equal False  Review of notified body assessment of technical documentation and clinical evaluation documentation | Review of notified body assessment of technical documentation and performance evaluation documentation
+  AR 46      AR 42      word 0.983  char 0.998  headings_equal True   Changes to designations and notifications | Changes to designations and notifications
+  AR 47      AR 43      word 0.976  char 0.992  headings_equal True   Challenge to the competence of notified bodies | Challenge to the competence of notified bodies
+  AR 48      AR 44      word 0.971  char 0.992  headings_equal True   Peer review and exchange of experience between authorities responsible for notified bodies | Peer review and exchange of experience between authorities responsible for notified bodies
+  AR 49      AR 45      word 0.639  char 0.692  headings_equal True   Coordination of notified bodies | Coordination of notified bodies
+  AR 50      AR 46      word 0.968  char 0.990  headings_equal True   List of standard fees | List of standard fees
+  AR 51      AR 47      word 0.981  char 0.994  headings_equal True   Classification of devices | Classification of devices
+  AR 52      AR 48      word 0.450  char 0.427  headings_equal True   Conformity assessment procedures | Conformity assessment procedures
+  AR 53      AR 49      word 0.992  char 0.998  headings_equal True   Involvement of notified bodies in conformity assessment procedures | Involvement of notified bodies in conformity assessment procedures
+  AR 55      AR 50      word 0.671  char 0.756  headings_equal False  Mechanism for scrutiny of conformity assessments of certain class III and class IIb devices | Mechanism for scrutiny of conformity assessments of class D devices
+  AR 56      AR 51      word 0.981  char 0.992  headings_equal True   Certificates of conformity | Certificates of conformity
+  AR 57      AR 52      word 0.674  char 0.739  headings_equal True   Electronic system on notified bodies and on certificates of conformity | Electronic system on notified bodies and on certificates of conformity
+  AR 58      AR 53      word 0.995  char 0.999  headings_equal True   Voluntary change of notified body | Voluntary change of notified body
+  AR 59      AR 54      word 0.820  char 0.807  headings_equal True   Derogation from the conformity assessment procedures | Derogation from the conformity assessment procedures
+  AR 60      AR 55      word 0.972  char 0.994  headings_equal True   Certificate of free sale | Certificate of free sale
+  AR 61      AR 56      word 0.331  char 0.584  headings_equal False  Clinical evaluation | Performance evaluation and clinical evidence
+  AR 62      AR 58      word 0.662  char 0.483  headings_equal False  General requirements regarding clinical investigations conducted to demonstrate conformity of devices | Additional requirements for certain performance studies
+  AR 63      AR 59      word 0.949  char 0.953  headings_equal True   Informed consent | Informed consent
+  AR 64      AR 60      word 0.773  char 0.847  headings_equal False  Clinical investigations on incapacitated subjects | Performance studies on incapacitated subjects
+  AR 65      AR 61      word 0.792  char 0.803  headings_equal False  Clinical investigations on minors | Performance studies on minors
+  AR 66      AR 62      word 0.624  char 0.638  headings_equal False  Clinical investigations on pregnant or breastfeeding women | Performance studies on pregnant or breastfeeding women
+  AR 67      AR 63      word 0.925  char 0.947  headings_equal True   Additional national measures | Additional national measures
+  AR 68      AR 64      word 0.933  char 0.894  headings_equal False  Clinical investigations in emergency situations | Performance studies in emergency situations
+  AR 69      AR 65      word 0.948  char 0.945  headings_equal True   Damage compensation | Damage compensation
+  AR 70      AR 66      word 0.815  char 0.911  headings_equal False  Application for clinical investigations | Application for performance studies
+  AR 71      AR 67      word 0.818  char 0.827  headings_equal True   Assessment by Member States | Assessment by Member States
+  AR 72      AR 68      word 0.926  char 0.920  headings_equal False  Conduct of a clinical investigation | Conduct of a performance study
+  AR 73      AR 69      word 0.928  char 0.914  headings_equal False  Electronic system on clinical investigations | Electronic system on performance studies
+  AR 74      AR 70      word 0.811  char 0.887  headings_equal False  Clinical investigations regarding devices bearing the CE marking | Performance studies regarding devices bearing the CE marking
+  AR 75      AR 71      word 0.915  char 0.927  headings_equal False  Substantial modifications to clinical investigations | Substantial modifications to performance studies
+  AR 76      AR 72      word 0.928  char 0.924  headings_equal False  Corrective measures to be taken by Member States and information exchange between Member States | Corrective measures to be taken by Member States and information exchange between Member States on performance studies
+  AR 77      AR 73      word 0.878  char 0.789  headings_equal False  Information from the sponsor at the end of a clinical investigation or in the event of a temporary halt or early termination | Information from the sponsor at the end of a performance study or in the event of a temporary halt or early termination
+  AR 78      AR 74      word 0.935  char 0.928  headings_equal False  Coordinated assessment procedure for clinical investigations | Coordinated assessment procedure for performance studies
+  AR 79      AR 75      word 0.863  char 0.967  headings_equal False  Review of coordinated assessment procedure | Review of the coordinated assessment procedure
+  AR 80      AR 76      word 0.923  char 0.905  headings_equal False  Recording and reporting of adverse events that occur during clinical investigations | Recording and reporting of adverse events that occur during performance studies
+  AR 81      AR 77      word 0.920  char 0.970  headings_equal True   Implementing acts | Implementing acts
+  AR 83      AR 78      word 0.975  char 0.990  headings_equal True   Post-market surveillance system of the manufacturer | Post-market surveillance system of the manufacturer
+  AR 84      AR 79      word 0.887  char 0.924  headings_equal True   Post-market surveillance plan | Post-market surveillance plan
+  AR 85      AR 80      word 0.920  char 0.964  headings_equal True   Post-market surveillance report | Post-market surveillance report
+  AR 86      AR 81      word 0.812  char 0.813  headings_equal True   Periodic safety update report | Periodic safety update report
+  AR 87      AR 82      word 0.965  char 0.971  headings_equal True   Reporting of serious incidents and field safety corrective actions | Reporting of serious incidents and field safety corrective actions
+  AR 88      AR 83      word 0.843  char 0.883  headings_equal True   Trend reporting | Trend reporting
+  AR 89      AR 84      word 0.903  char 0.994  headings_equal True   Analysis of serious incidents and field safety corrective actions | Analysis of serious incidents and field safety corrective actions
+  AR 90      AR 85      word 0.981  char 0.994  headings_equal True   Analysis of vigilance data | Analysis of vigilance data
+  AR 91      AR 86      word 0.951  char 0.990  headings_equal True   Implementing acts | Implementing acts
+  AR 92      AR 87      word 0.968  char 0.991  headings_equal False  Electronic system on vigilance and on post-market surveillance | Electronic system on vigilance and post-market surveillance
+  AR 93      AR 88      word 0.992  char 0.996  headings_equal True   Market surveillance activities | Market surveillance activities
+  AR 94      AR 89      word 0.984  char 0.998  headings_equal True   Evaluation of devices suspected of presenting an unacceptable risk or other non-compliance | Evaluation of devices suspected of presenting an unacceptable risk or other non-compliance
+  AR 95      AR 90      word 0.987  char 0.997  headings_equal True   Procedure for dealing with devices presenting an unacceptable risk to health and safety | Procedure for dealing with devices presenting an unacceptable risk to health and safety
+  AR 96      AR 91      word 0.980  char 0.996  headings_equal True   Procedure for evaluating national measures at Union level | Procedure for evaluating national measures at Union level
+  AR 97      AR 92      word 0.966  char 0.994  headings_equal True   Other non-compliance | Other non-compliance
+  AR 98      AR 93      word 0.979  char 0.997  headings_equal True   Preventive health protection measures | Preventive health protection measures
+  AR 99      AR 94      word 0.980  char 0.996  headings_equal True   Good administrative practice | Good administrative practice
+  AR 100     AR 95      word 0.957  char 0.987  headings_equal True   Electronic system on market surveillance | Electronic system on market surveillance
+  AR 101     AR 96      word 0.986  char 0.995  headings_equal True   Competent authorities | Competent authorities
+  AR 102     AR 97      word 0.959  char 0.993  headings_equal True   Cooperation | Cooperation
+  AR 105     AR 99      word 0.932  char 0.903  headings_equal True   Tasks of the MDCG | Tasks of the MDCG
+  AR 108     AR 101     word 0.876  char 0.909  headings_equal True   Device registers and databanks | Device registers and databanks
+  AR 109     AR 102     word 0.981  char 0.998  headings_equal True   Confidentiality | Confidentiality
+  AR 110     AR 103     word 0.980  char 0.997  headings_equal True   Data protection | Data protection
+  AR 111     AR 104     word 0.989  char 0.996  headings_equal True   Levying of fees | Levying of fees
+  AR 112     AR 105     word 0.969  char 0.991  headings_equal True   Funding of activities related to designation and monitoring of notified bodies | Funding of activities related to designation and monitoring of notified bodies
+  AR 113     AR 106     word 0.946  char 0.992  headings_equal True   Penalties | Penalties
+  AR 114     AR 107     word 0.927  char 0.957  headings_equal True   Committee procedure | Committee procedure
+  AR 115     AR 108     word 0.937  char 0.921  headings_equal True   Exercise of the delegation | Exercise of the delegation
+  AR 116     AR 109     word 0.966  char 0.989  headings_equal True   Separate delegated acts for different delegated powers | Separate delegated acts for different delegated powers
+  AR 120     AR 110     word 0.751  char 0.866  headings_equal True   Transitional provisions | Transitional provisions
+  AR 121     AR 111     word 0.885  char 0.915  headings_equal True   Evaluation | Evaluation
+  AR 122     AR 112     word 0.700  char 0.773  headings_equal True   Repeal | Repeal
+  AR 123     AR 113     word 0.704  char 0.739  headings_equal True   Entry into force and date of application | Entry into force and date of application
+  AN I       AN I       word 0.546  char 0.998  headings_equal True   GENERAL SAFETY AND PERFORMANCE REQUIREMENTS | GENERAL SAFETY AND PERFORMANCE REQUIREMENTS
+  AN II      AN II      word 0.435  char 0.627  headings_equal True   TECHNICAL DOCUMENTATION | TECHNICAL DOCUMENTATION
+  AN III     AN III     word 0.950  char 0.994  headings_equal True   TECHNICAL DOCUMENTATION ON POST-MARKET SURVEILLANCE | TECHNICAL DOCUMENTATION ON POST-MARKET SURVEILLANCE
+  AN IV      AN IV      word 0.992  char 0.996  headings_equal True   EU DECLARATION OF CONFORMITY | EU DECLARATION OF CONFORMITY
+  AN V       AN V       word 0.986  char 0.999  headings_equal True   CE MARKING OF CONFORMITY | CE MARKING OF CONFORMITY
+  AN VI      AN VI      word 0.839  char 0.915  headings_equal False  INFORMATION TO BE SUBMITTED UPON THE REGISTRATION OF DEVICES AND ECONOMIC OPERATORS IN ACCORDANCE WITH ARTICLES 29(4) AND 31, CORE DATA ELEMENTS TO BE PROVIDED TO THE UDI DATABASE TOGETHER WITH THE UDI-DI IN ACCORDANCE WITH ARTICLES 28 AND 29, AND THE UDI SYSTEM | INFORMATION TO BE SUBMITTED UPON THE REGISTRATION OF DEVICES AND ECONOMIC OPERATORS IN ACCORDANCE WITH ARTICLES 26(3) AND 28, CORE DATA ELEMENTS TO BE PROVIDED TO THE UDI DATABASE TOGETHER WITH THE UDI-DI IN ACCORDANCE WITH ARTICLES 25 AND 26 AND THE UDI SYSTEM
+  AN VII     AN VII     word 0.954  char 0.998  headings_equal True   REQUIREMENTS TO BE MET BY NOTIFIED BODIES | REQUIREMENTS TO BE MET BY NOTIFIED BODIES
+  AN IX      AN IX      word 0.612  char 0.996  headings_equal True   CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION | CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION
+  AN X       AN X       word 0.693  char 0.682  headings_equal True   CONFORMITY ASSESSMENT BASED ON TYPE-EXAMINATION | CONFORMITY ASSESSMENT BASED ON TYPE-EXAMINATION
+  AN XI      AN XI      word 0.397  char 0.559  headings_equal False  CONFORMITY ASSESSMENT BASED ON PRODUCT CONFORMITY VERIFICATION | CONFORMITY ASSESSMENT BASED ON PRODUCTION QUALITY ASSURANCE
+  AN XII     AN XII     word 0.938  char 0.914  headings_equal True   CERTIFICATES ISSUED BY A NOTIFIED BODY | CERTIFICATES ISSUED BY A NOTIFIED BODY
+  AN XIV     AN XIII    word 0.303  char 0.257  headings_equal False  CLINICAL EVALUATION AND POST-MARKET CLINICAL FOLLOW-UP | PERFORMANCE EVALUATION, PERFORMANCE STUDIES AND POST-MARKET PERFORMANCE FOLLOW-UP  char-best differs: A->AN VIII B->AN IV
+  AN XV      AN XIV     word 0.553  char 0.263  headings_equal False  CLINICAL INVESTIGATIONS | INTERVENTIONAL CLINICAL PERFORMANCE STUDIES AND CERTAIN OTHER PERFORMANCE STUDIES  char-best differs: A->AN III B->AN VI
+  AN XVII    AN XV      word 0.371  char 0.451  headings_equal True   CORRELATION TABLE | CORRELATION TABLE
+
+unpaired A units (19): unit, best candidate, ratio
+  AR 3       none at or above 0.30
+  AR 17      none at or above 0.30
+  AR 18      none at or above 0.30
+  AR 22      none at or above 0.30
+  AR 28      none at or above 0.30
+  AR 33      none at or above 0.30
+  AR 34      none at or above 0.30
+  AR 54      none at or above 0.30
+  AR 82      none at or above 0.30
+  AR 103     none at or above 0.30
+  AR 104     none at or above 0.30
+  AR 106     none at or above 0.30
+  AR 107     none at or above 0.30
+  AR 117     none at or above 0.30
+  AR 118     none at or above 0.30
+  AR 119     AR 105     0.310
+  AN VIII    none at or above 0.30
+  AN XIII    none at or above 0.30
+  AN XVI     none at or above 0.30
+
+unpaired B units (7): unit, best candidate, ratio
+  AR 4       none at or above 0.30
+  AR 25      none at or above 0.30
+  AR 30      AR 57      0.319
+  AR 57      none at or above 0.30
+  AR 98      none at or above 0.30
+  AR 100     none at or above 0.30
+  AN VIII    none at or above 0.30
+
+== 32017R0745 02017R0745-20250110 against 32017R0746 02017R0746-20250110
+units                 141 against 129
+same-kind pairs       14391
+  skipped by real_quick_ratio < 0.30  3038
+  skipped by quick_ratio < 0.30       6478
+  ratio() computed                   4875
+  at or above 0.30                   134
+mutual-best pairs     122 (108 article, the rest annex)
+word-ratio seconds    10.1 (all pairs, this machine, one process)
+character form (2000-char prefix) chooses a different best match: for 3 of 122 A units, 3 of 122 B units (201.2s)
+
+mutual-best pairs, A order: A, B, word ratio, char ratio, headings_equal, headings
+  AR 1       AR 1       word 0.397  char 0.284  headings_equal True   Subject matter and scope | Subject matter and scope  char-best differs: A->AR 48 B->AR 98
+  AR 2       AR 2       word 0.623  char 0.463  headings_equal True   Definitions | Definitions
+  AR 4       AR 3       word 0.921  char 0.944  headings_equal True   Regulatory status of products | Regulatory status of products
+  AR 5       AR 5       word 0.907  char 0.873  headings_equal True   Placing on the market and putting into service | Placing on the market and putting into service
+  AR 6       AR 6       word 0.991  char 0.999  headings_equal True   Distance sales | Distance sales
+  AR 7       AR 7       word 0.989  char 0.999  headings_equal True   Claims | Claims
+  AR 8       AR 8       word 0.923  char 0.922  headings_equal True   Use of harmonised standards | Use of harmonised standards
+  AR 9       AR 9       word 0.868  char 0.871  headings_equal True   Common specifications | Common specifications
+  AR 10      AR 10      word 0.931  char 0.864  headings_equal True   General obligations of manufacturers | General obligations of manufacturers
+  AR 10a     AR 10a     word 0.981  char 0.989  headings_equal True   Obligations in case of interruption or discontinuation of supply of certain devices | Obligations in case of interruption or discontinuation of supply of certain devices
+  AR 11      AR 11      word 0.982  char 0.994  headings_equal True   Authorised representative | Authorised representative
+  AR 12      AR 12      word 1.000  char 1.000  headings_equal True   Change of authorised representative | Change of authorised representative
+  AR 13      AR 13      word 0.988  char 0.998  headings_equal True   General obligations of importers | General obligations of importers
+  AR 14      AR 14      word 0.994  char 0.997  headings_equal True   General obligations of distributors | General obligations of distributors
+  AR 15      AR 15      word 0.909  char 0.848  headings_equal True   Person responsible for regulatory compliance | Person responsible for regulatory compliance
+  AR 16      AR 16      word 0.994  char 0.997  headings_equal True   Cases in which obligations of manufacturers apply to importers, distributors or other persons | Cases in which obligations of manufacturers apply to importers, distributors or other persons
+  AR 19      AR 17      word 0.968  char 0.983  headings_equal True   EU declaration of conformity | EU declaration of conformity
+  AR 20      AR 18      word 0.974  char 0.977  headings_equal True   CE marking of conformity | CE marking of conformity
+  AR 21      AR 19      word 0.637  char 0.695  headings_equal True   Devices for special purposes | Devices for special purposes
+  AR 23      AR 20      word 0.993  char 0.999  headings_equal True   Parts and components | Parts and components
+  AR 24      AR 21      word 0.977  char 0.996  headings_equal True   Free movement | Free movement
+  AR 25      AR 22      word 0.977  char 0.997  headings_equal True   Identification within the supply chain | Identification within the supply chain
+  AR 26      AR 23      word 0.924  char 0.971  headings_equal True   Medical devices nomenclature | Medical devices nomenclature
+  AR 27      AR 24      word 0.939  char 0.974  headings_equal True   Unique Device Identification system | Unique Device Identification system
+  AR 29      AR 26      word 0.806  char 0.811  headings_equal True   Registration of devices | Registration of devices
+  AR 30      AR 27      word 0.969  char 0.982  headings_equal True   Electronic system for registration of economic operators | Electronic system for registration of economic operators
+  AR 31      AR 28      word 0.968  char 0.978  headings_equal True   Registration of manufacturers, authorised representatives and importers | Registration of manufacturers, authorised representatives and importers
+  AR 32      AR 29      word 0.917  char 0.905  headings_equal False  Summary of safety and clinical performance | Summary of safety and performance
+  AR 35      AR 31      word 0.981  char 0.978  headings_equal True   Authorities responsible for notified bodies | Authorities responsible for notified bodies
+  AR 36      AR 32      word 0.987  char 0.998  headings_equal True   Requirements relating to notified bodies | Requirements relating to notified bodies
+  AR 37      AR 33      word 0.994  char 0.999  headings_equal True   Subsidiaries and subcontracting | Subsidiaries and subcontracting
+  AR 38      AR 34      word 0.990  char 0.998  headings_equal True   Application by conformity assessment bodies for designation | Application by conformity assessment bodies for designation
+  AR 39      AR 35      word 0.984  char 0.988  headings_equal True   Assessment of the application | Assessment of the application
+  AR 40      AR 36      word 0.944  char 0.976  headings_equal True   Nomination of experts for joint assessment of applications for notification | Nomination of experts for joint assessment of applications for notification
+  AR 41      AR 37      word 0.942  char 0.989  headings_equal True   Language requirements | Language requirements
+  AR 42      AR 38      word 0.981  char 0.997  headings_equal True   Designation and notification procedure | Designation and notification procedure
+  AR 43      AR 39      word 0.949  char 0.982  headings_equal True   Identification number and list of notified bodies | Identification number and list of notified bodies
+  AR 44      AR 40      word 0.988  char 1.000  headings_equal True   Monitoring and re-assessment of notified bodies | Monitoring and re-assessment of notified bodies
+  AR 45      AR 41      word 0.953  char 0.956  headings_equal False  Review of notified body assessment of technical documentation and clinical evaluation documentation | Review of notified body assessment of technical documentation and performance evaluation documentation
+  AR 46      AR 42      word 0.983  char 0.998  headings_equal True   Changes to designations and notifications | Changes to designations and notifications
+  AR 47      AR 43      word 0.976  char 0.992  headings_equal True   Challenge to the competence of notified bodies | Challenge to the competence of notified bodies
+  AR 48      AR 44      word 0.971  char 0.992  headings_equal True   Peer review and exchange of experience between authorities responsible for notified bodies | Peer review and exchange of experience between authorities responsible for notified bodies
+  AR 49      AR 45      word 0.639  char 0.692  headings_equal True   Coordination of notified bodies | Coordination of notified bodies
+  AR 50      AR 46      word 0.968  char 0.990  headings_equal True   List of standard fees | List of standard fees
+  AR 51      AR 47      word 0.981  char 0.994  headings_equal True   Classification of devices | Classification of devices
+  AR 52      AR 48      word 0.450  char 0.427  headings_equal True   Conformity assessment procedures | Conformity assessment procedures
+  AR 53      AR 49      word 0.992  char 0.998  headings_equal True   Involvement of notified bodies in conformity assessment procedures | Involvement of notified bodies in conformity assessment procedures
+  AR 55      AR 50      word 0.671  char 0.756  headings_equal False  Mechanism for scrutiny of conformity assessments of certain class III and class IIb devices | Mechanism for scrutiny of conformity assessments of class D devices
+  AR 56      AR 51      word 0.981  char 0.992  headings_equal True   Certificates of conformity | Certificates of conformity
+  AR 57      AR 52      word 0.674  char 0.739  headings_equal True   Electronic system on notified bodies and on certificates of conformity | Electronic system on notified bodies and on certificates of conformity
+  AR 58      AR 53      word 0.995  char 0.999  headings_equal True   Voluntary change of notified body | Voluntary change of notified body
+  AR 59      AR 54      word 0.820  char 0.807  headings_equal True   Derogation from the conformity assessment procedures | Derogation from the conformity assessment procedures
+  AR 60      AR 55      word 0.972  char 0.994  headings_equal True   Certificate of free sale | Certificate of free sale
+  AR 61      AR 56      word 0.331  char 0.584  headings_equal False  Clinical evaluation | Performance evaluation and clinical evidence
+  AR 62      AR 58      word 0.662  char 0.483  headings_equal False  General requirements regarding clinical investigations conducted to demonstrate conformity of devices | Additional requirements for certain performance studies
+  AR 63      AR 59      word 0.949  char 0.953  headings_equal True   Informed consent | Informed consent
+  AR 64      AR 60      word 0.773  char 0.847  headings_equal False  Clinical investigations on incapacitated subjects | Performance studies on incapacitated subjects
+  AR 65      AR 61      word 0.792  char 0.803  headings_equal False  Clinical investigations on minors | Performance studies on minors
+  AR 66      AR 62      word 0.624  char 0.638  headings_equal False  Clinical investigations on pregnant or breastfeeding women | Performance studies on pregnant or breastfeeding women
+  AR 67      AR 63      word 0.925  char 0.947  headings_equal True   Additional national measures | Additional national measures
+  AR 68      AR 64      word 0.933  char 0.894  headings_equal False  Clinical investigations in emergency situations | Performance studies in emergency situations
+  AR 69      AR 65      word 0.948  char 0.945  headings_equal True   Damage compensation | Damage compensation
+  AR 70      AR 66      word 0.815  char 0.911  headings_equal False  Application for clinical investigations | Application for performance studies
+  AR 71      AR 67      word 0.818  char 0.827  headings_equal True   Assessment by Member States | Assessment by Member States
+  AR 72      AR 68      word 0.926  char 0.920  headings_equal False  Conduct of a clinical investigation | Conduct of a performance study
+  AR 73      AR 69      word 0.928  char 0.914  headings_equal False  Electronic system on clinical investigations | Electronic system on performance studies
+  AR 74      AR 70      word 0.811  char 0.887  headings_equal False  Clinical investigations regarding devices bearing the CE marking | Performance studies regarding devices bearing the CE marking
+  AR 75      AR 71      word 0.915  char 0.927  headings_equal False  Substantial modifications to clinical investigations | Substantial modifications to performance studies
+  AR 76      AR 72      word 0.928  char 0.924  headings_equal False  Corrective measures to be taken by Member States and information exchange between Member States | Corrective measures to be taken by Member States and information exchange between Member States on performance studies
+  AR 77      AR 73      word 0.878  char 0.789  headings_equal False  Information from the sponsor at the end of a clinical investigation or in the event of a temporary halt or early termination | Information from the sponsor at the end of a performance study or in the event of a temporary halt or early termination
+  AR 78      AR 74      word 0.935  char 0.928  headings_equal False  Coordinated assessment procedure for clinical investigations | Coordinated assessment procedure for performance studies
+  AR 79      AR 75      word 0.863  char 0.967  headings_equal False  Review of coordinated assessment procedure | Review of the coordinated assessment procedure
+  AR 80      AR 76      word 0.923  char 0.905  headings_equal False  Recording and reporting of adverse events that occur during clinical investigations | Recording and reporting of adverse events that occur during performance studies
+  AR 81      AR 77      word 0.920  char 0.970  headings_equal True   Implementing acts | Implementing acts
+  AR 83      AR 78      word 0.975  char 0.990  headings_equal True   Post-market surveillance system of the manufacturer | Post-market surveillance system of the manufacturer
+  AR 84      AR 79      word 0.887  char 0.924  headings_equal True   Post-market surveillance plan | Post-market surveillance plan
+  AR 85      AR 80      word 0.920  char 0.964  headings_equal True   Post-market surveillance report | Post-market surveillance report
+  AR 86      AR 81      word 0.812  char 0.813  headings_equal True   Periodic safety update report | Periodic safety update report
+  AR 87      AR 82      word 0.965  char 0.971  headings_equal True   Reporting of serious incidents and field safety corrective actions | Reporting of serious incidents and field safety corrective actions
+  AR 88      AR 83      word 0.843  char 0.883  headings_equal True   Trend reporting | Trend reporting
+  AR 89      AR 84      word 0.903  char 0.994  headings_equal True   Analysis of serious incidents and field safety corrective actions | Analysis of serious incidents and field safety corrective actions
+  AR 90      AR 85      word 0.981  char 0.994  headings_equal True   Analysis of vigilance data | Analysis of vigilance data
+  AR 91      AR 86      word 0.951  char 0.990  headings_equal True   Implementing acts | Implementing acts
+  AR 92      AR 87      word 0.968  char 0.991  headings_equal False  Electronic system on vigilance and on post-market surveillance | Electronic system on vigilance and post-market surveillance
+  AR 93      AR 88      word 0.992  char 0.996  headings_equal True   Market surveillance activities | Market surveillance activities
+  AR 94      AR 89      word 0.984  char 0.998  headings_equal True   Evaluation of devices suspected of presenting an unacceptable risk or other non-compliance | Evaluation of devices suspected of presenting an unacceptable risk or other non-compliance
+  AR 95      AR 90      word 0.987  char 0.997  headings_equal True   Procedure for dealing with devices presenting an unacceptable risk to health and safety | Procedure for dealing with devices presenting an unacceptable risk to health and safety
+  AR 96      AR 91      word 0.980  char 0.996  headings_equal True   Procedure for evaluating national measures at Union level | Procedure for evaluating national measures at Union level
+  AR 97      AR 92      word 0.966  char 0.994  headings_equal True   Other non-compliance | Other non-compliance
+  AR 98      AR 93      word 0.979  char 0.997  headings_equal True   Preventive health protection measures | Preventive health protection measures
+  AR 99      AR 94      word 0.980  char 0.996  headings_equal True   Good administrative practice | Good administrative practice
+  AR 100     AR 95      word 0.957  char 0.987  headings_equal True   Electronic system on market surveillance | Electronic system on market surveillance
+  AR 101     AR 96      word 0.986  char 0.995  headings_equal True   Competent authorities | Competent authorities
+  AR 102     AR 97      word 0.959  char 0.993  headings_equal True   Cooperation | Cooperation
+  AR 105     AR 99      word 0.932  char 0.903  headings_equal True   Tasks of the MDCG | Tasks of the MDCG
+  AR 108     AR 101     word 0.876  char 0.909  headings_equal True   Device registers and databanks | Device registers and databanks
+  AR 109     AR 102     word 0.981  char 0.998  headings_equal True   Confidentiality | Confidentiality
+  AR 110     AR 103     word 0.980  char 0.997  headings_equal True   Data protection | Data protection
+  AR 111     AR 104     word 0.989  char 0.996  headings_equal True   Levying of fees | Levying of fees
+  AR 112     AR 105     word 0.969  char 0.991  headings_equal True   Funding of activities related to designation and monitoring of notified bodies | Funding of activities related to designation and monitoring of notified bodies
+  AR 113     AR 106     word 0.946  char 0.992  headings_equal True   Penalties | Penalties
+  AR 114     AR 107     word 0.927  char 0.957  headings_equal True   Committee procedure | Committee procedure
+  AR 115     AR 108     word 0.937  char 0.921  headings_equal True   Exercise of the delegation | Exercise of the delegation
+  AR 116     AR 109     word 0.966  char 0.989  headings_equal True   Separate delegated acts for different delegated powers | Separate delegated acts for different delegated powers
+  AR 120     AR 110     word 0.751  char 0.866  headings_equal True   Transitional provisions | Transitional provisions
+  AR 121     AR 111     word 0.885  char 0.915  headings_equal True   Evaluation | Evaluation
+  AR 122     AR 112     word 0.700  char 0.773  headings_equal True   Repeal | Repeal
+  AR 123     AR 113     word 0.704  char 0.739  headings_equal True   Entry into force and date of application | Entry into force and date of application
+  AN I       AN I       word 0.549  char 0.998  headings_equal True   GENERAL SAFETY AND PERFORMANCE REQUIREMENTS | GENERAL SAFETY AND PERFORMANCE REQUIREMENTS
+  AN II      AN II      word 0.435  char 0.627  headings_equal True   TECHNICAL DOCUMENTATION | TECHNICAL DOCUMENTATION
+  AN III     AN III     word 0.950  char 0.994  headings_equal True   TECHNICAL DOCUMENTATION ON POST-MARKET SURVEILLANCE | TECHNICAL DOCUMENTATION ON POST-MARKET SURVEILLANCE
+  AN IV      AN IV      word 0.992  char 0.996  headings_equal True   EU DECLARATION OF CONFORMITY | EU DECLARATION OF CONFORMITY
+  AN V       AN V       word 0.986  char 0.999  headings_equal True   CE MARKING OF CONFORMITY | CE MARKING OF CONFORMITY
+  AN VI      AN VI      word 0.839  char 0.915  headings_equal False  INFORMATION TO BE SUBMITTED UPON THE REGISTRATION OF DEVICES AND ECONOMIC OPERATORS IN ACCORDANCE WITH ARTICLES 29(4) AND 31, CORE DATA ELEMENTS TO BE PROVIDED TO THE UDI DATABASE TOGETHER WITH THE UDI-DI IN ACCORDANCE WITH ARTICLES 28 AND 29, AND THE UDI SYSTEM | INFORMATION TO BE SUBMITTED UPON THE REGISTRATION OF DEVICES AND ECONOMIC OPERATORS IN ACCORDANCE WITH ARTICLES 26(3) AND 28, CORE DATA ELEMENTS TO BE PROVIDED TO THE UDI DATABASE TOGETHER WITH THE UDI-DI IN ACCORDANCE WITH ARTICLES 25 AND 26 AND THE UDI SYSTEM
+  AN VII     AN VII     word 0.954  char 0.998  headings_equal True   REQUIREMENTS TO BE MET BY NOTIFIED BODIES | REQUIREMENTS TO BE MET BY NOTIFIED BODIES
+  AN IX      AN IX      word 0.612  char 0.996  headings_equal True   CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION | CONFORMITY ASSESSMENT BASED ON A QUALITY MANAGEMENT SYSTEM AND ON ASSESSMENT OF TECHNICAL DOCUMENTATION
+  AN X       AN X       word 0.693  char 0.682  headings_equal True   CONFORMITY ASSESSMENT BASED ON TYPE-EXAMINATION | CONFORMITY ASSESSMENT BASED ON TYPE-EXAMINATION
+  AN XI      AN XI      word 0.397  char 0.559  headings_equal False  CONFORMITY ASSESSMENT BASED ON PRODUCT CONFORMITY VERIFICATION | CONFORMITY ASSESSMENT BASED ON PRODUCTION QUALITY ASSURANCE
+  AN XII     AN XII     word 0.938  char 0.914  headings_equal True   CERTIFICATES ISSUED BY A NOTIFIED BODY | CERTIFICATES ISSUED BY A NOTIFIED BODY
+  AN XIV     AN XIII    word 0.303  char 0.257  headings_equal False  CLINICAL EVALUATION AND POST-MARKET CLINICAL FOLLOW-UP | PERFORMANCE EVALUATION, PERFORMANCE STUDIES AND POST-MARKET PERFORMANCE FOLLOW-UP  char-best differs: A->AN VIII B->AN IV
+  AN XV      AN XIV     word 0.553  char 0.263  headings_equal False  CLINICAL INVESTIGATIONS | INTERVENTIONAL CLINICAL PERFORMANCE STUDIES AND CERTAIN OTHER PERFORMANCE STUDIES  char-best differs: A->AN III B->AN VI
+  AN XVII    AN XV      word 0.371  char 0.451  headings_equal True   CORRELATION TABLE | CORRELATION TABLE
+
+unpaired A units (19): unit, best candidate, ratio
+  AR 3       none at or above 0.30
+  AR 17      none at or above 0.30
+  AR 18      none at or above 0.30
+  AR 22      none at or above 0.30
+  AR 28      none at or above 0.30
+  AR 33      none at or above 0.30
+  AR 34      none at or above 0.30
+  AR 54      none at or above 0.30
+  AR 82      none at or above 0.30
+  AR 103     none at or above 0.30
+  AR 104     none at or above 0.30
+  AR 106     none at or above 0.30
+  AR 107     none at or above 0.30
+  AR 117     none at or above 0.30
+  AR 118     none at or above 0.30
+  AR 119     AR 105     0.310
+  AN VIII    none at or above 0.30
+  AN XIII    none at or above 0.30
+  AN XVI     none at or above 0.30
+
+unpaired B units (7): unit, best candidate, ratio
+  AR 4       none at or above 0.30
+  AR 25      none at or above 0.30
+  AR 30      AR 57      0.319
+  AR 57      none at or above 0.30
+  AR 98      none at or above 0.30
+  AR 100     none at or above 0.30
+  AN VIII    none at or above 0.30
+

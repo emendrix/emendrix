@@ -1,0 +1,22 @@
+command   uv run python scripts/validation/twin_provisions.py divergence --fetch --record <changelogs clone>
+run on    2026-10-19
+cache     ~/Library/Caches/emendrix/cellar, 1595 entries
+record    a fresh clone of https://github.com/emendrix/changelogs at 1db1143 2026-10-17
+offline   no: notices older than 6 h refetched; an uncached package read is fetched
+
+pairs at the floor 0.90 over 02017R0745-20260719 and 02017R0746-20250110: 85
+
+one-sided twin changes (0 rows, 0 changes):
+
+two-sided: the same amending act changed both twins (4 rows):
+  32017R0745 02017R0745-20240709 AR 78    by 32024R1860; twin 32017R0746 AR 74; 32017R0746 events of 32024R1860: 02017R0746-20240709 touched AR 110, AR 112, AR 113, AR 74; 02017R0746-20250110 touched AR 10a
+  32017R0745 02017R0745-20250110 AR 10a   by 32024R1860; twin 32017R0746 AR 10a; 32017R0746 events of 32024R1860: 02017R0746-20240709 touched AR 110, AR 112, AR 113, AR 74; 02017R0746-20250110 touched AR 10a
+  32017R0746 02017R0746-20240709 AR 74    by 32024R1860; twin 32017R0745 AR 78; 32017R0745 events of 32024R1860: 02017R0745-20240709 touched AR 120, AR 122, AR 123, AR 34, AR 78; 02017R0745-20250110 touched AR 106, AR 10a
+  32017R0746 02017R0746-20250110 AR 10a   by 32024R1860; twin 32017R0745 AR 10a; 32017R0745 events of 32024R1860: 02017R0745-20240709 touched AR 120, AR 122, AR 123, AR 34, AR 78; 02017R0745-20250110 touched AR 106, AR 10a
+
+twinned changes whose amending act made no event of the other act in the record:
+  32020R0561  1
+  32023R0502  1
+  32023R0503  1
+
+BAR: not met (0 changes, 0 instruments; the bar is 5 changes from 2 instruments, measured 2026-10-19)

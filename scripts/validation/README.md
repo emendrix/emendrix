@@ -12,7 +12,7 @@ assertions. It is **not** production code and nothing under `src/emendrix/` impo
 `trace.py` fetches with a 3-second delay and caches every response under `.cache/` (gitignored), so
 a second run of any command below is offline and free.
 
-Five scripts here do import the package, because what they measure *is* the package. All five
+Seven scripts here do import the package, because what they measure *is* the package. All seven
 read through the same client, the same composition root and the same disk cache the loop uses,
 write nothing, call no model and are offline unless `--fetch` is passed.
 
@@ -123,6 +123,57 @@ one annex matches the same number in another annex of the same act, so the Cosme
 Annex XVII figures are upper bounds. It is a measurement of the entry diff taken once, not a
 signal: nothing in the pipeline reads it and no change is marked disputed by it.
 
+`text_store_survey.py` measures what a store of every provision of every consolidated version
+would weigh before anything is built to hold one. Over every consolidated English package the
+disk cache holds, read through the adapter the way a build reads it, it serialises each version
+with its own small writer (one header line, then one compact JSON line per node in pre-order
+carrying the location, the parent's location, the heading, the verbatim text, the comparison
+text and its sha256, the whole gzip at level 9 with `mtime=0`) and reports raw and gzip bytes per
+act, beside a units-only layout and a pooled one that writes each act's distinct comparison
+texts once. `tokens` reports the length of every distinct comparison text by depth against a
+2,048-token cap, and `coverage` sets the versions the record has diffed and the versions each
+tree notice lists against the packages the cache holds:
+
+```bash
+uv run python scripts/validation/text_store_survey.py size [--act 32017R0745] [--verbose]
+uv run python scripts/validation/text_store_survey.py tokens [--act 32017R0745]
+uv run python scripts/validation/text_store_survey.py coverage --record /tmp/changelogs [--fetch]
+```
+
+What its figures do not mean. The token figure is a proxy, `ceil(chars / 4)`, because no
+tokenizer for the embedder is installed: it overstates plain English and understates numbers,
+identifiers and tables read as prose. A node's text is its whole subtree, so the store's layout
+repeats text at every depth by design, and the pooled figure says what deduplication would save,
+not what anything writes. Every figure is over the cache on the day of the run; scaling it to
+every listed version is a projection.
+
+`twin_provisions.py` measures which provisions of the Medical Devices Regulation and the IVDR
+are textual twins, meaning textually similar and nothing more. Every article is scored against
+every article and every annex against every annex by the word ratio
+(`SequenceMatcher(None, a_words, b_words, autojunk=False).ratio()` over the comparison texts'
+words, with `real_quick_ratio` and `quick_ratio` as bounds), and a pair is a twin when each is
+the other's best match at or above a floor. The floor is read off the corpus: the lowest candidate
+from 0.50 up, in steps of 0.05, at which at least 95% of the mutual-best pairs above it share a
+normalised heading, else 0.90. `floor` also aligns the children below each pair, places the
+record's changed coordinates on them, and counts how many pairs a page of differing passages
+would withhold as too different to excerpt; `divergence` lists the changes of one act's record,
+made by an amending act that also made an event of the other, which left the twin untouched,
+against a bar of five such changes from two amending acts; `screen` runs a shingle screen and
+then the word ratio over every pair of acts the cache holds:
+
+```bash
+uv run python scripts/validation/twin_provisions.py pairs [--fetch]
+uv run python scripts/validation/twin_provisions.py floor --record /tmp/changelogs [--fetch]
+uv run python scripts/validation/twin_provisions.py divergence --record /tmp/changelogs [--fetch]
+uv run python scripts/validation/twin_provisions.py screen [--floor 0.60]
+```
+
+What its figures do not mean. Heading agreement is a proxy for the precision of a pairing: two
+articles can share a heading and differ in substance. The twins are paired on the newest texts
+while the record's changes were made to older ones. A one-sided change says the record holds no
+change to the twin from the same amending act, not that one was due; no figure here says a
+provision is equivalent to another or should change with it.
+
 ## Commands behind the committed reports
 
 Each command writes `results/<name>.txt`; those files are committed and are the measured record.
@@ -159,6 +210,33 @@ for act in 32006R1907 32008R1272 32009R1223 32012R0528 32012R0649 32019R1021 \
 done
 uv run python scripts/validation/substance_crosscheck.py /tmp/changelogs \
   > scripts/validation/results/substance-crosscheck-2026-10-16.txt
+```
+
+The text-store and twin readings are redirected the same way. They were read on 2026-10-19
+against a clone of the changelog corpus at `1db1143` (2026-10-17), offline first and then once
+with `--fetch` for the coverage, the pairs and what depends on them, because the cache lacked the
+Medical Devices Regulation's newest consolidation (20260719); each file's header says which:
+
+```bash
+d=2026-10-19; r=scripts/validation/results
+uv run python scripts/validation/text_store_survey.py size > $r/text-store-size-$d.txt
+uv run python scripts/validation/text_store_survey.py tokens > $r/text-store-tokens-$d.txt
+uv run python scripts/validation/text_store_survey.py coverage --record /tmp/changelogs \
+  > $r/text-store-coverage-$d.txt
+uv run python scripts/validation/twin_provisions.py pairs > $r/twin-pairs-mdr-ivdr-$d.txt
+uv run python scripts/validation/twin_provisions.py floor --record /tmp/changelogs \
+  > $r/twin-floor-$d.txt
+uv run python scripts/validation/twin_provisions.py divergence --record /tmp/changelogs \
+  > $r/twin-divergence-$d.txt
+uv run python scripts/validation/twin_provisions.py screen > $r/twin-screen-$d.txt
+uv run python scripts/validation/text_store_survey.py coverage --record /tmp/changelogs --fetch \
+  > $r/text-store-coverage-fetch-$d.txt
+uv run python scripts/validation/twin_provisions.py pairs --fetch \
+  > $r/twin-pairs-mdr-ivdr-fetch-$d.txt
+uv run python scripts/validation/twin_provisions.py floor --fetch --record /tmp/changelogs \
+  > $r/twin-floor-fetch-$d.txt
+uv run python scripts/validation/twin_provisions.py divergence --fetch --record /tmp/changelogs \
+  > $r/twin-divergence-fetch-$d.txt
 ```
 
 `versions` inventories an act's consolidated versions and their English manifestations.

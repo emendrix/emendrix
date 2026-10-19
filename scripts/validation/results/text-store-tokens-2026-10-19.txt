@@ -1,0 +1,26 @@
+command   uv run python scripts/validation/text_store_survey.py tokens
+run on    2026-10-19
+cache     ~/Library/Caches/emendrix/cellar, 1594 entries
+record    none read
+offline   yes: network refused, EMENDRIX_NOTICE_MAX_AGE_S=31536000
+
+token proxy: ceil(characters / 4) of the comparison text, against a 2048-token cap. A proxy, not a count: no tokenizer for the embedder is installed; four characters per token overstates plain English and understates numbers, identifiers and tables read as prose.
+each distinct comparison text (by sha256) is counted once per act and depth bucket;
+'leaf' counts the over-cap texts of nodes with no children, which no finer node covers.
+
+depth           distinct  measure      p50      p90      p99       max   > cap   leaf     nodes nodes>cap
+units               8620    words      281     1087    49105    288430                                   
+                            chars     1769     6944   313712   2067803                                   
+                          tokens~      443     1736    78428    516951     710    103     54842      2576
+children           29589    words       62      204     1372    282909                                   
+                            chars      392     1285     8971   2033269                                   
+                          tokens~       98      322     2243    508318     317    109    202161      1390
+grandchildren      37238    words       47      133      549      9647                                   
+                            chars      297      838     3441     61258                                   
+                          tokens~       75      210      861     15315     134      2    264975       715
+deeper             29164    words       23       72      426      3020                                   
+                            chars      143      451     2668     20394                                   
+                          tokens~       36      113      667      5099      54      3    236596       487
+all               104611    words       46      209     1458    288430                                   
+                            chars      289     1312     9327   2067803                                   
+                          tokens~       73      328     2332    516951    1215    217    758574      5168

@@ -1,0 +1,182 @@
+command   uv run python scripts/validation/text_store_survey.py coverage --record <changelogs clone> --fetch
+run on    2026-10-19
+cache     ~/Library/Caches/emendrix/cellar, 1594 entries
+record    a fresh clone of https://github.com/emendrix/changelogs at 1db1143 2026-10-17
+offline   no: notices older than 6 h refetched; an uncached package read is fetched
+
+w: * on the local watchlist, r: * in the record. 'listed' counts consolidations the tree notice lists; 'to fetch' is listed and not cached; 'diffed' and 'diffed, not cached' count consolidations the record names on either side of an event; 'oj' says whether the original OJ text the record diffs from is cached (y), not cached (n), or not diffed from (-).
+
+act        w r diffed listed cached listed∩cached to fetch diffed, not cached oj
+32006R1907 * *     62     69     64            64        5                  0  -
+32008R0765   *      1      3      1             1        2                  0  y
+32008R1272   *     31     32     31            31        1                  0  y
+32009R1060   *      9      9      9             9        0                  0  y
+32009R1107   *      9     10      9             9        1                  0  y
+32009R1223   *     41     42     41            41        1                  0  y
+32010R1092   *      2      2      2             2        0                  0  y
+32010R1093   *     11     11     11            11        0                  0  y
+32010R1094   *      4      4      4             4        0                  0  y
+32010R1095   *      7      7      7             7        0                  0  y
+32011R0305   *      5      6      5             5        1                  0  y
+32011R1169   *      5      5      5             5        0                  0  y
+32012R0236   *      4      4      4             4        0                  0  y
+32012R0528   *     10     10     10            10        0                  0  y
+32012R0648   *     19     20     19            19        1                  0  y
+32012R0649   *      9      9      9             9        0                  0  y
+32012R0978   *     17     17     17            17        0                  0  y
+32013R0575   *     23     23     22            22        1                  1  y
+32013R0952   *      5      5      5             5        0                  0  y
+32013R1308   *     14     14     14            14        0                  0  y
+32014R0596   *      5      6      5             5        1                  0  y
+32014R0600   *     11     11     11            11        0                  0  y
+32014R0654   *      3      3      3             3        0                  0  y
+32014R0806   *      7      8      7             7        1                  0  y
+32014R0909   *      6      7      6             6        1                  0  y
+32014R0910 * *      2      3      2             2        1                  0  y
+32014R1286   *      5      5      5             5        0                  0  y
+32015R0760   *      1      1      1             1        0                  0  y
+32015R2283   *      1      2      1             1        1                  0  y
+32015R2365   *      2      3      2             2        1                  0  y
+32016R0424   *      2      2      2             2        0                  0  y
+32016R0425   *      1      2      1             1        1                  0  y
+32016R0426   *      1      2      1             1        1                  0  y
+32016R0429   *      3      3      3             3        0                  0  y
+32016R0679 * *      1      1      1             1        0                  0  y
+32016R1011   *      6      7      6             6        1                  0  y
+32016R1036   *      3      4      3             3        1                  0  y
+32016R1037   *      3      3      3             3        0                  0  y
+32016R2031   *      3      4      3             3        1                  0  y
+32017R0625   *      5      5      5             5        0                  0  y
+32017R0745 * *      8      8      7             7        1                  1  y
+32017R0746 * *      6      6      6             6        0                  0  y
+32017R0821   *      1      2      1             1        1                  0  y
+32017R0852   *      4      4      4             4        0                  0  y
+32017R1129   *      7      7      7             7        0                  0  y
+32017R1131   *      3      3      3             3        0                  0  y
+32017R2402   *      1      2      1             1        1                  0  y
+32018R0848   *      6      7      6             6        1                  0  y
+32019R0881   *      1      2      1             1        1                  0  y
+32019R1009   *      8      9      8             8        1                  0  y
+32019R1020   *      3      4      3             3        1                  0  y
+32019R1021   *     15     15     15            15        0                  0  y
+32019R1238   *      1      2      1             1        1                  0  y
+32019R2033   *      2      2      2             2        0                  0  y
+32019R2088   *      3      3      3             3        0                  0  y
+32021R0821   *      8      9      7             7        2                  1  y
+32022R0868 *        0      1      0             0        1                  0  -
+32022R1925 * *      1      1      1             1        0                  0  y
+32022R2065 *        0      1      0             0        1                  0  -
+32022R2554 *        0      1      0             0        1                  0  -
+32022R2560   *      1      1      1             1        0                  0  y
+32023R0956 * *      1      2      1             1        1                  0  y
+32023R0988 * *      1      2      1             1        1                  0  y
+32023R1114 * *      1      2      1             1        1                  0  y
+32023R1115 * *      3      4      2             2        2                  1  y
+32023R1230 * *      3      3      3             3        0                  0  y
+32023R1542 * *      4      4      4             4        0                  0  y
+32023R2631   *      1      1      1             1        0                  0  y
+32023R2675   *      1      1      1             1        0                  0  y
+32023R2854 *        0      1      0             0        1                  0  -
+32024R0573   *      1      1      1             1        0                  0  y
+32024R1157   *      2      3      2             2        1                  0  y
+32024R1620   *      1      2      1             1        1                  0  y
+32024R1689 * *      1      2      1             1        1                  0  y
+32024R1781   *      1      1      1             1        0                  0  y
+32024R2847 * *      1      1      1             1        0                  0  y
+
+acts                                 76
+  whose notice could not be read     0
+versions the record has diffed       460
+consolidations the notices list      504
+consolidated packages cached         458
+  of them listed                     458
+listed, not cached (a build fetches) 46
+diffed, not cached                   4
+original OJ texts diffed from        71
+  of them not cached                 0
+coverage of listed by cached         0.909
+network calls                        0
+
+missing, per act
+32006R1907 REACH
+  to fetch:            02006R1907-20100402, 02006R1907-20101201, 02006R1907-20110221, 02006R1907-20110306, 02006R1907-20110505
+32008R0765
+  to fetch:            02008R0765-20080813, 02008R0765-20100101
+32008R1272
+  to fetch:            02008R1272-20090120
+32009R1107
+  to fetch:            02009R1107-20091214
+32009R1223
+  to fetch:            02009R1223-20100111
+32011R0305
+  to fetch:            02011R0305-20110424
+32012R0648
+  to fetch:            02012R0648-20120816
+32013R0575
+  to fetch:            02013R0575-20270101
+  diffed, not cached:  02013R0575-20270101
+32014R0596
+  to fetch:            02014R0596-20140702
+32014R0806
+  to fetch:            02014R0806-20140730
+32014R0909
+  to fetch:            02014R0909-20140917
+32014R0910 eIDAS
+  to fetch:            02014R0910-20140917
+32015R2283
+  to fetch:            02015R2283-20151211
+32015R2365
+  to fetch:            02015R2365-20191101
+32016R0425
+  to fetch:            02016R0425-20160331
+32016R0426
+  to fetch:            02016R0426-20160331
+32016R1011
+  to fetch:            02016R1011-20160629
+32016R1036
+  to fetch:            02016R1036-20160630
+32016R2031
+  to fetch:            02016R2031-20161123
+32017R0745 Medical Devices Regulation
+  to fetch:            02017R0745-20260719
+  diffed, not cached:  02017R0745-20260719
+32017R0821
+  to fetch:            02017R0821-20170519
+32017R2402
+  to fetch:            02017R2402-20171228
+32018R0848
+  to fetch:            02018R0848-20210101
+32019R0881
+  to fetch:            02019R0881-20190607
+32019R1009
+  to fetch:            02019R1009-20190625
+32019R1020
+  to fetch:            02019R1020-20190625
+32019R1238
+  to fetch:            02019R1238-20190725
+32021R0821
+  to fetch:            02021R0821-20210611, 02021R0821-20260921
+  diffed, not cached:  02021R0821-20260921
+32022R0868 Data Governance Act
+  to fetch:            02022R0868-20220603
+32022R2065 Digital Services Act
+  to fetch:            02022R2065-20221027
+32022R2554 DORA
+  to fetch:            02022R2554-20221227
+32023R0956 CBAM
+  to fetch:            02023R0956-20230516
+32023R0988 General Product Safety Regulation
+  to fetch:            02023R0988-20230523
+32023R1114 MiCA
+  to fetch:            02023R1114-20230609
+32023R1115 Deforestation Regulation
+  to fetch:            02023R1115-20230609, 02023R1115-20260918
+  diffed, not cached:  02023R1115-20260918
+32023R2854 Data Act
+  to fetch:            02023R2854-20231222
+32024R1157
+  to fetch:            02024R1157-20240430
+32024R1620
+  to fetch:            02024R1620-20240619
+32024R1689 AI Act
+  to fetch:            02024R1689-20240712
