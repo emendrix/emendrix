@@ -99,6 +99,67 @@ def test_only_post_is_answered_and_no_stream_is_opened(client: TestClient) -> No
     response = client.get("/mcp", headers=ACCEPT)
     assert response.status_code == 405
     assert response.headers["allow"] == "POST"
+    assert "/mcp/server-card" in response.text and "/llms.txt" in response.text
+    assert response.text.isascii()
+
+
+CORS = {
+    "access-control-allow-origin": "*",
+    "access-control-allow-methods": "GET",
+    "access-control-allow-headers": "Content-Type, If-None-Match",
+    "access-control-expose-headers": "ETag",
+}
+
+
+def test_the_server_card_is_served_with_its_validators(client: TestClient) -> None:
+    response = client.get("/mcp/server-card")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/mcp-server-card+json"
+    assert {key: response.headers[key] for key in CORS} == CORS
+    assert response.headers["cache-control"] == "public, max-age=3600"
+    assert response.headers["vary"] == "Host"
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["etag"]
+    card = response.json()
+    assert card["remotes"][0]["url"] == f"https://{HOST}/mcp"
+
+
+def test_a_matching_etag_gets_304_with_no_body(client: TestClient) -> None:
+    etag = client.get("/mcp/server-card").headers["etag"]
+    response = client.get("/mcp/server-card", headers={"if-none-match": etag})
+    assert response.status_code == 304
+    assert response.content == b""
+    assert response.headers["etag"] == etag
+    stale = client.get("/mcp/server-card", headers={"if-none-match": '"0"'})
+    assert stale.status_code == 200
+
+
+def test_head_on_the_card_answers_like_get(client: TestClient) -> None:
+    response = client.head("/mcp/server-card")
+    assert response.status_code == 200
+    assert response.headers["etag"] == client.get("/mcp/server-card").headers["etag"]
+
+
+def test_the_card_preflight_is_answered(client: TestClient) -> None:
+    response = client.options("/mcp/server-card", headers={"origin": "https://app.example.org"})
+    assert response.status_code == 204
+    assert {key: response.headers[key] for key in CORS} == CORS
+
+
+def test_the_card_answers_read_methods_only(client: TestClient) -> None:
+    response = client.post("/mcp/server-card", json={})
+    assert response.status_code == 405
+    assert response.headers["allow"] == "GET, HEAD, OPTIONS"
+
+
+def test_the_card_keeps_the_host_check(client: TestClient) -> None:
+    assert client.get("/mcp/server-card", headers={"host": "evil.example"}).status_code == 421
+
+
+def test_a_plain_http_origin_blocks_the_endpoint_but_not_the_card(client: TestClient) -> None:
+    origin = "http://evil.example"
+    assert client.get("/mcp/server-card", headers={"origin": origin}).status_code == 200
+    assert _call(client, "tools/list", origin=origin).status_code == 403
 
 
 def test_an_oversized_body_is_refused(client: TestClient) -> None:

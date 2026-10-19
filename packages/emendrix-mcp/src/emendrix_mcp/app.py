@@ -9,7 +9,9 @@ act on; the Host and Origin check exists to refuse DNS-rebinding shapes. A reque
 of the configured hosts, and may carry no `Origin` or an `https` one: a plain `http` origin and
 the opaque `null` are refused. The SDK's own check matches origins only exactly or by port
 wildcard and cannot say "any `https` origin", so it is switched off and this one sits in front.
-`GET /healthz` is left outside it, because a probe reaches the pod by its own address.
+`GET /healthz` is left outside it, because a probe reaches the pod by its own address. The
+server card at `/mcp/server-card` keeps the Host check and drops the Origin one: it is public
+metadata a browser client reads cross-origin.
 """
 
 from __future__ import annotations
@@ -24,14 +26,22 @@ from starlette.datastructures import Headers
 from starlette.responses import PlainTextResponse, Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from emendrix_mcp.card import CARD_PATH, card_response
 from emendrix_mcp.server import build_server
 from emendrix_mcp.settings import MCP_PATH, Settings
 from emendrix_record.reads import Unavailable
 from emendrix_record.record import Record
 
-__all__ = ["HEALTH_PATH", "MAX_BODY", "create_app", "health", "refusal", "serve"]
+__all__ = ["HEALTH_PATH", "MAX_BODY", "POST_ONLY", "create_app", "health", "refusal", "serve"]
 
 HEALTH_PATH: Final = "/healthz"
+
+POST_ONLY: Final = (
+    "This endpoint speaks MCP over streamable HTTP and answers POST only, one JSON response per "
+    "request, with no stream held open. Its server card is at "
+    f"{CARD_PATH} and a guide for models is at /llms.txt."
+)
+"""The body of the refusal of any other method: a pointer for an agent probing by hand."""
 
 MAX_BODY: Final = 64 * 1024
 """Bytes a request body may hold. A tool call names an act, a version and a location."""
@@ -45,18 +55,24 @@ def _secure(origin: str) -> bool:
         return False
 
 
+def _misdirected(headers: Mapping[str, str], allowed_hosts: frozenset[str]) -> Response | None:
+    if headers.get("host", "").lower() not in allowed_hosts:
+        return PlainTextResponse("This server does not answer for that Host.", status_code=421)
+    return None
+
+
 def refusal(
     headers: Mapping[str, str], method: str, allowed_hosts: frozenset[str]
 ) -> Response | None:
     """Why a request to the endpoint is refused, or None when it may be answered."""
-    if headers.get("host", "").lower() not in allowed_hosts:
-        return PlainTextResponse("This server does not answer for that Host.", status_code=421)
+    if (misdirected := _misdirected(headers, allowed_hosts)) is not None:
+        return misdirected
     origin = headers.get("origin")
     if origin is not None and not _secure(origin):
         return PlainTextResponse("Only an https Origin, or none, is accepted.", status_code=403)
     if method != "POST":
         return PlainTextResponse(
-            "The endpoint answers POST only; it holds no stream open.",
+            POST_ONLY,
             status_code=405,
             headers={"Allow": "POST"},
         )
@@ -72,7 +88,7 @@ def health(record: Record) -> Response:
 
 
 class _Front:
-    """The probe, then the Host, Origin and method check, then the SDK's app."""
+    """The probe, the server card, then the Host, Origin and method check, then the SDK's app."""
 
     def __init__(self, app: ASGIApp, record: Record, allowed_hosts: frozenset[str]) -> None:
         self._app = app
@@ -84,6 +100,11 @@ class _Front:
             answer: Response | None
             if scope["path"] == HEALTH_PATH and scope["method"] in ("GET", "HEAD"):
                 answer = health(self._record)
+            elif scope["path"] == CARD_PATH:
+                headers = Headers(scope=scope)
+                answer = _misdirected(headers, self._allowed_hosts)
+                if answer is None:
+                    answer = card_response(scope["method"], headers)
             else:
                 answer = refusal(Headers(scope=scope), scope["method"], self._allowed_hosts)
             if answer is not None:
