@@ -38,7 +38,7 @@ import re
 from pathlib import Path
 
 import pytest
-from helpers import REPO, _tree, build, text_of
+from helpers import REPO, _tree, build, text_of, twinned
 
 from emendrix import DISCLAIMER
 from emendrix.site_.markup import escape
@@ -67,8 +67,12 @@ def site(tmp_path_factory: pytest.TempPathFactory, changelog_repo: Path) -> Path
     Built with `--accounts`, so the review of the golden covers everything that flag adds: the
     watch links, the header's `Account` link, the sentence on About and the account shell. A
     build without it differs only by those, which `test_accounts.py` holds.
+
+    Built over a copy of the repository holding the MDR/IVDR twin map, so the review covers
+    the twin notes and the provision lines; the other suites build over the repository alone.
     """
-    return build(tmp_path_factory.mktemp("golden") / "site", changelog_repo, "--accounts")
+    root = tmp_path_factory.mktemp("golden")
+    return build(root / "site", twinned(changelog_repo, root), "--accounts")
 
 
 def _pages(site: Path) -> list[Path]:
@@ -256,7 +260,7 @@ def test_no_shipped_text_asset_reaches_a_third_party_either(site: Path) -> None:
             assert (site / url).is_file(), f"{name}: {url}"
 
 
-_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 49636)
+_LARGEST_PAGE = ("acts/32017R0745/02017R0745-20200424/index.html", 50024)
 """The heaviest page in the committed golden, path and exact bytes, read off the tree the day
 the act page split into a timeline and one page per event (2026-08-31). It is the MDR event
 page, the one place the golden's verbatim text now lives. The full-tree comparison above
@@ -447,7 +451,13 @@ the navigation to sit after the search mount, as `Account` with `class="account"
 class="account" href="../../../account/">Account</a>` at this depth, 55 bytes, where the link
 inside the navigation and the space before it were 40. Every page on the site paid the same 15.
 The stylesheet gained the account pages' rules and its fingerprinted name moved at the same
-length. Nothing in the page's own body moved, no anchor did and no id went."""
+length. Nothing in the page's own body moved, no anchor did and no id went.
+
+388 bytes heavier on 2026-10-19, when the golden began to be built over a repository holding the
+MDR/IVDR twin map and the one change whose unit has a twin, Article 113, gained the line naming
+it: IVDR Article 106(1), textually similar (0.958), linked to EUR-Lex, with the dates of the
+paired texts and the sentence that the record holds no IVDR version made by the same amending act.
+Nothing else in the page moved, no anchor did and no id went."""
 
 
 def test_the_largest_page_is_a_reviewed_number() -> None:

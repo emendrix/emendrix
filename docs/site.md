@@ -5,6 +5,9 @@ whether the absolute-address layer exists at all. The static site has no backend
 account service can stand beside it on the same host, and `--accounts` is the one flag that links
 to it ([`./accounts.md`](./accounts.md)). Start at [`../README.md`](../README.md) for how
 to run it; the artifacts it renders are described in [`./output-format.md`](./output-format.md).
+It reads the changelog repository (the events under each act, the registers beside them and the
+twin maps under `twins/`), the watchlist and the newest committed evaluation report, and nothing
+else: no page is built from the network or from the text store.
 
 ```bash
 uv run emendrix site build --out site/ \
@@ -328,6 +331,28 @@ both through `pages/prose.py`) is read in this order:
 - **A facts line**: on a version page the characters that moved, then `Applies from:` with a
   date, `no date changed` (the changelog's `unchanged` read as "the provision did not change")
   or `not readable` with its reason and a `why` link to `#applies-from`.
+- **The twin note**, on a version page, under a change whose unit has a textual twin in another
+  watched act, one line per such act (`site_/twin_note.py`). A twin is what a committed twin
+  map (`twins/<pair>.json`, [`./output-format.md`](./output-format.md)) pairs: two units whose
+  comparison texts reach the map's word-ratio floor, each the other's best match. The line reads
+  `Twin in IVDR: Art. 106(1), textually similar (0.958), paired on both acts' texts of 10 January
+  2025.` and then answers one question. The coordinate is the partner of the deepest coordinate
+  the change touched that the map aligned a child for, else the unit's own twin; it links to the
+  sister act's provision page where the site wrote one, else to that coordinate's article or
+  annex on EUR-Lex in the version the pair was computed on. The score is the map's ratio as
+  committed, or `identical text`, always under the words `textually similar`, which is all the
+  word twin means here: no note says a provision should change, is equivalent to another or has
+  the same effect. **The pairing dates are said because they are not the event's**: the map is
+  computed on each act's newest stored version, so a change from 2020 may carry a pair read off
+  2025 texts. The answer is one of three, read off the committed record through the same
+  attribution the amending act's own page uses: `The same amending act changed it: yes.` when an
+  event of the sister act attributed to this change's instrument has a change touching the twin;
+  `no.` when such an event touched only other units, or only other parts of the twin's unit; and `The record holds no IVDR version made
+  by the same amending act.` when there is none. **It never says the act did not amend the
+  twin**, because the record may simply not hold that event: an unwatched window, a consolidation
+  still pending or a transition never backfilled all look like silence. A change whose event
+  names no instrument gets the line without the answer, since there is no amending act to ask
+  about. The line uses the sheet's muted secondary style and mints no `id`.
 - **Where the sources differ**, the shape's tag with a small `What this means` link beside it to
   `methodology/#sources-differ` (the tag itself is never a link), then the lead and the detail.
   Three shapes, each with its own tag, lead and weight:
@@ -386,6 +411,12 @@ entries 51 to 200 sit behind one `<details>` with their count, and past 200 only
 listed, with their identifiers and a link to the change's file under `api/v1/`, where every row
 is. A wide table scrolls inside its own box, never the page. A provision page's newest step shows
 the same table above its text; an older step's table is on its version page, one link away.
+
+**A provision page whose unit has a twin names it in its header**, one line per sister act under
+the facts lines: `Twin in IVDR: Art. 106, textually similar (0.946), paired on both acts' texts
+of 10 January 2025.` It names the unit's own twin with the unit pair's score, linked as the
+version page's note links it, and carries no answer about an amending act, because a provision
+page spans every event that touched the provision.
 
 **The glossary** is the last section of the methodology page, `Words this site uses`, at
 `methodology/#glossary`, with an `id` on every term (`#sources-differ`, `#dates-only`,

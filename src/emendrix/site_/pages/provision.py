@@ -54,6 +54,7 @@ from emendrix.site_.subject import is_capitals, provision_title
 from emendrix.site_.tags import SPOKEN_COMMA, kind_tag
 from emendrix.site_.titles import SUFFIX
 from emendrix.site_.trail import provision_trail
+from emendrix.site_.twin_note import twin_line
 from emendrix.site_.urls import provision_href, up
 from emendrix.site_.watch_links import watch_href
 
@@ -220,7 +221,8 @@ def render_provision_page(
     steps: list[Html] = []
     for position, step in enumerate(history.steps):
         steps.extend(_step(site, step, texts[newest.index] if position == 0 else None))
-    body = join((*_header(act, history), *_follow(site, act, history), *steps), "\n")
+    twins = twin_line(site, act, history.location.canonical, up(_DEPTH))
+    body = join((*_header(act, history), *twins, *_follow(site, act, history), *steps), "\n")
     named = history.location.human
     events = len({step.entry.key for step in history.steps})
     title = f"{act.label} {named}: every consolidated version and what changed{SUFFIX}"

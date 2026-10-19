@@ -172,7 +172,7 @@ def test_every_watched_act_gets_a_page_and_a_feed_including_the_quiet_ones(
     slugs = {
         name.split("/")[1] for name in tree if name.startswith("acts/") and name.count("/") > 1
     }
-    assert len(slugs) == 4, slugs
+    assert len(slugs) == 5, slugs
     for act_slug in slugs:
         assert f"feeds/{act_slug}.xml" in tree, act_slug
 
@@ -541,7 +541,7 @@ def test_the_summary_names_the_report_the_numbers_came_from(
     )
     assert result.exit_code == 0, result.output
     assert "pages" in result.output
-    assert "4 acts" in result.output
+    assert "5 acts" in result.output
     assert "numbers from" in result.output
 
 

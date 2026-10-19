@@ -1109,4 +1109,25 @@ to 3 281. **No `id=` moved or went**, every `<title>` and description is unchang
 `_LARGEST_PAGE` did not move. Every other page, every feed, both search files, the sitemaps,
 `robots.txt`, the stylesheet, the script, the fonts, `icon.svg`, `og.png`, the catalogue, the
 substance list and every schema are byte-identical.
+
+Read again on 2026-10-19, when the site began to read the committed twin maps and the golden
+began to be built over a copy of the repository holding the MDR/IVDR map, computed from the
+pinned 20250110 consolidations of both, with the IVDR on `watchlist.example.toml` beside the
+MDR. Of the MDR event's nine changes one has a unit with a twin, Article 113, and its block
+gained one line after its facts: `Twin in IVDR: Art. 106(1), textually similar (0.958), paired
+on both acts' texts of 10 January 2025. The record holds no IVDR version made by the same
+amending act.`, the coordinate linking EUR-Lex because the IVDR has no provision page. The event
+page grew from 49 636 to 50 024 bytes, which moved `_LARGEST_PAGE` by the same 388, and
+`acts/32017R0745/ar-113/` from 8 509 to 8 824 with the header line naming IVDR Article 106 at
+0.946. New files: `acts/32017R0746/index.html` (5 566 bytes), the IVDR's page with no amendment
+recorded, and `feeds/32017R0746.xml` (414 bytes). The IVDR joined the roster wherever the roster
+is listed: `acts/index.html` from 4 932 to 5 141 (5 acts, Health 2, one more row),
+`feeds/index.html` from 4 358 to 4 448, `api/v1/catalogue.json` from 2 912 to 3 330,
+`search-index.json` from 2 332 to 2 549 and `sitemap.xml` from 2 270 to 2 340; the MDR's act
+page gained `Also watched in Health: IVDR` (13 250 to 13 339). Home's lede, description and
+JSON-LD now say 5 watched acts, at the same 5 360 bytes; it is the one existing page whose
+description moved, and no `<title>` did. **No `id=` moved or went.** Every other page, every
+other feed, the provision feeds, `llms.txt`, `robots.txt`, both other sitemaps, the substance
+files, the stylesheet, the script, the fonts, `icon.svg`, `og.png` and every schema are
+byte-identical.
 """

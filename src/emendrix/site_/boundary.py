@@ -23,16 +23,17 @@ from __future__ import annotations
 
 from datetime import date
 
-from emendrix.core import ActId, VersionId
+from emendrix.core import ActId, ProvisionLocation, VersionId
 from emendrix.eu.identifiers import Celex, ConsolidatedId, parse_version_id
-from emendrix.eu.links import document_url
+from emendrix.eu.links import anchor_for, document_url
 from emendrix.output import ChangelogEntry
 from emendrix.output.json_out import slug
 from emendrix.site_.amending import mentioned_keys
 from emendrix.site_.clocks import VersionDates, sort_date
+from emendrix.site_.twin_inputs import TwinMaps
 from emendrix.watch.config import Watchlist
 
-__all__ = ["amending", "eurlex_urls", "kinds", "published_urls", "version_dates"]
+__all__ = ["amending", "eurlex_urls", "kinds", "published_urls", "twin_maps", "version_dates"]
 
 _EU = "eu"
 """The one corpus with a published document URL scheme. Others simply get no link."""
@@ -141,3 +142,35 @@ def amending(entries: tuple[ChangelogEntry, ...]) -> tuple[dict[str, str], dict[
         numbers[key] = celex.official_number
         urls[key] = document_url(celex.version)
     return numbers, urls
+
+
+def twin_maps(read: TwinMaps) -> TwinMaps:
+    """The maps as read, with the date of each paired version and each paired coordinate's URL.
+
+    A twin map pairs the two acts' newest stored versions, which a note names by their dates, and
+    a twin coordinate the site has no page for links to that version on EUR-Lex at the anchor of
+    its article or annex. Both are readings of a version tag. A side outside this corpus, or a
+    tag that does not parse, gets neither, and the note falls back to the tag and to no link.
+    """
+    dates: dict[str, date] = {}
+    urls: dict[str, dict[str, str]] = {}
+    for document in read.maps:
+        for side, first in ((document.a, True), (document.b, False)):
+            if side.corpus != _EU:
+                continue
+            version = VersionId(side.version)
+            try:
+                parsed = parse_version_id(version)
+            except ValueError:
+                continue
+            if isinstance(parsed, ConsolidatedId):
+                dates[side.version] = parsed.version_date
+            base = document_url(version)
+            into = urls.setdefault(side.version, {})
+            for pair in document.pairs:
+                ends = ((pair.a, pair.b), *((child.a, child.b) for child in pair.children))
+                for a, b in ends:
+                    canonical = a if first else b
+                    anchor = anchor_for(ProvisionLocation.parse(canonical))
+                    into[canonical] = f"{base}#{anchor}" if anchor else base
+    return read.model_copy(update={"dates": dates, "urls": urls})

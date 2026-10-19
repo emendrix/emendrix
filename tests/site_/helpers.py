@@ -13,12 +13,17 @@ the assertions below untestable rather than lenient.
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 
 from typer.testing import CliRunner
 
 from emendrix.cli import app
-from eu_pins import OBSERVED_ON
+from emendrix.core import ActId, ProvisionTree, VersionId
+from emendrix.session import adapter_for
+from emendrix.twins.build import twin_map
+from emendrix.twins.write import open_repository, write_twin_map
+from eu_pins import FIXTURE_DIR, IVDR, IVDR_TWIN, MDR, MDR_TWIN, OBSERVED_ON
 
 runner = CliRunner()
 
@@ -52,6 +57,25 @@ def build(out: Path, repo: Path | None, *extra: str) -> Path:
     result = runner.invoke(app, arguments, env={"EMENDRIX_OUTPUT_REPO": ""})
     assert result.exit_code == 0, result.output
     return out
+
+
+def twinned(repo: Path, into: Path) -> Path:
+    """A copy of `repo` with the MDR/IVDR twin map committed into it, as `twins build` does.
+
+    The map is built from the pinned fixtures of both acts by the shipped code and written by
+    its own writer. A copy, because other suites read `repo` and must not see the map.
+    """
+    copy = into / "repo"
+    shutil.copytree(repo, copy)
+    trees: list[ProvisionTree] = []
+    with adapter_for(FIXTURE_DIR, OBSERVED_ON) as adapter:
+        for key, version in ((MDR, MDR_TWIN), (IVDR, IVDR_TWIN)):
+            fetched = adapter.fetch_version(ActId(corpus="eu", key=key), VersionId(version))
+            assert isinstance(fetched, ProvisionTree), fetched
+            trees.append(fetched)
+    written = write_twin_map(open_repository(copy), twin_map(*trees))
+    assert written.revision, written
+    return copy
 
 
 _TAG = re.compile(r"<[^>]+>")

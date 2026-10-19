@@ -312,7 +312,7 @@ def test_the_summary_counts_provision_feeds_apart_from_the_act_feeds(
         env={"EMENDRIX_OUTPUT_REPO": ""},
     )
     assert result.exit_code == 0, result.output
-    assert ", 5 feeds, 9 provision feeds, 4 acts," in result.output
+    assert ", 6 feeds, 9 provision feeds, 5 acts," in result.output
 
 
 def test_a_provision_page_links_its_feed_and_the_ci_example(site: Path) -> None:

@@ -13,6 +13,8 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from helpers import text_of
+from site_entries import attributed_entry
+from toy_twins import pair, sister_of, toy_map, toy_site
 
 from emendrix.core import (
     ActId,
@@ -43,6 +45,7 @@ from emendrix.site_.pages.event_index import INDEX_ABOVE
 from emendrix.site_.pages.prose import applies_line
 from emendrix.site_.pages.texts import text_blocks
 from emendrix.site_.style import STYLE
+from emendrix.site_.twin_inputs import TwinMaps
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
 REPO = Path(__file__).resolve().parents[2]
@@ -1031,3 +1034,16 @@ def test_a_change_with_table_entries_carries_its_entry_table_inside_its_own_bloc
     stripped = re.sub(r'\n<section class="entries".*?</section>', "", page, flags=re.DOTALL)
     stripped = re.sub(r'\n<p class="lookup">.*?</p>', "", stripped)
     assert stripped.replace(" data-substances>", ">") == plain
+
+
+def test_a_change_whose_unit_has_a_twin_carries_the_note_and_the_others_do_not() -> None:
+    entry = attributed_entry()
+    maps = TwinMaps(maps=(toy_map(pair("AR 2", "AR 2")),))
+    site = toy_site(entry, sister_of(entry), maps=maps)
+    act = next(item for item in site.acts if item.act == HOUSE_RULES)
+    rendered = _rendered(site, act, act.entries[0])
+    blocks = re.findall(r'<div class="chg[^"]*" id="[^"]*">.*?\n</div>', rendered, re.DOTALL)
+    twinned = [block for block in blocks if "Twin in house-rules-sister:" in block]
+    assert len(twinned) == 1
+    assert 'href="../ar-2/"' in twinned[0]
+    assert len(blocks) == len(entry.changes)

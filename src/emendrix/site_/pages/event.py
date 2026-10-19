@@ -18,17 +18,19 @@ from emendrix.output import ChangelogEntry
 from emendrix.site_.amending import amenders, by_words
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import event_date, version_heading
+from emendrix.site_.entry_table import first_table
 from emendrix.site_.feeds import feed_path, feed_title
 from emendrix.site_.identity import masthead
 from emendrix.site_.inputs import ActSite, SiteInputs
 from emendrix.site_.markup import Html, count, escape, join
-from emendrix.site_.pages.act_event import first_table, render_event
+from emendrix.site_.pages.act_event import render_event
 from emendrix.site_.pages.context_bar import context_bar
 from emendrix.site_.pages.texts import RenderedText
 from emendrix.site_.pages.version_masthead import pager, version_masthead
 from emendrix.site_.seo import event_json_ld
 from emendrix.site_.titles import event_title
 from emendrix.site_.trail import version_trail
+from emendrix.site_.twin_note import twin_note
 from emendrix.site_.untouched import (
     UNTOUCHED_CARD,
     all_textless,
@@ -78,7 +80,12 @@ def render_event_page(
             *version_masthead(site, act, entry, acts, anchors=anchors),
             *context_bar(act, entry, _DEPTH),
             *render_event(
-                entry, anchors, texts, site.changelogs_url, site.substances.links(up(_DEPTH))
+                entry,
+                anchors,
+                texts,
+                site.changelogs_url,
+                site.substances.links(up(_DEPTH)),
+                tuple(tuple(twin_note(site, act, entry, e, up(_DEPTH))) for e in entry.changes),
             ),
             *pager(act, entry, top=False),
         ),

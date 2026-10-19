@@ -59,6 +59,7 @@ from emendrix.site_.inputs import SiteInputs, collect_site
 from emendrix.site_.markup import count
 from emendrix.site_.polled import read_polled
 from emendrix.site_.substance_inputs import read_registers
+from emendrix.site_.twin_inputs import NO_TWIN_MAPS, read_twin_maps
 from emendrix.watch.config import Watchlist, load_watchlist
 
 __all__ = ["app", "build"]
@@ -267,6 +268,7 @@ def build(
         polled=read_polled(watch_state),
         accounts=accounts,
         registers=registers,
+        twin_maps=boundary.twin_maps(read_twin_maps(held) if held is not None else NO_TWIN_MAPS),
     )
     comparisons, reuse = NO_COMPARISONS, ""
     if comparison_cache is not None:
@@ -286,3 +288,7 @@ def build(
     )
     if reuse:
         typer.echo(reuse)
+    for path in site.twins.unreadable:
+        typer.echo(f"twin map {path} did not validate; its notes are left out", err=True)
+    for pair in site.twins.ignored:
+        typer.echo(f"twin map of {pair} left out: the site does not show both acts", err=True)

@@ -2,6 +2,7 @@
 
 ```
 <output-repo>/<corpus>/<act>/changes/<version>.json   the amendment events
+<output-repo>/twins/<pair>.json                       which units of two acts are textually similar
 reports/eval/<date>-<sha>.json                        the measured numbers
 watchlist.toml                                        which acts are watched, and their labels
 ```
@@ -9,9 +10,8 @@ watchlist.toml                                        which acts are watched, an
 The same provenance story as the changelog itself: if a number is on a page it was read out
 of the committed report or counted off the committed changelog documents, and if a sentence of
 legal text is on a page it was read out of a changelog document a diff produced from two
-published versions. Missing inputs are stated,
-not raised: no changelog repository, an empty one, a watched act that has never been amended,
-each is a page that says so.
+published versions. Missing inputs are stated, not raised: no changelog repository, an empty
+one, a watched act that has never been amended, each is a page that says so.
 
 Ordering is total and explicit, because two builds of one repository state have to produce one
 tree: `glob` order is not sorted on every filesystem, acts sort by label then by key, and
@@ -64,6 +64,7 @@ from emendrix.site_.clocks import VersionDates, sort_date
 from emendrix.site_.entries import CorpusCounts, corpus_counts, sorted_entries
 from emendrix.site_.polled import PolledState
 from emendrix.site_.substance_inputs import SubstanceInputs, collect_substances
+from emendrix.site_.twin_inputs import NO_TWIN_MAPS, TwinIndex, TwinMaps, twin_index
 from emendrix.site_.urls import shared_path
 from emendrix.watch.config import Watchlist
 
@@ -125,6 +126,9 @@ class SiteInputs(BaseModel):
         default_factory=SubstanceInputs,
         description="Every CAS and EC number the shown acts' registers and entry changes carry.",
     )
+    twins: TwinIndex = Field(
+        default_factory=TwinIndex, description="Every committed twin map, by act and unit."
+    )
 
     @model_validator(mode="after")
     def _accounts_need_a_site_url(self) -> SiteInputs:
@@ -185,6 +189,7 @@ def collect_site(
     amending_urls: Mapping[str, str] | None = None,
     version_dates: VersionDates | None = None,
     registers: tuple[Register, ...] = (),
+    twin_maps: TwinMaps = NO_TWIN_MAPS,
 ) -> SiteInputs:
     """Group the committed entries under their acts. Pure and total.
 
@@ -290,4 +295,5 @@ def collect_site(
         accounts=accounts,
         version_dates=dates,
         substances=collect_substances(resolved, registers),
+        twins=twin_index(twin_maps, resolved),
     )

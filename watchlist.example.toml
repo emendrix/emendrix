@@ -14,8 +14,10 @@
 # in the index, `aliases` are the other names a reader might search it under. None of them ever
 # resolves an act, so a typo in one costs a heading, a grouping or a search hit, never a match.
 #
-# These four acts are the ones the labelled eval corpus is built from, so they are the four
-# with measured numbers behind them (`reports/`).
+# The AI Act, the MDR, the DSA and REACH are the acts the labelled eval corpus is built from, so
+# they are the four with measured numbers behind them (`reports/`). The IVDR is here for the
+# `[[twins]]` block below, because many of its provisions are textually similar to the MDR's, and
+# has no measured numbers behind it.
 #
 # One `[[amending_acts]]` block per *amending instrument*, naming an act that amended a watched
 # one. `name` is a label of the same rank again: the site prints it wherever an event says which
@@ -50,6 +52,12 @@ domain  = "Health"
 aliases = ["MDR"]
 
 [[acts]]
+celex     = "32017R0746"
+name      = "IVDR"
+long_name = "In Vitro Diagnostic Medical Devices Regulation"
+domain    = "Health"
+
+[[acts]]
 celex   = "32022R2065"
 name    = "Digital Services Act"
 domain  = "Digital"
@@ -60,6 +68,11 @@ celex     = "32006R1907"
 name      = "REACH"
 long_name = "Registration, Evaluation, Authorisation and Restriction of Chemicals"
 domain    = "Chemicals"
+
+# One block per pair of acts whose provisions are compared for textual twins. The pairing of
+# provisions is computed; this only says which acts to compare.
+[[twins]]
+acts = ["32017R0745", "32017R0746"]
 
 [[amending_acts]]
 celex = "32026R1744"

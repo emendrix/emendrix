@@ -66,7 +66,7 @@ from emendrix.output.json_out import payload_for
 from emendrix.site_.api_files import API_ROOT
 from emendrix.site_.diffview import summary_words
 from emendrix.site_.dispute import QUIET_NOTE, SHAPE_CLASS, dispute_shape, named_by, quiet_heading
-from emendrix.site_.entry_table import entry_table
+from emendrix.site_.entry_table import entry_table, first_table
 from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import Html, escape
 from emendrix.site_.pages.event_index import INDEX_ABOVE, INDEX_ID, touched
@@ -85,7 +85,7 @@ from emendrix.site_.substance_inputs import NO_LINKS, SubstanceLinks
 from emendrix.site_.tags import SPOKEN_COMMA, kind_tag
 from emendrix.site_.urls import location_slug, up
 
-__all__ = ["first_table", "render_event"]
+__all__ = ["render_event"]
 
 _DEPTH = 3
 """`acts/<slug>/<key>/index.html`, the version page every block here is printed on."""
@@ -119,6 +119,7 @@ def _change_block(
     indexed: bool,
     links: SubstanceLinks = NO_LINKS,
     door: bool = False,
+    twins: tuple[Html, ...] = (),
 ) -> list[Html]:
     """One change: what it is, where its sources differ, what was said, and the text itself.
 
@@ -139,7 +140,8 @@ def _change_block(
     paragraph are both modified, and the count is what tells them apart without opening
     either; it is a size and not part of the provision's name, which is why it left the
     heading. A change with no text on either side has nothing to measure and prints no count.
-    The dates line follows where a date moved.
+    The dates line follows where a date moved, then `twins`, the line naming the provision's
+    textual twin in each sister act (`site_/twin_note.py`).
 
     A change to a profiled table carries its entry table after the sentences and before the
     text (`site_/entry_table.py`): the rows the act prints, keyed, which is what a reader of a
@@ -178,6 +180,7 @@ def _change_block(
     dates = dates_line(change)
     if dates is not None:
         lines.append(dates)
+    lines.extend(twins)
     if change.disputed:
         lines.extend(differ_note(change.signals, up(_DEPTH)))
     lines.extend(prose(emitted, entry))
@@ -219,24 +222,13 @@ def _quiet(rows: list[Html], number: int) -> list[Html]:
     ]
 
 
-def first_table(entry: ChangelogEntry) -> int | None:
-    """The position of the first change whose entry table lists an entry, or None."""
-    return next(
-        (
-            at
-            for at, emitted in enumerate(entry.changes)
-            if emitted.change.table_entries is not None and emitted.change.table_entries.changes
-        ),
-        None,
-    )
-
-
 def render_event(
     entry: ChangelogEntry,
     anchors: tuple[str, ...],
     texts: tuple[RenderedText, ...],
     changelogs_url: str = "",
     links: SubstanceLinks = NO_LINKS,
+    twins: tuple[tuple[Html, ...], ...] = (),
 ) -> list[Html]:
     """One event's full body. `anchors` is one fragment per change, in the entry's own order.
 
@@ -245,6 +237,7 @@ def render_event(
     both sides running the same counter; `texts`, the evidence blocks, arrive resolved for the
     same reason. `texts` is positional too, one
     block per change, and is built once per entry however many pages show one of its changes.
+    `twins` is positional in the same way, each change's twin lines, or empty for none.
 
     The changes with no text to show are moved to the foot of the list, which is the one place
     this page reorders anything. Anchors, permalinks and the index above them are untouched by
@@ -271,6 +264,7 @@ def render_event(
             indexed=long,
             links=links,
             door=at == first,
+            twins=twins[at] if twins else (),
         )
         if emitted.change.textless:
             quiet += 1

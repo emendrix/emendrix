@@ -43,6 +43,20 @@
       "waiting": []
     },
     {
+      "aliases": [],
+      "corpus": "eu",
+      "domain": "Health",
+      "eurlex_url": "",
+      "events": {},
+      "feed": "https://example.invalid/site/feeds/32017R0746.xml",
+      "key": "32017R0746",
+      "label": "IVDR",
+      "long_name": "In Vitro Diagnostic Medical Devices Regulation",
+      "provisions": {},
+      "url": "https://example.invalid/site/acts/32017R0746/",
+      "waiting": []
+    },
+    {
       "aliases": [
         "DSA"
       ],

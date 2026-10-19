@@ -21,11 +21,12 @@ from itertools import groupby
 from typing import Final
 
 from emendrix.core import EntryChange, EntryDelta, EntryKind, EntryTable
+from emendrix.output import ChangelogEntry
 from emendrix.site_.entry_grid import grid_rows, head_rows, spans
 from emendrix.site_.markup import Html, escape, join
 from emendrix.site_.substance_inputs import NO_LINKS, SubstanceLinks
 
-__all__ = ["LISTED", "OPEN", "SCHEMES", "change_table", "entry_table"]
+__all__ = ["LISTED", "OPEN", "SCHEMES", "change_table", "entry_table", "first_table"]
 
 OPEN: Final = 50
 """Entries of one kind shown open; the rest are folded or listed by key."""
@@ -245,3 +246,15 @@ def entry_table(
             lines.append(Html("</details>"))
     lines.append(Html("</section>"))
     return lines
+
+
+def first_table(entry: ChangelogEntry) -> int | None:
+    """The position of the first change whose entry table lists an entry, or None."""
+    return next(
+        (
+            at
+            for at, emitted in enumerate(entry.changes)
+            if emitted.change.table_entries is not None and emitted.change.table_entries.changes
+        ),
+        None,
+    )

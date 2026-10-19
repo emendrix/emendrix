@@ -20,6 +20,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from site_entries import attributed_entry, disputed_entry, unattributed_entry
+from toy_twins import pair, sister_of, toy_map, toy_site
 
 from emendrix.core import Delta, ProvisionLocation, ProvisionText, ProvisionTree, VersionId
 from emendrix.diff import compute_delta
@@ -34,6 +35,7 @@ from emendrix.site_.magnitude import magnitude_html
 from emendrix.site_.markup import escape
 from emendrix.site_.pages.provision import render_provision_page
 from emendrix.site_.pages.texts import text_blocks
+from emendrix.site_.twin_inputs import TwinMaps
 from emendrix.site_.urls import entry_anchors
 from toy_corpus import HOUSE_RULES, V1, V2, ToyCorpusAdapter
 
@@ -471,3 +473,19 @@ def test_only_the_newest_step_carries_the_entry_table_above_its_text() -> None:
     plain, _, _ = _page(_entry(2), _entry(1))
     stripped = re.sub(r'\n<section class="entries".*?</section>', "", rendered, flags=re.DOTALL)
     assert stripped == plain
+
+
+def test_a_provision_with_a_twin_names_it_in_its_header_and_one_without_does_not() -> None:
+    entry = attributed_entry()
+    maps = TwinMaps(maps=(toy_map(pair("AR 2", "AR 2", 0.97)),))
+    site = toy_site(entry, sister_of(entry), maps=maps)
+    act = next(item for item in site.acts if item.act == HOUSE_RULES)
+    pages = {
+        history.location.canonical: render_provision_page(
+            site, act, history, text_blocks(history.steps[0].entry)
+        )
+        for history in histories(act)
+    }
+    assert "Twin in house-rules-sister:" in pages["AR 2"]
+    assert "textually similar (0.970)" in pages["AR 2"]
+    assert "Twin in" not in pages["AN I"]

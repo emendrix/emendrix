@@ -23,10 +23,10 @@ def watchlist(*celexes: str) -> Watchlist:
     return Watchlist(acts=tuple(WatchedAct(celex=value) for value in celexes))
 
 
-def test_the_shipped_example_loads_and_holds_the_four_corpus_acts() -> None:
+def test_the_shipped_example_loads_and_holds_the_corpus_acts_and_the_mdr_twin() -> None:
     """The example is a deliverable, not a comment: it is loaded, not merely read."""
     loaded = load_watchlist(EXAMPLE)
-    assert [entry.celex for entry in loaded.acts] == [AI_ACT, MDR, DSA, REACH]
+    assert [entry.celex for entry in loaded.acts] == [AI_ACT, MDR, IVDR, DSA, REACH]
     assert loaded.acts[0].act.display_name == "AI Act"
     assert str(loaded.acts[0].act) == f"eu:{AI_ACT}"
 
@@ -263,7 +263,7 @@ def test_a_twins_block_names_two_acts_and_its_key_ignores_their_order(tmp_path: 
     assert [pair.acts for pair in loaded.twins] == [(IVDR, MDR)]
     assert [pair.key for pair in loaded.twins] == [(MDR, IVDR)]
     assert watchlist(MDR).twins == ()
-    assert load_watchlist(EXAMPLE).twins == ()
+    assert [pair.key for pair in load_watchlist(EXAMPLE).twins] == [(MDR, IVDR)]
 
 
 @pytest.mark.parametrize("second", [f'["{MDR}", "{IVDR}"]', f'["{IVDR}", "{MDR}"]'])
