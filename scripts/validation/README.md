@@ -154,9 +154,12 @@ every article and every annex against every annex by the word ratio
 words, with `real_quick_ratio` and `quick_ratio` as bounds), and a pair is a twin when each is
 the other's best match at or above a floor. The floor is read off the corpus: the lowest candidate
 from 0.50 up, in steps of 0.05, at which at least 95% of the mutual-best pairs above it share a
-normalised heading, else 0.90. `floor` also aligns the children below each pair, places the
-record's changed coordinates on them, and counts how many pairs a page of differing passages
-would withhold as too different to excerpt; `divergence` lists the changes of one act's record,
+normalised heading, else 0.90; it read 0.90 on 2026-10-19, the `TWIN_FLOOR` the shipped twin
+map uses (`src/emendrix/twins/pair.py`). `floor` also aligns the children below each pair, places
+the record's changed coordinates on them, and counts how many pairs a page of differing passages
+would withhold as too different to excerpt, three ways: over every passage, context included (42
+of 84 on 2026-10-19); over the twelve a page shows, which is the rule the shipped map applies (32);
+and over the differing words alone (0); `divergence` lists the changes of one act's record,
 made by an amending act that also made an event of the other, which left the twin untouched,
 against a bar of five such changes from two amending acts; `screen` runs a shingle screen and
 then the word ratio over every pair of acts the cache holds:

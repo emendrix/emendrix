@@ -307,3 +307,128 @@ it.
 reference number is shown in its row but is not a search label, a name is searched only as the
 row prints it (no synonyms), and an Index number has no page of its own: it leads to the page of
 the first CAS, else EC, number its entry prints, and an Index entry printing neither leads nowhere.
+
+## Twin provisions
+
+For each pair of watched acts named in a `[[twins]]` block, `emendrix twins build` pairs their
+provisions by textual similarity and commits a twin map; the site turns it into a note under each
+change, a line on each provision page and a twin page per pair
+([`./output-format.md`](./output-format.md) §"The twin map", [`./site.md`](./site.md) §"Twin
+pages"). These are its gaps.
+
+**Twin means textually similar, by one measure.** The score is the word ratio,
+`difflib.SequenceMatcher` over the two comparison texts split into words, and two units are
+twins when each is the other's best match of the same kind (article with article, annex with
+annex) at or above the floor, **0.90**. The floor was read off the MDR and the IVDR on 2026-10-19
+by a rule stated before the reading: the lowest floor from 0.50 up at which at least 95% of the
+mutual-best pairs share a normalised heading, else 0.90. None reached 0.95: agreement rose from
+0.817 at 0.50 to 0.882 at 0.90, 75 of 85 pairs
+(`scripts/validation/results/twin-floor-fetch-2026-10-19.txt`). Heading agreement is a proxy for
+the precision of a pairing, and it cuts both ways. A shared heading does not show a pair is right:
+two provisions can share one and differ in substance. A different heading does not show it is
+wrong: of the 10 pairs at the floor whose headings differ, seven are articles of the clinical
+investigation chapter whose IVDR heading says "performance study" where the MDR's says "clinical
+investigation", two more put "performance" for "clinical" and one drops a repeated "on". Nothing
+in the score reads what a provision requires, so a twin is similar wording and never similar
+effect. Below the floor nothing is a twin, however a reader would describe the pair: the
+transitional provisions (MDR Articles 120, 122 and 123, IVDR Articles 110, 112 and 113) are each
+other's closest match at lower ratios, and over the two acts' 20250110 texts 56 MDR and 44 IVDR
+units have no twin.
+
+**The pairing is computed on the newest stored versions, not on each event's.** The map reads
+each act's newest stored version, so a change made in 2020 carries a note about a pair read off
+later texts, and every note and twin page names the dates it was paired on for that reason. An
+insertion or a renumbering between an event's version and the paired one can make an old note
+name a twin under a number the provision did not then carry, or a twin that did not then exist,
+and nothing checks the pairing against the event's own texts. The two sides need not share a
+date either: on 2026-10-19 the newest MDR consolidation listed was 20260719 and the IVDR's
+20250110, and the floor reading over those two gives the same 0.90, with 85 pairs at it and 75
+of them sharing a heading, as the reading over 20250110 for both.
+
+**Passages are excerpts of comparison text.** A twin page shows each differing span with up to
+6 words of context either side, from the comparison text with its whitespace collapsed rather
+than the verbatim text, each side cut at 400 characters and marked `[…]`, at most 12 to a pair
+with the rest counted. A pair whose shown passages, context and markers included, exceed 30% of
+either unit's comparison text shows none and says the two differ too widely to excerpt: over the
+MDR and IVDR 20250110 texts on 2026-10-19, 32 of the 84 twin pages. **Withheld does not mean more
+different.** The share is mostly context: counting every passage rather than the 12 shown would
+withhold 42, and counting the differing words alone, without context, would withhold none. So a
+pair at 0.966 with one short passage on a short article (MDR Article 116, IVDR Article 109) is
+withheld, while longer pairs at lower scores show their passages.
+
+**"The same amending act changed it: no" reads the record.** The note's answer is read off the
+committed record through the attribution an amending act's own page uses: `yes` when an event of
+the sister act attributed to the same instrument changed the twin, `no` when such an event
+changed only other units or other parts of the twin's unit. An IVDR event missing from the record
+(an unwatched window, a consolidation still pending, a transition never backfilled) makes the
+answer "the record holds no IVDR version made by the same amending act", never `no`, because
+silence in the record is not evidence about the law. Neither answer says the act should have
+amended the twin. Sibling instruments are two acts to this test: MDR Article 44 was changed by
+`32023R0502` and IVDR Article 40, its twin, by `32023R0503`, in consolidations of the same date
+(`scripts/validation/results/twin-divergence-fetch-2026-10-19.txt` lists both acts among those
+with no event of the other act), and the note can only say the record holds no IVDR version
+made by the first.
+
+**No divergence feed exists.** A feed of changes that landed on one twin and not the other under
+the same amending act was to be built only if the record held at least 5 such one-sided changes
+from at least 2 amending acts. Counted on 2026-10-19 over the public record at `1db1143`, it held
+0: the one amending act the record shows changing a twin in both acts, `32024R1860`, changed
+both sides of the two pairs it reached (MDR Article 78 and IVDR Article 74, MDR Article 10a and
+IVDR Article 10a). The IVDR has no consolidation after 20250110 in the record, so
+every MDR change since has nothing on the other side to compare with; the count is re-run with
+`scripts/validation/twin_provisions.py divergence --fetch` before a feed is reconsidered
+(`scripts/validation/results/twin-divergence-fetch-2026-10-19.txt`).
+
+**One pair is configured: the MDR and the IVDR.** A screen on 2026-10-19 of every pair of the
+72 acts the disk cache held, newest version each (8-word shingles, then the word ratio at 0.90),
+found eleven other pairs of acts with at least ten mutual-best article pairs: the three European
+Supervisory Authorities regulations (`32010R1093`, `32010R1094`, `32010R1095`) with each other,
+the cableway, personal protective equipment and gas appliance regulations (`32016R0424`,
+`32016R0425`, `32016R0426`) with each other, the anti-dumping and anti-subsidy regulations
+(`32016R1036`, `32016R1037`), the fertilising products regulation `32019R1009` with each of the
+three 2016 product regulations, and `32016R0425` with the Machinery Regulation `32023R1230`
+(`scripts/validation/results/twin-screen-2026-10-19.txt`). The screen finds 78 of the 85 MDR/IVDR
+pairs the full run finds, so it undercounts by about 8%. None of the eleven is configured. Adding
+one is a `[[twins]]` block naming two watched acts, and it would be paired at the MDR/IVDR floor,
+which was not read off its own headings.
+
+**The map's schema is committed but not served.** `docs/schema/twins.schema.json` is in the
+repository; the API serves the map at `/api/v1/twins/<pair>.json` but not its schema under
+`/api/v1/schema/`, which the register's schema shares ([`./api.md`](./api.md) §"Twins").
+
+## The text store
+
+`emendrix texts build` keeps the verbatim text of every provision of every stored version of
+every watched act beside the changelogs ([`./text-store.md`](./text-store.md)). What it does not
+do:
+
+**It is not published, and not a source of truth.** No page, feed, sitemap or API file reads it,
+and the reference deployment mounts it into no web-facing service. CELLAR is the source: every
+file is rebuilt from the corpus by `texts build --rebuild`, so a lost store costs a rebuild and
+nothing else.
+
+**A stored version may be the Official Journal text.** Where a consolidation has no English text
+of its own, the adapter serves the act as published in the Official Journal, and the file's
+header says so (`served_version` differs from `version`). A version the corpus answers with a
+state (`consolidation_pending`, `english_unavailable`, `structured_text_unavailable`) has no file:
+it is recorded in `states.json` and asked again on every build. Measured on 2026-10-19 over the
+458 consolidations the disk cache held for 72 acts, 456 parsed to a tree, 2 answered
+`structured_text_unavailable` (REACH 20150513 and 20150601) and none was served from the
+Official Journal (`scripts/validation/results/text-store-size-2026-10-19.txt`).
+
+**Its size is a measurement of a cache, not of a deployment.** The 456 versions came to
+219,486,762 bytes gzipped (1,581,720,376 raw, 758,574 nodes) with a writer of the same layout in
+`scripts/validation/text_store_survey.py`, not with `texts build` itself. The notices then listed
+504 consolidations over 76 acts, 46 of them uncached
+(`scripts/validation/results/text-store-coverage-fetch-2026-10-19.txt`), and a build also stores
+each act's Official Journal original, which the reading did not measure. A node's text is its
+whole subtree, so the layout repeats text at every depth by design; pooling each act's identical
+texts across its versions would have saved 0.413 of the gzipped bytes (the size reading), and
+nothing writes that layout.
+
+**Its token lengths are a proxy.** Of 104,611 distinct comparison texts, 1,215 (1.16%) exceed
+2,048 tokens and 217 (0.21%) exceed it with no child that a finer record could stand in for,
+counted as `ceil(characters / 4)` on 2026-10-19 because no tokenizer was installed
+(`scripts/validation/results/text-store-tokens-2026-10-19.txt`). Four characters per token
+overstates plain English and understates numbers, identifiers and tables read as prose, CLP
+Annex VI above all, so the real count is measured before anything relies on it.

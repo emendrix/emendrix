@@ -12,7 +12,8 @@ opinions, the eval harness that scores all three over a committed corpus, the wa
 an amendment in the first place, the one stage where a model is allowed to speak, the
 deterministic gate that decides whether what it said may ship, the graph that assembles all of it
 into the loop, the changelog the loop exists to produce, and the static site that publishes a
-rendering of it.
+rendering of it. Two packages sit beside that loop, the text store and the twin map, and are
+described below.
 
 `emendrix.core` is the typed vocabulary of the whole system (provision locations, provision trees,
 versions, changes, citations, the two clocks and the first-class states), and it is deliberately
@@ -157,6 +158,32 @@ measured numbers behind it, and it calls no model and needs no API key.
 The two second opinions the diff is held against are in
 [`./evaluation.md`](./evaluation.md); the stages that run after it are in
 [`./pipeline.md`](./pipeline.md).
+
+## Beside the loop: the text store and the twin map
+
+Two packages sit beside the loop rather than in it. No stage of `WATCH → FETCH → DELTA →
+CORROBORATE → EXPLAIN → GATE → EMIT` reads either, `emendrix run` behaves the same without them,
+and neither calls a model.
+
+- **`emendrix.texts`** is the text store: `texts build` writes the verbatim text and comparison
+  form of every node of every stored version, one byte-stable gzipped file per version, into a
+  directory beside the changelog repository that nothing publishes, and `TextStore` reads it back
+  as provision trees, reporting a damaged file as the state `unreadable` rather than raising.
+  [`./text-store.md`](./text-store.md) is the layout.
+- **`emendrix.twins`** is the twin map: `twins build` reads two acts' newest stored versions,
+  pairs their units by word ratio at a floor read off the corpus, aligns the children below each
+  pair, excerpts where the texts differ under fixed caps, and commits one JSON document into the
+  changelog repository. The site renders it and never reads the store.
+  [`./output-format.md`](./output-format.md) §"The twin map" is the method and the fields.
+
+**Both are held to the seam.** Like `emendrix.diff`, each package sees core types only, so either
+runs unchanged on the toy corpus: no module in it imports `emendrix.eu`, names the corpus or
+reads the clock, and `tests/test_architecture.py` fails the build if one does. The one exception
+in each is its `cli.py`, a composition root as `repair/cli.py` is. `texts/cli.py` reads the
+watchlist, builds the adapter through `emendrix.session` and names the one sanctioned clock read,
+the date the states are stamped with; `twins/cli.py` reads the watchlist and decides which stored
+version is newest, which takes reading the corpus's version identifiers. Neither location has a
+platform default: the store is named by a flag, an environment variable or the watchlist.
 
 ## Why a graph framework on a near-linear pipeline
 

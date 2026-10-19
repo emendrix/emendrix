@@ -63,6 +63,8 @@ Not legal advice: this output is machine-computed from published texts, carries 
 | `emendrix repair tables` | Give every committed change to a profiled substance table its keyed diff of table entries, and write each profiled act's register from its newest published version. It re-parses both versions of each such entry through the cache, sets only `table_entries` and the schema version `1.3`, and carries every verbatim text, explanation, signal and date over byte-identical; no model is asked anything. A version the cache cannot produce leaves its entry as it is, counted and named. `--dry-run` prints per act what would move, with typography-only amendments and whitespace-only pairs apart, and writes nothing. `--act`, `--limit`, `--fixture-dir`, `--repaired-on`, `--summary`. |
 | `emendrix repair explanations` | Ask the model again for a change that shipped with no explanation because the answer was unusable, and splice the answer into the entry that already exists. Explicitly invoked, never reached from a resume, and it fetches nothing: the prompt is rebuilt from the entry's own stored texts, so the model is shown exactly what the page shows. Its citation check is narrower than the loop's, resolving against those texts rather than against two whole provision trees, and no coordinate check runs at all; the entry records both. A change that fails again keeps its stated reason and is counted. `--dry-run` names every change it would ask about and prices them at the published rate, builds no engine and spends nothing. `--act`, `--limit` (counting changes, which is what a call is paid for), `--cassettes`, `--summary`. |
 | `emendrix repair unexplained` | Restate a note that quoted the provider library's own error text, which entries written before the curated reasons existed carry, and stamp the counted kind that goes with it, so the note says what the code would say today and the change becomes selectable by `repair explanations`. It matches an exact set of measured strings rather than a prefix, because most of that field is the house register and a curated reason can carry no kind either. A note naming a provider that never answered is counted and left exactly as it is: neither kind is true of one, and the unfinished kind would send a later backfill to re-run whole transitions that are already correct. No model, no network, no key. `--dry-run`, `--act`, `--limit`, `--summary`. |
+| `emendrix texts build` | Store the verbatim text of every listed version of every watched act that the store lacks, in a directory beside the changelog repository that nothing publishes. A version the corpus answers with a state (pending, no English, no structured text) is recorded as that state, never raised; a second run over an unchanged listing writes nothing. `--act`, `--limit`, `--dry-run`, `--rebuild`, `--fixture-dir`, `--observed-on`, `--summary`. `emendrix texts show <celex> <version> [coordinate]` prints a stored version's units, or one node's text verbatim, for an operator. |
+| `emendrix twins build` | Pair the provisions of each `[[twins]]` pair of acts by textual similarity, from each act's newest stored version, and commit the twin map into the changelog repository when its bytes move. No network, no model, no clock. `--pair`, `--dry-run`, `--summary`. |
 | `emendrix eval <subcommand>` | `run`, `publish-readme`, `sample-digest`, `judge-benchmark`, and the pair `build-corpus` then `build-subset` **in that order**: the first writes `explain_subset: null` and only the second fills it in, so stopping after it leaves the model layer with no pinned subset to measure over. `build-corpus` also defaults to `--fetch` and stamps `built_on` from the clock, so reproducing the committed `corpus.json` byte for byte takes `--no-fetch --built-on 2026-08-06`, the date already in the file. |
 | `emendrix site build --out site/` | Write the static site from the committed changelogs and the newest committed eval report. `--changelogs`, `--site-url`, `--repo-url`, `--watchlist`. `--operator`, `--operator-url`, `--contact` and `--watch-state` are the deployment's own: they fill the about page's "Who runs it" section, none has a default, and a build given none of them renders that page without it. `--watch-state` is the poller's state file, and with it the page says the date the corpus was last checked and how many consolidations are waiting for their text. `--comparison-cache` names a directory the before/after comparisons are kept in between builds, which changes how long a build takes and never what it writes. |
 
@@ -74,6 +76,17 @@ created if absent, owned by you and never pushed. There is no default path, so w
 configured a run prints its report and writes nothing. [`.envrc`](./.envrc) is committed and holds
 no secret; it sources the gitignored `.envrc.local`, where a key goes.
 
+**The text store** is the other thing a deployment keeps. `emendrix texts build` writes the
+verbatim text of every provision of every stored version of every watched act, one gzipped file
+per version, into a directory beside the changelog repository: `--text-store`, else
+`EMENDRIX_TEXT_STORE`, else `[output] text_store_path`, with no default, and refused inside any
+git working tree so no commit can publish it. It is there for computation, the twin map below is
+built from it, and **it is never served**: no page, feed, sitemap or API file carries it, and
+losing it costs a rebuild from the corpus. Measured on 2026-10-19 with a writer of the same layout
+over the 456 versions of 72 acts the disk cache held, it comes to 219,486,762 bytes gzipped
+(1.58 GB raw); that is the cache on that day, not a deployment's store.
+[`docs/text-store.md`](./docs/text-store.md) is the whole of it.
+
 | Variable | Default | What it sets |
 |---|---|---|
 | `OPENROUTER_API_KEY` | unset | Provider access, read only when the explain stage records or runs live. |
@@ -81,6 +94,7 @@ no secret; it sources the gitignored `.envrc.local`, where a key goes.
 | `EMENDRIX_MODEL` | `openrouter:anthropic/claude-sonnet-5` | The explainer. |
 | `EMENDRIX_JUDGE_MODEL` | `openrouter:openai/gpt-5.6-sol` | The faithfulness judge. |
 | `EMENDRIX_OUTPUT_REPO` | unset | The changelog repository, below `--output-repo` and above `watchlist.toml`. |
+| `EMENDRIX_TEXT_STORE` | unset | The text store, below `--text-store` and above `watchlist.toml`. |
 | `EMENDRIX_POLITE_DELAY_S` | `1.0` | Seconds between network calls; cache hits never sleep. |
 | `EMENDRIX_EXPLAIN_TEXT_CAP` | `40000` | Per-side character cap on the text the model is shown; overrun is marked, never silent. Six more `EMENDRIX_EXPLAIN_*` knobs, the context cap among them, are declared and reasoned about beside their fields in [`explain/settings.py`](./src/emendrix/explain/settings.py). |
 
@@ -147,7 +161,8 @@ and command.
 It is **not legal advice**; not a compliance assessment tool, since it never asks about your
 business; **not a consolidation engine**, since it does not *apply* amendments to produce
 authoritative text of its own, it detects, localises and explains them; not a search engine over
-law, which adjacent tools do well; and not a paid service: the optional account service sends
+law, which adjacent tools do well; it does not republish the law, since the text it keeps for
+computation is never served; and it is not a paid service: the optional account service sends
 email alerts for watched provisions and holds nothing but an address and a watchlist. Inside that
 mandate the release still has holes, documented rather than hidden.
 [`CHANGELOG.md`](./CHANGELOG.md) §"Known limitations" is the authority on what `0.1.0` cannot do,
@@ -187,6 +202,28 @@ across every act. **Appearing is all it says.** Many entries name a group of sub
 no number, so a number no entry prints may still be covered by one, and no page, file or answer
 says what the law makes of a substance. The tables read and left out, and every gap of the
 lens, are in [`docs/limitations.md`](./docs/limitations.md) §"Substance tables".
+
+## Textual twins
+
+Some acts were written as variants of each other: most articles of the Medical Devices
+Regulation have a near-copy in the In Vitro Diagnostic Medical Devices Regulation, often under
+another number. For each pair of watched acts named in a `[[twins]]` block of the watchlist,
+`emendrix twins build` scores every article of one against every article of the other, and every
+annex against every annex, by the share of their words that match in order, and calls two
+provisions **twins** when each is the other's closest match and the score reaches a floor read
+off the corpus (0.90, measured 2026-10-19). Sub-provisions below a pair are aligned the same way.
+
+A reader gets, under every change to a provision with a twin, one line naming it, with its score,
+the dates of the texts it was paired on and whether the record holds a change to it by the same
+amending act: `Twin in IVDR: Art. 106(1), textually similar (0.958)`. The provision page names
+its twin in its header. Each non-identical pair has a twin page showing **only the passages where
+the two texts differ**, a few words of context around each, never either provision whole, with
+both on EUR-Lex; a pair index lists every pair and every provision with no twin
+([MDR and IVDR](https://emendrix.eu/twins/eu-32017R0745--eu-32017R0746/)), and the map is data
+at `/api/v1/twins/<pair>.json`. **Twin means textually similar and nothing more**: no page says
+a provision is equivalent to its twin, has the same effect, or should change because the other
+did. The MDR and the IVDR are the one pair configured; the figures and the gaps are in
+[`docs/limitations.md`](./docs/limitations.md) §"Twin provisions".
 
 ## Measured results
 
@@ -246,13 +283,14 @@ a finding about shared state.
 the pipeline stage by stage, the evaluation, the output format (repository layout, Markdown shape,
 versioned JSON schema, every cap that can truncate a quote), the site, the JSON API the site serves
 the record through (with an example workflow that watches one provision from CI) and the MCP server
-that hands the same record to a model, the optional account service that emails watched provisions
-([`docs/accounts.md`](./docs/accounts.md)), the limitations, the roadmap, and HTML walkthroughs of
-the shipped code. The empirical grounding is seven end-to-end traces against live Publications Office
-endpoints, across three acts spanning 2006 to 2026, and any data-source claim made anywhere else in
-this repository is subordinate to what those traces measured. They were produced by [`scripts/validation/`](./scripts/validation/), kept only so the
-published numbers are reproducible artifacts, with the reports committed beside it; it is the only
-code here that hits the network outside the opt-in `live` tests, and CI never runs it.
+that hands the same record to a model, the text store kept for computation and never served, the
+optional account service that emails watched provisions ([`docs/accounts.md`](./docs/accounts.md)),
+the limitations, the roadmap, and HTML walkthroughs of the shipped code. The empirical grounding is
+seven end-to-end traces against live Publications Office endpoints, across three acts spanning 2006
+to 2026, and any data-source claim made anywhere else in this repository is subordinate to what
+those traces measured. They were produced by [`scripts/validation/`](./scripts/validation/), kept
+only so the published numbers are reproducible artifacts, with the reports committed beside it; it
+is the only code here that hits the network outside the opt-in `live` tests, and CI never runs it.
 
 ## License
 

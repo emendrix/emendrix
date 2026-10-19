@@ -1272,3 +1272,77 @@ Named rather than discovered later; the eval report's disagreement list is the l
   was not checked from the edge, because it would create a real account: that the email names
   the number and that confirming it leaves the number watched rests on the service's tests alone.
   **No published figure moved**: no record was repaired and the site was not rebuilt.
+
+- **The verbatim text of every stored version is kept beside the changelogs and never served,
+  since 2026-10-19.** `emendrix texts build` writes every provision of every listed version of
+  every watched act, its verbatim text and comparison form, one byte-stable gzipped file per
+  version, into a directory named by `--text-store`, `EMENDRIX_TEXT_STORE` or `[output]
+  text_store_path`, with no default and refused inside any git working tree; a version the corpus
+  answers with a state is recorded in `states.json` and asked again on every build, and a damaged
+  file reads as `unreadable` rather than raising. `emendrix texts show` prints a stored version's
+  units or one node's text for an operator. No page, feed, sitemap or API file reads the store,
+  and `deploy/compose.yaml` mounts its volume on no web-facing service; it is there for
+  computation, and the twin map is built from it. Measured on 2026-10-19 with a writer of the same
+  layout over the 456 versions of 72 acts the disk cache held (2 more answered
+  `structured_text_unavailable`, none was served from the Official Journal): 219,486,762 bytes
+  gzipped, 1,581,720,376 raw, three acts (CLP, REACH, CRR) holding 161 MB of the gzip. That is a
+  reading of one cache, not of `texts build`'s own output or of a deployment's store, and the
+  notices then listed 504 consolidations, 46 of them uncached. Its one limitation for what
+  follows: the token lengths it was measured for are a proxy, `ceil(characters / 4)`, by which
+  1,215 of 104,611 distinct texts (1.16%) exceed 2,048 tokens and 217 (0.21%) do so with no child
+  to stand in. **No published figure moved**: no stage of the loop reads the store.
+
+- **The provisions of two watched acts are paired by textual similarity, since 2026-10-19.**
+  `emendrix twins build` reads each `[[twins]]` pair's newest stored versions and commits
+  `twins/<corpus>-<keyA>--<corpus>-<keyB>.json` into the changelog repository when its bytes move.
+  A pair is two units of one kind, each the other's best match by word ratio over the comparison
+  texts, at or above a floor of 0.90. The floor was read off the MDR and the IVDR on 2026-10-19 by
+  a stated rule (the lowest floor from 0.50 up at which 95% of the mutual-best pairs share a
+  heading, else 0.90); none reached 0.95, and agreement at 0.90 was 0.882 over 85 pairs, because
+  the IVDR words "performance study" where the MDR says "clinical investigation". Over both acts'
+  20250110 texts the map holds 85 pairs (80 articles, 5 annexes), 1 identical (Article 12), 1,019
+  aligned children, and 56 MDR and 44 IVDR units with no twin. The MDR and the IVDR are the one
+  pair configured: a screen of every pair of the 72 cached acts found eleven others with at least
+  ten article pairs at the floor (the three European Supervisory Authorities regulations, three
+  2016 product regulations, the anti-dumping and anti-subsidy regulations, the fertilising
+  products regulation with three of those, and the PPE Regulation with the Machinery Regulation),
+  and none is configured. IVDR 20250110 is pinned as a fixture so the map builds offline, which
+  moved the corpus-wide parser counts, each restated in its test: annex elements without a
+  subtitle 323 to 339, subjects read 185 to 200, distinct annex readings 25 to 30 with the rule
+  still never wrong, `NOTE` block holders 1904 to 1913, block boundaries 670867 to 679774. Two of
+  those boundaries are an IVDR `LIST` inside an `ALINEA` opened by a colon, where the break is
+  where the list begins, so the parser is unchanged and its invariant names the exception. Its
+  one limitation: heading agreement is a proxy for the precision of a pairing, and twin means
+  textually similar by this measure, never equivalent in effect. **No published figure moved**:
+  the flagship, the eval layer and every payload are as they were.
+
+- **Every change to a provision with a textual twin says so, and each pair has a page showing
+  only where the two texts differ, since 2026-10-19.** Under such a change an event page names
+  the twin, its score under the words `textually similar`, the dates of the texts it was paired
+  on, and whether the record holds a change to it by the same amending act; a provision page names
+  its twin in its header. `twins/<pair>/<prov>/` shows the differing passages side by side, each
+  with up to 6 words of context, cut at 400 characters with `[…]`, at most 12 to a pair, and both
+  units on EUR-Lex; a pair whose shown passages, context included, exceed 30% of either side shows
+  none and says the two differ too widely to excerpt. Over the MDR and IVDR 20250110 texts that is
+  84 pages, 32 withheld and 52 showing passages; counting every passage rather than the 12 shown
+  would have withheld 42, and the rule counting what is shown was chosen on 2026-10-19. The pair
+  index `twins/<pair>/`, the `twins/` index, `sitemap-twins.xml` in the sitemap index and the map's
+  bytes at `api/v1/twins/<pair>.json` ship with them; the map's schema is committed as
+  `docs/schema/twins.schema.json` and not served under `api/v1/schema/`. No page carries either
+  provision whole, and a test refuses any window of 1,000 characters of either. Its one
+  limitation: the pairing is computed on each act's newest stored version, not on the event's, so
+  an old change's note can name a twin under a number its provision did not then carry, and an
+  IVDR event missing from the record makes the answer "the record holds no IVDR version made by
+  the same amending act", never "no". **No published figure moved**: the payloads, the index, the
+  feeds and the eval layer are byte-identical to before.
+
+- **No feed of changes that landed on one twin and not the other is published, since 2026-10-19.**
+  Such a feed was to be built only if the record held at least 5 one-sided twin changes, a change to
+  one twin by an amending act that also made an event of the other act without touching the twin,
+  from at least 2 amending acts. Counted on 2026-10-19 over the public record at `1db1143` it held
+  0: the one amending act the record shows changing a twin in both acts, `32024R1860`, changed both
+  sides of the two pairs it reached. Its one limitation: "the same amending act" cannot see sibling
+  instruments published together, as MDR Article 44 changed by `32023R0502` and IVDR Article 40, its
+  twin, by `32023R0503`, and the IVDR has no consolidation after 20250110 in the record, so the
+  count is re-run (`scripts/validation/twin_provisions.py divergence --fetch`) as IVDR
+  consolidations land.
