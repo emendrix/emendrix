@@ -7,7 +7,9 @@ carrying `og:title` with no `og:url` renders a preview that is wrong, which is w
 with no preview. That is the rule `render_feed` keeps, extended rather than reinvented. The feed
 `rel="alternate"` links join it for a second reason of their own: they are relative and would
 survive without a base, but no `.xml` file is written without a site URL, so a build without one
-would advertise feeds the tree does not hold. The favicon link is the one head element that needs
+would advertise feeds the tree does not hold. A page's other relations, such as the home page's
+`api-catalog`, are gated for the same reason: the documents they name under `/.well-known/` are
+written only with a site URL. The favicon link is the one head element that needs
 no base at all, which is why `chrome.page` writes it unconditionally and this module does not
 know about it.
 
@@ -67,6 +69,7 @@ def head_metadata(
     site_url: str,
     root: str,
     feeds: tuple[tuple[str, str], ...] = (),
+    relations: tuple[tuple[str, str, str], ...] = (),
     structured: Html | None = None,
 ) -> tuple[Html, ...]:
     """Everything one head declares about the page, or nothing at all without a base address.
@@ -79,6 +82,9 @@ def head_metadata(
     here, so a feed link resolves from a page at any depth. The pairs are passed in rather than
     looked up because `feeds.py` imports `chrome.page`, and a lookup from here would close that
     cycle.
+
+    `relations` arrives as `(rel, site-root-relative path, media type)` triples, prefixed with
+    `root` the same way.
 
     `og:url` is the canonical address, computed once and used twice: the one way those two can
     disagree is by being built separately.
@@ -93,9 +99,14 @@ def head_metadata(
         )
         for where, name in feeds
     )
+    related = tuple(
+        Html(f'<link rel="{escape(rel)}" href="{escape(root + where)}" type="{escape(kind)}">')
+        for rel, where, kind in relations
+    )
     block = (
         Html(f'<link rel="canonical" href="{canonical}">'),
         *alternates,
+        *related,
         Html('<meta property="og:type" content="website">'),
         Html(f'<meta property="og:site_name" content="{escape(SITE_NAME)}">'),
         Html(f'<meta property="og:title" content="{escape(title)}">'),

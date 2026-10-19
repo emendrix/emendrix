@@ -1,0 +1,44 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://example.invalid/site/.well-known/api-catalog",
+      "item": [
+        {
+          "href": "https://example.invalid/site/mcp"
+        },
+        {
+          "href": "https://example.invalid/site/api/v1/"
+        }
+      ],
+      "profile": [
+        {
+          "href": "https://www.rfc-editor.org/info/rfc9727"
+        }
+      ]
+    },
+    {
+      "anchor": "https://example.invalid/site/mcp",
+      "service-desc": [
+        {
+          "href": "https://example.invalid/site/mcp/server-card",
+          "type": "application/mcp-server-card+json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://example.invalid/site/api/#mcp",
+          "type": "text/html"
+        }
+      ]
+    },
+    {
+      "anchor": "https://example.invalid/site/api/v1/",
+      "service-doc": [
+        {
+          "href": "https://example.invalid/site/api/",
+          "type": "text/html"
+        }
+      ]
+    }
+  ]
+}

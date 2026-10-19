@@ -29,6 +29,9 @@ It decides nothing: it does not read or interpret law, cannot search law text an
 a free reference such as `Art. 50(2)`. Name an act by its key and a provision by its canonical
 location, as `list_acts` and `find_provisions` give them.
 
+The server describes itself at `/mcp/server-card`, and the site's `/.well-known/api-catalog`
+names this endpoint and the JSON API.
+
 A client that takes a URL needs only `https://example.invalid/site/mcp`. In Claude Code:
 
     claude mcp add --transport http emendrix https://example.invalid/site/mcp
@@ -45,6 +48,7 @@ In a client configured by a JSON file:
     }
 
 - [The MCP server](https://example.invalid/site/api/#mcp): Ask a model client about the record, read-only, with no key.
+- [MCP server card](https://example.invalid/site/mcp/server-card): the endpoint, version and transport as JSON, for a client that configures itself
 
 ## Watch from CI
 
@@ -55,3 +59,5 @@ In a client configured by a JSON file:
 
 - [Methodology](https://example.invalid/site/methodology/): what every figure means and does not mean
 - [About](https://example.invalid/site/about/): who runs this instance and what it is not
+- [API catalog](https://example.invalid/site/.well-known/api-catalog): RFC 9727 linkset naming the MCP endpoint and the JSON API
+- [AI catalog](https://example.invalid/site/.well-known/ai-catalog.json): AI Catalog listing the MCP server card

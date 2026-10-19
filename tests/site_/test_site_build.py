@@ -292,7 +292,7 @@ def test_without_a_site_url_no_feed_files_are_written(tmp_path: Path, changelog_
 
     The `.xml` sweep below guards two artifacts rather than one: a sitemap's locations are
     absolute for the same reason a feed's links are, so neither file is written without a base,
-    and nor is `llms.txt`, whose links are absolute too.
+    and nor are `llms.txt` and the documents under `.well-known/`, whose links are absolute too.
     """
     arguments = [
         "site",
@@ -313,6 +313,7 @@ def test_without_a_site_url_no_feed_files_are_written(tmp_path: Path, changelog_
     assert not (tmp_path / "site" / "feeds" / "all.xml").exists()
     assert not list((tmp_path / "site").rglob("*.xml"))
     assert not (tmp_path / "site" / "llms.txt").exists()
+    assert not (tmp_path / "site" / ".well-known").exists()
     robots = (tmp_path / "site" / "robots.txt").read_text(encoding="utf-8")
     assert robots.startswith("User-agent: *")
     assert "Sitemap:" not in robots

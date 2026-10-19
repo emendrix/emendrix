@@ -9,7 +9,9 @@ It adds no description of its own. The summary is `pitch.PITCH`, the section hea
 one-line purposes are `take_away.DOORS`, the API's lede and the MCP section are the constants
 `/api/` renders, and the install line is filled by the same three expressions `api_page._mcp`
 uses, so a test can hold the two to one string. The words written here are the headings of the
-link lists and their short notes, which name files and pages and claim nothing measured. The
+link lists and their short notes, which name files and pages and claim nothing measured. Beside
+the pages it links the MCP server's card and the two catalogs under `/.well-known/`, whose
+addresses are `wellknown`'s constants. The
 MCP section reaches here whole, so the contract test that holds its tool sentence to the
 server's registered tools holds this file too.
 
@@ -36,6 +38,7 @@ from emendrix.site_.pages.take_away import DOORS
 from emendrix.site_.pitch import PITCH
 from emendrix.site_.substance_api import SUBSTANCES
 from emendrix.site_.substance_doors import LLMS_DOOR
+from emendrix.site_.wellknown import AI_CATALOG, API_CATALOG, CARD_PATH, ai_catalog
 
 __all__ = ["LLMS", "llms_txt"]
 
@@ -73,6 +76,9 @@ def llms_txt(site: SiteInputs) -> str:
         raise ValueError(_UNCONFIGURED)
     url = site.site_url
     files, mcp, ci = DOORS
+    ai: tuple[str, ...] = ()
+    if ai_catalog(site) is not None:
+        ai = (_link(url, "AI catalog", AI_CATALOG, "AI Catalog listing the MCP server card"),)
     sections = (
         "# emendrix",
         f"> {PITCH}",
@@ -97,7 +103,18 @@ def llms_txt(site: SiteInputs) -> str:
         ),
         f"## {mcp.name}",
         _mcp(url),
-        _link(url, mcp.name, mcp.href, mcp.purpose),
+        "\n".join(
+            (
+                _link(url, mcp.name, mcp.href, mcp.purpose),
+                _link(
+                    url,
+                    "MCP server card",
+                    CARD_PATH,
+                    "the endpoint, version and transport as JSON, for a client that configures "
+                    "itself",
+                ),
+            )
+        ),
         f"## {ci.name}",
         "\n".join(
             (
@@ -117,6 +134,13 @@ def llms_txt(site: SiteInputs) -> str:
                     url, "Methodology", "methodology/", "what every figure means and does not mean"
                 ),
                 _link(url, "About", "about/", "who runs this instance and what it is not"),
+                _link(
+                    url,
+                    "API catalog",
+                    API_CATALOG,
+                    "RFC 9727 linkset naming the MCP endpoint and the JSON API",
+                ),
+                *ai,
             )
         ),
     )

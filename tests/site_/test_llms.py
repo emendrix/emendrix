@@ -26,6 +26,9 @@ _INSTALL = re.compile(r"claude mcp add [^\n<]+")
 _RECORD_ROOT = "api/v1/index.json"
 """The one target the site build does not write: the record's root index, which a deployment
 serves from the changelogs repository as committed, as the API page's layout table says."""
+_CARD = "mcp/server-card"
+"""The MCP server's card, which the server answers itself and the site build does not write.
+`tests/output/test_record_contract.py` is where a pipeline test may reach the server's package."""
 
 
 @pytest.fixture(scope="module")
@@ -73,6 +76,9 @@ def test_every_link_is_absolute_and_resolves_in_the_built_tree(site: Path) -> No
         if path == _RECORD_ROOT:
             assert "v1/index.json" in (site / "api" / "index.html").read_text(encoding="utf-8")
             continue
+        if path == _CARD:
+            assert f"/{_CARD}" in (site / "api" / "index.html").read_text(encoding="utf-8")
+            continue
         file = site / (f"{path}index.html" if not path or path.endswith("/") else path)
         assert file.is_file(), target
         if fragment:
@@ -95,3 +101,11 @@ def test_two_builds_of_one_input_write_identical_bytes(
 ) -> None:
     again = build(tmp_path / "again", changelog_repo)
     assert (again / LLMS).read_bytes() == (site / LLMS).read_bytes()
+
+
+def test_it_links_the_server_card_and_both_catalogs(site: Path) -> None:
+    targets = set(_LINK.findall(_text(site)))
+    for path in (_CARD, ".well-known/api-catalog", ".well-known/ai-catalog.json"):
+        assert f"{SITE_URL}/{path}" in targets, path
+    assert (site / ".well-known" / "api-catalog").is_file()
+    assert (site / ".well-known" / "ai-catalog.json").is_file()

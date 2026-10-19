@@ -147,6 +147,9 @@ the disclaimer and the file each fact was read from, with that file's `sha256`.
 It decides nothing: it does not read or interpret law, cannot search law text and cannot resolve
 a free reference such as `Art. 50(2)`. Name an act by its key and a provision by its canonical
 location, as `list_acts` and `find_provisions` give them.
+
+The server describes itself at `/mcp/server-card`, and the site's `/.well-known/api-catalog`
+names this endpoint and the JSON API.
 """
 
 CLIENTS: Final = """

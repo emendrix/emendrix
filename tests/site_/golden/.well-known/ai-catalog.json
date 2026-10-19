@@ -1,0 +1,14 @@
+{
+  "entries": [
+    {
+      "identifier": "urn:air:example.invalid:mcp:emendrix",
+      "type": "application/mcp-server-card+json",
+      "url": "https://example.invalid/site/mcp/server-card"
+    }
+  ],
+  "host": {
+    "displayName": "emendrix",
+    "documentationUrl": "https://example.invalid/site/api/"
+  },
+  "specVersion": "1.0"
+}

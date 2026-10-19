@@ -12,6 +12,8 @@ icon.svg                        the favicon every head links
 og.png                          the link-preview card, the one raster image published
 robots.txt                      the crawl policy, and where the sitemap is
 llms.txt                        what the site offers a model, and how to fetch the record instead
+.well-known/api-catalog         the RFC 9727 catalog naming the MCP endpoint and the JSON API
+.well-known/ai-catalog.json     the AI Catalog naming the MCP server's card
 search-index.json               what that script fetches, prebuilt
 substance-index.json            what it fetches for a number: every CAS, EC and Index No
 sitemap.xml                     every page, with the date its content last moved
@@ -59,8 +61,8 @@ of them. `llms.txt` sits there for the same reason: it is where an agent looks.
 
 The feeds, the sitemap and `llms.txt` are the one conditional, and it is one rule rather than
 three: a feed's links, a sitemap's locations and `llms.txt`'s links are all absolute, so without
-a site URL `render_feed`, `sitemap_xml` and `llms_txt` refuse and no `.xml`, `.opml` or
-`llms.txt` is written. The feeds page then says so in words
+a site URL `render_feed`, `sitemap_xml`, `llms_txt` and `well_known_files` refuse and no `.xml`,
+`.opml`, `llms.txt` or `.well-known/` file is written. The feeds page then says so in words
 rather than listing files that are not there, and `robots.txt` loses only its `Sitemap:` line,
 because a crawl policy is about paths and needs no base to state one. The icon and the card are
 written unconditionally: what needs a base address is the reference to an asset, never the asset,
@@ -146,6 +148,7 @@ from emendrix.site_.urls import (
     substance_list_href,
     substances_href,
 )
+from emendrix.site_.wellknown import well_known_files
 
 __all__ = ["act_pages", "substance_pages", "write_site"]
 
@@ -249,6 +252,7 @@ def _files(site: SiteInputs, home_limit: int, comparisons: Comparisons) -> dict[
         files[SITEMAP_TWINS] = sitemap_twins_xml(site)
         files[SITEMAP_INDEX] = sitemap_index_xml(site)
         files[LLMS] = llms_txt(site)
+        files.update(well_known_files(site))
         files[feed_path(None)] = render_feed(site, None)
         for act in site.acts:
             files[feed_path(act)] = render_feed(site, act)

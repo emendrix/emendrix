@@ -1177,4 +1177,14 @@ the site serves: `api/v1/schema/register.schema.json` (9 925 bytes) and
 `docs/schema/`, and `api/index.html` moved only in the sentence listing the schemas, which now
 links both. **No `id=` moved or went**, and no `<title>` or description did. Every other file is
 byte-identical.
+
+Read again on 2026-10-19, once more, when the site began to say where its machine-readable doors
+are: `.well-known/api-catalog` (972 bytes), an RFC 9727 linkset naming the MCP endpoint, with its
+server card as the description, and the JSON API, and `.well-known/ai-catalog.json` (337), an AI
+Catalog whose one entry is the server card, are new. `index.html` grew from 5 360 to 5 651 bytes
+by a `<link rel="api-catalog">` in its head and one sentence under the doors naming `llms.txt` and
+the MCP endpoint; `api/index.html` grew from 15 960 to 16 125 by one paragraph in its MCP section
+naming the card and the catalog, and `llms.txt` from 3 281 to 3 803 by that paragraph, a link to
+the card and links to both catalogs. **No `id=` moved or went**, no `<title>` or description did,
+and no measured figure moved. Every other file is byte-identical.
 """

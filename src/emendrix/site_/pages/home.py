@@ -14,6 +14,8 @@ The ways to take the record away as data come after the measured claim and befor
 counting what the list leaves out: a stranger meets the versions, then how they were found,
 then how to carry them into their own tools, and the counted remainder still closes the page,
 so the window never reads as the whole record. The block is `take_away`'s, worded there once.
+Under it, with a site URL, one sentence names `llms.txt` and the MCP endpoint for a program that
+reads the page as text and never sees the head's `api-catalog` link.
 
 Four things this page will not do:
 
@@ -41,13 +43,16 @@ from emendrix.site_.attribution import UNATTRIBUTED_LABEL, unattributed
 from emendrix.site_.chrome import page
 from emendrix.site_.clocks import version_heading
 from emendrix.site_.feeds import feed_path, feed_title
+from emendrix.site_.head import canonical_url
 from emendrix.site_.inputs import ActSite, SiteInputs
+from emendrix.site_.llms import LLMS
 from emendrix.site_.markup import Html, count, escape, join
 from emendrix.site_.pages.take_away import take_away
 from emendrix.site_.seo import website_json_ld
 from emendrix.site_.substance_doors import home_door
 from emendrix.site_.tags import LIST_HELP_WORDS, tag, tags_help, tally
 from emendrix.site_.urls import act_href, depth_of, event_href, up
+from emendrix.site_.wellknown import API_CATALOG
 
 __all__ = ["render_home"]
 
@@ -249,6 +254,24 @@ def _strip(site: SiteInputs) -> Html:
     )
 
 
+def _for_models(site: SiteInputs) -> tuple[Html, ...]:
+    """One sentence for a program reading the page as text, which never sees the head.
+
+    Absent without a site URL, because `llms.txt` is written only with one and the endpoint's
+    address is not known.
+    """
+    if not site.site_url:
+        return ()
+    endpoint = escape(canonical_url(site.site_url, "mcp"))
+    return (
+        Html(
+            f'<p>A model client can start at <a href="{up(_DEPTH)}{LLMS}">{LLMS}</a>, which '
+            f"lists every machine-readable form of the record, and connect to the MCP server at "
+            f"<code>{endpoint}</code>.</p>"
+        ),
+    )
+
+
 def render_home(site: SiteInputs, *, limit: int = 20) -> Html:
     """The site's index page. Deterministic: same inputs, same bytes, no clock, no network.
 
@@ -258,7 +281,8 @@ def render_home(site: SiteInputs, *, limit: int = 20) -> Html:
     """
     listed, rest = _versions(site, limit)
     doors = take_away(up(_DEPTH), heading="Take the record with you")
-    body = join((*_hero(site), *listed, _strip(site), home_door(up(_DEPTH)), doors, *rest), "\n")
+    parts = (*_hero(site), *listed, _strip(site), home_door(up(_DEPTH)), doors, *_for_models(site))
+    body = join((*parts, *rest), "\n")
     description = _pitch(site)
     return page(
         title="emendrix — provision-level changelogs for EU regulations",
@@ -267,5 +291,6 @@ def render_home(site: SiteInputs, *, limit: int = 20) -> Html:
         path=_PATH,
         chrome=site.chrome,
         feeds=((feed_path(None), feed_title(None)),),
+        relations=(("api-catalog", API_CATALOG, "application/linkset+json"),),
         structured=website_json_ld(site, description=description) if site.site_url else None,
     )

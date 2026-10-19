@@ -158,6 +158,7 @@ def page(
     canonical: str | None = None,
     substances: bool = False,
     feeds: tuple[tuple[str, str], ...] = (),
+    relations: tuple[tuple[str, str, str], ...] = (),
     structured: Html | None = None,
     section: str = "",
     root: str | None = None,
@@ -175,6 +176,8 @@ def page(
 
     `feeds` and `structured` are what the page declares about itself: the Atom feeds it
     advertises as `(path, title)` pairs, and its JSON-LD block. Both default to nothing.
+    `relations` are its other head links as `(rel, path, media type)` triples; only the home
+    page passes any.
     `section` is the header-bar destination the page belongs to, which `nav_links` marks.
 
     Everything site-wide, the build date, the public repository URLs and the site's one
@@ -220,6 +223,7 @@ def page(
                 site_url=chrome.site_url,
                 root=root,
                 feeds=feeds,
+                relations=relations,
                 structured=structured,
             ),
             Html(f'<link rel="icon" href="{root}icon.svg" type="image/svg+xml">'),
